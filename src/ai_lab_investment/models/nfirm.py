@@ -13,9 +13,11 @@ Training/inference allocation:
 - Post-investment, each firm splits capacity K into K_I (inference)
   and K_T (training): K = K_I + K_T
 - Inference generates current revenue
-- Training generates quality increment dq = beta_scaling * log(K_T)
+- Training generates quality via power-law scaling: Q = (phi*K*t)^eta
 - Quality multiplies demand: effective demand = X * exp(q)
 """
+
+import warnings
 
 import numpy as np
 from scipy import optimize
@@ -40,7 +42,7 @@ class NFirmModel:
         coupon_rate: float = 0.05,
         bankruptcy_cost: float = 0.30,
         training_fraction: float = 0.0,
-        scaling_beta: float = 0.1,
+        eta: float = 0.07,
     ):
         """Initialize the N-firm model.
 
@@ -52,8 +54,8 @@ class NFirmModel:
             bankruptcy_cost: Fraction of value lost in default.
             training_fraction: Fraction of capacity allocated to training.
                 0 = all inference (base case).
-            scaling_beta: Scaling law parameter for training quality.
-                dq = scaling_beta * log(K_T).
+            eta: Scaling law exponent for training quality.
+                Q = (phi*K*t)^eta per Kaplan et al. (2020).
         """
         self.params = params
         self.n_firms = n_firms
@@ -61,7 +63,7 @@ class NFirmModel:
         self.coupon_rate = coupon_rate
         self.bankruptcy_cost = bankruptcy_cost
         self.training_fraction = training_fraction
-        self.scaling_beta = scaling_beta
+        self.eta = eta
         self._cache: dict = {}
 
     # ------------------------------------------------------------------
@@ -184,6 +186,9 @@ class NFirmModel:
             method="bounded",
             args=(competitor_capacities, regime),
         )
+        if result.fun >= 1e19:
+            msg = f"Entrant optimization failed for regime={regime}"
+            raise RuntimeError(msg)
         K_star = np.exp(result.x)
         X_star = self._entrant_trigger(K_star, competitor_capacities, regime)
         return X_star, K_star
@@ -192,12 +197,18 @@ class NFirmModel:
     # Sequential equilibrium (backward induction)
     # ------------------------------------------------------------------
 
-    def solve_sequential_equilibrium(self, regime: str = "H") -> list[dict[str, float]]:
-        """Solve for the sequential equilibrium via backward induction.
+    def solve_sequential_equilibrium(
+        self,
+        regime: str = "H",
+        max_iterations: int = 20,
+        tol: float = 1e-6,
+    ) -> list[dict[str, float]]:
+        """Solve for the sequential equilibrium via iterative refinement.
 
         Firms invest one at a time: firm N (last) faces N-1 competitors,
         firm N-1 faces N-2, etc. Each firm's trigger and capacity are
-        optimal given the anticipated future entry.
+        optimal given the anticipated future entry. The equilibrium is
+        found by fixed-point iteration until capacity changes fall below tol.
 
         Returns:
             List of dicts, one per firm (ordered by entry time):
@@ -206,8 +217,6 @@ class NFirmModel:
         cache_key = ("seq_eq", regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
-
-        entries = []  # Will be built in reverse (last entrant first)
 
         # First pass: solve each entrant's problem from last to first
         entrant_solutions = []
@@ -219,8 +228,8 @@ class NFirmModel:
             X_star, K_star = self.solve_entrant(dummy_competitors, regime)
             entrant_solutions.append((X_star, K_star))
 
-        # Second pass: refine using actual capacities (iterate)
-        for _iteration in range(5):
+        # Iterative refinement using actual capacities
+        for _iteration in range(max_iterations):
             refined = []
             for k in range(self.n_firms):
                 n_competitors = self.n_firms - 1 - k
@@ -244,9 +253,23 @@ class NFirmModel:
                     ]
                     X_star, K_star = self.solve_entrant(all_others, regime)
                 refined.append((X_star, K_star))
+
+            max_change = max(
+                abs(refined[k][1] - entrant_solutions[k][1])
+                for k in range(self.n_firms)
+            )
             entrant_solutions = refined
+            if max_change < tol:
+                break
+        else:
+            warnings.warn(
+                f"N-firm equilibrium did not converge after {max_iterations} "
+                f"iterations (max capacity change: {max_change:.2e})",
+                stacklevel=2,
+            )
 
         # Sort by trigger (lowest = first entrant = leader)
+        entries = []
         indexed = [(X, K, i) for i, (X, K) in enumerate(entrant_solutions)]
         indexed.sort(key=lambda t: t[0])
 
@@ -271,63 +294,23 @@ class NFirmModel:
 
     def optimal_training_fraction(
         self,
-        K: float,
-        X: float,
-        competitor_capacities: list[float],
-        regime: str,
-        discount_periods: int = 10,
+        K: float = 1.0,
+        X: float = 1.0,
+        competitor_capacities: list[float] | None = None,
+        regime: str = "H",
     ) -> float:
-        """Find the optimal training/inference split.
+        """Optimal training fraction from Proposition 5.
 
-        Maximizes total value = inference revenue + PV of quality gains.
+        phi* = eta / (alpha + eta)
 
-        Args:
-            K: Total capacity.
-            X: Current demand.
-            competitor_capacities: Competitors' capacities.
-            regime: Demand regime.
-            discount_periods: Number of periods to value training over.
+        This closed-form follows from the power-law quality model
+        Q(phi*K)^eta * ((1-phi)*K)^alpha. The FOC yields
+        eta*(1-phi) = alpha*phi, independent of X, K, and competition.
 
         Returns:
-            Optimal training fraction theta in [0, 1).
+            Optimal training fraction phi* in (0, 1).
         """
-        p = self.params
-
-        def neg_value(theta: float) -> float:
-            if theta < 0 or theta >= 1:
-                return 1e20
-            K_I = K * (1.0 - theta)
-            K_T = K * theta
-
-            # Inference revenue
-            A = p.A_H if regime == "H" else p.A_L
-            alpha = p.alpha
-            K_I_alpha = K_I**alpha
-            comp_sum = sum(Kc**alpha for Kc in competitor_capacities)
-            total = K_I_alpha + comp_sum
-            share = K_I_alpha / total if total > 0 else 0
-            inf_rev = A * X * K_I_alpha * share
-
-            # Training value (quality increment)
-            if K_T > 0:
-                dq = self.scaling_beta * np.log(K_T)
-                # PV of quality gain over discount_periods
-                training_val = (
-                    dq
-                    * inf_rev
-                    * sum(1 / (1 + p.r) ** t for t in range(1, discount_periods + 1))
-                )
-            else:
-                training_val = 0.0
-
-            return -(inf_rev + training_val)
-
-        result = optimize.minimize_scalar(
-            neg_value,
-            bounds=(0.0, 0.95),
-            method="bounded",
-        )
-        return result.x
+        return self.eta / (self.params.alpha + self.eta)
 
     def quality_dynamics(
         self,
@@ -335,10 +318,10 @@ class NFirmModel:
         training_fraction: float,
         periods: int = 20,
     ) -> np.ndarray:
-        """Compute quality trajectory from training allocation.
+        """Compute quality trajectory from power-law scaling.
 
-        q(t+1) = q(t) + scaling_beta * log(K_T)
-        where K_T = training_fraction * K.
+        Q(t) = (phi * K * t)^eta for t >= 1 (cumulative training compute).
+        In log-space: q(t) = eta * ln(phi * K * t).
 
         Returns:
             Array of quality levels [q(0), q(1), ..., q(periods)].
@@ -346,9 +329,8 @@ class NFirmModel:
         K_T = K * training_fraction
         qualities = np.zeros(periods + 1)
         if K_T > 0:
-            dq = self.scaling_beta * np.log(K_T)
-            for t in range(periods):
-                qualities[t + 1] = qualities[t] + dq
+            for t in range(1, periods + 1):
+                qualities[t] = self.eta * np.log(K_T * t)
         return qualities
 
     # ------------------------------------------------------------------
@@ -409,7 +391,7 @@ class NFirmModel:
                 coupon_rate=self.coupon_rate,
                 bankruptcy_cost=self.bankruptcy_cost,
                 training_fraction=self.training_fraction,
-                scaling_beta=self.scaling_beta,
+                eta=self.eta,
             )
             X_star, K_star = model.solve_entrant(other_Ks, regime)
 
@@ -461,7 +443,7 @@ class NFirmModel:
                     coupon_rate=self.coupon_rate,
                     bankruptcy_cost=self.bankruptcy_cost,
                     training_fraction=self.training_fraction,
-                    scaling_beta=self.scaling_beta,
+                    eta=self.eta,
                 )
                 eq = m.solve_sequential_equilibrium(regime)
                 for j, entry in enumerate(eq):

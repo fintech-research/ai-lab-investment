@@ -40,6 +40,26 @@ This is a form of *revealed preference* in the spirit of @samuelson1938note: we 
 The key identification assumption is that cross-firm variation in investment intensity, conditional on observable parameters, reflects variation in beliefs about $\lambda$ rather than unobserved heterogeneity in costs or technology.
 We assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
 
+#### Results
+
+@tbl-revealed-beliefs presents the implied arrival rates for each stylized firm.
+The inversion reveals substantial dispersion in beliefs: the most aggressive investors (Anthropic-like and CoreWeave-like) imply $\hat{\lambda} \approx 0.95$, corresponding to an expected regime switch in approximately one year, while the hyperscaler (Google-like) implies $\hat{\lambda} \approx 0.20$, an expected switch in five years.
+
+| Firm | CapEx/Rev | Implied $\hat{\lambda}$ | $E[T] = 1/\hat{\lambda}$ (yrs) | $P(\text{switch} \leq 5\text{yr})$ |
+|:-----|:---------:|:-----------------------:|:-------------------------------:|:-----------------------------------:|
+| Anthropic-like | 2.00 | 0.95 | 1.1 | 99% |
+| OpenAI-like | 1.25 | 0.25 | 4.0 | 71% |
+| Google-like | 1.09 | 0.20 | 5.0 | 63% |
+| CoreWeave-like | 2.00 | 0.95 | 1.1 | 99% |
+
+: Revealed beliefs: implied arrival rate $\hat{\lambda}$ from investment intensity inversion. Higher CapEx/Revenue ratios imply more aggressive beliefs about transformative AI timing. {#tbl-revealed-beliefs}
+
+Two patterns stand out.
+First, the belief dispersion is large: the ratio of the highest to lowest implied $\lambda$ is approximately 4.7$\times$.
+This means the most aggressive firms behave as if transformative AI is nearly five times more imminent than the most conservative firm believes.
+Second, firms investing more than twice their revenue (Anthropic-like and CoreWeave-like) reveal near-certainty that the regime switch will occur within five years.
+Their different financial structures (leverage 0.20 vs. 0.70) suggest that one category backs its beliefs with equity while the other relies on debt---a distinction with important implications for default risk.
+
 ### Growth Option Decomposition
 
 Following @berk1999optimal, we decompose firm value into three components:
@@ -49,11 +69,11 @@ $$
 V_{\text{AIP}} = V_s(X, K_{\text{installed}}) = \frac{X K_{\text{installed}}^\alpha}{r - \mu_s} - \frac{\delta K_{\text{installed}}}{r}.
 $$
 
-2. **Expansion option**: the value of the option to invest in additional capacity.
+2. **Counterfactual capacity value**: the incremental value from optimally choosing capacity relative to the current installed level.
 $$
-V_{\text{expand}} = F_s(X) - V_{\text{AIP}},
+V_{\text{growth}} = F_s(X) - V_{\text{AIP}},
 $$
-where $F_s(X)$ is the total option value including the possibility of future investment.
+where $F_s(X)$ is the total option value including the possibility of future investment. This measures how much additional value the firm could realize by adjusting capacity from $K_{\text{installed}}$ to the optimal level $K^*$.
 
 3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$.
 $$
@@ -61,17 +81,17 @@ V_{\text{switch}} = F_L(X) - F_L^{\text{no switch}}(X),
 $$
 where $F_L^{\text{no switch}}$ is the option value in regime $L$ with $\lambda \to 0$.
 
-The growth option fraction $V_{\text{expand}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
+The growth option fraction $V_{\text{growth}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
 For AI infrastructure firms, we find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
 
 @fig-growth-decomposition illustrates the growth option decomposition.
-Panel (a) decomposes total firm value into assets-in-place (blue) and the expansion option (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
-When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the option to invest, and assets-in-place are small.
-As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the expansion option shrinks because less additional capacity is needed.
+Panel (a) decomposes total firm value into assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
+When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the potential to reach optimal capacity, and assets-in-place are small.
+As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the counterfactual capacity value shrinks because the firm is already near optimal scale.
 Panel (b) shows the growth option fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
 For the typical AI infrastructure firm with $K/K_H^* \approx 0.1$--$0.3$, the growth option fraction exceeds 60\%, confirming that these firms' valuations are driven primarily by future investment opportunities.
 
-![Growth option decomposition. (a) Stacked value decomposition: assets-in-place (blue) and expansion option (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Growth option fraction---the share of total value attributable to the expansion option. For firms with capacity well below $K_H^*$, growth options dominate firm value. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
+![Growth option decomposition. (a) Stacked value decomposition: assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Growth option fraction---the share of total value attributable to the gap between current and optimal capacity. For firms with capacity well below $K_H^*$, growth options dominate firm value. This is a comparative statics exercise, not an exercisable option: it shows how much value the firm would gain by adjusting from $K_{\text{installed}}$ to $K^*$. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
 
 This high growth option fraction has important implications for asset pricing: AI infrastructure stocks should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
 

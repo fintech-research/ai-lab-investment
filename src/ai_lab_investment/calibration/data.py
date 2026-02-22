@@ -51,7 +51,7 @@ class CalibrationData:
     """
 
     # Demand process parameters
-    mu_L: float = 0.02  # Pre-adoption drift (~2% growth)
+    mu_L: float = 0.01  # Pre-adoption drift (~1% growth, matches ModelParameters)
     mu_H: float = 0.06  # Post-adoption drift (~6% growth, conservative)
     sigma_L: float = 0.25  # Pre-adoption volatility
     sigma_H: float = 0.30  # Post-adoption volatility (higher uncertainty)
@@ -106,12 +106,12 @@ def get_stylized_firms() -> list[FirmData]:
     return [
         FirmData(
             name="Firm A (Anthropic-like)",
-            revenue_2024=1.0,
-            revenue_2025=9.0,
+            revenue_2024=0.9,
+            revenue_2025=3.0,
             capex_2024=2.0,
-            capex_2025=5.0,
+            capex_2025=6.0,
             gpu_count=50,
-            leverage_ratio=0.15,
+            leverage_ratio=0.20,
             wacc=0.15,
             description=(
                 "Pure-play AI lab, rapid revenue growth, "
@@ -120,12 +120,12 @@ def get_stylized_firms() -> list[FirmData]:
         ),
         FirmData(
             name="Firm B (OpenAI-like)",
-            revenue_2024=3.5,
+            revenue_2024=4.0,
             revenue_2025=12.0,
             capex_2024=3.0,
-            capex_2025=8.0,
+            capex_2025=15.0,
             gpu_count=80,
-            leverage_ratio=0.20,
+            leverage_ratio=0.30,
             wacc=0.14,
             description=(
                 "Largest pure-play AI lab, high revenue, "
@@ -134,12 +134,12 @@ def get_stylized_firms() -> list[FirmData]:
         ),
         FirmData(
             name="Firm C (Google/Alphabet-like)",
-            revenue_2024=10.0,
-            revenue_2025=20.0,
+            revenue_2024=40.0,
+            revenue_2025=55.0,
             capex_2024=30.0,
-            capex_2025=50.0,
+            capex_2025=60.0,
             gpu_count=200,
-            leverage_ratio=0.05,
+            leverage_ratio=0.10,
             wacc=0.10,
             description=(
                 "Hyperscaler with massive existing infrastructure, "
@@ -148,10 +148,10 @@ def get_stylized_firms() -> list[FirmData]:
         ),
         FirmData(
             name="Firm D (CoreWeave-like)",
-            revenue_2024=1.5,
-            revenue_2025=4.0,
+            revenue_2024=2.0,
+            revenue_2025=5.0,
             capex_2024=8.0,
-            capex_2025=15.0,
+            capex_2025=10.0,
             gpu_count=100,
             leverage_ratio=0.70,
             wacc=0.18,

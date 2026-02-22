@@ -35,8 +35,8 @@ We quantify this trade-off across the parameter space, showing that the asymmetr
 Our work connects several strands of the literature.
 The real options approach to irreversible investment under uncertainty originates with @mcdonald1986value and @brennan1985evaluating, and is developed extensively in @dixit1994investment.
 @guo2005investment introduce regime switching, which we use to model the binary nature of AI demand: either current trends continue (low regime) or a step change in capabilities generates massive new demand (high regime).
-Strategic investment games with preemption follow @fudenberg1985preemption, with @grenadier2002option and @huisman2015strategic providing the option-exercise game framework.
-Our endogenous default structure draws on @leland1994corporate and @goldstein2001ebit.
+Strategic investment games with preemption follow @fudenberg1985preemption, with @grenadier2002option, @huisman2015strategic, and @lambrecht2003real providing the option-exercise game framework; @weeds2002strategic analyzes strategic delay in R&D competition, which closely parallels the AI investment timing problem.
+Our endogenous default structure draws on @leland1994corporate and @goldstein2001ebit, with @hackbarth2012corporate and @sundaresan2015dynamic providing the joint investment-financing framework.
 The growth option decomposition builds on @berk1999optimal and @carlson2004corporate.
 Finally, the AI scaling laws that ground our calibration come from @kaplan2020scaling and @hoffmann2022training, with macroeconomic implications explored by @aghion2018ai, @nordhaus2021spirit, and @jones2023agi.
 

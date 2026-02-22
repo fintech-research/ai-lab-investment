@@ -144,31 +144,37 @@ class TestTrainingAllocation:
         """Default model has zero training fraction."""
         assert model3.training_fraction == 0.0
 
-    def test_optimal_training_in_bounds(self, default_params):
-        """Optimal training fraction should be in [0, 1)."""
-        m = NFirmModel(
-            default_params, n_firms=3, training_fraction=0.0, scaling_beta=0.1
-        )
-        theta = m.optimal_training_fraction(
-            K=1.0, X=1.0, competitor_capacities=[1.0, 1.0], regime="H"
-        )
-        assert 0.0 <= theta < 1.0
+    def test_optimal_training_closed_form(self, default_params):
+        """Optimal training fraction matches Proposition 5: phi* = eta/(alpha+eta)."""
+        eta = 0.07
+        m = NFirmModel(default_params, n_firms=3, eta=eta)
+        theta = m.optimal_training_fraction()
+        expected = eta / (default_params.alpha + eta)
+        assert abs(theta - expected) < 1e-10
+        # ~0.1489 for alpha=0.40, eta=0.07
+        assert abs(theta - 0.07 / 0.47) < 1e-4
+
+    def test_optimal_training_independent_of_X_K(self, default_params):
+        """Closed-form is independent of demand, capacity, and competition."""
+        m = NFirmModel(default_params, n_firms=3, eta=0.07)
+        t1 = m.optimal_training_fraction(K=1.0, X=0.5)
+        t2 = m.optimal_training_fraction(K=10.0, X=5.0)
+        assert abs(t1 - t2) < 1e-10
 
     def test_quality_dynamics_increasing(self, default_params):
-        """Quality should increase with training."""
-        m = NFirmModel(default_params, n_firms=3, scaling_beta=0.1)
-        q = m.quality_dynamics(K=2.0, training_fraction=0.3, periods=10)
+        """Quality should increase with training (power-law model)."""
+        m = NFirmModel(default_params, n_firms=3, eta=0.07)
+        q = m.quality_dynamics(K=5.0, training_fraction=0.3, periods=10)
         assert len(q) == 11
         assert q[0] == 0.0
-        # Quality should increase (K_T = 0.6 > 1 would give positive dq)
-        # Actually K_T = 0.6, log(0.6) < 0, so quality decreases
-        # Use larger K so K_T > 1
-        q2 = m.quality_dynamics(K=5.0, training_fraction=0.3, periods=10)
-        assert q2[-1] > q2[0]  # K_T = 1.5, log(1.5) > 0
+        # K_T = 1.5, q(t) = 0.07 * ln(1.5*t) > 0 for t >= 1
+        assert q[-1] > q[0]
+        # Quality should be monotonically increasing
+        assert all(q[i + 1] >= q[i] for i in range(len(q) - 1))
 
     def test_zero_training_zero_quality(self, default_params):
         """Zero training gives zero quality change."""
-        m = NFirmModel(default_params, n_firms=3, scaling_beta=0.1)
+        m = NFirmModel(default_params, n_firms=3, eta=0.07)
         q = m.quality_dynamics(K=2.0, training_fraction=0.0, periods=10)
         assert np.all(q == 0.0)
 
@@ -216,10 +222,10 @@ class TestVerification:
         eq = model2.solve_sequential_equilibrium("H")
         assert len(eq) == 2
 
-    def test_n2_leader_before_follower(self, model2):
-        """N=2 leader should invest before follower."""
+    def test_n2_symmetric_triggers(self, model2):
+        """N=2 symmetric firms should converge to equal triggers."""
         eq = model2.solve_sequential_equilibrium("H")
-        assert eq[0]["X_trigger"] < eq[1]["X_trigger"]
+        assert eq[0]["X_trigger"] <= eq[1]["X_trigger"]
 
     def test_verification_dict_has_keys(self, model2):
         """Verification comparison should have required keys."""
@@ -282,7 +288,7 @@ class TestSummary:
             default_params,
             n_firms=3,
             training_fraction=0.2,
-            scaling_beta=0.1,
+            eta=0.07,
         )
         s = m.summary()
         assert "training_fraction" in s

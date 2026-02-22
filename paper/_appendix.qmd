@@ -62,6 +62,53 @@ $$
 
 The second derivative is negative at $\phi^*$ since $\eta, \alpha \in (0,1)$, confirming a maximum. $\square$
 
+#### Proof of Proposition 2 (Endogenous default) {.unnumbered}
+
+The Leland default boundary is $X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r}{A_s K^\alpha s_i}$.
+
+*(i)* $X_D$ is increasing in leverage $\ell$ because $c_D = c_d \cdot \ell \cdot I(K)$ is increasing in $\ell$, so the numerator increases.
+
+*(ii)* $X_D$ is increasing in rival capacity $K_j$ because the contest share $s_i = K_i^\alpha/(K_i^\alpha + K_j^\alpha)$ is decreasing in $K_j$, increasing the denominator's inverse.
+
+*(iii)* $X_D$ is decreasing in $\mu_s$ because $A_s = 1/(r-\mu_s)$ is increasing in $\mu_s$, increasing the denominator. Additionally, higher growth makes equity more valuable, reducing the incentive to default. $\square$
+
+#### Proof of Proposition 3 (Preemption equilibrium) {.unnumbered}
+
+Existence and uniqueness of the preemption trigger $X_P$ follow from @huisman2015strategic, Theorem 1.
+
+The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$. The follower option value $F(X) \propto X^{\beta_H}$ is also continuous, increasing, and convex.
+
+At $X = 0$: $L(0) < 0$ (sunk cost) while $F(0) = 0$, so $F > L$.
+
+At $X = X_F^*$: the leader has earned monopoly rents while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$ under typical calibrations.
+
+By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value grows linearly in $X$ while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$, but from a lower base. $\square$
+
+#### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
+
+*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest share, raising the investment hurdle (the trigger). Formally, the optimal trigger for firm $k$ is $X_k^* = \frac{\beta}{\beta-1} \cdot \frac{(r-\mu)}{K_k^\alpha s_k} (cK_k^\gamma + \delta K_k/r)$, where $s_k$ is decreasing in the number of competitors, so $X_k^*$ is increasing in $k$.
+
+*(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal revenue $\alpha A_s X K_k^{\alpha-1} s_k$ against marginal cost $\gamma c K_k^{\gamma-1}$. More firms reduce $s_k$, reducing marginal revenue and hence $K_k^*$.
+
+*(iii)* Total capacity increasing in $N$ follows because the aggregate production $\sum K_i^\alpha$ increases even as individual $K_i$ falls, since the number of contributors grows faster than individual capacity shrinks (for $\alpha < 1$). The rate of increase is decreasing because the marginal entrant adds progressively less capacity.
+
+*(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
+
+#### Proof of Proposition 6 (Asymmetric Dario dilemma) {.unnumbered}
+
+Consider a firm with true parameter $\lambda_{\text{true}}$ that invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$.
+
+The NPV under the true process is:
+$$
+\text{NPV} = \left[V(X^*, K^*; \lambda_{\text{true}}) - I(K^*)\right] \left(\frac{X_0}{X^*}\right)^{\beta(\lambda_{\text{true}})}.
+$$
+
+*Aggressive case* ($\lambda_{\text{invest}} > \lambda_{\text{true}}$): the firm invests too early ($X^*$ too low) and builds too much capacity ($K^*$ too high). Both effects reduce NPV: early investment wastes the option value, and excess capacity incurs unnecessary costs $cK^{*\gamma} + \delta K^*/r$. With leverage, overbuilding also raises the default boundary, increasing the probability of financial distress.
+
+*Conservative case* ($\lambda_{\text{invest}} < \lambda_{\text{true}}$): the firm invests too late ($X^*$ too high) and builds too little ($K^*$ too low). The NPV loss comes only from the timing delay---the firm foregoes some option value by waiting beyond the true optimum. However, once it invests, it earns positive NPV on a smaller but appropriately sized investment, and default risk remains controlled.
+
+The asymmetry arises because the aggressive case compounds two sources of loss (timing + capacity + default risk) while the conservative case involves only timing loss. The convexity of investment costs ($\gamma > 1$) amplifies the overbuilding penalty. $\square$
+
 ### B. Numerical Implementation Details {.unnumbered}
 
 #### Solution algorithm {.unnumbered}
@@ -81,9 +128,9 @@ The $N$-firm sequential equilibrium is solved using the following algorithm:
    - The trigger $X_k^*(K_k)$ is computed analytically for each $K_k$ evaluation.
    - Scalar optimization over $K_k$ uses Brent's method with bounds $[0.01, 10]$.
 
-4. **Forward-backward iteration.** Repeat steps 2--3 for 5 passes, updating anticipated capacities at each step.
+4. **Iterative refinement.** Repeat steps 2--3, updating anticipated capacities at each step, until the maximum capacity change between consecutive iterations falls below tolerance $\varepsilon = 10^{-6}$ or the maximum number of iterations (20) is reached.
 
-5. **Convergence check.** Verify that capacities change by less than $10^{-4}$ between consecutive passes. Verify $N=2$ matches analytical duopoly.
+5. **Convergence verification.** Verify $N=2$ solution matches the analytical duopoly equilibrium within numerical tolerance.
 
 #### Computational cost {.unnumbered}
 

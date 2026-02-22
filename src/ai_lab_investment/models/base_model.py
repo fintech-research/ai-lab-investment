@@ -123,6 +123,9 @@ class SingleFirmModel:
             method="bounded",
             args=("H",),
         )
+        if result.fun >= 1e19:
+            msg = "Regime H optimization failed: no valid interior solution found"
+            raise RuntimeError(msg)
         K_star = np.exp(result.x)
         X_star = self._trigger_for_K(K_star, "H")
 
@@ -176,6 +179,9 @@ class SingleFirmModel:
                 method="bounded",
                 args=("L",),
             )
+            if result.fun >= 1e19:
+                msg = "Regime L optimization failed: no valid interior solution found"
+                raise RuntimeError(msg)
             K_star = np.exp(result.x)
             X_star = self._trigger_for_K(K_star, "L")
 

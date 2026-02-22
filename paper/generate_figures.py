@@ -290,7 +290,7 @@ def fig_default_boundaries():
             eq = duo.solve_preemption_equilibrium("H")
             X_F[i] = eq["X_follower"]
             X_L[i] = eq["X_leader"]
-            X_D[i] = duo.default_boundary(eq["K_follower"], 0, "H")
+            X_D[i] = duo.default_boundary(eq["K_follower"], eq["K_leader"], "H")
         except (ValueError, RuntimeError):
             continue
 

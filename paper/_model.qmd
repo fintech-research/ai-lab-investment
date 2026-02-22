@@ -39,6 +39,12 @@ V_s(X, K) = \frac{X K^\alpha}{r - \mu_s} - \frac{\delta K}{r}, \quad s \in \{L, 
 $$ {#eq-installed-value}
 
 The first term is the capitalized revenue stream (growing at rate $\mu_s$, discounted at $r$); the second is the present value of maintenance costs.
+In regime $H$ (absorbing), $A_H = 1/(r - \mu_H)$.
+In regime $L$, the present-value multiplier incorporates the expected transition to regime $H$:
+$$
+A_L = \frac{r - \mu_H + \lambda}{(r - \mu_H)(r - \mu_L + \lambda)},
+$$
+which reduces to $1/(r - \mu_L)$ when $\lambda = 0$ (no regime switching) and approaches $A_H$ as $\lambda \to \infty$ (immediate transition).
 
 #### Option value in regime $H$
 
@@ -91,7 +97,7 @@ $$ {#eq-ode-L}
 where the term $\lambda F_H(X)$ captures the expected gain from transitioning to the high regime.
 The arrival rate $\lambda$ enters the effective discount rate as $r + \lambda$, increasing the cost of delay and thus lowering the investment trigger relative to a world without regime switching.
 
-The solution takes the form $F_L(X) = A_L X^{\beta_L} + \frac{\lambda}{r + \lambda - r} F_H(X)$, where $\beta_L$ is the positive root of:
+The solution takes the form $F_L(X) = D_L X^{\beta_L} + C X^{\beta_H}$, where $D_L$ is a free constant determined by boundary conditions, $C = -\lambda B_H / Q_L(\beta_H)$ is the particular-solution coefficient with $Q_L(\beta) = \tfrac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \lambda)$, and $\beta_L$ is the positive root of:
 $$
 \frac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0.
 $$ {#eq-beta-L}
@@ -110,12 +116,13 @@ Panel (b) plots the particular-solution coefficient $C$, which captures the addi
 
 We now introduce strategic interaction and leverage.
 Two symmetric firms, $i \in \{1, 2\}$, each hold options to invest in capacity.
-Revenue is shared according to a Tullock contest function [@tullock1980efficient; @skaperdas1996contest]:
+Revenue combines the diminishing-returns production technology from @eq-installed-value with a Tullock contest function [@tullock1980efficient; @skaperdas1996contest] that determines market share:
 $$
-\pi_i(X, K_i, K_j) = X \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha},
+\pi_i(X, K_i, K_j) = X \cdot K_i^\alpha \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha},
 $$ {#eq-contest}
 where $K_i$ and $K_j$ are the capacities of firm $i$ and its rival.
-This functional form has desirable properties: it is symmetric, increasing in own capacity, decreasing in rival capacity, and market shares sum to one.
+The first factor $K_i^\alpha$ is the production function (output scales with capacity at diminishing rate $\alpha$); the second factor $s_i = K_i^\alpha / (K_i^\alpha + K_j^\alpha)$ is the contest share (market share depends on relative capacity).
+This functional form nests the single-firm case: when $K_j = 0$, $s_i = 1$ and $\pi_i = X K_i^\alpha$ as in @eq-installed-value.
 The parameter $\alpha$ controls the sensitivity of market share to capacity: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
 
 #### Capital structure
@@ -127,15 +134,14 @@ Following @leland1994corporate, equity holders choose to default endogenously wh
 
 #### Default boundary
 
-The firm defaults when demand falls to the level $X_D$ at which equity value is zero.
-For a levered firm with capacity $K$ facing a rival with capacity $K_j$ in regime $s$, the default boundary solves:
+Equity holders default endogenously when it is optimal to stop servicing debt.
+Following @leland1994corporate, the optimal default boundary is obtained by smooth pasting---the equity holder's optimal stopping condition.
+For a levered firm with capacity $K$ facing a rival with capacity $K_j$ in regime $s$, the Leland default boundary is:
 $$
-\frac{X_D K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r} = 0,
+X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r}{A_s \cdot K^\alpha \cdot s_i},
 $$ {#eq-default-boundary}
-yielding:
-$$
-X_D = \frac{(\delta K + d)(r - \mu_s)(K^\alpha + K_j^\alpha)}{r K^\alpha}.
-$$ {#eq-XD}
+where $\beta_s^- < 0$ is the negative root of the characteristic equation, $c_D$ is the coupon payment, $A_s = 1/(r - \mu_s)$ is the present-value multiplier, and $s_i = K^\alpha / (K^\alpha + K_j^\alpha)$ is the contest share.
+The factor $\beta_s^- / (\beta_s^- - 1) < 1$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.
 
 **Proposition 2** (Endogenous default).
 *The default boundary $X_D$ is increasing in leverage $\ell$, the coupon rate $c_d$, and rival capacity $K_j$, and decreasing in demand growth $\mu_s$. Higher leverage and stronger competition both raise default risk.*
@@ -153,10 +159,12 @@ At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin,
 
 Following the structural approach of @leland1994corporate, equity value above the default boundary is:
 $$
-E(X) = \frac{X K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r} - \left(\frac{X_D K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r}\right)\left(\frac{X}{X_D}\right)^{\beta_s^-},
+E(X) = A_s X K^\alpha s_i - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} - A_s X_D K^\alpha s_i + \frac{\delta K}{r} + (1 - \ell)I(K)\right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
-where $\beta_s^- < 0$ is the negative characteristic root.
-The last term subtracts the present value of the equity claim conditional on default, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
+where $s_i = K^\alpha / (K^\alpha + K_j^\alpha)$ is the contest share, $A_s = 1/(r - \mu_s)$, and $\beta_s^- < 0$ is the negative characteristic root.
+The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
+At $X = X_D$, equity equals zero by the smooth-pasting condition.
+Without debt ($\ell = 0$), equity simplifies to $E(X) = A_s X K^\alpha s_i - \delta K / r - I(K)$.
 
 Debt value is:
 $$
@@ -176,13 +184,13 @@ The follower's problem is a standard real option with a modified revenue functio
 
 **Leader's problem.**
 The leader must account for the follower's future entry.
-Before the follower invests ($X < X_F$), the leader earns monopoly revenue $X K_L^\alpha / K_L^\alpha = X$.
-After the follower invests ($X \geq X_F$), revenue drops to $X K_L^\alpha / (K_L^\alpha + K_F^\alpha)$.
+Before the follower invests ($X < X_F$), the leader earns monopoly revenue $\pi_L = X K_L^\alpha$ (contest share $s_L = K_L^\alpha / K_L^\alpha = 1$).
+After the follower invests ($X \geq X_F$), revenue drops to $\pi_L = X K_L^\alpha \cdot K_L^\alpha / (K_L^\alpha + K_F^\alpha)$.
 The leader's value incorporates both phases:
 $$
-L(X) = \frac{X}{r - \mu_s} - \frac{X_F}{r - \mu_s}\left(\frac{X}{X_F}\right)^{\beta_s} + \frac{X_F K_L^\alpha}{(K_L^\alpha + K_F^\alpha)(r - \mu_s)}\left(\frac{X}{X_F}\right)^{\beta_s} - I(K_L) - \frac{\delta K_L}{r},
+L(X) = \frac{X K_L^\alpha}{r - \mu_s} - \frac{X_F K_L^\alpha}{r - \mu_s}\left(\frac{X}{X_F}\right)^{\beta_s} + \frac{X_F K_L^\alpha \cdot s_L}{r - \mu_s}\left(\frac{X}{X_F}\right)^{\beta_s} - I(K_L) - \frac{\delta K_L}{r},
 $$
-where the second and third terms capture the transition from monopoly to duopoly revenue when the follower enters.
+where $s_L = K_L^\alpha / (K_L^\alpha + K_F^\alpha)$ is the leader's duopoly share, and the second and third terms capture the transition from monopoly to duopoly revenue when the follower enters.
 
 **Preemption trigger.**
 In a symmetric equilibrium, both firms would like to be the leader.

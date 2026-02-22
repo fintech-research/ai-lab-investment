@@ -1,6 +1,5 @@
 ---
 title: "Investing in Intelligence: A Real Options Framework for AI Compute Infrastructure"
-subtitle: "Preliminary draft - Please do not circulate"
 date: today
 date-format: long
 format:
@@ -18,8 +17,8 @@ affiliations:
     name: HEC Montréal
 abstract: |
   We develop a unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
-  The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, where firms choose both when and how much to invest facing a Tullock contest for AI compute market share; (ii) numerical solutions for $N$-firm sequential equilibrium with dynamic training-inference allocation; and (iii) a "revealed beliefs" methodology that inverts the model to extract AI labs' private probability assessments of transformative AI arrival from observable capital expenditure decisions.
-  Calibrated to stylized versions of Anthropic, OpenAI, Google DeepMind, and CoreWeave, the model implies that frontier labs invest as if transformative AI is substantially closer than market consensus, with wide dispersion in beliefs across firm types.
+  The model delivers: (i) semi-analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, where firms choose both when and how much to invest facing a Tullock contest for AI compute market share; (ii) numerical solutions for $N$-firm sequential equilibrium with dynamic training-inference allocation; and (iii) a "revealed beliefs" methodology that inverts the model to extract AI labs' private probability assessments of transformative AI arrival from observable capital expenditure decisions.
+  Calibrated to stylized versions of Anthropic, OpenAI, Google DeepMind, and CoreWeave, the model implies substantial dispersion in implied arrival-rate beliefs across firm types.
   We introduce the "Dario dilemma"---the asymmetric cost of belief mismatches---showing that aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing extreme capital commitments only under genuinely optimistic beliefs.
 keywords:
   - real options
