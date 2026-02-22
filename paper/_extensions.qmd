@@ -38,7 +38,7 @@ I verify the implementation by checking that the $N=2$ solution matches the anal
 
 ### Training-Inference Allocation
 
-A distinctive feature of AI infrastructure is the dual use of compute: a GPU cluster can be allocated between model *training* (which improves AI quality but does not directly serve demand) and *inference* (which serves demand and generates revenue).
+A distinctive feature of AI infrastructure is the dual use of compute: a GPU cluster can be allocated between model *training* (which improves AI quality but does not directly serve demand) and *inference* (which serves demand and generates revenue). Amodei describes this allocation as an equilibrium constraint: "Why doesn't everyone spend 100% of their compute on training? It's because if they didn't get any revenue, they couldn't raise money... As a stylized fact, it's 50%" [@amodei2025training]. The emergence of inference-time scaling---the discovery that spending more compute *at inference* can substitute for larger pre-trained models---has further intensified this trade-off [@brown2024inference].
 
 #### Scaling laws
 
@@ -69,7 +69,7 @@ $$
 
 *Proof.* The first-order condition with respect to $\phi$ yields $\eta(1 - \phi) = \alpha \phi$, from which $\phi^* = \eta / (\alpha + \eta)$. The second-order condition is satisfied since the objective is concave in $\phi$. $\square$
 
-For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.
+For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.^[Amodei's "50\% stylized fact" [@amodei2025training] is higher than our $\phi^* \approx 15\%$ because his figure includes post-training reinforcement learning, fine-tuning, and evaluation runs, which our model subsumes into the training scaling law. When narrowly defined as pre-training compute only, the 10--20\% range aligns with our prediction.]
 
 #### Quality dynamics
 
