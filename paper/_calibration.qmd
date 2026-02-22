@@ -37,9 +37,9 @@ This captures the real-world observation that scaling up data center capacity fa
 **Unit cost** ($c = 1.0$).
 We normalize the cost parameter to unity; all monetary values are interpreted relative to this normalization.
 
-**Depreciation** ($\delta = 0.03$).
-The depreciation rate combines physical depreciation (approximately 20\% per year for GPU clusters) with a representation of maintenance costs.
-We use a moderate value that captures the ongoing cost of maintaining installed capacity.
+**Operating cost rate** ($\delta = 0.03$).
+The parameter $\delta$ represents the ongoing cost of maintaining installed capacity---power, cooling, maintenance, and personnel---expressed as a fraction of capacity per year.
+This is distinct from accounting depreciation of GPU hardware (which is faster), and captures the perpetual operating cost that the firm must cover from revenue to avoid negative cash flow.
 
 ### Stylized Firms
 

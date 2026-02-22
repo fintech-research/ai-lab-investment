@@ -362,6 +362,9 @@ class DuopolyModel:
             method="bounded",
             args=(K_L, regime),
         )
+        if result.fun >= 1e19:
+            msg = f"Follower optimization failed for K_L={K_L:.4f}, regime={regime}"
+            raise RuntimeError(msg)
         K_F = np.exp(result.x)
         X_F = self._follower_trigger(K_F, K_L, regime)
 
@@ -480,6 +483,9 @@ class DuopolyModel:
             method="bounded",
             args=(regime,),
         )
+        if result.fun >= 1e19:
+            msg = f"Leader optimization failed for regime={regime}"
+            raise RuntimeError(msg)
         K_L = np.exp(result.x)
         X_L = self._leader_trigger_monopolist(K_L, regime)
 

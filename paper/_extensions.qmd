@@ -7,33 +7,34 @@ Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into
 
 #### Revenue sharing with $N$ firms
 
-With $N$ firms in the market, firm $i$'s revenue is:
+With $N$ firms in the market, firm $i$'s revenue combines the production technology with a Tullock contest share, as in the duopoly case (@eq-contest):
 $$
-\pi_i(X, K_1, \ldots, K_N) = X \cdot \frac{K_i^\alpha}{\sum_{j=1}^{N} K_j^\alpha}.
+\pi_i(X, K_1, \ldots, K_N) = X \cdot K_i^\alpha \cdot \frac{K_i^\alpha}{\sum_{j=1}^{N} K_j^\alpha}.
 $$ {#eq-contest-N}
 
-This contest function has the property that adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
+The first factor $K_i^\alpha$ is the production function; the second factor is the contest share.
+This nests the duopoly: when $N=2$, @eq-contest-N reduces to @eq-contest.
+Adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
 
-#### Backward induction
+#### Iterative refinement
 
-We solve the game by backward induction.
-The $N$-th entrant (the last firm to invest) solves a standard follower problem given the capacity of all $N-1$ incumbents.
-The $(N-1)$-th entrant anticipates the $N$-th firm's future entry and optimizes accordingly.
-Working backward, each firm's problem nests the solutions of all subsequent entrants.
+We solve the game by iterative refinement (fixed-point iteration).
+Each firm's optimal trigger and capacity are computed given all other firms' capacities, and the process repeats until convergence.
+In each iteration, each firm $k$ solves a follower problem taking the current capacity estimates of all $N-1$ other firms as given.
 
 **Proposition 4** ($N$-firm equilibrium properties).
 *In the $N$-firm sequential equilibrium:*
 
-*(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing earliest.*
+*(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing at the lowest trigger.*
 
 *(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
 
 *(iii) Total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate.*
 
-*(iv) The equilibrium converges to the duopoly solution as $N \to 2$.*
+*(iv) The equilibrium reduces to the duopoly solution when $N = 2$.*
 
-The numerical solution involves iterative refinement over multiple passes to ensure consistency between each firm's optimization and the anticipated behavior of later entrants.
-We verify convergence by checking that the $N=2$ solution matches the analytical duopoly equilibrium within numerical tolerance.
+The numerical solution iterates until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$ (see Appendix B for details).
+We verify the implementation by checking that the $N=2$ solution matches the analytical duopoly equilibrium.
 
 ### Training-Inference Allocation
 

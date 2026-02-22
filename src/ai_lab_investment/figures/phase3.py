@@ -137,7 +137,7 @@ def plot_training_inference(
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
 
     # Panel A: Quality dynamics for different training fractions
-    m = NFirmModel(params, n_firms=3, scaling_beta=0.1)
+    m = NFirmModel(params, n_firms=3, eta=0.07)
     periods = 20
     for theta in [0.1, 0.2, 0.3, 0.4]:
         q = m.quality_dynamics(K=5.0, training_fraction=theta, periods=periods)
