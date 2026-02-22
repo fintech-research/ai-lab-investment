@@ -1,0 +1,140 @@
+## Revealed Beliefs and Valuation {#sec-valuation}
+
+### The Revealed Beliefs Methodology
+
+The central innovation of this paper is a methodology for extracting firms' private beliefs about AI timelines from their observable investment decisions.
+The approach exploits the fact that all model parameters except $\lambda$ are either directly observable (leverage, WACC, revenue) or can be calibrated from public data (demand volatility, revenue elasticity, cost convexity).
+The parameter $\lambda$---the arrival rate of transformative AI---encodes the firm's *private belief* about when AI capabilities will reach a level sufficient to generate sustained high demand for compute infrastructure.
+
+#### Inversion algorithm
+
+For a firm with observable investment intensity $I/V$ (capital expenditure relative to firm value), we infer $\lambda$ as follows:
+
+1. **Parameterize.** Set all observable and calibrated parameters to their firm-specific values: $r_i = \text{WACC}_i$, $\ell_i = \text{leverage}_i$, etc.
+
+2. **Model prediction.** For each candidate $\lambda$, solve the single-firm model to obtain the predicted investment trigger $X^*(\lambda)$ and capacity $K^*(\lambda)$. Compute the predicted investment intensity $\hat{I}/\hat{V}(\lambda)$.
+
+3. **Invert.** Find $\hat{\lambda}$ such that the predicted investment intensity matches the observed intensity:
+$$
+\frac{I(K^*(\hat{\lambda}))}{V(X^*(\hat{\lambda}), K^*(\hat{\lambda}))} = \frac{\text{CapEx}_i}{\text{Revenue}_i}.
+$$ {#eq-inversion}
+
+4. **Robustness.** Assess sensitivity to calibration assumptions by varying each parameter and re-inverting.
+
+The inversion uses Brent's method for root-finding, which is robust and does not require derivative information.
+We search over $\lambda \in [0.001, 2.0]$, covering expected regime-switch times from 6 months to 1000 years.
+
+#### Identification
+
+The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
+This is a form of *revealed preference* in the spirit of @samuelson1938note: we do not ask what firms *say* about AI timelines; we infer what they *believe* from what they *do*.
+
+The key identification assumption is that cross-firm variation in investment intensity, conditional on observable parameters, reflects variation in beliefs about $\lambda$ rather than unobserved heterogeneity in costs or technology.
+We assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
+
+### Growth Option Decomposition
+
+Following @berk1999optimal, we decompose firm value into three components:
+
+1. **Assets-in-place**: the value of existing installed capacity at current demand.
+$$
+V_{\text{AIP}} = V_s(X, K_{\text{installed}}) = \frac{X K_{\text{installed}}^\alpha}{r - \mu_s} - \frac{\delta K_{\text{installed}}}{r}.
+$$
+
+2. **Expansion option**: the value of the option to invest in additional capacity.
+$$
+V_{\text{expand}} = F_s(X) - V_{\text{AIP}},
+$$
+where $F_s(X)$ is the total option value including the possibility of future investment.
+
+3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$.
+$$
+V_{\text{switch}} = F_L(X) - F_L^{\text{no switch}}(X),
+$$
+where $F_L^{\text{no switch}}$ is the option value in regime $L$ with $\lambda \to 0$.
+
+The growth option fraction $V_{\text{expand}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
+For AI infrastructure firms, we find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
+
+This high growth option fraction has important implications for asset pricing: AI infrastructure stocks should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
+
+### Credit Risk Analysis
+
+The model produces endogenous credit risk through the interaction of leverage, demand uncertainty, and strategic competition.
+
+#### Credit spreads
+
+For a levered firm with leverage $\ell$, the credit spread is:
+$$
+\text{spread} = \frac{\text{coupon}}{D(X)} - r_f,
+$$
+where $D(X)$ is the market value of debt (which differs from face value due to default risk) and $r_f$ is the risk-free rate.
+Higher leverage increases the default boundary $X_D$, reducing debt value and widening spreads.
+
+#### Default probability
+
+The probability of default within horizon $T$ is approximated using the distance to default:
+$$
+P(\text{default within } T) \approx \Phi\left(-\frac{\ln(X/X_D) + (\mu_s - \frac{1}{2}\sigma_s^2)T}{\sigma_s \sqrt{T}}\right),
+$$
+where $\Phi$ is the standard normal CDF.
+This is the structural default probability from @merton1974pricing, adapted to our setting with regime-dependent parameters.
+
+Our calibration produces the following credit risk patterns:
+
+- **Unlevered firms** ($\ell = 0$): zero credit spread, zero default probability.
+- **Moderately levered** ($\ell = 0.2$--$0.4$): credit spreads of 50--200 bps, 5-year default probabilities of 2--8\%.
+- **Highly levered** ($\ell = 0.6$+): credit spreads exceeding 400 bps, 5-year default probabilities above 15\%.
+
+The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the highest credit risk, consistent with the market's pricing of CoreWeave debt at significantly elevated yields relative to investment-grade benchmarks.
+
+### The Dario Dilemma
+
+We now formalize the cost of belief mismatches---what we call the *Dario dilemma*, named for the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
+
+#### Setup
+
+Consider a firm with true private belief $\lambda_{\text{true}}$ that invests according to $\lambda_{\text{invest}} \neq \lambda_{\text{true}}$.
+This mismatch can arise from:
+
+- **Agency problems**: managers invest conservatively to protect careers, even when the firm's founders believe in aggressive timelines.
+- **Strategic signaling**: a firm invests aggressively to signal confidence and deter competitors, even if its private belief is moderate.
+- **Bounded rationality**: decision-makers may not fully optimize given their beliefs.
+
+#### Value loss
+
+The value loss from mismatch is:
+$$
+\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
+$$
+where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$ when the true parameter is $\lambda_a$.
+Note that we evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
+
+**Proposition 6** (Asymmetric Dario dilemma).
+*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. This asymmetry increases with leverage.*
+
+The intuition is that aggressive overinvestment leads to excess capacity that incurs maintenance costs and dilutes revenue per unit of capacity, while also increasing default risk through higher leverage.
+Conservative underinvestment, by contrast, simply delays investment and reduces capacity---a lost opportunity, but not an existential risk.
+
+#### Implications
+
+The Dario dilemma has several implications:
+
+1. **Rationalization of extreme investment**: the observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs. Investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly.
+
+2. **Information content of investment**: the asymmetry means that overinvestment is more informative than underinvestment. A firm investing aggressively is more likely to genuinely believe in high $\lambda$ than a conservative firm is to genuinely believe in low $\lambda$.
+
+3. **Optimal hedging**: the asymmetric loss function implies that firms should hedge against aggressive overinvestment more than conservative underinvestment, consistent with the phased investment strategies observed in practice (start with smaller clusters, scale up as demand materializes).
+
+### Equity Valuation Sensitivity
+
+The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
+We compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
+
+The results show that equity value is:
+
+- **Increasing in $\lambda$**: higher $\lambda$ implies earlier and larger investment, generating more value from the growth option.
+- **Convex in $\lambda$**: the marginal effect of higher $\lambda$ is increasing, meaning that the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
+- **Sensitive to $\lambda$ at moderate values**: the steepest part of the valuation curve is around $\lambda \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
+
+This convexity implies that a portfolio of AI infrastructure firms should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.

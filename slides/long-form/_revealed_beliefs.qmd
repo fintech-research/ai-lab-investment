@@ -1,0 +1,146 @@
+## Revealed Beliefs: Methodology
+
+**Key insight**: All model parameters are observable *except* $\lambda$
+
+::: {style="height: 0.5em;"}
+:::
+
+**Algorithm**:
+
+1. Set observable parameters to firm-specific values ($r_i$, $\ell_i$, etc.)
+2. For each candidate $\lambda$: solve model $\to$ predicted investment intensity
+3. Find $\hat{\lambda}$ matching observed CapEx/Revenue
+
+::: {.fragment}
+$$\frac{I(K^*(\hat{\lambda}))}{V(X^*(\hat{\lambda}), K^*(\hat{\lambda}))} = \frac{\text{CapEx}_i}{\text{Revenue}_i}$$
+:::
+
+::: {.fragment}
+In the spirit of @samuelson1938note: infer beliefs from *actions*, not *words*
+:::
+
+---
+
+## What Does $\lambda$ Mean?
+
+::: {.columns}
+::: {.column width="50%"}
+**Expected time to regime switch**: $E[T] = 1/\lambda$
+
+| $\lambda$ | Expected years |
+|:---------|:--------------|
+| 0.05 | 20 years |
+| 0.10 | 10 years |
+| 0.20 | 5 years |
+| 0.50 | 2 years |
+| 1.00 | 1 year |
+:::
+::: {.column width="50%"}
+**Probability of switch within 5 years**:
+
+$$P = 1 - e^{-\lambda \cdot 5}$$
+
+| $\lambda$ | 5-year prob |
+|:---------|:-----------|
+| 0.05 | 22% |
+| 0.10 | 39% |
+| 0.20 | 63% |
+| 0.50 | 92% |
+| 1.00 | 99% |
+:::
+:::
+
+---
+
+## Credit Risk
+
+::: {.columns}
+::: {.column width="50%"}
+**Credit spreads** increase with leverage:
+
+- $\ell = 0.2$: ~50--100 bps
+- $\ell = 0.4$: ~100--200 bps
+- $\ell = 0.6$+: 400+ bps
+:::
+::: {.column width="50%"}
+**5-year default probability**:
+
+- $\ell = 0.2$: 2--4%
+- $\ell = 0.4$: 5--8%
+- $\ell = 0.6$+: 15%+
+:::
+:::
+
+::: {.fragment}
+**CoreWeave-like** ($\ell = 0.70$): highest credit risk
+
+$\Rightarrow$ Consistent with elevated yields on CoreWeave debt
+:::
+
+---
+
+## The Dario Dilemma {.center}
+
+> What is the cost of investing with the wrong $\lambda$?
+
+---
+
+## The Dario Dilemma: Setup
+
+**Firm has**: true belief $\lambda_{\text{true}}$, invests using $\lambda_{\text{invest}}$
+
+::: {.columns}
+::: {.column width="50%"}
+**Conservative** ($\lambda_{\text{invest}} < \lambda_{\text{true}}$):
+
+- Invests too late
+- Builds too little
+- Misses revenue in boom
+- *Lost opportunity*
+:::
+::: {.column width="50%"}
+**Aggressive** ($\lambda_{\text{invest}} > \lambda_{\text{true}}$):
+
+- Invests too early
+- Builds too much
+- Excess maintenance costs
+- Default risk
+- *Existential threat*
+:::
+:::
+
+---
+
+## The Dario Dilemma: Asymmetry
+
+**Proposition 6**: Aggressive overinvestment is costlier than conservative underinvestment
+
+::: {.fragment}
+**Value loss**: $\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$
+
+The loss function is *asymmetric*: steeper on the aggressive side
+:::
+
+::: {.fragment}
+**Implication**: Observed extreme investment can be rationalized **only** if firms genuinely hold high-$\lambda$ beliefs
+
+$\Rightarrow$ Strategic posturing is too costly to explain the data
+:::
+
+---
+
+## Equity Value and $\lambda$
+
+**Equity value is convex in $\lambda$**:
+
+- Increasing: higher $\lambda$ $\to$ more valuable growth option
+- Convex: marginal effect of $\lambda$ is increasing
+- Steepest around $\lambda \in [0.1, 0.5]$ --- the range of current disagreement
+
+::: {.fragment}
+**Portfolio implication**: AI infrastructure stocks should exhibit positive convexity to AI capability news
+
+- Good news raises valuations more than bad news lowers them
+:::
+
+---

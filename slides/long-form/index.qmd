@@ -1,6 +1,6 @@
 ---
-title: "ai-lab-investment"
-# logo: "logos/logo.svg"
+title: "Investing in Intelligence"
+subtitle: "Real Options, Default Risk, and Strategic Competition in AI Compute Infrastructure"
 date: today
 date-format: long
 output-file: ai_lab_investment
@@ -12,12 +12,21 @@ title-slide-attributes:
 
 {{< include _introduction.qmd >}}
 
+{{< include _model.qmd >}}
+
+{{< include _results.qmd >}}
+
+{{< include _calibration.qmd >}}
+
+{{< include _revealed_beliefs.qmd >}}
+
 {{< include _conclusion.qmd >}}
 
 
-## Thank you!
+## Thank you! {.center}
 
+Questions?
 
 ---
 
-## References
+## References {.smaller}

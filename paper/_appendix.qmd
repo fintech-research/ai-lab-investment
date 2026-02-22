@@ -1,0 +1,127 @@
+## Appendix {.unnumbered}
+
+### A. Proofs {.unnumbered}
+
+#### Proof of Proposition 1 {.unnumbered}
+
+The firm maximizes the option value $F_H(X) = (V_H(X^*, K) - I(K))(X/X^*)^{\beta_H}$ by choosing $X^*$ and $K$ jointly.
+
+*Step 1: Optimal trigger given $K$.*
+The smooth-pasting condition $F_H'(X^*) = V_H'(X^*, K)$ yields:
+$$
+X^*(K) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{r - \mu_H}{K^\alpha}\left(cK^\gamma + \frac{\delta K}{r}\right).
+$$
+
+*Step 2: Optimal capacity.*
+Substituting $X^*(K)$ into the NPV at the trigger and differentiating with respect to $K$:
+$$
+\frac{\partial}{\partial K}\left[V_H(X^*(K), K) - I(K)\right] = 0.
+$$
+
+The revenue term is $\frac{X^*(K) K^\alpha}{r - \mu_H}$. Substituting:
+$$
+\frac{X^*(K) K^\alpha}{r - \mu_H} = \frac{\beta_H}{\beta_H - 1}\left(cK^\gamma + \frac{\delta K}{r}\right).
+$$
+
+Therefore the NPV at the trigger is:
+$$
+V - I = \frac{1}{\beta_H - 1}\left(cK^\gamma + \frac{\delta K}{r}\right) - \frac{\delta K}{r} = \frac{cK^\gamma}{\beta_H - 1} - \frac{(\beta_H - 2)\delta K}{r(\beta_H - 1)}.
+$$
+
+Differentiating with respect to $K$ and setting to zero:
+$$
+\frac{c\gamma K^{\gamma - 1}}{\beta_H - 1} = \frac{(\beta_H - 2)\delta}{r(\beta_H - 1)}.
+$$
+
+For $\delta$ small, the dominant balance is between the $\alpha$ and $\gamma$ exponents. Setting $\delta = 0$ for the leading order:
+
+The first-order condition for $K$ from the option value gives:
+$$
+\alpha \cdot \frac{X^* K^{\alpha - 1}}{r - \mu_H} = \gamma c K^{\gamma - 1} + \frac{\delta}{r},
+$$
+scaled by the appropriate option premium factor.
+
+The existence condition $1/\gamma < (1 - 1/\beta_H)/\alpha$ ensures that the marginal revenue exceeds marginal cost at small $K$ and the reverse holds at large $K$, guaranteeing an interior solution. $\square$
+
+#### Proof of Proposition 5 {.unnumbered}
+
+The revenue with training fraction $\phi$ is:
+$$
+\pi(\phi) = X \cdot A (\phi K)^\eta \cdot ((1-\phi)K)^\alpha = X A K^{\alpha + \eta} \phi^\eta (1-\phi)^\alpha.
+$$
+
+The first-order condition:
+$$
+\frac{\partial \pi}{\partial \phi} = X A K^{\alpha + \eta}\left[\eta \phi^{\eta - 1}(1-\phi)^\alpha - \alpha \phi^\eta (1-\phi)^{\alpha - 1}\right] = 0.
+$$
+
+Dividing by $X A K^{\alpha+\eta} \phi^{\eta-1}(1-\phi)^{\alpha-1}$:
+$$
+\eta(1-\phi) - \alpha\phi = 0 \implies \phi^* = \frac{\eta}{\alpha + \eta}.
+$$
+
+The second derivative is negative at $\phi^*$ since $\eta, \alpha \in (0,1)$, confirming a maximum. $\square$
+
+### B. Numerical Implementation Details {.unnumbered}
+
+#### Solution algorithm {.unnumbered}
+
+The $N$-firm sequential equilibrium is solved using the following algorithm:
+
+1. **Initialization.** Set $N$ firms with identical (or heterogeneous) parameters. Initialize capacity guesses.
+
+2. **Last entrant.** Firm $N$ solves a standard follower problem given total incumbent capacity $K_{-N} = \sum_{j=1}^{N-1} K_j$.
+
+3. **Backward induction.** For $k = N-1, \ldots, 1$:
+   - Given the capacity choices of firms $k+1, \ldots, N$ (from the previous pass), firm $k$ solves:
+   $$
+   \max_{K_k} \left[V_k(X_k^*(K_k), K_k, K_{-k}) - I(K_k)\right] \cdot \left(\frac{X_0}{X_k^*(K_k)}\right)^{\beta},
+   $$
+   where $K_{-k}$ includes all other firms' capacities.
+   - The trigger $X_k^*(K_k)$ is computed analytically for each $K_k$ evaluation.
+   - Scalar optimization over $K_k$ uses Brent's method with bounds $[0.01, 10]$.
+
+4. **Forward-backward iteration.** Repeat steps 2--3 for 5 passes, updating anticipated capacities at each step.
+
+5. **Convergence check.** Verify that capacities change by less than $10^{-4}$ between consecutive passes. Verify $N=2$ matches analytical duopoly.
+
+#### Computational cost {.unnumbered}
+
+Each evaluation of the objective function requires solving one root-finding problem (for the trigger) and one present-value computation.
+With 5 passes and $N$ firms, the total number of function evaluations is approximately $5 \times N \times 50 \approx 250N$ (50 evaluations per scalar optimization).
+For $N = 4$, the full solution completes in under 1 second on a standard laptop.
+
+### C. Data Sources {.unnumbered}
+
+The calibration uses data from the following sources:
+
+| Parameter | Source |
+|:----------|:-------|
+| Revenue (2024--2025) | Company 10-K filings, earnings calls, analyst estimates |
+| Capital expenditure | Company 10-K filings, earnings call guidance |
+| Leverage ratios | Bloomberg, S\&P Capital IQ |
+| WACC | Damodaran industry estimates, adjusted for firm-specific risk |
+| Demand growth ($\mu$) | Cloud revenue growth rates (AWS, Azure, GCP) |
+| Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
+| Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training |
+| Depreciation ($\delta$) | GAAP useful life for data center equipment (3--5 years) |
+
+: Data sources for calibration parameters. {#tbl-sources}
+
+All firm-level data reflects publicly available information as of Q4 2025.
+The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
+
+### D. Robustness {.unnumbered}
+
+We assess robustness along three dimensions:
+
+**Parameter sensitivity.**
+We vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
+The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the Dario dilemma, and the high growth option fraction are preserved across all parameter perturbations.
+
+**Alternative contest functions.**
+Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.
+
+**Alternative regime structure.**
+Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.
+The two-regime model captures the essential feature: binary uncertainty about whether AI will be transformative.
