@@ -15,7 +15,7 @@ The high regime $H$ is absorbing: once the economy transitions, it remains in $H
 This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
 
 I assume $\mu_H > \mu_L$ (higher growth in the high regime) and potentially $\sigma_H \neq \sigma_L$ (different volatility).
-For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the risk-adjusted discount rate (WACC).^[Following @dixitpindyck1994, I work under a risk-adjusted measure where $r$ represents the weighted average cost of capital and $\mu_s$ represents the risk-neutral growth rate of demand.]
+For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the risk-adjusted discount rate (WACC).^[Following @dixit1994investment, I work under a risk-adjusted measure where $r$ represents the weighted average cost of capital and $\mu_s$ represents the risk-neutral growth rate of demand.]
 
 ### Technology
 
