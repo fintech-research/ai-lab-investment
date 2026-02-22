@@ -45,7 +45,9 @@
       "Bash(just run-pipeline:*)",
       "Bash(/bin/ls:*)",
       "Bash(timeout 120 uv run python:*)",
-      "Bash(git -C /Users/vincentgregoire/Documents/GitHub/prediction-markets-overview add src/prediction_markets/pipeline/description.py src/prediction_markets/tables/summary.py)"
+      "Bash(git -C /Users/vincentgregoire/Documents/GitHub/prediction-markets-overview add src/prediction_markets/pipeline/description.py src/prediction_markets/tables/summary.py)",
+      "Bash(tail:*)",
+      "Bash(echo === Agent $id ===:*)"
     ],
     "deny": [],
     "ask": []
