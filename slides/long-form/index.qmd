@@ -1,6 +1,6 @@
 ---
 title: "Investing in Intelligence"
-subtitle: "Real Options, Default Risk, and Strategic Competition in AI Compute Infrastructure"
+subtitle: "A Real Options Framework for AI Compute Infrastructure"
 date: today
 date-format: long
 output-file: ai_lab_investment

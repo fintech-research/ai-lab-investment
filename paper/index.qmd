@@ -1,5 +1,5 @@
 ---
-title: "Investing in Intelligence: Real Options, Default Risk, and Strategic Competition in AI Compute Infrastructure"
+title: "Investing in Intelligence: A Real Options Framework for AI Compute Infrastructure"
 subtitle: "Preliminary draft - Please do not circulate"
 date: today
 date-format: long
