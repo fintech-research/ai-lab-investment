@@ -52,6 +52,24 @@ def _run_phase2():
     logging.info("Phase 2 figures saved")
 
 
+def _run_phase3():
+    from .figures.phase3 import generate_all_phase3_figures
+    from .models import ModelParameters, NFirmModel
+
+    logging.info("Running Phase 3: N-firm numerical solution")
+    p = ModelParameters()
+
+    for n in [2, 3, 4]:
+        m = NFirmModel(p, n_firms=n, leverage=0.0)
+        s = m.summary()
+        logging.info(f"  N={n}: {len(s.get('entries', []))} entries")
+        logging.info(f"    Total capacity: {s.get('total_capacity', 'N/A')}")
+
+    results_dirs = get_results_directories()
+    generate_all_phase3_figures(p, results_dirs.figures)
+    logging.info("Phase 3 figures saved")
+
+
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def pipeline(cfg: DictConfig):
     start_time = time.time()
@@ -79,6 +97,8 @@ def pipeline(cfg: DictConfig):
         _run_phase1()
     if cfg.tasks.phase2_duopoly:
         _run_phase2()
+    if cfg.tasks.phase3_nfirm:
+        _run_phase3()
 
     logging.info(f"Complete. Total runtime: {time.time() - start_time:.2f} seconds")
 
