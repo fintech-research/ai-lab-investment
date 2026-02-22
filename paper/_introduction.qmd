@@ -40,6 +40,13 @@ Our endogenous default structure draws on @leland1994corporate and @goldstein200
 The growth option decomposition builds on @berk1999optimal and @carlson2004corporate.
 Finally, the AI scaling laws that ground our calibration come from @kaplan2020scaling and @hoffmann2022training, with macroeconomic implications explored by @aghion2018ai, @nordhaus2021spirit, and @jones2023agi.
 
+@fig-sample-paths illustrates the demand environment by simulating five sample paths of the demand process under regime switching.
+In each realization, demand begins in the low regime $L$ and may jump to the high regime $H$ at a random Poisson time.
+The dashed line marks the optimal investment trigger $X_H^*$: paths that cross this threshold in the high regime trigger investment.
+The figure highlights both the uncertainty about the timing of the regime switch and the substantial variation in demand trajectories conditional on switching, which together generate the option value of waiting that is central to our analysis.
+
+![Simulated demand paths under regime switching. Each path begins in the low regime ($L$, thin lines) and may transition to the high regime ($H$, thick lines) at a random Poisson time (marked by dots). The dashed line indicates the optimal H-regime investment trigger $X_H^*$. Parameters: $\mu_L = 0.01$, $\mu_H = 0.06$, $\sigma_L = 0.25$, $\sigma_H = 0.30$, $\lambda = 0.10$, $r = 0.12$.](figures/fig_sample_paths.pdf){#fig-sample-paths}
+
 The paper proceeds as follows.
 @sec-model presents the model environment, the single-firm benchmark, and the duopoly equilibrium with default risk.
 @sec-extensions develops the $N$-firm game with training-inference allocation.

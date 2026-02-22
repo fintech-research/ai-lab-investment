@@ -57,6 +57,13 @@ X_H^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{K^{\alpha}} \left(c
 $$ {#eq-trigger-H}
 which shows the standard result that the trigger exceeds the Marshallian (NPV = 0) level by the factor $\beta_H / (\beta_H - 1) > 1$---the *option premium* that reflects the value of waiting.
 
+@fig-option-value depicts the option value $F_H(X)$ alongside the net present value of immediate investment for the baseline calibration.
+The option value lies everywhere above the NPV curve, with the gap---the shaded "value of waiting" region---largest at low demand levels.
+At $X = X_H^*$, the two curves meet tangentially (smooth pasting), and for $X > X_H^*$ the firm invests immediately so the option value equals the NPV.
+The figure illustrates the core real options result: for $X < X_H^*$, the firm strictly prefers to wait, and the magnitude of the value of waiting is substantial---exceeding the NPV by a factor of two or more at demand levels well below the trigger.
+
+![Option value versus NPV of immediate investment in regime $H$. The solid curve shows the option value $F_H(X)$; the dashed curve shows the NPV of investing immediately at the optimal scale $K_H^*$. The shaded region represents the "value of waiting"---the excess of the option value over the NPV. The vertical dotted line marks the optimal trigger $X_H^*$ where smooth pasting holds. Parameters: baseline calibration ($\sigma_H = 0.30$, $\mu_H = 0.06$, $r = 0.12$, $\alpha = 0.40$, $\gamma = 1.50$).](figures/fig_option_value.pdf){#fig-option-value}
+
 **Proposition 1** (Optimal capacity in regime $H$).
 *The optimal capacity $K_H^*$ satisfies:*
 $$
@@ -65,6 +72,14 @@ $$
 *provided the existence condition $\frac{1}{\gamma} < \frac{1 - 1/\beta_H}{\alpha} < 1$ holds. The optimal capacity is increasing in demand growth $\mu_H$, decreasing in investment cost $c$ and cost convexity $\gamma$, and decreasing in the depreciation rate $\delta$.*
 
 *Proof.* The firm jointly optimizes over $X$ and $K$. The first-order condition for $K$ equates the marginal revenue from capacity to the marginal investment cost plus the marginal maintenance cost, scaled by the option premium. The existence condition ensures an interior solution. $\square$
+
+@fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
+Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
+Panel (b) illustrates the effect of revenue elasticity $\alpha$: higher $\alpha$ (less diminishing returns) raises the trigger and substantially increases capacity, since the marginal value of additional capacity is higher.
+Panel (c) shows that greater cost convexity $\gamma$ has a non-monotone effect on the trigger while sharply reducing optimal capacity, reflecting the rapidly increasing marginal cost of building at scale.
+Panel (d) demonstrates that higher depreciation $\delta$ raises the trigger (higher operating costs raise the hurdle for investment) and reduces capacity.
+
+![Comparative statics of the single-firm investment policy in regime $H$. Each panel varies one parameter while holding others at baseline values. Solid lines (left axis) show the optimal trigger $X_H^*$; dashed lines (right axis) show the optimal capacity $K_H^*$. (a) Demand volatility $\sigma_H$; (b) revenue elasticity $\alpha$; (c) investment cost convexity $\gamma$; (d) depreciation rate $\delta$.](figures/fig_comparative_statics.pdf){#fig-comparative-statics}
 
 #### Option value in regime $L$
 
@@ -83,6 +98,13 @@ $$ {#eq-beta-L}
 
 **Remark 1** (Role of $\lambda$).
 *The arrival rate $\lambda$ has two effects on investment timing. First, it raises the effective discount rate from $r$ to $r + \lambda$, making waiting more costly and lowering the trigger. Second, it adds the continuation value $\lambda F_H(X)$ from regime switching, which raises the option value. The net effect on the trigger depends on parameters, but for typical calibrations, the option value effect dominates, and higher $\lambda$ encourages earlier, larger investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively.*
+
+@fig-lambda-option-value quantifies the effect of $\lambda$ on the low-regime option value.
+Panel (a) shows that $F_L(X)$ increases concavely in $\lambda$: firms with higher arrival-rate beliefs value the investment option more because they expect the high-demand regime sooner.
+The dashed line shows the post-adoption option value $F_H(X)$, which is independent of $\lambda$; for sufficiently high $\lambda$, the pre-adoption value $F_L$ approaches $F_H$ as the expected switch time shrinks to zero.
+Panel (b) plots the particular-solution coefficient $C$, which captures the additional value from regime switching; it increases monotonically in $\lambda$, confirming that the mechanism operates through the continuation value channel.
+
+![Effect of regime-switch arrival rate $\lambda$ on pre-adoption option value. (a) Option value $F_L(X)$ in regime $L$ (solid) and $F_H(X)$ in regime $H$ (dashed, independent of $\lambda$), evaluated at $X = 0.01$. (b) Particular-solution coefficient $C$ capturing the value of the regime-switch option. Higher $\lambda$ raises $F_L$ toward $F_H$ by increasing the expected value of the switching opportunity.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
 
 ### Duopoly with Default Risk {#sec-duopoly}
 
@@ -117,6 +139,15 @@ $$ {#eq-XD}
 
 **Proposition 2** (Endogenous default).
 *The default boundary $X_D$ is increasing in leverage $\ell$, the coupon rate $c_d$, and rival capacity $K_j$, and decreasing in demand growth $\mu_s$. Higher leverage and stronger competition both raise default risk.*
+
+@fig-default-boundaries illustrates the interaction between leverage, investment triggers, and default risk.
+As leverage increases, the follower's investment trigger $X_F^*$ rises (firms require higher demand to justify investment given the debt burden), while the default boundary $X_D$ also rises as higher coupon payments increase the demand level at which equity becomes worthless.
+The shaded region between $X_D$ and $X_F^*$ represents the "operating region"---demand levels at which the firm has invested but has not defaulted.
+This region narrows as leverage increases, compressing the firm's margin of safety.
+The leader trigger $X_P$ lies below the follower trigger, reflecting the preemption incentive.
+At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered AI infrastructure firms.
+
+![Investment and default boundaries as a function of leverage in the duopoly equilibrium. The solid line shows the follower's trigger $X_F^*$; the dashed line shows the default boundary $X_D$; the gray line shows the leader's preemption trigger $X_P$. The shaded region is the "operating region" where the firm has invested but not defaulted. Parameters: baseline calibration with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_default_boundaries.pdf){#fig-default-boundaries}
 
 #### Equity and debt values
 
@@ -168,3 +199,12 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 *(iii) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
 
 *(iv) The credit spread at the preemption trigger is increasing in $\lambda$: firms that invest earlier face higher credit risk.*
+
+@fig-competition-effect quantifies the preemption effect.
+Panel (a) plots the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of demand volatility $\sigma_H$.
+The leader invests strictly earlier than the monopolist for all volatility levels, and the gap widens with $\sigma_H$: as uncertainty increases, the option value of waiting rises for both, but the preemption incentive compresses the leader's delay disproportionately.
+Panel (b) shows the ratios of leader-to-monopolist trigger and capacity.
+The trigger ratio declines from near 1.0 at low volatility to approximately 0.5 at $\sigma_H = 0.30$, indicating that preemption cuts the leader's waiting time roughly in half.
+By contrast, the capacity ratio remains close to 1.0, confirming that competition primarily affects *timing* rather than *scale*.
+
+![Competition effect: monopolist versus duopoly leader. (a) Absolute investment triggers as a function of demand volatility $\sigma_H$. The leader always invests at a lower trigger than the monopolist due to preemption. (b) Ratios of duopoly leader to monopolist trigger and capacity. Competition primarily affects timing (trigger ratio declines sharply) rather than scale (capacity ratio is stable near unity). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}

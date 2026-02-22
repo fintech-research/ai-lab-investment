@@ -49,6 +49,14 @@ Plus: the *Dario dilemma* --- asymmetric cost of belief mismatches
 
 ---
 
+## Demand Environment
+
+![](figures/fig_sample_paths.png){width="90%"}
+
+Five simulated demand paths under regime switching ($\lambda = 0.10$, dashed = trigger $X_H^*$)
+
+---
+
 ## Outline
 
 ::: {style="height: 1em;"}

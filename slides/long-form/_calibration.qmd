@@ -29,6 +29,14 @@ $\Rightarrow$ Investing far ahead of current demand
 
 ---
 
+## Firm Comparison
+
+![](figures/fig_firm_comparison.png){width="90%"}
+
+All firms above 1.0x CapEx/Revenue; distinct clusters in growth-leverage space
+
+---
+
 ## Baseline Results
 
 **Single-firm** (H regime): $X^* \approx 0.49$, $K^* \approx 0.55$
