@@ -19,6 +19,7 @@ tasks:
   phase1_base_model: false
   phase2_duopoly: false
   phase3_nfirm: false
+  phase4_calibration: false
 params:
   n_bootstrap_samples: 100000
   multiprocessing: 10

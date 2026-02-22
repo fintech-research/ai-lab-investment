@@ -11,6 +11,23 @@ from .utils.files import timestamp_file
 load_dotenv()
 
 
+def _run_data_steps(cfg: DictConfig):
+    """Run data download, preprocessing, and panel building steps."""
+    data_dirs = get_data_directories()
+    panel_path = data_dirs.clean / "panel.parquet"
+
+    if cfg.data.download:
+        logging.info("Downloading data")
+    if cfg.data.preprocess:
+        logging.info("Preprocessing data")
+    if cfg.data.build_panel:
+        logging.info("Building panel data")
+    if cfg.data.save_panel:
+        logging.info("Saving panel data")
+        panel_file = timestamp_file(panel_path)
+        logging.info(f"Panel saved to {panel_file}")
+
+
 def _run_phase1():
     from .figures.phase1 import generate_all_phase1_figures
     from .models import ModelParameters, SingleFirmModel
@@ -34,13 +51,11 @@ def _run_phase2():
     logging.info("Running Phase 2: Duopoly with default risk")
     p = ModelParameters()
 
-    # All-equity equilibrium
     duo_eq = DuopolyModel(p, leverage=0.0)
     summary = duo_eq.summary()
     for key, val in summary.items():
         logging.info(f"  {key}: {val}")
 
-    # Levered equilibrium
     duo_lev = DuopolyModel(p, leverage=0.4, coupon_rate=0.05, bankruptcy_cost=0.30)
     summary_lev = duo_lev.summary()
     logging.info("Levered equilibrium:")
@@ -70,35 +85,44 @@ def _run_phase3():
     logging.info("Phase 3 figures saved")
 
 
+def _run_phase4():
+    from .calibration import RevealedBeliefs, get_baseline_calibration
+    from .figures.phase4 import generate_all_phase4_figures
+
+    logging.info("Running Phase 4: Calibration and revealed beliefs")
+    calib = get_baseline_calibration()
+    rb = RevealedBeliefs(calib)
+
+    summary = rb.summary()
+    logging.info(f"  Firms analyzed: {summary['n_firms']}")
+    for belief in summary["revealed_beliefs"]:
+        logging.info(f"  {belief['firm']}: {belief}")
+
+    results_dirs = get_results_directories()
+    generate_all_phase4_figures(results_dirs.figures)
+    logging.info("Phase 4 figures saved")
+
+
+_TASK_RUNNERS = {
+    "simulations": lambda: logging.info("Running simulation"),
+    "main_regressions": lambda: logging.info("Running regression analysis"),
+    "phase1_base_model": _run_phase1,
+    "phase2_duopoly": _run_phase2,
+    "phase3_nfirm": _run_phase3,
+    "phase4_calibration": _run_phase4,
+}
+
+
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def pipeline(cfg: DictConfig):
     start_time = time.time()
     logging.getLogger().setLevel(cfg.logging_level)
 
-    data_dirs = get_data_directories()
-    panel_path = data_dirs.clean / "panel.parquet"
+    _run_data_steps(cfg)
 
-    if cfg.data.download:
-        logging.info("Downloading data")
-    if cfg.data.preprocess:
-        logging.info("Preprocessing data")
-    if cfg.data.build_panel:
-        logging.info("Building panel data")
-    if cfg.data.save_panel:
-        logging.info("Saving panel data")
-        panel_file = timestamp_file(panel_path)
-        logging.info(f"Panel saved to {panel_file}")
-
-    if cfg.tasks.simulations:
-        logging.info("Running simulation")
-    if cfg.tasks.main_regressions:
-        logging.info("Running regression analysis")
-    if cfg.tasks.phase1_base_model:
-        _run_phase1()
-    if cfg.tasks.phase2_duopoly:
-        _run_phase2()
-    if cfg.tasks.phase3_nfirm:
-        _run_phase3()
+    for task_name, runner in _TASK_RUNNERS.items():
+        if getattr(cfg.tasks, task_name, False):
+            runner()
 
     logging.info(f"Complete. Total runtime: {time.time() - start_time:.2f} seconds")
 
