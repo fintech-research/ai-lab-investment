@@ -1,0 +1,25 @@
+project:
+  output-dir: _output
+bibliography: references.bib
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    html-math-method: katex
+    # embed-resources: true
+    # self-contained-math: true
+    # chalkboard:
+    #   theme: whiteboard
+    #   buttons: false
+    slide-number: true
+    footer: "HEC Montréal"
+    transition: slide
+    background-transition: fade
+
+authors:
+  - name: Vincent Grégoire
+    affil-id: 1
+    affiliation:
+      - ref: 1
+affiliations:
+  - id: 1
+    name: HEC Montréal

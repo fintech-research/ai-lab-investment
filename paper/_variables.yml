@@ -1,0 +1,2 @@
+# See https://quarto.org/docs/authoring/variables.html
+n_bootstrap_samples: 1000

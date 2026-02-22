@@ -1,0 +1,21 @@
+logging_level: 20
+matplotlib:
+  font:
+    family: serif
+    sans_serif:
+      - Helvetica
+    serif:
+      - "Computer Modern Roman"
+data:
+  download: false
+  ignore_download_cache: false
+  preprocess: false
+  ignore_preprocess_cache: false
+  build_panel: false
+  save_panel: false
+tasks:
+  simulations: false
+  main_regressions: false
+params:
+  n_bootstrap_samples: 100000
+  multiprocessing: 10

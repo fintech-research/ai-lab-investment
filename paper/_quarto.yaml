@@ -1,0 +1,52 @@
+project:
+  output-dir: _output
+
+number-sections: true
+
+bibliography: references.bib
+
+execute:
+  echo: false
+  # freeze: true  # never re-render during project render
+  # freeze: auto
+  freeze: false
+
+format:
+  html:
+    theme: litera
+  pdf:
+    pdf-engine: lualatex
+    documentclass: scrartcl
+    papersize: letter
+    fontsize: 11pt
+    fig-pos: '!htb'
+    indent: true
+    mainfont: "Libertinus Serif"
+    mathfont: "Libertinus Math"
+    sansfont: "Libertinus Serif"
+    monofont: "FiraCode Nerd Font Mono"
+    monofontoptions: "Scale=0.7"
+    cite-method: natbib
+    biblio-style: econometrica
+    template-partials:
+      - title.tex
+    include-in-header:
+      text: |
+        \usepackage{libertinus}
+        \usepackage[noblocks]{authblk}
+        \renewcommand*{\Authsep}{, }
+        \renewcommand*{\Authand}{, }
+        \renewcommand*{\Authands}{, }
+        \renewcommand\Affilfont{\small}
+    linestretch: 1.25
+    geometry:
+      - inner=3cm
+      - outer=3cm
+      - top=3cm
+      - bottom=3cm
+      - headsep=22pt
+      - headheight=11pt
+      - footskip=33pt
+      - ignorehead
+      - ignorefoot
+      - heightrounded

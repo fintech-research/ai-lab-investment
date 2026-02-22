@@ -1,0 +1,23 @@
+---
+title: "ai-lab-investment"
+# logo: "logos/logo.svg"
+date: today
+date-format: long
+output-file: ai_lab_investment
+title-slide-attributes:
+  data-background-size: 13%
+  data-background-position: 97% 91%
+---
+
+
+{{< include _introduction.qmd >}}
+
+{{< include _conclusion.qmd >}}
+
+
+## Thank you!
+
+
+---
+
+## References

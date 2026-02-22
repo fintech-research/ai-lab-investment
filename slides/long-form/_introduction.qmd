@@ -1,0 +1,34 @@
+
+## Motivation
+
+::: {style="height: 3em;"}
+
+:::
+
+This is why we do it.
+
+
+## Outline
+
+
+::: {style="height: 2em;"}
+
+:::
+
+- Motivation
+- Results
+- Conclusion
+
+
+::: {style="height: 2em;"}
+
+:::
+
+::: {.fragment .custom .blur}
+
+**Important papers to read**
+
+- @akey2022price
+- @wu2025extracting
+
+:::

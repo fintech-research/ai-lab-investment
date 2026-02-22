@@ -1,0 +1,42 @@
+---
+title: "ai-lab-investment"
+subtitle: "Preliminary draft - Please do not circulate"
+date: today
+date-format: long
+format:
+  html:
+    output-file: ai_lab_investment.html
+  pdf:
+    output-file: ai_lab_investment.pdf
+authors:
+  - name: Vincent Grégoire
+    affil-id: 1
+    affiliation:
+      - ref: 1
+affiliations:
+  - id: 1
+    name: HEC Montréal
+abstract: "This paper..."
+keywords:
+  - keyword 1
+  - keyword 2
+thanks: "We thank ... ~~ Vincent Grégoire: HEC Montréal (vincent.gregoire@gmail.com)."
+---
+
+
+{{< include _introduction.qmd >}}
+
+{{< include _data.qmd >}}
+
+{{< include _conclusion.qmd >}}
+
+\newpage
+\clearpage
+
+## References {.unnumbered}
+
+\begingroup
+\raggedright
+::: {#refs}
+:::
+\endgroup
