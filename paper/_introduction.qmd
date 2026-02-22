@@ -34,13 +34,7 @@ I also introduce the *Dario dilemma*: the cost to a firm of investing according 
 If a firm is conservative (investing with $\lambda_{\text{invest}} < \lambda_{\text{true}}$), it invests too late and loses first-mover advantage; if aggressive ($\lambda_{\text{invest}} > \lambda_{\text{true}}$), it overbuilds and risks default.
 I quantify this trade-off across the parameter space, showing that the asymmetry is substantial: aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing the extreme capital commitments observed in practice only if firms hold genuinely optimistic beliefs about AI timelines.
 
-Our work connects several strands of the literature.
-The real options approach to irreversible investment under uncertainty originates with @mcdonald1986value and @brennan1985evaluating, and is developed extensively in @dixit1994investment.
-@guo2005investment introduce regime switching, which I use to model the binary nature of AI demand: either current trends continue (low regime) or a step change in capabilities generates massive new demand (high regime). This binary structure mirrors the sharp disagreement among leading practitioners---from Ilya Sutskever's declaration that "the era of 'Just Add GPUs' is over" [@sutskever2024scaling] to the continued exponential capacity buildout by the major hyperscalers.
-Strategic investment games with preemption follow @fudenberg1985preemption, with @grenadier2002option, @huisman2015strategic, and @lambrecht2003real providing the option-exercise game framework; @weeds2002strategic analyzes strategic delay in R&D competition, which closely parallels the AI investment timing problem.
-The endogenous default structure draws on @leland1994corporate and @goldstein2001ebit, with @hackbarth2012corporate and @sundaresan2015dynamic providing the joint investment-financing framework.
-The growth option decomposition builds on @berk1999optimal and @carlson2004corporate.
-Finally, the AI scaling laws that ground the calibration come from @kaplan2020scaling and @hoffmann2022training, with macroeconomic implications explored by @aghion2018ai, @nordhaus2021spirit, @jones2023agi, and @korinek2024scenarios.
+{{< include _literature.qmd >}}
 
 @fig-sample-paths illustrates the demand environment by simulating five sample paths of the demand process under regime switching.
 In each realization, demand begins in the low regime $L$ and may jump to the high regime $H$ at a random Poisson time.
