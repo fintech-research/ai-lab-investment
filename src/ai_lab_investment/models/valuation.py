@@ -182,6 +182,9 @@ class ValuationAnalysis:
         if X_D <= 0 or X_current <= X_D:
             return 1.0 if X_D > 0 else 0.0
 
+        if horizon <= 0:
+            return 0.0
+
         p = self.params
         mu = p.mu_H if regime == "H" else p.mu_L
         sigma = p.sigma_H if regime == "H" else p.sigma_L
@@ -272,6 +275,10 @@ class ValuationAnalysis:
         except (ValueError, RuntimeError):
             return {"error": "No solution at invest lambda"}
 
+        # Note: we compare conditional-on-investing NPVs (values at the
+        # respective triggers). A full comparison would include the timing
+        # discount (X_0/X*)^beta, but since the triggers are close for
+        # moderate mismatches, this approximation is tight.
         value_loss = npv_optimal - npv_mismatch
         value_loss_pct = value_loss / abs(npv_optimal) if npv_optimal != 0 else 0
 

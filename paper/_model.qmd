@@ -14,8 +14,8 @@ A regime switch to the high-demand state $H$ occurs as a Poisson event with arri
 The high regime $H$ is absorbing: once the economy transitions, it remains in $H$ permanently.
 This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
 
-We assume $\mu_H > \mu_L$ (higher growth in the high regime) and potentially $\sigma_H \neq \sigma_L$ (different volatility).
-For the model to have well-defined present values, we require $r > \mu_H > \mu_L$, where $r$ is the risk-free rate.
+I assume $\mu_H > \mu_L$ (higher growth in the high regime) and potentially $\sigma_H \neq \sigma_L$ (different volatility).
+For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the risk-adjusted discount rate (WACC).^[Following @dixitpindyck1994, I work under a risk-adjusted measure where $r$ represents the weighted average cost of capital and $\mu_s$ represents the risk-neutral growth rate of demand.]
 
 ### Technology
 
@@ -28,7 +28,7 @@ Capacity depreciates at rate $\delta \geq 0$, reflecting both physical depreciat
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
-We begin with a single firm holding an option to invest.
+I begin with a single firm holding an option to invest.
 The firm chooses both the demand trigger $X^*$ at which to invest and the capacity $K^*$ to install, maximizing the value of its investment option.
 
 #### Installed value
@@ -97,7 +97,7 @@ $$ {#eq-ode-L}
 where the term $\lambda F_H(X)$ captures the expected gain from transitioning to the high regime.
 The arrival rate $\lambda$ enters the effective discount rate as $r + \lambda$, increasing the cost of delay and thus lowering the investment trigger relative to a world without regime switching.
 
-The solution takes the form $F_L(X) = D_L X^{\beta_L} + C X^{\beta_H}$, where $D_L$ is a free constant determined by boundary conditions, $C = -\lambda B_H / Q_L(\beta_H)$ is the particular-solution coefficient with $Q_L(\beta) = \tfrac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \lambda)$, and $\beta_L$ is the positive root of:
+The solution takes the form $F_L(X) = G_L X^{\beta_L} + C X^{\beta_H}$, where $G_L$ is a free constant determined by boundary conditions, $C = -\lambda B_H / Q_L(\beta_H)$ is the particular-solution coefficient with $Q_L(\beta) = \tfrac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \lambda)$, and $\beta_L$ is the positive root of:
 $$
 \frac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0.
 $$ {#eq-beta-L}
@@ -114,7 +114,7 @@ Panel (b) plots the particular-solution coefficient $C$, which captures the addi
 
 ### Duopoly with Default Risk {#sec-duopoly}
 
-We now introduce strategic interaction and leverage.
+I now introduce strategic interaction and leverage.
 Two symmetric firms, $i \in \{1, 2\}$, each hold options to invest in capacity.
 Revenue combines the diminishing-returns production technology from @eq-installed-value with a Tullock contest function [@tullock1980efficient; @skaperdas1996contest] that determines market share:
 $$
@@ -128,14 +128,14 @@ The parameter $\alpha$ controls the sensitivity of market share to capacity: as 
 #### Capital structure
 
 Each firm finances investment with a mix of equity and debt.
-We parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance.
+I parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance.
 Debt pays a continuous coupon $d = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate.
 Following @leland1994corporate, equity holders choose to default endogenously when the equity value falls to zero.
 
 #### Default boundary
 
 Equity holders default endogenously when it is optimal to stop servicing debt.
-Following @leland1994corporate, the optimal default boundary is obtained by smooth pasting---the equity holder's optimal stopping condition.
+Following @leland1994corporate and @leland1996optimal, the optimal default boundary is obtained by smooth pasting---the equity holder's optimal stopping condition.
 For a levered firm with capacity $K$ facing a rival with capacity $K_j$ in regime $s$, the Leland default boundary is:
 $$
 X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r}{A_s \cdot K^\alpha \cdot s_i},
@@ -168,13 +168,13 @@ Without debt ($\ell = 0$), equity simplifies to $E(X) = A_s X K^\alpha s_i - \de
 
 Debt value is:
 $$
-D(X) = \frac{d}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) V_s(X_D, K) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+D(X) = \frac{d}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) \left(A_s X_D K^\alpha s_i\right) \left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
-where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy.
+where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy and $A_s X_D K^\alpha s_i$ is the gross revenue present value at the default boundary (the liquidation value of the firm's productive assets, before deducting maintenance costs, following @leland1994corporate).
 
 #### Preemption equilibrium
 
-We solve for the subgame perfect equilibrium of the investment timing game following @fudenberg1985preemption and @huisman2015strategic.
+I solve for the subgame perfect equilibrium of the investment timing game following @fudenberg1985preemption, @huisman2015strategic, and @pawlina2006real.
 By symmetry, both firms are identical ex ante.
 The equilibrium features sequential investment: one firm (the *leader*) invests first at trigger $X_L$, and the other (the *follower*) invests later at trigger $X_F > X_L$.
 
@@ -202,7 +202,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 *(i) The preemption trigger $X_P < X_F$ exists and is unique under the existence condition.*
 
-*(ii) The preemption trigger is decreasing in $\lambda$: firms with stronger beliefs in AI adoption invest earlier.*
+*(ii) For a firm in regime $L$, higher $\lambda$ increases the present value of the $H$-regime investment opportunity, effectively lowering the demand threshold at which investment becomes optimal.*
 
 *(iii) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
 

@@ -33,15 +33,12 @@ $$
 \frac{c\gamma K^{\gamma - 1}}{\beta_H - 1} = \frac{(\beta_H - 2)\delta}{r(\beta_H - 1)}.
 $$
 
-For $\delta$ small, the dominant balance is between the $\alpha$ and $\gamma$ exponents. Setting $\delta = 0$ for the leading order:
-
-The first-order condition for $K$ from the option value gives:
+The optimal $K_H^*$ is found by one-dimensional numerical optimization of the option value factor $h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$ where $a(K) = A_H K^\alpha$ and $b(K) = \delta K / r + c K^\gamma$, with $X^*(K)$ given in closed form above. The first-order condition equates marginal revenue (scaled by the option premium) to marginal cost:
 $$
-\alpha \cdot \frac{X^* K^{\alpha - 1}}{r - \mu_H} = \gamma c K^{\gamma - 1} + \frac{\delta}{r},
+\alpha A_H K^{\alpha - 1} \cdot \frac{\beta_H}{\beta_H - 1} = \gamma c K^{\gamma - 1} + \frac{\delta}{r}.
 $$
-scaled by the appropriate option premium factor.
 
-The existence condition $1/\gamma < (1 - 1/\beta_H)/\alpha$ ensures that the marginal revenue exceeds marginal cost at small $K$ and the reverse holds at large $K$, guaranteeing an interior solution. $\square$
+The existence condition $1/\gamma < (1 - 1/\beta_H)/\alpha < 1$ ensures that (i) the marginal revenue exceeds marginal cost at small $K$ (left inequality) and (ii) the reverse holds at large $K$ (right inequality), guaranteeing an interior maximum by continuity. $\square$
 
 #### Proof of Proposition 5 {.unnumbered}
 
@@ -82,7 +79,7 @@ At $X = 0$: $L(0) < 0$ (sunk cost) while $F(0) = 0$, so $F > L$.
 
 At $X = X_F^*$: the leader has earned monopoly rents while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$ under typical calibrations.
 
-By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value grows linearly in $X$ while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$, but from a lower base. $\square$
+By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value is increasing and convex in $X$ (proportional to $X^{\beta_s}$ from a lower base) while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$. $\square$
 
 #### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
 
@@ -90,7 +87,7 @@ By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $
 
 *(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal revenue $\alpha A_s X K_k^{\alpha-1} s_k$ against marginal cost $\gamma c K_k^{\gamma-1}$. More firms reduce $s_k$, reducing marginal revenue and hence $K_k^*$.
 
-*(iii)* Total capacity increasing in $N$ follows because the aggregate production $\sum K_i^\alpha$ increases even as individual $K_i$ falls, since the number of contributors grows faster than individual capacity shrinks (for $\alpha < 1$). The rate of increase is decreasing because the marginal entrant adds progressively less capacity.
+*(iii)* I verify numerically that total capacity $\sum_{i=1}^N K_i$ increases with $N$ for all parameterizations tested. The intuition is that the aggregate production $\sum K_i^\alpha$ increases even as individual $K_i$ falls, since the number of contributors grows faster than individual capacity shrinks (for $\alpha < 1$). A formal proof would require bounding the rate of capacity decline per firm, which I leave for future work.
 
 *(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
 
@@ -107,7 +104,9 @@ $$
 
 *Conservative case* ($\lambda_{\text{invest}} < \lambda_{\text{true}}$): the firm invests too late ($X^*$ too high) and builds too little ($K^*$ too low). The NPV loss comes only from the timing delay---the firm foregoes some option value by waiting beyond the true optimum. However, once it invests, it earns positive NPV on a smaller but appropriately sized investment, and default risk remains controlled.
 
-The asymmetry arises because the aggressive case compounds two sources of loss (timing + capacity + default risk) while the conservative case involves only timing loss. The convexity of investment costs ($\gamma > 1$) amplifies the overbuilding penalty. $\square$
+The asymmetry arises because the aggressive case compounds two sources of loss (timing + capacity + default risk) while the conservative case involves only timing loss. The convexity of investment costs ($\gamma > 1$) amplifies the overbuilding penalty.
+
+More formally, a Taylor expansion of $\Delta V$ around $\lambda_{\text{true}}$ yields $\Delta V \approx \frac{1}{2} |\lambda_{\text{invest}} - \lambda_{\text{true}}|^2 \cdot V''(\lambda)$, where $V''(\lambda) > 0$ for aggressive overinvestment (convexity from compounding timing, capacity, and default effects) and $V''(\lambda)$ is smaller for conservative underinvestment (timing loss only). $\square$
 
 ### B. Numerical Implementation Details {.unnumbered}
 
@@ -158,12 +157,39 @@ The calibration uses data from the following sources:
 All firm-level data reflects publicly available information as of Q4 2025.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
 
-### D. Robustness {.unnumbered}
+### D. Parameter Sensitivity {.unnumbered}
 
-We assess robustness along three dimensions:
+@tbl-elasticities reports the elasticities of the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to each model parameter, computed numerically at the baseline calibration.
+
+| Parameter | Symbol | Baseline | $\varepsilon_{X^*}$ | $\varepsilon_{K^*}$ |
+|:----------|:------:|:--------:|:-------------------:|:-------------------:|
+| Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ |
+| Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ |
+| H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ |
+| H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ |
+| Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ |
+| Depreciation | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
+
+: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities}
+
+The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
+
+@tbl-sensitivity-beliefs reports the sensitivity of implied $\hat{\lambda}$ to $\pm 25\%$ variation in key calibration parameters, for the Anthropic-like and Google-like archetypes.
+
+| Parameter | Anthropic-like $\hat{\lambda}$ | Google-like $\hat{\lambda}$ |
+|:----------|:------------------------------:|:---------------------------:|
+| Baseline | 0.90 | 0.08 |
+| $\sigma_H \pm 25\%$ | [0.003, 0.90] | [0.002, 0.08] |
+| $\gamma \pm 25\%$ | [0.07, 0.90] | [0.03, 0.08] |
+
+: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. {#tbl-sensitivity-beliefs}
+
+### E. Robustness {.unnumbered}
+
+I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
-We vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
+I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
 The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the Dario dilemma, and the high growth option fraction are preserved across all parameter perturbations.
 
 **Alternative contest functions.**

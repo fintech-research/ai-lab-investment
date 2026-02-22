@@ -53,6 +53,30 @@ class RevealedBeliefs:
             return np.inf
         return K_star
 
+    def _model_intensity_at_lambda(self, lam: float, X_ref: float = 0.01) -> float:
+        """Compute model-predicted investment intensity at a given lambda.
+
+        Uses the L-regime option value (which IS lambda-dependent) relative
+        to the H-regime investment cost. The ratio F_L(X_ref) / I(K*_H)
+        is monotonically increasing in lambda and serves as the model's
+        prediction for investment intensity (CapEx/Revenue).
+
+        The H-regime optimal capacity K*_H and investment cost I(K*_H) are
+        lambda-independent (they depend only on A_H, beta_H, and cost
+        parameters), so only the numerator F_L varies with lambda.
+        """
+        try:
+            params = self.calibration.to_model_params(lam=lam)
+            model = SingleFirmModel(params)
+            _, K_star_H = model.optimal_trigger_and_capacity("H")
+            I_K = model.investment_cost(K_star_H)
+            F_L = model.option_value_L(X_ref)
+            if I_K <= 0:
+                return np.inf
+            return F_L / I_K
+        except (ValueError, RuntimeError):
+            return np.inf
+
     def infer_lambda_from_trigger(
         self,
         observed_trigger: float,
@@ -94,21 +118,28 @@ class RevealedBeliefs:
     def infer_lambda_from_capex(
         self,
         firm: FirmData,
-        regime: str = "H",
+        X_ref: float = 0.01,
         lam_bounds: tuple[float, float] = (0.001, 2.0),
     ) -> float | None:
-        """Infer lambda from a firm's observed capex level.
+        """Infer lambda from a firm's observed capex-to-revenue ratio.
 
-        Uses the ratio of capex to revenue as a proxy for the
-        investment intensity, which the model predicts as a function
-        of lambda.
+        Uses the L-regime option value F_L(X_ref) relative to the H-regime
+        investment cost I(K*_H) as the model's prediction for investment
+        intensity. This ratio is monotonically increasing in lambda because:
 
-        Higher lambda (more confident in AI adoption) -> invest more
-        aggressively relative to current revenue.
+        - I(K*_H) is lambda-independent (H-regime quantities depend only on
+          A_H = 1/(r - mu_H) and beta_H, neither involving lambda)
+        - F_L(X_ref) = D_L * X^beta_L + C * X^beta_H where C = -lam * B_H / Q_L(beta_H)
+          is increasing in lambda (the L-regime option value derives from
+          the possibility of switching to H)
+
+        The economic interpretation: a firm in regime L with higher lambda
+        values the potential regime switch more, making its growth option
+        (and hence willingness to invest) larger relative to current scale.
 
         Args:
             firm: Firm data with observed revenue and capex.
-            regime: Demand regime.
+            X_ref: Reference demand level for evaluating F_L.
             lam_bounds: Search bounds for lambda.
 
         Returns:
@@ -117,31 +148,17 @@ class RevealedBeliefs:
         if firm.revenue_2025 <= 0:
             return None
 
-        # Investment intensity: capex / revenue
         observed_intensity = firm.capex_2025 / firm.revenue_2025
 
         def gap(lam: float) -> float:
-            try:
-                params = self.calibration.to_model_params(lam=lam)
-                # Adjust discount rate for firm-specific WACC
-                params = params.with_param(r=firm.wacc)
-                model = SingleFirmModel(params)
-                X_star, K_star = model.optimal_trigger_and_capacity(regime)
-                # Model-predicted investment intensity
-                I_K = model.investment_cost(K_star)
-                V = model.installed_value(X_star, K_star, regime)
-                if V <= 0:
-                    return 1e10
-                predicted_intensity = I_K / V
-                return predicted_intensity - observed_intensity
-            except (ValueError, RuntimeError):
+            predicted = self._model_intensity_at_lambda(lam, X_ref)
+            if np.isinf(predicted):
                 return 1e10
+            return predicted - observed_intensity
 
         try:
             g_lo = gap(lam_bounds[0])
             g_hi = gap(lam_bounds[1])
-            if np.isinf(g_lo) or np.isinf(g_hi):
-                return None
             if abs(g_lo) > 1e9 or abs(g_hi) > 1e9:
                 return None
             if g_lo * g_hi > 0:
@@ -152,21 +169,21 @@ class RevealedBeliefs:
 
     def sensitivity_analysis(
         self,
-        observed_trigger: float,
+        firm: FirmData,
         param_name: str,
         param_range: np.ndarray,
-        regime: str = "H",
+        X_ref: float = 0.01,
     ) -> dict[str, np.ndarray]:
         """Assess sensitivity of implied lambda to a parameter.
 
-        For each value of the specified parameter, re-infer lambda.
-        Shows how robust the revealed belief is to calibration assumptions.
+        For each value of the specified parameter, re-infer lambda from
+        the firm's observed CapEx/Revenue ratio.
 
         Args:
-            observed_trigger: Observed investment trigger.
+            firm: Firm data with observed revenue and capex.
             param_name: Parameter to vary.
             param_range: Values to sweep.
-            regime: Demand regime.
+            X_ref: Reference demand level.
 
         Returns:
             Dict with 'param_values' and 'implied_lambda' arrays.
@@ -175,7 +192,6 @@ class RevealedBeliefs:
         implied_lambdas = np.full(n, np.nan)
 
         for i, val in enumerate(param_range):
-            # Create modified calibration
             calib = CalibrationData(
                 mu_L=self.calibration.mu_L,
                 mu_H=self.calibration.mu_H,
@@ -188,10 +204,11 @@ class RevealedBeliefs:
                 r=self.calibration.r,
                 tau=self.calibration.tau,
                 lam=self.calibration.lam,
+                firms=self.calibration.firms,
             )
             setattr(calib, param_name, val)
             rb = RevealedBeliefs(calib)
-            result = rb.infer_lambda_from_trigger(observed_trigger, regime)
+            result = rb.infer_lambda_from_capex(firm, X_ref=X_ref)
             if result is not None:
                 implied_lambdas[i] = result
 
@@ -200,10 +217,13 @@ class RevealedBeliefs:
             "implied_lambda": implied_lambdas,
         }
 
-    def compute_all_revealed_beliefs(self, regime: str = "H") -> list[dict]:
+    def compute_all_revealed_beliefs(self, X_ref: float = 0.01) -> list[dict]:
         """Compute revealed beliefs for all firms in the calibration.
 
-        Uses multiple methods to infer lambda for each firm.
+        Uses the L-regime option value inversion to infer lambda.
+
+        Args:
+            X_ref: Reference demand level for F_L evaluation.
 
         Returns:
             List of dicts with firm name, inferred lambdas, and metadata.
@@ -226,8 +246,8 @@ class RevealedBeliefs:
                 "wacc": firm.wacc,
             }
 
-            # Method 1: From capex intensity
-            lam_capex = self.infer_lambda_from_capex(firm, regime)
+            # Infer from capex intensity using L-regime option value
+            lam_capex = self.infer_lambda_from_capex(firm, X_ref=X_ref)
             result["lambda_from_capex"] = lam_capex
 
             results.append(result)

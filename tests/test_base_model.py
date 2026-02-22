@@ -126,19 +126,20 @@ class TestRegimeL:
         # Both regimes need phi in (1/gamma, 1). High alpha + low vol works.
         p = ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma_H=0.10, sigma_L=0.15)
         m = SingleFirmModel(p)
-        if m.has_interior_trigger("L"):
-            X_L, K_L = m.optimal_trigger_and_capacity("L")
-            assert X_L > 0
-            assert K_L > 0
+        if not m.has_interior_trigger("L"):
+            pytest.skip("No interior trigger in L for these parameters")
+        X_L, K_L = m.optimal_trigger_and_capacity("L")
+        assert X_L > 0
+        assert K_L > 0
 
 
 class TestComparativeStatics:
     def test_higher_sigma_higher_trigger_H(self, model):
         """Higher H volatility -> higher trigger (more option value)."""
-        stats = model.comparative_statics("sigma_H", np.array([0.25, 0.40]), regime="H")
+        stats = model.comparative_statics("sigma_H", np.array([0.25, 0.35]), regime="H")
         valid = stats["has_trigger"]
-        if valid.sum() == 2:
-            assert stats["triggers"][1] > stats["triggers"][0]
+        assert valid.sum() == 2, "Both sigma_H values should yield valid triggers"
+        assert stats["triggers"][1] > stats["triggers"][0]
 
     def test_alpha_affects_trigger_H(self, model):
         """Varying alpha changes the trigger (non-trivial interaction)."""

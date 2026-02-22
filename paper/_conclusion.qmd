@@ -14,6 +14,6 @@ Third, the Dario dilemma reveals an asymmetric cost of belief mismatches: the do
 This asymmetry implies that the extreme capital commitments observed in practice can be rationalized only by genuinely optimistic beliefs, not by strategic posturing or agency problems.
 
 Several directions for future research are promising.
-Dynamic learning models in which firms update their beliefs about $\lambda$ in response to AI capability milestones would endogenize the belief heterogeneity we document.
+Dynamic learning models in which firms update their beliefs about $\lambda$ in response to AI capability milestones would endogenize the belief heterogeneity I document.
 Incorporating financial frictions---credit constraints, dynamic leverage adjustment, and debt renegotiation---would enrich the default mechanism.
 Finally, the revealed beliefs methodology could be applied to other technology sectors where private information drives investment decisions, such as quantum computing, biotechnology, and clean energy.

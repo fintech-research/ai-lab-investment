@@ -64,7 +64,7 @@ A richer model might feature continuous Bayesian updating about AI progress, wit
 **No dynamic rebalancing.**
 Once a firm invests, its capacity is fixed.
 In reality, firms can expand incrementally, adjust training-inference ratios, and repurpose compute.
-A more general model would feature sequential expansion options, which we leave for future work.
+A more general model would feature sequential expansion options, which I leave for future work.
 
-**Risk neutrality.**
-We value cash flows under risk-neutral pricing, which is appropriate for well-diversified investors but may not capture the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth).
+**Risk-adjusted discounting.**
+I value cash flows using a risk-adjusted discount rate (WACC), which captures the systematic risk premium demanded by both equity and debt holders. This is standard in corporate finance but abstracts from the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth).

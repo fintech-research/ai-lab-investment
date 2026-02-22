@@ -11,7 +11,6 @@ import numpy as np
 
 from ..calibration.data import get_baseline_calibration
 from ..calibration.revealed_beliefs import RevealedBeliefs
-from ..models.base_model import SingleFirmModel
 
 # Publication style
 plt.rcParams.update({
@@ -90,10 +89,8 @@ def plot_sensitivity_analysis(
     calib = get_baseline_calibration()
     rb = RevealedBeliefs(calib)
 
-    # Use a reference trigger
-    params = calib.to_model_params()
-    model = SingleFirmModel(params)
-    X_star, _ = model.optimal_trigger_and_capacity("H")
+    # Use the first firm as reference for sensitivity analysis
+    firm = calib.firms[0]
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
@@ -106,7 +103,7 @@ def plot_sensitivity_analysis(
 
     for idx, (param_name, values, xlabel, panel_label) in enumerate(panels):
         ax = axes[idx // 2, idx % 2]
-        result = rb.sensitivity_analysis(X_star, param_name, values)
+        result = rb.sensitivity_analysis(firm, param_name, values)
         valid = ~np.isnan(result["implied_lambda"])
 
         if valid.sum() > 0:

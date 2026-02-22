@@ -69,11 +69,16 @@ class TestDuopolyRevenue:
         assert V2 > V1
 
     def test_symmetric_duopoly_revenue(self, model):
-        """Symmetric firms get same revenue."""
-        X, K = 2.0, 1.5
-        V1 = model.duopoly_revenue_pv(X, K, K, "H")
-        V2 = model.duopoly_revenue_pv(X, K, K, "H")
-        assert abs(V1 - V2) < 1e-12
+        """Symmetric firms get same revenue (swap K_i and K_j)."""
+        X, K_i, K_j = 2.0, 1.5, 2.5
+        V1 = model.duopoly_revenue_pv(X, K_i, K_j, "H")
+        V2 = model.duopoly_revenue_pv(X, K_j, K_i, "H")
+        # Swapping roles gives symmetric structure (same total, different shares)
+        assert V1 != V2  # different capacities should give different values
+        # But shares should sum to 1
+        s1 = model.contest_share(K_i, K_j)
+        s2 = model.contest_share(K_j, K_i)
+        assert abs(s1 + s2 - 1.0) < 1e-12
 
 
 # ------------------------------------------------------------------
@@ -95,11 +100,11 @@ class TestFollower:
         assert X_F2 > X_F1
 
     def test_follower_capacity_responds_to_leader(self, model):
-        """Follower's capacity responds to leader's capacity."""
+        """Follower's capacity changes in response to leader's capacity."""
         _, K_F1 = model.solve_follower(K_L=0.5, regime="H")
         _, K_F2 = model.solve_follower(K_L=2.0, regime="H")
-        # With larger leader, follower may adjust capacity
         assert K_F1 > 0 and K_F2 > 0
+        assert abs(K_F1 - K_F2) > 1e-10, "Follower capacity should respond to leader"
 
     def test_follower_option_value_positive(self, model):
         """Follower's option value should be positive below trigger."""

@@ -8,21 +8,22 @@ The parameter $\lambda$---the arrival rate of transformative AI---encodes the fi
 
 #### Inversion algorithm
 
-For a firm with observable investment intensity $I/V$ (capital expenditure relative to firm value), we infer $\lambda$ as follows:
+For a firm with observable investment intensity (capital expenditure relative to revenue), I infer $\lambda$ as follows:
 
-1. **Parameterize.** Set all observable and calibrated parameters to their firm-specific values: $r_i = \text{WACC}_i$, $\ell_i = \text{leverage}_i$, etc.
+1. **Parameterize.** Set all observable and calibrated parameters to their baseline values: demand growth rates $\mu_s$, volatilities $\sigma_s$, revenue elasticity $\alpha$, cost parameters $c$ and $\gamma$, and discount rate $r$.
 
-2. **Model prediction.** For each candidate $\lambda$, solve the single-firm model to obtain the predicted investment trigger $X^*(\lambda)$ and capacity $K^*(\lambda)$. Compute the predicted investment intensity $\hat{I}/\hat{V}(\lambda)$.
+2. **Model prediction.** For each candidate $\lambda$, compute the L-regime option value $F_L(X_{\text{ref}}; \lambda)$ at a reference demand level and the H-regime investment cost $I(K_H^*)$. The key insight is that $K_H^*$ and $I(K_H^*)$ are $\lambda$-independent (they depend only on $A_H = 1/(r - \mu_H)$, $\beta_H$, and cost parameters), while $F_L$ increases monotonically in $\lambda$ because higher $\lambda$ raises the continuation value from the potential regime switch.
 
-3. **Invert.** Find $\hat{\lambda}$ such that the predicted investment intensity matches the observed intensity:
+3. **Invert.** Find $\hat{\lambda}$ such that the model-predicted investment intensity matches the observed intensity:
 $$
-\frac{I(K^*(\hat{\lambda}))}{V(X^*(\hat{\lambda}), K^*(\hat{\lambda}))} = \frac{\text{CapEx}_i}{\text{Revenue}_i}.
+\frac{F_L(X_{\text{ref}}; \hat{\lambda})}{I(K_H^*)} = \frac{\text{CapEx}_i}{\text{Revenue}_i}.
 $$ {#eq-inversion}
 
 4. **Robustness.** Assess sensitivity to calibration assumptions by varying each parameter and re-inverting.
 
 The inversion uses Brent's method for root-finding, which is robust and does not require derivative information.
-We search over $\lambda \in [0.001, 2.0]$, covering expected regime-switch times from 6 months to 1000 years.
+I search over $\lambda \in [0.001, 2.0]$, covering expected regime-switch times from 6 months to 1000 years.
+The ratio $F_L / I(K_H^*)$ ranges from approximately 0.08 at $\lambda = 0.001$ to 2.10 at $\lambda = 2.0$, comfortably covering the observed CapEx/Revenue ratios of 1.09 to 2.00.
 
 @fig-lambda-timeline provides intuition for the economic content of $\lambda$.
 Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
@@ -35,34 +36,34 @@ The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, whic
 #### Identification
 
 The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
-This is a form of *revealed preference* in the spirit of @samuelson1938note: we do not ask what firms *say* about AI timelines; we infer what they *believe* from what they *do*.
+This is a form of *revealed preference* in the spirit of @samuelson1938note: I do not ask what firms *say* about AI timelines; I infer what they *believe* from what they *do*.
 
 The key identification assumption is that cross-firm variation in investment intensity, conditional on observable parameters, reflects variation in beliefs about $\lambda$ rather than unobserved heterogeneity in costs or technology.
-We assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
+I assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
 
 #### Results
 
 @tbl-revealed-beliefs presents the implied arrival rates for each stylized firm.
-The inversion reveals substantial dispersion in beliefs: the most aggressive investors (Anthropic-like and CoreWeave-like) imply $\hat{\lambda} \approx 0.95$, corresponding to an expected regime switch in approximately one year, while the hyperscaler (Google-like) implies $\hat{\lambda} \approx 0.20$, an expected switch in five years.
+The inversion reveals substantial dispersion in beliefs: the most aggressive investors (Anthropic-like and CoreWeave-like) imply $\hat{\lambda} \approx 0.90$, corresponding to an expected regime switch in approximately one year, while the hyperscaler (Google-like) implies $\hat{\lambda} \approx 0.08$, an expected switch in twelve years.
 
 | Firm | CapEx/Rev | Implied $\hat{\lambda}$ | $E[T] = 1/\hat{\lambda}$ (yrs) | $P(\text{switch} \leq 5\text{yr})$ |
 |:-----|:---------:|:-----------------------:|:-------------------------------:|:-----------------------------------:|
-| Anthropic-like | 2.00 | 0.95 | 1.1 | 99% |
-| OpenAI-like | 1.25 | 0.25 | 4.0 | 71% |
-| Google-like | 1.09 | 0.20 | 5.0 | 63% |
-| CoreWeave-like | 2.00 | 0.95 | 1.1 | 99% |
+| Anthropic-like | 2.00 | 0.90 | 1.1 | 99% |
+| OpenAI-like | 1.25 | 0.11 | 9.0 | 42% |
+| Google-like | 1.09 | 0.08 | 12.0 | 33% |
+| CoreWeave-like | 2.00 | 0.90 | 1.1 | 99% |
 
-: Revealed beliefs: implied arrival rate $\hat{\lambda}$ from investment intensity inversion. Higher CapEx/Revenue ratios imply more aggressive beliefs about transformative AI timing. {#tbl-revealed-beliefs}
+: Revealed beliefs: implied arrival rate $\hat{\lambda}$ from L-regime option value inversion. Higher CapEx/Revenue ratios imply more aggressive beliefs about transformative AI timing. {#tbl-revealed-beliefs}
 
 Two patterns stand out.
-First, the belief dispersion is large: the ratio of the highest to lowest implied $\lambda$ is approximately 4.7$\times$.
-This means the most aggressive firms behave as if transformative AI is nearly five times more imminent than the most conservative firm believes.
+First, the belief dispersion is large: the ratio of the highest to lowest implied $\lambda$ is approximately 11$\times$.
+This means the most aggressive firms behave as if transformative AI is roughly an order of magnitude more imminent than the most conservative firm believes.
 Second, firms investing more than twice their revenue (Anthropic-like and CoreWeave-like) reveal near-certainty that the regime switch will occur within five years.
 Their different financial structures (leverage 0.20 vs. 0.70) suggest that one category backs its beliefs with equity while the other relies on debt---a distinction with important implications for default risk.
 
 ### Growth Option Decomposition
 
-Following @berk1999optimal, we decompose firm value into three components:
+Following @berk1999optimal, I decompose firm value into three components:
 
 1. **Assets-in-place**: the value of existing installed capacity at current demand.
 $$
@@ -82,7 +83,7 @@ $$
 where $F_L^{\text{no switch}}$ is the option value in regime $L$ with $\lambda \to 0$.
 
 The growth option fraction $V_{\text{growth}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
-For AI infrastructure firms, we find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
+For AI infrastructure firms, I find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
 
 @fig-growth-decomposition illustrates the growth option decomposition.
 Panel (a) decomposes total firm value into assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
@@ -129,7 +130,7 @@ The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the 
 
 ### The Dario Dilemma
 
-We now formalize the cost of belief mismatches---what we call the *Dario dilemma*, named for the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
+I now formalize the cost of belief mismatches---what I call the *Dario dilemma*, named for the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
 
 #### Setup
 
@@ -147,7 +148,7 @@ $$
 \Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
 $$
 where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$ when the true parameter is $\lambda_a$.
-Note that we evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
+Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 
 **Proposition 6** (Asymmetric Dario dilemma).
 *The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. This asymmetry increases with leverage.*
@@ -168,7 +169,7 @@ The Dario dilemma has several implications:
 ### Equity Valuation Sensitivity
 
 The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
-We compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
+I compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
 
 The results show that equity value is:
 

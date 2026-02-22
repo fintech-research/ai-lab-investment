@@ -39,12 +39,12 @@ All firms above 1.0x CapEx/Revenue; distinct clusters in growth-leverage space
 
 ## Baseline Results
 
-**Single-firm** (H regime): $X^* \approx 0.49$, $K^* \approx 0.55$
+**Single-firm** (H regime): $X^* \approx 0.016$, $K^* \approx 0.055$
 
 **Duopoly equilibrium**:
 
-- Follower: $X_F \approx 0.66$, $K_F \approx 0.42$
-- Leader invests earlier via preemption: $X_P < X_F$
+- Follower: $X_F \approx 1.0$, $K_F \approx 3.5$
+- Leader invests earlier via preemption: $X_P \approx 0.009 < X_F$
 
 ::: {.fragment}
 **Strategic interaction**:
