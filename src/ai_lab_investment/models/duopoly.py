@@ -267,6 +267,8 @@ class DuopolyModel:
         else:
             V_XD = self.monopolist_revenue_pv(X_D, K_i, regime)
 
+        # Recovery is (1-b) times gross asset value at default (Leland 1994).
+        # Gross asset value = revenue PV + maintenance PV = V_XD + delta*K/r
         recovery = (1.0 - self.bankruptcy_cost) * (V_XD + p.delta * K_i / p.r)
         default_loss = c_D / p.r - recovery
         debt = c_D / p.r - default_loss * (X / X_D) ** beta_neg

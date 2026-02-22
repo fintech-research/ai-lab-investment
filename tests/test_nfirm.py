@@ -114,10 +114,10 @@ class TestSequentialEquilibrium:
         assert orders == [1, 2, 3]
 
     def test_shares_sum_to_one(self, model3):
-        """Market shares should approximately sum to 1."""
+        """Market shares should sum to 1."""
         eq = model3.solve_sequential_equilibrium("H")
         total_share = sum(e["market_share"] for e in eq)
-        assert abs(total_share - 1.0) < 0.1  # Approximate due to different K
+        assert abs(total_share - 1.0) < 1e-6
 
     def test_4firm_equilibrium(self, model4):
         """4-firm equilibrium should produce valid results."""

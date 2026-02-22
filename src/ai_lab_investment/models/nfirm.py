@@ -78,7 +78,9 @@ class NFirmModel:
         alpha = self.params.alpha
         K_i_inf = K_i * (1.0 - self.training_fraction)
         num = K_i_inf**alpha
-        denom = num + sum(K**alpha for K in competitor_capacities)
+        denom = num + sum(
+            (K * (1.0 - self.training_fraction)) ** alpha for K in competitor_capacities
+        )
         if denom <= 0:
             return 1.0 / (1.0 + len(competitor_capacities))
         return num / denom

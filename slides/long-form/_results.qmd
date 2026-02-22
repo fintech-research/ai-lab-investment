@@ -49,6 +49,6 @@ $$V_{\text{total}} = \underbrace{V_{\text{AIP}}}_{\text{assets-in-place}} + \und
 
 ![](figures/fig_growth_decomposition.png){width="90%"}
 
-At $K/K_H^* < 0.3$ (typical for AI firms), growth options exceed 60% of value
+At $K/K_H^* < 0.1$ (typical for AI firms), growth options exceed 50% of value
 
 ---

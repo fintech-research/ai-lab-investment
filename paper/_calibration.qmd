@@ -1,18 +1,18 @@
 ## Calibration {#sec-calibration}
 
-We calibrate the model to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
-The calibration proceeds in three steps: we first set the demand process parameters, then the technology and cost parameters, and finally the financial parameters.
+I calibrate the model to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
+The calibration proceeds in three steps: I first set the demand process parameters, then the technology and cost parameters, and finally the financial parameters.
 
 ### Demand Process
 
 The demand process parameters govern the drift and volatility of AI compute demand under each regime.
 
 **Low regime** ($L$).
-We set $\mu_L = 0.01$ and $\sigma_L = 0.25$, reflecting the modest growth and moderate uncertainty that characterizes the current AI services market outside of frontier model training.
+I set $\mu_L = 0.01$ and $\sigma_L = 0.25$, reflecting the modest growth and moderate uncertainty that characterizes the current AI services market outside of frontier model training.
 The low drift captures the baseline growth in cloud computing revenue, while the volatility reflects demand uncertainty for inference services.
 
 **High regime** ($H$).
-We set $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting the substantially higher growth and elevated volatility that would characterize a world in which transformative AI capabilities generate massive new demand.
+I set $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting the substantially higher growth and elevated volatility that would characterize a world in which transformative AI capabilities generate massive new demand.
 The growth rate is calibrated to match the upper range of AI revenue growth projections from industry analysts.
 
 **Regime switch arrival rate** ($\lambda$).
@@ -20,14 +20,14 @@ The baseline $\lambda = 0.10$ per year implies an expected time to regime switch
 This is the key parameter that our revealed beliefs methodology will infer from firm behavior; the baseline value represents a moderate prior.
 
 **Discount rate.**
-We set $r = 0.12$, consistent with the weighted average cost of capital (WACC) for AI infrastructure firms.
+I set $r = 0.12$, consistent with the weighted average cost of capital (WACC) for AI infrastructure firms.
 This exceeds typical corporate WACCs because AI infrastructure investments carry substantial technology risk and the firms are typically high-growth with elevated cost of equity.
 
 ### Technology Parameters
 
 **Revenue elasticity** ($\alpha = 0.40$).
 The parameter $\alpha$ governs diminishing returns to capacity in revenue generation.
-We set $\alpha = 0.40$, implying that doubling capacity increases revenue by approximately $2^{0.4} \approx 1.32$ times---a 32\% increase rather than 100\%.
+I set $\alpha = 0.40$, implying that doubling capacity increases revenue by approximately $2^{0.4} \approx 1.32$ times---a 32\% increase rather than 100\%.
 This reflects the empirical observation that GPU utilization rates decline as capacity grows, and that the marginal value of additional compute diminishes as models approach capability frontiers.
 
 **Investment cost convexity** ($\gamma = 1.50$).
@@ -35,7 +35,7 @@ The cost function $I(K) = cK^\gamma$ with $\gamma = 1.50$ implies moderately con
 This captures the real-world observation that scaling up data center capacity faces increasing marginal costs due to power constraints, supply chain bottlenecks (particularly for advanced GPUs), and site preparation costs.
 
 **Unit cost** ($c = 1.0$).
-We normalize the cost parameter to unity; all monetary values are interpreted relative to this normalization.
+I normalize the cost parameter to unity; all monetary values are interpreted relative to this normalization.
 
 **Operating cost rate** ($\delta = 0.03$).
 The parameter $\delta$ represents the ongoing cost of maintaining installed capacity---power, cooling, maintenance, and personnel---expressed as a fraction of capacity per year.
@@ -43,7 +43,7 @@ This is distinct from accounting depreciation of GPU hardware (which is faster),
 
 ### Stylized Firms
 
-We calibrate four stylized firms representing the major categories of AI infrastructure investors:
+I calibrate four stylized firms representing the major categories of AI infrastructure investors:
 
 | Parameter | Frontier Lab (Anthropic) | Platform (OpenAI) | Hyperscaler (Google) | Infra Provider (CoreWeave) |
 |:----------|:------------------------|:-------------------|:---------------------|:--------------------------|
@@ -61,7 +61,7 @@ Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.
 All four firms have investment intensities well above the unity threshold (dotted line), confirming that each is investing far ahead of current demand.
 The CoreWeave-like and Anthropic-like firms have the highest ratios, suggesting the most aggressive investment postures.
 Panel (b) plots each firm in revenue-growth versus leverage space, revealing two distinct clusters: high-growth, low-leverage firms (Anthropic-like, Google/Alphabet-like) and high-leverage firms with more moderate growth (CoreWeave-like, OpenAI-like).
-This dispersion in financial characteristics drives the heterogeneity in revealed beliefs that we exploit in @sec-valuation.
+This dispersion in financial characteristics drives the heterogeneity in revealed beliefs that I exploit in @sec-valuation.
 
 ![Stylized firm comparison. (a) Capital expenditure to revenue ratio (2025). All firms invest above the 1.0x threshold (dotted line), indicating investment ahead of current demand. (b) Revenue growth (2024--2025) versus leverage ratio. The four firm archetypes occupy distinct positions in this space, reflecting different investment strategies and financial structures.](figures/fig_firm_comparison.pdf){#fig-firm-comparison}
 

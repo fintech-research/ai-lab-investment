@@ -106,8 +106,8 @@ class TestRevealedBeliefs:
 
     def test_sensitivity_analysis_shape(self, rb):
         """Sensitivity analysis should return correct shape."""
-        X_star = rb._model_trigger_at_lambda(0.10)
-        result = rb.sensitivity_analysis(X_star, "sigma_H", np.linspace(0.20, 0.45, 5))
+        firm = rb.calibration.firms[0]
+        result = rb.sensitivity_analysis(firm, "sigma_H", np.linspace(0.20, 0.45, 5))
         assert len(result["param_values"]) == 5
         assert len(result["implied_lambda"]) == 5
 
@@ -119,12 +119,14 @@ class TestRevealedBeliefs:
         assert np.all(preds["triggers"][valid] > 0)
 
     def test_compute_all_revealed_beliefs(self, rb):
-        """Should produce beliefs for all firms."""
+        """Should produce non-None beliefs for all firms."""
         beliefs = rb.compute_all_revealed_beliefs()
         assert len(beliefs) == len(rb.calibration.firms)
         for b in beliefs:
             assert "firm" in b
             assert "capex_intensity" in b
+            assert b["lambda_from_capex"] is not None
+            assert b["lambda_from_capex"] > 0
 
     def test_summary(self, rb):
         """Summary should contain all key information."""
