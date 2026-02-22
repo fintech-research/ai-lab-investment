@@ -68,3 +68,12 @@ A more general model would feature sequential expansion options, which I leave f
 
 **Risk-adjusted discounting.**
 I value cash flows using a risk-adjusted discount rate (WACC), which captures the systematic risk premium demanded by both equity and debt holders. This is standard in corporate finance but abstracts from the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth).
+
+**Talent and organizational constraints.**
+The model treats the cost of capacity expansion as purely financial, parameterized by the investment cost function $I(K) = cK^\gamma$. In practice, scarce specialized talent---researchers capable of designing novel architectures, engineers who can operate clusters at scale---may be the binding constraint on expansion. A richer model would incorporate a human capital dimension alongside physical compute.
+
+**Safety and alignment objectives.**
+I assume firms maximize expected profit, but several frontier labs have stated missions that may divert compute from revenue-maximizing activities. Anthropic, for instance, frames its mission around ensuring AI systems are "safe and beneficial" [@amodei2024machines], and allocates substantial compute to interpretability research, red-teaming, and alignment evaluations. To the extent that safety investments reduce the effective capacity available for revenue generation, the model overstates the competitive intensity of the investment race.
+
+**Geopolitical and regulatory dimensions.**
+The model treats competition as occurring among a fixed set of domestic firms. In reality, the competitive landscape extends internationally: DeepSeek's demonstration that frontier performance is achievable at dramatically lower cost [@deepseek2025r1] illustrates how algorithmic efficiency gains originating outside the modeled firms can reshape the investment calculus. Export controls, industrial policy, and sovereign AI initiatives introduce further strategic considerations. Nvidia's characterization of DeepSeek as "an excellent AI advancement" [@nvidia2025deepseek] reflects the industry's Jevons paradox argument---that efficiency gains expand total demand---but whether this logic holds depends on substitution patterns that lie outside the model's scope.

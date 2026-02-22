@@ -10,7 +10,7 @@ $$ {#eq-gbm}
 where $W_t$ is a standard Brownian motion, and $s$ indexes the demand regime.
 
 The economy starts in the low-demand regime $L$, representing the current state where AI capabilities generate moderate but growing demand for compute.
-A regime switch to the high-demand state $H$ occurs as a Poisson event with arrival rate $\lambda > 0$, representing a breakthrough in AI capabilities---a step change in model performance, emergent capabilities, or widespread commercial adoption---that permanently shifts demand to a higher trajectory.
+A regime switch to the high-demand state $H$ occurs as a Poisson event with arrival rate $\lambda > 0$, representing a breakthrough in AI capabilities---a step change in model performance, emergent capabilities, or widespread commercial adoption---that permanently shifts demand to a higher trajectory.^[The dispersion in executive timeline estimates maps directly to heterogeneity in $\lambda$. @amodei2024machines predicts AI "smarter than a Nobel Prize winner" as early as 2026, implying $\lambda \approx 0.30$--$0.50$; @hassabis2025breakthroughs gives roughly 50% probability by the end of the decade ($\lambda \approx 0.10$--$0.15$); and @nadella2025formula proposes an economic test---developed-world GDP growth of 10%---that implicitly pushes the threshold further out. These differences in $\lambda$ are what the revealed beliefs methodology in @sec-valuation is designed to recover.]
 The high regime $H$ is absorbing: once the economy transitions, it remains in $H$ permanently.
 This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
 
@@ -24,7 +24,7 @@ This specification nests the standard linear cost ($\gamma = 1$, constant return
 
 Once installed, capacity generates revenue at rate $\pi(X, K)$ that depends on demand and the firm's market share.
 For a monopolist, $\pi(X, K) = X K^\alpha$ with $\alpha \in (0, 1)$ capturing diminishing returns to capacity in revenue generation.
-Capacity depreciates at rate $\delta \geq 0$, reflecting both physical depreciation and technological obsolescence (a first-order concern for GPU clusters).
+Capacity depreciates at rate $\delta \geq 0$, reflecting both physical depreciation and technological obsolescence (a first-order concern for GPU clusters).^[Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
@@ -123,7 +123,7 @@ $$ {#eq-contest}
 where $K_i$ and $K_j$ are the capacities of firm $i$ and its rival.
 The first factor $K_i^\alpha$ is the production function (output scales with capacity at diminishing rate $\alpha$); the second factor $s_i = K_i^\alpha / (K_i^\alpha + K_j^\alpha)$ is the contest share (market share depends on relative capacity).
 This functional form nests the single-firm case: when $K_j = 0$, $s_i = 1$ and $\pi_i = X K_i^\alpha$ as in @eq-installed-value.
-The parameter $\alpha$ controls the sensitivity of market share to capacity: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
+The parameter $\alpha$ controls the sensitivity of market share to capacity: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand. This contest structure formalizes the arms-race logic that executives describe: when market share depends on relative capacity, each firm's investment decision is inseparable from its rivals', and the perceived "risk of underinvesting" [@pichai2024risk] is endogenous to the competitive structure.
 
 #### Capital structure
 
@@ -151,7 +151,7 @@ As leverage increases, the follower's investment trigger $X_F^*$ rises (firms re
 The shaded region between $X_D$ and $X_F^*$ represents the "operating region"---demand levels at which the firm has invested but has not defaulted.
 This region narrows as leverage increases, compressing the firm's margin of safety.
 The leader trigger $X_P$ lies below the follower trigger, reflecting the preemption incentive.
-At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered AI infrastructure firms.
+At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered AI infrastructure firms. This narrow margin of safety is precisely the scenario Amodei describes: a firm that commits to trillion-dollar compute purchases faces bankruptcy if revenue falls even modestly short of projections, because "there's no hedge on Earth" that can bridge the gap [@amodei2026cone].
 
 ![Investment and default boundaries as a function of leverage in the duopoly equilibrium. The solid line shows the follower's trigger $X_F^*$; the dashed line shows the default boundary $X_D$; the gray line shows the leader's preemption trigger $X_P$. The shaded region is the "operating region" where the firm has invested but not defaulted. Parameters: baseline calibration with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_default_boundaries.pdf){#fig-default-boundaries}
 
