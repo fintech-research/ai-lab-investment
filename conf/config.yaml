@@ -16,6 +16,7 @@ data:
 tasks:
   simulations: false
   main_regressions: false
+  phase1_base_model: false
 params:
   n_bootstrap_samples: 100000
   multiprocessing: 10

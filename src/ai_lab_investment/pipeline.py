@@ -5,7 +5,7 @@ import hydra
 from dotenv import load_dotenv
 from omegaconf import DictConfig
 
-from .utils.directories import get_data_directories
+from .utils.directories import get_data_directories, get_results_directories
 from .utils.files import timestamp_file
 
 load_dotenv()
@@ -40,6 +40,21 @@ def pipeline(cfg: DictConfig):
 
     if cfg.tasks.main_regressions:
         logging.info("Running regression analysis")
+
+    if cfg.tasks.phase1_base_model:
+        from .figures.phase1 import generate_all_phase1_figures
+        from .models import ModelParameters, SingleFirmModel
+
+        logging.info("Running Phase 1: Single-firm base model")
+        params = ModelParameters()
+        model = SingleFirmModel(params)
+        summary = model.summary()
+        for regime, results in summary.items():
+            logging.info(f"Regime {regime}: {results}")
+
+        results_dirs = get_results_directories()
+        generate_all_phase1_figures(params, results_dirs.figures)
+        logging.info("Phase 1 figures saved")
 
     logging.info(f"Complete. Total runtime: {time.time() - start_time:.2f} seconds")
 
