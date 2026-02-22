@@ -1,0 +1,107 @@
+## Extensions and Numerical Analysis {#sec-extensions}
+
+### $N$-Firm Sequential Equilibrium
+
+We extend the duopoly to $N \geq 2$ symmetric firms using the backward induction approach of @bouis2009multistage.
+Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into account the capacity of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
+
+#### Revenue sharing with $N$ firms
+
+With $N$ firms in the market, firm $i$'s revenue is:
+$$
+\pi_i(X, K_1, \ldots, K_N) = X \cdot \frac{K_i^\alpha}{\sum_{j=1}^{N} K_j^\alpha}.
+$$ {#eq-contest-N}
+
+This contest function has the property that adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
+
+#### Backward induction
+
+We solve the game by backward induction.
+The $N$-th entrant (the last firm to invest) solves a standard follower problem given the capacity of all $N-1$ incumbents.
+The $(N-1)$-th entrant anticipates the $N$-th firm's future entry and optimizes accordingly.
+Working backward, each firm's problem nests the solutions of all subsequent entrants.
+
+**Proposition 4** ($N$-firm equilibrium properties).
+*In the $N$-firm sequential equilibrium:*
+
+*(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing earliest.*
+
+*(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
+
+*(iii) Total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate.*
+
+*(iv) The equilibrium converges to the duopoly solution as $N \to 2$.*
+
+The numerical solution involves iterative refinement over multiple passes to ensure consistency between each firm's optimization and the anticipated behavior of later entrants.
+We verify convergence by checking that the $N=2$ solution matches the analytical duopoly equilibrium within numerical tolerance.
+
+### Training-Inference Allocation
+
+A distinctive feature of AI infrastructure is the dual use of compute: a GPU cluster can be allocated between model *training* (which improves AI quality but does not directly serve demand) and *inference* (which serves demand and generates revenue).
+
+#### Scaling laws
+
+Following @kaplan2020scaling and @hoffmann2022training, model quality $Q$ is a power-law function of training compute $C_{\text{train}}$:
+$$
+Q(C_{\text{train}}) = A \cdot C_{\text{train}}^{\eta},
+$$ {#eq-scaling-law}
+where $\eta \in (0, 1)$ captures the diminishing returns to training compute documented in the scaling laws literature.
+The parameter $A$ reflects the efficiency of the training process (architecture, data quality, optimization).
+
+Empirically, @kaplan2020scaling estimate $\eta \approx 0.07$ for language model loss, while @hoffmann2022training find similar scaling exponents.
+The key implication is that doubling training compute yields only modest quality improvements, creating a meaningful trade-off between training and inference.
+
+#### Optimal allocation
+
+A firm with total capacity $K$ allocates fraction $\phi \in [0, 1]$ to training and $1 - \phi$ to inference.
+Revenue depends on both inference capacity and model quality:
+$$
+\pi(X, K, \phi) = X \cdot Q(\phi K) \cdot (1 - \phi)^\alpha K^\alpha = X \cdot A (\phi K)^{\eta} \cdot ((1-\phi)K)^\alpha.
+$$
+
+**Proposition 5** (Optimal training fraction).
+*The optimal training allocation is:*
+$$
+\phi^* = \frac{\eta}{\alpha + \eta},
+$$
+*which is independent of demand $X$ and capacity $K$. The fraction allocated to training is increasing in the scaling exponent $\eta$ and decreasing in the revenue elasticity $\alpha$.*
+
+*Proof.* The first-order condition with respect to $\phi$ yields $\eta(1 - \phi) = \alpha \phi$, from which $\phi^* = \eta / (\alpha + \eta)$. The second-order condition is satisfied since the objective is concave in $\phi$. $\square$
+
+For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.
+
+#### Quality dynamics
+
+Over time, a firm can improve its model quality by accumulating training compute.
+If a firm invests at time $\tau$ and allocates $\phi^* K$ to training continuously, quality evolves as:
+$$
+Q(t) = A \cdot (\phi^* K \cdot (t - \tau))^{\eta}, \quad t > \tau.
+$$
+
+This creates a *learning-by-investing* effect: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
+
+### Heterogeneous Firms
+
+In practice, AI infrastructure firms differ along multiple dimensions: cost of capital, investment cost parameters, existing capacity, and beliefs about $\lambda$.
+We allow for heterogeneity by assigning each firm $i$ its own parameter vector $\theta_i = (c_i, \gamma_i, \alpha_i, r_i, \lambda_i)$.
+
+With heterogeneous firms, the sequential equilibrium no longer features symmetric entry.
+Firms with lower costs, lower discount rates, or higher $\lambda$ (more optimistic beliefs) enter earlier and build more capacity.
+We solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage.
+
+### Numerical Method
+
+The computational approach proceeds in five steps:
+
+1. **Last entrant.** Solve the $N$-th firm's follower problem analytically (or by one-dimensional optimization) given total incumbent capacity.
+
+2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing and capacity problem by optimizing over $K_k$ using scalar optimization, computing the trigger $X_k^*(K_k)$ at each evaluation.
+
+3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants.
+
+4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
+
+5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered and that no firm has an incentive to deviate.
+
+All numerical solutions are implemented in Python using `scipy.optimize` for one-dimensional optimization and root-finding [@judd1998numerical].
+The code is publicly available.

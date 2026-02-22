@@ -1,0 +1,70 @@
+## Discussion and Policy Implications {#sec-discussion}
+
+### Market Efficiency and Information Aggregation
+
+The revealed beliefs methodology raises questions about market efficiency in the AI infrastructure sector.
+If firms' investment decisions contain private information about AI timelines, then the stock market should, in an efficient equilibrium, aggregate this information into prices.
+However, several frictions may prevent efficient aggregation:
+
+**Disagreement about the model.**
+Even if investors observe firms' capital expenditure, they may disagree about the mapping from investment to beliefs.
+Our model provides one such mapping, but alternative models with different assumptions about competition, costs, or demand could yield different implied $\lambda$ values.
+
+**Short-sale constraints.**
+If pessimistic investors cannot easily short AI infrastructure stocks, prices may reflect the beliefs of optimists, leading to overvaluation relative to the median belief.
+The high short interest in some AI infrastructure stocks is consistent with significant disagreement.
+
+**Learning and updating.**
+Firms and investors update their beliefs over time as new data about AI capabilities arrives.
+The model's comparative statics with respect to $\lambda$ describe the cross-section of beliefs at a point in time; the time-series dynamics of belief updating are an important direction for future work.
+
+### Welfare and Overinvestment
+
+The strategic preemption mechanism generates potential overinvestment relative to the social optimum.
+In the duopoly equilibrium, the leader invests earlier than the socially optimal timing to capture first-mover advantage, and the follower invests to preserve market share.
+Total industry capacity may exceed the cooperative (cartel) level, dissipating rents.
+
+However, in the AI context, overinvestment may have positive externalities not captured by the model:
+
+- **Compute abundance**: excess capacity reduces the price of inference, benefiting downstream users and accelerating AI adoption.
+- **Safety research**: surplus compute can be allocated to alignment research and safety testing.
+- **Resilience**: redundant capacity provides insurance against supply disruptions and geopolitical risks.
+
+A full welfare analysis would need to weigh these benefits against the deadweight loss from overinvestment and the systemic risk from excessive leverage in the AI infrastructure sector.
+
+### Regulatory Implications
+
+The model has implications for several policy areas:
+
+**Financial stability.**
+The combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk.
+If multiple highly levered AI infrastructure firms default simultaneously during a low-demand period, the resulting fire sales could depress asset values and trigger contagion.
+Regulators may wish to monitor leverage ratios and credit risk in the AI infrastructure sector, particularly for firms like CoreWeave that combine high leverage with concentrated exposure to a single technology.
+
+**Competition policy.**
+The preemption mechanism implies that capacity investment serves a dual purpose: generating revenue and deterring rivals.
+Antitrust authorities should consider whether strategic overinvestment constitutes an exclusionary practice, particularly by dominant firms (the Google-like hyperscaler in our model) that can cross-subsidize AI infrastructure from other business lines.
+
+**Disclosure.**
+The revealed beliefs methodology suggests that firms' investment decisions convey information about AI capabilities that may be material to investors.
+Requiring AI labs to disclose their compute expenditure in standardized formats would facilitate the kind of analysis developed here, improving market efficiency and enabling better risk assessment.
+
+### Limitations
+
+Several limitations should be noted.
+
+**Stylized competition.**
+The Tullock contest function is a reduced-form representation of competition that abstracts from product differentiation, network effects, and switching costs.
+In practice, AI infrastructure competition involves heterogeneous products (different model architectures, different API interfaces) and significant lock-in effects.
+
+**Exogenous regime structure.**
+The two-regime structure with Poisson arrival is a simplification of what is likely a continuous process of AI capability improvement.
+A richer model might feature continuous Bayesian updating about AI progress, with investment decisions that respond to signals about the state of technology.
+
+**No dynamic rebalancing.**
+Once a firm invests, its capacity is fixed.
+In reality, firms can expand incrementally, adjust training-inference ratios, and repurpose compute.
+A more general model would feature sequential expansion options, which we leave for future work.
+
+**Risk neutrality.**
+We value cash flows under risk-neutral pricing, which is appropriate for well-diversified investors but may not capture the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth).

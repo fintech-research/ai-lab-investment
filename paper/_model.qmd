@@ -1,0 +1,170 @@
+## The Model {#sec-model}
+
+### Environment
+
+Time is continuous. A stochastic demand process $X_t$ governs the revenue available to AI infrastructure firms.
+Demand follows a geometric Brownian motion (GBM) with regime-dependent drift and volatility:
+$$
+dX_t = \mu_s X_t \, dt + \sigma_s X_t \, dW_t, \quad s \in \{L, H\},
+$$ {#eq-gbm}
+where $W_t$ is a standard Brownian motion, and $s$ indexes the demand regime.
+
+The economy starts in the low-demand regime $L$, representing the current state where AI capabilities generate moderate but growing demand for compute.
+A regime switch to the high-demand state $H$ occurs as a Poisson event with arrival rate $\lambda > 0$, representing a breakthrough in AI capabilities---a step change in model performance, emergent capabilities, or widespread commercial adoption---that permanently shifts demand to a higher trajectory.
+The high regime $H$ is absorbing: once the economy transitions, it remains in $H$ permanently.
+This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
+
+We assume $\mu_H > \mu_L$ (higher growth in the high regime) and potentially $\sigma_H \neq \sigma_L$ (different volatility).
+For the model to have well-defined present values, we require $r > \mu_H > \mu_L$, where $r$ is the risk-free rate.
+
+### Technology
+
+A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures diminishing returns (equivalently, convex investment costs).
+This specification nests the standard linear cost ($\gamma = 1$, constant returns) and reflects the empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]: doubling compute does not double capability.
+
+Once installed, capacity generates revenue at rate $\pi(X, K)$ that depends on demand and the firm's market share.
+For a monopolist, $\pi(X, K) = X K^\alpha$ with $\alpha \in (0, 1)$ capturing diminishing returns to capacity in revenue generation.
+Capacity depreciates at rate $\delta \geq 0$, reflecting both physical depreciation and technological obsolescence (a first-order concern for GPU clusters).
+
+### Single-Firm Benchmark {#sec-single-firm}
+
+We begin with a single firm holding an option to invest.
+The firm chooses both the demand trigger $X^*$ at which to invest and the capacity $K^*$ to install, maximizing the value of its investment option.
+
+#### Installed value
+
+Once the firm has invested, the value of installed capacity $K$ in regime $s$ at demand level $X$ is the present value of future cash flows:
+$$
+V_s(X, K) = \frac{X K^\alpha}{r - \mu_s} - \frac{\delta K}{r}, \quad s \in \{L, H\}.
+$$ {#eq-installed-value}
+
+The first term is the capitalized revenue stream (growing at rate $\mu_s$, discounted at $r$); the second is the present value of maintenance costs.
+
+#### Option value in regime $H$
+
+In the absorbing high regime, the option to invest at trigger $X_H^*$ with capacity $K_H^*$ has the standard real options form [@dixit1994investment]:
+$$
+F_H(X) = \left(V_H(X_H^*, K_H^*) - I(K_H^*)\right) \left(\frac{X}{X_H^*}\right)^{\beta_H}, \quad X < X_H^*,
+$$ {#eq-option-H}
+where $\beta_H > 1$ is the positive root of the characteristic equation:
+$$
+\frac{1}{2}\sigma_H^2 \beta(\beta - 1) + \mu_H \beta - r = 0.
+$$ {#eq-beta-H}
+
+The optimal trigger satisfies the smooth-pasting condition:
+$$
+X_H^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{K^{\alpha}} \left(c K^\gamma + \frac{\delta K}{r}\right),
+$$ {#eq-trigger-H}
+which shows the standard result that the trigger exceeds the Marshallian (NPV = 0) level by the factor $\beta_H / (\beta_H - 1) > 1$---the *option premium* that reflects the value of waiting.
+
+**Proposition 1** (Optimal capacity in regime $H$).
+*The optimal capacity $K_H^*$ satisfies:*
+$$
+K_H^* = \left(\frac{\alpha}{\gamma} \cdot \frac{\beta_H - 1}{\beta_H} \cdot \frac{1}{c(r-\mu_H)} - \frac{\delta}{r(r - \mu_H)} \cdot \frac{1}{\gamma c} K^{1-\gamma}\right)^{\frac{1}{\gamma - \alpha}},
+$$
+*provided the existence condition $\frac{1}{\gamma} < \frac{1 - 1/\beta_H}{\alpha} < 1$ holds. The optimal capacity is increasing in demand growth $\mu_H$, decreasing in investment cost $c$ and cost convexity $\gamma$, and decreasing in the depreciation rate $\delta$.*
+
+*Proof.* The firm jointly optimizes over $X$ and $K$. The first-order condition for $K$ equates the marginal revenue from capacity to the marginal investment cost plus the marginal maintenance cost, scaled by the option premium. The existence condition ensures an interior solution. $\square$
+
+#### Option value in regime $L$
+
+In the low regime, the option value $F_L(X)$ satisfies a more complex equation because the firm must account for the possibility of a regime switch.
+The value satisfies the differential equation:
+$$
+\frac{1}{2}\sigma_L^2 X^2 F_L''(X) + \mu_L X F_L'(X) - (r + \lambda) F_L(X) + \lambda F_H(X) = 0,
+$$ {#eq-ode-L}
+where the term $\lambda F_H(X)$ captures the expected gain from transitioning to the high regime.
+The arrival rate $\lambda$ enters the effective discount rate as $r + \lambda$, increasing the cost of delay and thus lowering the investment trigger relative to a world without regime switching.
+
+The solution takes the form $F_L(X) = A_L X^{\beta_L} + \frac{\lambda}{r + \lambda - r} F_H(X)$, where $\beta_L$ is the positive root of:
+$$
+\frac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0.
+$$ {#eq-beta-L}
+
+**Remark 1** (Role of $\lambda$).
+*The arrival rate $\lambda$ has two effects on investment timing. First, it raises the effective discount rate from $r$ to $r + \lambda$, making waiting more costly and lowering the trigger. Second, it adds the continuation value $\lambda F_H(X)$ from regime switching, which raises the option value. The net effect on the trigger depends on parameters, but for typical calibrations, the option value effect dominates, and higher $\lambda$ encourages earlier, larger investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively.*
+
+### Duopoly with Default Risk {#sec-duopoly}
+
+We now introduce strategic interaction and leverage.
+Two symmetric firms, $i \in \{1, 2\}$, each hold options to invest in capacity.
+Revenue is shared according to a Tullock contest function [@tullock1980efficient; @skaperdas1996contest]:
+$$
+\pi_i(X, K_i, K_j) = X \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha},
+$$ {#eq-contest}
+where $K_i$ and $K_j$ are the capacities of firm $i$ and its rival.
+This functional form has desirable properties: it is symmetric, increasing in own capacity, decreasing in rival capacity, and market shares sum to one.
+The parameter $\alpha$ controls the sensitivity of market share to capacity: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
+
+#### Capital structure
+
+Each firm finances investment with a mix of equity and debt.
+We parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance.
+Debt pays a continuous coupon $d = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate.
+Following @leland1994corporate, equity holders choose to default endogenously when the equity value falls to zero.
+
+#### Default boundary
+
+The firm defaults when demand falls to the level $X_D$ at which equity value is zero.
+For a levered firm with capacity $K$ facing a rival with capacity $K_j$ in regime $s$, the default boundary solves:
+$$
+\frac{X_D K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r} = 0,
+$$ {#eq-default-boundary}
+yielding:
+$$
+X_D = \frac{(\delta K + d)(r - \mu_s)(K^\alpha + K_j^\alpha)}{r K^\alpha}.
+$$ {#eq-XD}
+
+**Proposition 2** (Endogenous default).
+*The default boundary $X_D$ is increasing in leverage $\ell$, the coupon rate $c_d$, and rival capacity $K_j$, and decreasing in demand growth $\mu_s$. Higher leverage and stronger competition both raise default risk.*
+
+#### Equity and debt values
+
+Following the structural approach of @leland1994corporate, equity value above the default boundary is:
+$$
+E(X) = \frac{X K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r} - \left(\frac{X_D K^\alpha}{(K^\alpha + K_j^\alpha)(r - \mu_s)} - \frac{\delta K + d}{r}\right)\left(\frac{X}{X_D}\right)^{\beta_s^-},
+$$
+where $\beta_s^- < 0$ is the negative characteristic root.
+The last term subtracts the present value of the equity claim conditional on default, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
+
+Debt value is:
+$$
+D(X) = \frac{d}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) V_s(X_D, K) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+$$
+where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy.
+
+#### Preemption equilibrium
+
+We solve for the subgame perfect equilibrium of the investment timing game following @fudenberg1985preemption and @huisman2015strategic.
+By symmetry, both firms are identical ex ante.
+The equilibrium features sequential investment: one firm (the *leader*) invests first at trigger $X_L$, and the other (the *follower*) invests later at trigger $X_F > X_L$.
+
+**Follower's problem.**
+The follower observes the leader's capacity $K_L$ and chooses its own trigger $X_F$ and capacity $K_F$ to maximize the value of its option, taking $K_L$ as given.
+The follower's problem is a standard real option with a modified revenue function that accounts for duopoly sharing.
+
+**Leader's problem.**
+The leader must account for the follower's future entry.
+Before the follower invests ($X < X_F$), the leader earns monopoly revenue $X K_L^\alpha / K_L^\alpha = X$.
+After the follower invests ($X \geq X_F$), revenue drops to $X K_L^\alpha / (K_L^\alpha + K_F^\alpha)$.
+The leader's value incorporates both phases:
+$$
+L(X) = \frac{X}{r - \mu_s} - \frac{X_F}{r - \mu_s}\left(\frac{X}{X_F}\right)^{\beta_s} + \frac{X_F K_L^\alpha}{(K_L^\alpha + K_F^\alpha)(r - \mu_s)}\left(\frac{X}{X_F}\right)^{\beta_s} - I(K_L) - \frac{\delta K_L}{r},
+$$
+where the second and third terms capture the transition from monopoly to duopoly revenue when the follower enters.
+
+**Preemption trigger.**
+In a symmetric equilibrium, both firms would like to be the leader.
+The preemption trigger $X_P$ is the demand level at which the leader's value equals the follower's option value: $L(X_P) = F(X_P)$.
+At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
+
+**Proposition 3** (Preemption equilibrium with default risk).
+*In the symmetric duopoly with leverage $\ell$ and bankruptcy cost $b$:*
+
+*(i) The preemption trigger $X_P < X_F$ exists and is unique under the existence condition.*
+
+*(ii) The preemption trigger is decreasing in $\lambda$: firms with stronger beliefs in AI adoption invest earlier.*
+
+*(iii) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
+
+*(iv) The credit spread at the preemption trigger is increasing in $\lambda$: firms that invest earlier face higher credit risk.*

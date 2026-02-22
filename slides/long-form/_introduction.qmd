@@ -1,34 +1,63 @@
+## Motivation {.center}
 
-## Motivation
-
-::: {style="height: 3em;"}
-
+::: {style="height: 1em;"}
 :::
 
-This is why we do it.
+**The AI infrastructure boom is the largest capital allocation event in a generation**
 
+- \$200B+ committed to GPU clusters, data centers, custom accelerators (2023--2025)
+- Investments are largely **irreversible**: can't repurpose a \$10B training cluster
+- Fundamental uncertainty: *when* will AI capabilities justify this spending?
+
+---
+
+## The Key Question
+
+::: {style="height: 1em;"}
+:::
+
+> What do AI labs' investment decisions reveal about their private beliefs regarding transformative AI timelines?
+
+::: {style="height: 1em;"}
+:::
+
+::: {.fragment}
+**Our approach**: Invert a structural model of optimal investment to extract *revealed beliefs* from observable capital expenditure
+:::
+
+---
+
+## This Paper
+
+::: {style="height: 1em;"}
+:::
+
+**Three contributions:**
+
+1. **Analytical model** of capacity investment with regime switching, strategic competition, and default risk
+
+2. **N-firm numerical solution** with training-inference allocation calibrated to scaling laws
+
+3. **Revealed beliefs methodology** to infer AI timeline beliefs from investment decisions
+
+::: {style="height: 1em;"}
+:::
+
+::: {.fragment}
+Plus: the *Dario dilemma* --- asymmetric cost of belief mismatches
+:::
+
+---
 
 ## Outline
 
-
-::: {style="height: 2em;"}
-
+::: {style="height: 1em;"}
 :::
 
-- Motivation
-- Results
-- Conclusion
+1. **Model**: Environment, single-firm benchmark, duopoly
+2. **Extensions**: N-firm game, training-inference
+3. **Calibration**: Data, baseline results
+4. **Revealed beliefs**: Methodology, firm comparison, Dario dilemma
+5. **Implications**
 
-
-::: {style="height: 2em;"}
-
-:::
-
-::: {.fragment .custom .blur}
-
-**Important papers to read**
-
-- @akey2022price
-- @wu2025extracting
-
-:::
+---

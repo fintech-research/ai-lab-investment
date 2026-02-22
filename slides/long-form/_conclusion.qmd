@@ -1,11 +1,41 @@
-## Concluding Remarks
+## Summary
 
-
-::: {style="height: 1.5em;"}
-
+::: {style="height: 0.5em;"}
 :::
 
+1. **Unified model** of AI infrastructure investment: real options + regime switching + competition + default risk
 
-We did this...
+2. **N-firm equilibrium** with training-inference allocation matches industry patterns
+
+3. **Revealed beliefs**: frontier labs invest as if transformative AI is 2--5 years away
+
+4. **Dario dilemma**: asymmetric cost of belief mismatches rationalizes extreme CapEx only under genuine optimism
+
+---
+
+## Policy Implications
+
+::: {style="height: 0.5em;"}
+:::
+
+- **Financial stability**: high leverage + irreversible investment + regime uncertainty = systemic risk
+
+- **Competition**: strategic overinvestment may constitute exclusionary conduct
+
+- **Disclosure**: standardized compute expenditure reporting would improve market efficiency
+
+- **Information content**: investment decisions contain private information about AI capabilities
+
+---
+
+## Future Work
+
+::: {style="height: 0.5em;"}
+:::
+
+- Dynamic learning and belief updating
+- Financial frictions and debt renegotiation
+- Sequential expansion options
+- Application to quantum computing, biotech, clean energy
 
 ---

@@ -1,3 +1,19 @@
-## Concluding Remarks
+## Conclusion {#sec-conclusion}
 
-This paper develops ...
+This paper develops a unified model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, strategic preemption in oligopoly, endogenous default risk, and diminishing returns calibrated to scaling laws.
+The model produces analytical investment triggers for the duopoly, numerical solutions for $N$-firm equilibrium with training-inference allocation, and a novel revealed beliefs methodology for extracting AI labs' private probability assessments from observable investment decisions.
+
+Three findings stand out.
+First, the interaction between strategic preemption and default risk creates a knife-edge for levered firms: they must invest early enough to capture market share but not so aggressively that they risk default if the high-demand regime fails to materialize.
+This trade-off is quantitatively important for the highly levered infrastructure providers in our calibration.
+
+Second, the revealed beliefs methodology shows that frontier AI labs are investing as if they believe transformative AI is substantially closer than market consensus suggests.
+The dispersion in implied $\lambda$ across firms is large, indicating genuine disagreement about AI timelines rather than differences in observable fundamentals.
+
+Third, the Dario dilemma reveals an asymmetric cost of belief mismatches: the downside of overinvestment (excess leverage, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
+This asymmetry implies that the extreme capital commitments observed in practice can be rationalized only by genuinely optimistic beliefs, not by strategic posturing or agency problems.
+
+Several directions for future research are promising.
+Dynamic learning models in which firms update their beliefs about $\lambda$ in response to AI capability milestones would endogenize the belief heterogeneity we document.
+Incorporating financial frictions---credit constraints, dynamic leverage adjustment, and debt renegotiation---would enrich the default mechanism.
+Finally, the revealed beliefs methodology could be applied to other technology sectors where private information drives investment decisions, such as quantum computing, biotechnology, and clean energy.

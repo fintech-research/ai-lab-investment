@@ -24,7 +24,7 @@ format:
     mainfont: "Libertinus Serif"
     mathfont: "Libertinus Math"
     sansfont: "Libertinus Serif"
-    monofont: "FiraCode Nerd Font Mono"
+    monofont: "DejaVu Sans Mono"
     monofontoptions: "Scale=0.7"
     cite-method: natbib
     biblio-style: econometrica
