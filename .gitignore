@@ -223,3 +223,6 @@ _output
 *.out.ipynb
 *.log
 _freeze/
+
+outputs/
+results/
