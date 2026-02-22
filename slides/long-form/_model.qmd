@@ -39,15 +39,24 @@ $$\pi_i = X \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha}$$
 
 **Firm chooses**: trigger $X^*$ (when) and capacity $K^*$ (how much)
 
-**Option value** in regime $H$:
-$$F_H(X) = \left(V_H(X_H^*, K_H^*) - I(K_H^*)\right) \left(\frac{X}{X_H^*}\right)^{\beta_H}$$
-
 **Key insight**: optimal trigger has the classic form
 $$X^* = \underbrace{\frac{\beta_H}{\beta_H - 1}}_{\text{option premium}} \cdot \text{(Marshallian trigger)}$$
 
-::: {.fragment}
-Higher uncertainty $\sigma$ $\Rightarrow$ higher $\beta_H / (\beta_H - 1)$ $\Rightarrow$ wait longer
-:::
+---
+
+## Option Value vs. NPV
+
+![](figures/fig_option_value.png){width="90%"}
+
+Shaded region = value of waiting; vertical line = optimal trigger $X_H^*$
+
+---
+
+## Comparative Statics
+
+![](figures/fig_comparative_statics.png){width="90%"}
+
+Higher $\sigma_H$, $\alpha$, $\gamma$ raise the trigger; effects on capacity vary
 
 ---
 
@@ -76,13 +85,24 @@ Higher uncertainty $\sigma$ $\Rightarrow$ higher $\beta_H / (\beta_H - 1)$ $\Rig
 
 **Endogenous default** [@leland1994corporate]: equity holders default when $E(X) = 0$
 
-Default boundary:
 $$X_D = \frac{(\delta K + d)(r - \mu_s)(K_i^\alpha + K_j^\alpha)}{r K_i^\alpha}$$
 
-::: {.fragment}
 **Proposition**: Higher leverage *and* stronger competition both raise $X_D$
 
-$\Rightarrow$ AI infrastructure firms face double default risk: high leverage + intense competition
-:::
+---
+
+## Investment and Default Boundaries
+
+![](figures/fig_default_boundaries.png){width="90%"}
+
+Shaded = operating region; narrows dangerously at high leverage
+
+---
+
+## Competition Effect: Monopoly vs. Duopoly
+
+![](figures/fig_competition_effect.png){width="90%"}
+
+Preemption cuts leader trigger to ~50% of monopolist; capacity nearly unchanged
 
 ---

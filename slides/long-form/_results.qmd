@@ -43,14 +43,12 @@ Following @berk1999optimal, decompose firm value:
 
 $$V_{\text{total}} = \underbrace{V_{\text{AIP}}}_{\text{assets-in-place}} + \underbrace{V_{\text{expand}}}_{\text{expansion option}} + \underbrace{V_{\text{switch}}}_{\text{regime switch}}$$
 
-::: {.fragment}
-**Finding**: Growth options account for **60--80%** of AI infrastructure firm value
+---
 
-$\Rightarrow$ These stocks should behave like growth options:
+## Growth Options Dominate Firm Value
 
-- High beta, high volatility
-- High sensitivity to discount rates
-- Positive convexity to AI capability news
-:::
+![](figures/fig_growth_decomposition.png){width="90%"}
+
+At $K/K_H^* < 0.3$ (typical for AI firms), growth options exceed 60% of value
 
 ---

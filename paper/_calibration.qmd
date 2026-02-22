@@ -56,6 +56,15 @@ We calibrate four stylized firms representing the major categories of AI infrast
 
 : Stylized firm parameters calibrated from public filings and analyst reports. {#tbl-firms}
 
+@fig-firm-comparison provides a visual summary of the calibration targets.
+Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.
+All four firms have investment intensities well above the unity threshold (dotted line), confirming that each is investing far ahead of current demand.
+The CoreWeave-like and Anthropic-like firms have the highest ratios, suggesting the most aggressive investment postures.
+Panel (b) plots each firm in revenue-growth versus leverage space, revealing two distinct clusters: high-growth, low-leverage firms (Anthropic-like, Google/Alphabet-like) and high-leverage firms with more moderate growth (CoreWeave-like, OpenAI-like).
+This dispersion in financial characteristics drives the heterogeneity in revealed beliefs that we exploit in @sec-valuation.
+
+![Stylized firm comparison. (a) Capital expenditure to revenue ratio (2025). All firms invest above the 1.0x threshold (dotted line), indicating investment ahead of current demand. (b) Revenue growth (2024--2025) versus leverage ratio. The four firm archetypes occupy distinct positions in this space, reflecting different investment strategies and financial structures.](figures/fig_firm_comparison.pdf){#fig-firm-comparison}
+
 Several patterns emerge from @tbl-firms.
 First, all firms have capital expenditure exceeding revenue---investment intensities above 100\%---which is historically unusual and indicates that these firms are investing far ahead of current demand.
 Second, the frontier labs (Anthropic-like and CoreWeave-like firms) have the highest investment intensity, suggesting the most aggressive beliefs about future demand.

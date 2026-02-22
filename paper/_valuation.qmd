@@ -24,6 +24,14 @@ $$ {#eq-inversion}
 The inversion uses Brent's method for root-finding, which is robust and does not require derivative information.
 We search over $\lambda \in [0.001, 2.0]$, covering expected regime-switch times from 6 months to 1000 years.
 
+@fig-lambda-timeline provides intuition for the economic content of $\lambda$.
+Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
+Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\lambda}$.
+At $\lambda = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\lambda = 0.50$, this rises to 92\%.
+The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
+
+![Interpretation of the arrival rate parameter $\lambda$. (a) Expected time to regime switch $E[T] = 1/\lambda$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\lambda \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
+
 #### Identification
 
 The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
@@ -56,6 +64,15 @@ where $F_L^{\text{no switch}}$ is the option value in regime $L$ with $\lambda \
 The growth option fraction $V_{\text{expand}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
 For AI infrastructure firms, we find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
 
+@fig-growth-decomposition illustrates the growth option decomposition.
+Panel (a) decomposes total firm value into assets-in-place (blue) and the expansion option (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
+When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the option to invest, and assets-in-place are small.
+As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the expansion option shrinks because less additional capacity is needed.
+Panel (b) shows the growth option fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
+For the typical AI infrastructure firm with $K/K_H^* \approx 0.1$--$0.3$, the growth option fraction exceeds 60\%, confirming that these firms' valuations are driven primarily by future investment opportunities.
+
+![Growth option decomposition. (a) Stacked value decomposition: assets-in-place (blue) and expansion option (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Growth option fraction---the share of total value attributable to the expansion option. For firms with capacity well below $K_H^*$, growth options dominate firm value. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
+
 This high growth option fraction has important implications for asset pricing: AI infrastructure stocks should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
 
 ### Credit Risk Analysis
@@ -80,11 +97,13 @@ $$
 where $\Phi$ is the standard normal CDF.
 This is the structural default probability from @merton1974pricing, adapted to our setting with regime-dependent parameters.
 
-Our calibration produces the following credit risk patterns:
+@fig-credit-risk presents the credit risk implications.
+Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level moderately above the default boundary.
+Spreads are convex in leverage: approximately 300 bps for low-leverage firms ($\ell \approx 0.10$), rising to over 500 bps at moderate leverage ($\ell = 0.40$) and exceeding 1,200 bps at $\ell = 0.70$.
+Panel (b) shows the 5-year default probability, which rises sharply at leverage ratios above 0.40.
+At $\ell = 0.70$ (the CoreWeave-like archetype), the default probability approaches 40\%, reflecting the combined burden of high coupon payments and the proximity of the default boundary to current demand.
 
-- **Unlevered firms** ($\ell = 0$): zero credit spread, zero default probability.
-- **Moderately levered** ($\ell = 0.2$--$0.4$): credit spreads of 50--200 bps, 5-year default probabilities of 2--8\%.
-- **Highly levered** ($\ell = 0.6$+): credit spreads exceeding 400 bps, 5-year default probabilities above 15\%.
+![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Both quantities are convex in leverage, with a pronounced increase above $\ell = 0.40$. Evaluated at a demand level twice the default boundary at moderate leverage ($\ell = 0.40$), using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
 
 The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the highest credit risk, consistent with the market's pricing of CoreWeave debt at significantly elevated yields relative to investment-grade benchmarks.
 

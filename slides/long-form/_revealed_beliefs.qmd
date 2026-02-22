@@ -23,59 +23,17 @@ In the spirit of @samuelson1938note: infer beliefs from *actions*, not *words*
 
 ## What Does $\lambda$ Mean?
 
-::: {.columns}
-::: {.column width="50%"}
-**Expected time to regime switch**: $E[T] = 1/\lambda$
+![](figures/fig_lambda_timeline.png){width="90%"}
 
-| $\lambda$ | Expected years |
-|:---------|:--------------|
-| 0.05 | 20 years |
-| 0.10 | 10 years |
-| 0.20 | 5 years |
-| 0.50 | 2 years |
-| 1.00 | 1 year |
-:::
-::: {.column width="50%"}
-**Probability of switch within 5 years**:
-
-$$P = 1 - e^{-\lambda \cdot 5}$$
-
-| $\lambda$ | 5-year prob |
-|:---------|:-----------|
-| 0.05 | 22% |
-| 0.10 | 39% |
-| 0.20 | 63% |
-| 0.50 | 92% |
-| 1.00 | 99% |
-:::
-:::
+Range of disagreement ($\lambda \in [0.05, 0.5]$): 2--20 years expected, 22--92% in 5 years
 
 ---
 
 ## Credit Risk
 
-::: {.columns}
-::: {.column width="50%"}
-**Credit spreads** increase with leverage:
+![](figures/fig_credit_risk.png){width="90%"}
 
-- $\ell = 0.2$: ~50--100 bps
-- $\ell = 0.4$: ~100--200 bps
-- $\ell = 0.6$+: 400+ bps
-:::
-::: {.column width="50%"}
-**5-year default probability**:
-
-- $\ell = 0.2$: 2--4%
-- $\ell = 0.4$: 5--8%
-- $\ell = 0.6$+: 15%+
-:::
-:::
-
-::: {.fragment}
-**CoreWeave-like** ($\ell = 0.70$): highest credit risk
-
-$\Rightarrow$ Consistent with elevated yields on CoreWeave debt
-:::
+Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$ (CoreWeave-like)
 
 ---
 
@@ -129,18 +87,10 @@ $\Rightarrow$ Strategic posturing is too costly to explain the data
 
 ---
 
-## Equity Value and $\lambda$
+## Option Value and $\lambda$
 
-**Equity value is convex in $\lambda$**:
+![](figures/fig_lambda_option_value.png){width="90%"}
 
-- Increasing: higher $\lambda$ $\to$ more valuable growth option
-- Convex: marginal effect of $\lambda$ is increasing
-- Steepest around $\lambda \in [0.1, 0.5]$ --- the range of current disagreement
-
-::: {.fragment}
-**Portfolio implication**: AI infrastructure stocks should exhibit positive convexity to AI capability news
-
-- Good news raises valuations more than bad news lowers them
-:::
+Pre-adoption value $F_L$ increases concavely toward post-adoption $F_H$ as $\lambda$ rises
 
 ---
