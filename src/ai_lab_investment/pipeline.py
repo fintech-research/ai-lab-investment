@@ -103,6 +103,27 @@ def _run_phase4():
     logging.info("Phase 4 figures saved")
 
 
+def _run_phase5():
+    from .figures.phase5 import generate_all_phase5_figures
+    from .models import ModelParameters, ValuationAnalysis
+
+    logging.info("Running Phase 5: Valuation analysis")
+    p = ModelParameters()
+    va = ValuationAnalysis(p)
+
+    summary = va.summary()
+    d = summary["decomposition"]
+    logging.info(f"  Total value: {d['total_value']:.4f}")
+    logging.info(f"  Growth fraction: {d['growth_fraction']:.2%}")
+
+    for lev_key, metrics in summary["credit"].items():
+        logging.info(f"  {lev_key}: {metrics}")
+
+    results_dirs = get_results_directories()
+    generate_all_phase5_figures(results_dirs.figures)
+    logging.info("Phase 5 figures saved")
+
+
 _TASK_RUNNERS = {
     "simulations": lambda: logging.info("Running simulation"),
     "main_regressions": lambda: logging.info("Running regression analysis"),
@@ -110,6 +131,7 @@ _TASK_RUNNERS = {
     "phase2_duopoly": _run_phase2,
     "phase3_nfirm": _run_phase3,
     "phase4_calibration": _run_phase4,
+    "phase5_valuation": _run_phase5,
 }
 
 
