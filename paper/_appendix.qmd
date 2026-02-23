@@ -231,11 +231,8 @@ The endogenous arrival rate generalizes to $\tilde{\lambda} = \lambda_0 + \xi \s
 
 *Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate. Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$.*
 
-The $N$-firm equilibrium is computed using iterative best-response (fixed-point iteration on the capacity and training fraction profiles).
-Each firm's optimal trigger, capacity, and training fraction are computed given all other firms' choices, and the process repeats until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$.
-Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
-The $N=2$ case reproduces the analytical duopoly solution by construction.
-Optimization over $(K_k, \phi_k)$ at each stage uses Nelder-Mead with bounds $K_k \in [0.01, 10]$ and $\phi_k \in [0.01, 0.99]$.
+The equilibrium is computed using iterative best-response with tolerance $10^{-6}$, verified by checking no profitable unilateral deviation at the fixed point.
+The $N=2$ case reproduces the analytical duopoly solution.
 For $N = 4$, the full solution completes in under 2 seconds.
 
 ### D. Calibration Details and Data Sources {.unnumbered}

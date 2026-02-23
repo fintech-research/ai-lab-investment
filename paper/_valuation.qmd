@@ -3,13 +3,13 @@
 This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
 All results in this section are numerical, computed under the stylized calibration of @sec-calibration; they illustrate the model's economic mechanisms rather than delivering empirically testable point estimates.
 
-@fig-lambda-timeline provides intuition for the economic content of the arrival rate parameter $\lambda$.
-Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
-Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\lambda}$.
-At $\lambda = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\lambda = 0.50$, this rises to 92\%.
-The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
+@fig-lambda-timeline provides intuition for the economic content of the effective arrival rate $\tilde{\lambda}$.
+Panel (a) shows the expected time to regime switch $E[T] = 1/\tilde{\lambda}$, which ranges from 20 years at $\tilde{\lambda} = 0.05$ to 1 year at $\tilde{\lambda} = 1.0$.
+Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\tilde{\lambda}}$.
+At $\tilde{\lambda} = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\tilde{\lambda} = 0.50$, this rises to 92\%.
+The steep part of both curves lies in the range $\tilde{\lambda} \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
 
-![Interpretation of the arrival rate parameter $\lambda$. (a) Expected time to regime switch $E[T] = 1/\lambda$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\lambda \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
+![Interpretation of the effective arrival rate $\tilde{\lambda}$. (a) Expected time to regime switch $E[T] = 1/\tilde{\lambda}$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\tilde{\lambda} \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
 
 ### Growth Option Decomposition
 
@@ -124,9 +124,9 @@ Finally, the asymmetric loss function implies that firms should hedge against ag
 ### Equity Valuation Sensitivity
 
 The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
-I compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
+I compute option values across a range of $\tilde{\lambda}$ values, holding all other parameters at baseline values.
 
-The results show that equity value is increasing and convex in $\lambda$: higher $\lambda$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\lambda$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
-The steepest part of the valuation curve lies around $\lambda \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
+The results show that equity value is increasing and convex in $\tilde{\lambda}$: higher $\tilde{\lambda}$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\tilde{\lambda}$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
+The steepest part of the valuation curve lies around $\tilde{\lambda} \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
 This convexity implies that a portfolio of AI infrastructure firms should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.
-The training allocation channel amplifies this convexity: at higher $\lambda$, firms not only invest more but allocate more to training, compounding the H-regime upside.
+The training allocation channel amplifies this convexity: at higher $\tilde{\lambda}$, firms not only invest more but allocate more to training, compounding the H-regime upside.

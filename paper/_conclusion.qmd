@@ -7,7 +7,7 @@ The model produces analytical investment triggers for the single firm and semi-a
 Three core tensions drive the results.
 
 First, *current cash flow versus future capability*: firms must balance L-regime inference revenue (needed to survive and service debt) against H-regime training quality (needed to compete in a post-adoption world).
-The optimal training fraction $\phi^*$ is increasing in the arrival rate $\lambda$, meaning that more optimistic firms allocate more to training---a prediction that aligns with the cross-sectional variation in observed training intensity across AI labs.
+The optimal training fraction $\phi^*$ is increasing in the arrival rate $\tilde{\lambda}$, meaning that more optimistic firms allocate more to training---a prediction that aligns with the cross-sectional variation in observed training intensity across AI labs.
 
 Second, *growth-option upside versus leverage and default risk*: the interaction between training allocation and leverage produces a *faith-based survival* mechanism.
 Higher training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, which lowers the default boundary---but only in parameter regions where the continuation-value channel dominates current cash-flow weakness (Proposition 2).
@@ -24,4 +24,6 @@ Several directions for future research are promising.
 Dynamic learning models in which firms update their beliefs about $\lambda$ in response to AI capability milestones---such as the shift from pre-training to inference-time scaling, or algorithmic efficiency breakthroughs like DeepSeek's demonstration that frontier reasoning is achievable at dramatically lower cost---would endogenize the belief heterogeneity across firms.
 Dynamic training-inference reallocation, allowing $\phi$ to respond to realized demand and capability milestones, would enrich the model's predictions about the time path of compute allocation.
 Incorporating financial frictions---credit constraints, dynamic leverage adjustment, and debt renegotiation---would enrich the default mechanism.
-A revealed beliefs methodology that inverts the structural model to extract implied AI timeline beliefs from observable investment decisions (using investment intensity and training fraction as identifying moments) is a natural empirical companion; the fragility of such an inversion to calibration assumptions---particularly H-regime volatility---suggests that formal identification and estimation require careful treatment beyond the scope of this paper.
+A *formal* revealed beliefs methodology that inverts the structural model to extract implied AI timeline beliefs from observable investment decisions would be a natural empirical companion.
+The illustrative belief inversions in @sec-valuation demonstrate the concept---they show that observed investment patterns are consistent with high-$\tilde{\lambda}$ beliefs---but fall short of a structural estimation exercise: formal identification requires additional instruments, proper treatment of the estimation uncertainty in calibration parameters (particularly $\sigma_H$ and $\alpha$), and a richer model (dynamic $\phi$, heterogeneous information).
+The fragility of such an inversion to calibration assumptions suggests that careful econometric treatment is needed beyond the scope of this paper.

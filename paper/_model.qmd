@@ -19,7 +19,7 @@ $$
 \tilde{\lambda}(\phi_i, K_i, \phi_j, K_j) = \lambda_0 + \xi \cdot \bigl[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta\bigr],
 $$ {#eq-endogenous-lambda}
 where $\lambda_0 > 0$ is the exogenous baseline arrival rate (reflecting rest-of-world progress, algorithmic advances outside these firms), $\xi \geq 0$ scales the contribution of the modeled firms' training compute to the arrival rate, $\eta \in (0,1)$ is the scaling law exponent capturing diminishing returns to training compute [@kaplan2020scaling; @hoffmann2022training], and $\phi_i K_i$ is firm $i$'s training compute (defined below).^[The dispersion in executive timeline estimates maps directly to heterogeneity in $\lambda_0$. @amodei2024machines predicts AI "smarter than a Nobel Prize winner" as early as 2026, implying $\lambda_0 \approx 0.30$--$0.50$; @hassabis2025breakthroughs gives roughly 50% probability by the end of the decade ($\lambda_0 \approx 0.10$--$0.15$); and @nadella2025formula proposes an economic test---developed-world GDP growth of 10%---that implicitly pushes the threshold further out. These differences in $\lambda_0$ drive the heterogeneity in investment behavior analyzed in @sec-valuation.]
-When $\xi = 0$, the model reduces to the exogenous-$\lambda$ baseline.
+When $\xi = 0$, $\tilde{\lambda} = \lambda_0$ and the model reduces to the exogenous-arrival-rate baseline; in this case, the firm-level arguments in @eq-endogenous-lambda are irrelevant and $\tilde{\lambda}$ is a constant.
 When $\xi > 0$, firms' training investments collectively accelerate the arrival of transformative AI, creating a positive externality: each firm's training contributes to a common arrival rate that benefits all participants.
 
 The high regime $H$ is absorbing: once the economy transitions, it remains in $H$ permanently.
@@ -47,7 +47,7 @@ In practice, firms expand incrementally and can repurpose compute across workloa
 A frontier AI laboratory produces intelligence by combining two forms of compute.
 *Training compute* optimizes a neural network's parameters on massive datasets, yielding a model whose quality scales as a power law of compute invested.
 *Inference compute* runs the trained model to serve predictions and generate revenue.
-Both activities consume the same scarce hardware---purpose-built GPU clusters housed in multi-billion-dollar data centers---creating an allocation problem with no close parallel in traditional capital budgeting.
+Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction---creating an allocation problem with no close parallel in traditional capital budgeting.
 
 A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference.
 Training compute is $\phi K$ and inference compute is $(1-\phi) K$.
@@ -90,17 +90,17 @@ Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ pe
 | $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
 | $\alpha$ | Revenue elasticity to capacity | Exogenous |
 | $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
-| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived |
-| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived |
-| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived |
-| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived |
-| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived |
+| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
+| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
+| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
+| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived (primitives) |
+| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
 | $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
 | $c_d$ | Coupon rate on debt | Exogenous |
 | $X_D$ | Endogenous default boundary | Derived |
 | $X^*$ | Optimal investment trigger | Derived |
 
-: Key notation. "Derived" indicates quantities computed from primitives and choices. {#tbl-notation tbl-colwidths="[12,58,30]"}
+: Key notation. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
@@ -162,7 +162,7 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 
 *(A1) $r > \mu_H > \mu_L \geq 0$, $\sigma_L, \sigma_H > 0$, $\alpha \in (0,1)$, $\gamma > 1$, $c > 0$, $\delta \geq 0$, $\lambda_0 > 0$, $\xi \geq 0$, $\eta \in (0,1)$.*
 
-*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$.*
+*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$. Economically, the lower bound requires that cost convexity ($\gamma$) is strong enough relative to revenue concavity ($\alpha$) to limit optimal capacity; the upper bound requires that revenue concavity is not so severe that the marginal product of capacity is always below its marginal cost.*
 
 *(A3) The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. For the baseline calibration, $\beta_L^+ \approx 1.63$ and $(1-1/\beta_L^+)/\alpha \approx 2.42 > 1$; this condition is verified for all parameter values used in the paper.*
 
@@ -203,7 +203,7 @@ The option value satisfies the Hamilton-Jacobi-Bellman equation incorporating th
 $$
 \tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' + \tilde{\lambda}\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0,
 $$ {#eq-hjb-L}
-where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime option value (@eq-option-H).
+where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime *option* value (@eq-option-H)---the value of the investment option conditional on being in regime $H$ without having invested yet, not the installed value $V_H$.
 Substituting and rearranging, this becomes a second-order Euler ODE with non-homogeneous term $\tilde{\lambda} B_H X^{\beta_H}$:
 $$
 \tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' - (r + \tilde{\lambda})\, F_L + \tilde{\lambda} B_H X^{\beta_H} = 0.
@@ -309,7 +309,7 @@ The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of
 
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\tilde{\lambda}$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) and thereby raises $\tilde{\lambda}$ (through @eq-endogenous-lambda) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
-Optimism about transformative AI, backed by training investment, literally keeps the firm alive longer by raising the equity value at any demand level.
+Optimism about transformative AI, backed by training investment, extends the firm's solvency by raising the equity value at any demand level.
 Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives no H-regime upside, faces a higher default boundary, and is more vulnerable to demand downturns.
 
 **Proposition 2** (Endogenous default with faith-based survival).

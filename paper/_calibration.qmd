@@ -2,6 +2,10 @@
 
 This section maps the model parameters to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
 The calibration is *stylized*: the goal is to discipline the model's quantitative magnitudes and illustrate cross-sectional heterogeneity, not to structurally estimate firm-level primitives or test the model empirically.
+Three caveats should be noted at the outset.
+First, the Leland default framework is an analytically tractable approximation to financial distress risk; it fits public-debt issuers better than VC-backed labs, though the qualitative predictions apply across financing structures (see @sec-discussion).
+Second, the training fractions $\hat{\phi}$ are inferred from incomplete data and carry substantial uncertainty ($\pm 0.10$).
+Third, the scaling exponent $\eta$ is inferred from the neural scaling laws literature through a non-trivial mapping (see below).
 The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
 
 @tbl-param-mapping summarizes the calibration status of each parameter.
@@ -33,7 +37,7 @@ In the high regime ($H$), I set $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting
 
 The exogenous component of the arrival rate is $\lambda_0 = 0.05$ per year, reflecting rest-of-world AI progress (algorithmic advances, academic research, open-source contributions) that occurs independently of the modeled firms' investments.
 The total effective arrival rate $\tilde{\lambda}$ combines this baseline with the endogenous contribution from firms' training compute (@eq-endogenous-lambda).
-Under the baseline calibration with $\xi = 0$ (exogenous model), the total $\lambda = 0.10$ per year implies an expected time to regime switch of 10 years.
+Under the baseline calibration with $\xi = 0$ (exogenous model), the total effective rate $\tilde{\lambda} = 0.10$ per year implies an expected time to regime switch of 10 years.
 The baseline represents a moderate prior, intended to approximate the marginal investor's belief rather than any particular executive's view.
 It is significantly more conservative than the beliefs implied by @amodei2024machines ($\lambda \approx 0.30$--$0.50$) or @hassabis2025breakthroughs ($\lambda \approx 0.10$--$0.15$), and the dispersion across these views is precisely what generates the cross-sectional variation in investment behavior analyzed in @sec-valuation.
 
