@@ -2,9 +2,10 @@
 
 ### The Revealed Beliefs Methodology
 
-The central innovation of this paper is a methodology for extracting firms' private beliefs about AI timelines from their observable investment decisions.
+I develop an illustrative methodology for extracting firms' implied beliefs about AI timelines from their observable investment decisions.
 The approach exploits the fact that all model parameters except $\lambda$ are either directly observable (leverage, WACC, revenue, training fraction) or can be calibrated from public data (demand volatility, revenue elasticity, cost convexity).
-The parameter $\lambda$---the arrival rate of transformative AI---encodes the firm's *private belief* about when AI capabilities will reach a level sufficient to generate sustained high demand for compute infrastructure.
+The parameter $\lambda$---the arrival rate of transformative AI---encodes the firm's *implied belief* about when AI capabilities will reach a level sufficient to generate sustained high demand for compute infrastructure.
+I emphasize that this exercise is an illustrative calibration that recovers beliefs conditional on maintained assumptions; see the discussion of identification below for caveats and the sensitivity analysis in @tbl-sensitivity-beliefs for confidence sets.
 
 With the training-inference allocation $\phi$ as an observable, the methodology now has access to *two identifying moments*:
 
@@ -46,10 +47,11 @@ The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, whic
 The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
 This is a form of *revealed preference* in the spirit of @samuelson1938note: I do not ask what firms *say* about AI timelines; I infer what they *believe* from what they *do*.
 
-The addition of the training fraction $\hat{\phi}$ as a second moment substantially strengthens identification relative to the single-moment (CapEx/Revenue only) approach.
+The addition of the training fraction $\hat{\phi}$ as a second moment provides a useful diagnostic relative to the single-moment (CapEx/Revenue only) approach.
 With one moment, the inversion recovers $\hat{\lambda}$ conditional on all other parameters being correctly specified.
-With two moments, the inversion is locally overidentified: the $\lambda$ inferred from investment intensity should also predict a training fraction consistent with the observed $\hat{\phi}$.
-Discrepancies between the model-predicted and observed $\phi$ signal potential misspecification in the cost or revenue parameters, providing a diagnostic that the single-moment approach lacks.
+The training fraction serves as an internal consistency check: the $\lambda$ inferred from investment intensity should also predict a training fraction reasonably close to the observed $\hat{\phi}$.
+Discrepancies between the model-predicted and observed $\phi$ signal potential misspecification or unmodeled heterogeneity (e.g., different business models, financing constraints), providing a diagnostic that the single-moment approach lacks.
+I note that many parameters---cost convexity, operating cost, revenue elasticities, contest structure, leverage---are jointly influential and imperfectly observed. The exercise is therefore best viewed as a structural thought experiment or partial-identification exercise rather than a formal estimation.
 
 GPU procurement costs, power purchase agreements, and accounting treatment of capital leases versus outright purchases all vary across firms and could generate cross-sectional variation in investment intensity independent of beliefs about AI timelines.
 The training fraction provides a complementary signal because it is a *within-firm allocation decision* that is less affected by these cost-side confounds: conditional on having chosen to invest $I(K)$, the decision of how to split $K$ between training and inference reveals information about the relative valuation of L-regime versus H-regime revenue.
@@ -192,8 +194,8 @@ where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according 
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 The training fraction enters the value loss through two channels: a mismatched $\phi$ produces suboptimal revenue in both regimes, and through the endogenous $\tilde{\lambda}$, it may accelerate or delay the regime switch relative to the optimal timing.
 
-**Proposition 5** (Asymmetric AI investment dilemma).
-*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. For $\ell = 0$, the asymmetry follows from the convexity of investment costs ($\gamma > 1$) and concavity of revenue ($\alpha < 1$), amplified by the training allocation channel: an overly optimistic firm over-allocates to training ($\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})$), sacrificing L-regime inference revenue that it needs to survive the pre-switch period. For $\ell > 0$, leverage further amplifies the asymmetry through endogenous default risk.*
+**Numerical Finding 2** (Asymmetric AI investment dilemma).
+*Across all parameterizations tested, the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. For $\ell = 0$, the asymmetry arises from the convexity of investment costs ($\gamma > 1$) and concavity of revenue ($\alpha < 1$), amplified by the training allocation channel: an overly optimistic firm over-allocates to training ($\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})$), sacrificing L-regime inference revenue that it needs to survive the pre-switch period. For $\ell > 0$, leverage further amplifies the asymmetry through endogenous default risk.*
 
 The intuition is that aggressive overinvestment leads to excess capacity that incurs disproportionate costs (convex in $K$) while generating diminishing additional revenue (concave in $K$), and also increases default risk through higher leverage.
 The training channel amplifies this: an overly optimistic firm not only builds too much, but allocates too much to training, reducing current inference revenue and raising the default boundary.

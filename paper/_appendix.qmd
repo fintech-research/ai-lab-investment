@@ -126,9 +126,11 @@ Simultaneously, the leader has a longer expected duration in the monopoly phase,
 
 *Part (v): Credit spread increasing in $\lambda_0$.* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. The comparative static is verified numerically. $\square$
 
-#### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
+#### Numerical Finding 1 (N-firm equilibrium) {.unnumbered}
 
-*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest shares in both regimes, raising the investment hurdle (the trigger). Formally, the optimal trigger for firm $k$ is $X_k^* = \frac{\beta_H}{\beta_H-1} \cdot (\delta K_k/r + cK_k^\gamma) / A_{\text{eff},k}$, where $A_{\text{eff},k}$ is decreasing in the number of competitors (through the contest shares), so $X_k^*$ is increasing in $k$.
+The following properties are verified computationally across the full range of parameterizations tested.
+
+*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest shares in both regimes, raising the investment hurdle (the trigger). The optimal trigger for firm $k$ is $X_k^* = \frac{\beta_H}{\beta_H-1} \cdot (\delta K_k/r + cK_k^\gamma) / A_{\text{eff},k}$, where $A_{\text{eff},k}$ is decreasing in the number of competitors (through the contest shares), so $X_k^*$ is increasing in $k$.
 
 *(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal effective revenue $\partial A_{\text{eff},k}/\partial K_k$ against marginal cost. More firms reduce $A_{\text{eff},k}$, reducing marginal revenue and hence $K_k^*$.
 
@@ -136,13 +138,13 @@ Simultaneously, the leader has a longer expected duration in the monopoly phase,
 
 *(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
 
-#### Proof of Proposition 5 (Asymmetric AI investment dilemma) {.unnumbered}
+#### Numerical Finding 2 (Asymmetric AI investment dilemma) {.unnumbered}
 
 Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$, training fraction $\phi^*(\lambda_{\text{invest}})$, and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
 
 *Optimality.* By construction, $W$ is maximized at $\lambda_{\text{invest}} = \lambda_{\text{true}}$, so $W'(\lambda_{\text{true}}) = 0$. The second-order loss is therefore $\Delta V \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2$, which is symmetric to second order.
 
-*Source of asymmetry.* The asymmetry arises from odd-order terms in the Taylor expansion, principally $W'''(\lambda_{\text{true}}) \neq 0$. I prove this for the zero-leverage case and verify numerically for $\ell > 0$.
+*Source of asymmetry.* The asymmetry arises from odd-order terms in the Taylor expansion, principally $W'''(\lambda_{\text{true}}) \neq 0$. The following heuristic argument identifies three contributing channels. All signs are verified numerically across the full parameter space.
 
 *Case $\ell = 0$ (unleveraged).* The loss decomposes into a capacity channel, a timing channel, and a *training allocation channel*:
 
