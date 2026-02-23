@@ -22,7 +22,7 @@ The high regime $H$ is absorbing: once the economy transitions, it remains in $H
 This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
 
 I assume $\mu_H > \mu_L$ (higher growth in the high regime) and potentially $\sigma_H \neq \sigma_L$ (different volatility).
-For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the risk-adjusted discount rate (WACC).^[Following @dixit1994investment, I work under a risk-adjusted measure where $r$ represents the weighted average cost of capital and $\mu_s$ represents the risk-neutral growth rate of demand.]
+For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the discount rate and $\mu_s$ is the risk-adjusted growth rate.^[Following @dixit1994investment [Chapter 4], all valuation is conducted under a single *risk-adjusted* (certainty-equivalent) framework. The discount rate $r$ is the firm's weighted average cost of capital (WACC), which embeds the equity risk premium and the cost of debt. The growth rates $\mu_L$ and $\mu_H$ are the physical-measure expected growth rates of demand *minus* an appropriate risk premium, so that discounting the expected cash flow at rate $r$ yields the correct present value. The volatilities $\sigma_L$ and $\sigma_H$ are the same under the physical and risk-adjusted measures (by Girsanov's theorem). This reduced-form approach avoids specifying a complete asset pricing model while remaining consistent with no-arbitrage valuation. All parameters ($r$, $\mu_s$, $\sigma_s$) are therefore risk-adjusted throughout the paper.]
 
 ### Technology
 
@@ -31,7 +31,7 @@ This specification nests the standard linear cost ($\gamma = 1$, constant return
 
 Once installed, capacity generates revenue at rate $\pi(X, K)$ that depends on demand and the firm's market share.
 For a monopolist, $\pi(X, K) = X K^\alpha$ with $\alpha \in (0, 1)$ capturing diminishing returns to capacity in revenue generation.
-Capacity depreciates at rate $\delta \geq 0$, reflecting both physical depreciation and technological obsolescence (a first-order concern for GPU clusters).^[Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
+Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
@@ -82,7 +82,7 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 $$
 K_H^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
 $$
-*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. The optimal capacity is increasing in demand growth $\mu_H$ and the depreciation rate $\delta$, and decreasing in investment cost $c$ and cost convexity $\gamma$.*
+*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. The optimal capacity is increasing in demand growth $\mu_H$ and the operating cost rate $\delta$, and decreasing in investment cost $c$ and cost convexity $\gamma$.*
 
 *Proof.* The firm maximizes the option value $F_H(X_0) \propto h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$, where $a(K) = A_H K^\alpha$ and $b(K) = cK^\gamma + \delta K/r$, over $K$. The first-order condition and closed-form derivation are in Appendix A. The existence condition ensures an interior solution; the requirement $\delta > 0$ is necessary for the linear operating-cost term to create an interior maximum. $\square$
 
@@ -90,9 +90,9 @@ $$
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
 Panel (b) illustrates the effect of revenue elasticity $\alpha$: higher $\alpha$ (less diminishing returns) raises the trigger and substantially increases capacity, since the marginal value of additional capacity is higher.
 Panel (c) shows that greater cost convexity $\gamma$ has a non-monotone effect on the trigger while sharply reducing optimal capacity, reflecting the rapidly increasing marginal cost of building at scale.
-Panel (d) demonstrates that higher depreciation $\delta$ raises both the trigger and the optimal capacity: operating costs provide the linear cost floor that creates the interior optimum (@eq-foc-K), and increasing $\delta$ shifts the cost balance toward larger scale.
+Panel (d) demonstrates that higher operating cost $\delta$ raises both the trigger and the optimal capacity: the linear cost floor creates the interior optimum (@eq-foc-K), and increasing $\delta$ shifts the cost balance toward larger scale.
 
-![Comparative statics of the single-firm investment policy in regime $H$. Each panel varies one parameter while holding others at baseline values. Solid lines (left axis) show the optimal trigger $X_H^*$; dashed lines (right axis) show the optimal capacity $K_H^*$. (a) Demand volatility $\sigma_H$; (b) revenue elasticity $\alpha$; (c) investment cost convexity $\gamma$; (d) depreciation rate $\delta$.](figures/fig_comparative_statics.pdf){#fig-comparative-statics}
+![Comparative statics of the single-firm investment policy in regime $H$. Each panel varies one parameter while holding others at baseline values. Solid lines (left axis) show the optimal trigger $X_H^*$; dashed lines (right axis) show the optimal capacity $K_H^*$. (a) Demand volatility $\sigma_H$; (b) revenue elasticity $\alpha$; (c) investment cost convexity $\gamma$; (d) operating cost rate $\delta$.](figures/fig_comparative_statics.pdf){#fig-comparative-statics}
 
 #### Option value in regime $L$
 
@@ -123,13 +123,15 @@ Panel (b) plots the particular-solution coefficient $C$, which captures the addi
 
 I now introduce strategic interaction and leverage.
 Two symmetric firms, $i \in \{1, 2\}$, each hold options to invest in capacity.
-Revenue combines the diminishing-returns production technology from @eq-installed-value with a Tullock contest function [@tullock1980efficient; @skaperdas1996contest] that determines market share:
+Revenue combines the demand state with a Tullock contest success function [@tullock1980efficient; @skaperdas1996contest]:
 $$
-\pi_i(X, K_i, K_j) = X \cdot K_i^\alpha \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha},
+\pi_i(X, K_i, K_j) = X \cdot \frac{K_i^{2\alpha}}{K_i^\alpha + K_j^\alpha},
 $$ {#eq-contest}
 where $K_i$ and $K_j$ are the capacities of firm $i$ and its rival.
-The first factor $K_i^\alpha$ is the production function (output scales with capacity at diminishing rate $\alpha$); the second factor $s_i = K_i^\alpha / (K_i^\alpha + K_j^\alpha)$ is the contest share (market share depends on relative capacity).
-This functional form nests the single-firm case: when $K_j = 0$, $s_i = 1$ and $\pi_i = X K_i^\alpha$ as in @eq-installed-value.
+I write this equivalently as $\pi_i = X \cdot K_i^\alpha \cdot s_i$, where $s_i = K_i^\alpha / (K_i^\alpha + K_j^\alpha)$ is the contest share.
+The factor $K_i^\alpha$ is firm $i$'s stand-alone output (as in the single-firm case, @eq-installed-value), and $s_i$ is the fraction it captures in competition.
+The Tullock form implies *industry* revenue $\sum_i \pi_i = X \cdot \sum_i K_i^{2\alpha}/(K_i^\alpha + K_j^\alpha)$, which is less than the sum of stand-alone outputs $X \cdot \sum_i K_i^\alpha$ whenever firms have unequal capacity---this rent dissipation is the economic cost of the arms race.
+The functional form nests the single-firm case: when $K_j = 0$, $s_i = 1$ and $\pi_i = X K_i^\alpha$ as in @eq-installed-value.
 The parameter $\alpha$ controls the sensitivity of market share to capacity: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand. This contest structure formalizes the arms-race logic that executives describe: when market share depends on relative capacity, each firm's investment decision is inseparable from its rivals', and the perceived "risk of underinvesting" [@pichai2024risk] is endogenous to the competitive structure.
 
 #### Capital structure
@@ -164,14 +166,18 @@ At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin,
 
 #### Equity and debt values
 
-Following the structural approach of @leland1994corporate, equity value above the default boundary is:
+Following the structural approach of @leland1994corporate, I define $E(X)$ as the *net present value of equity* at the moment of investment: the going-concern value of the equity claim minus the equity holders' initial capital contribution $(1 - \ell)I(K)$.
+This is the relevant object for the investment timing decision, since the firm invests when $E(X) \geq 0$.
+The going-concern equity value (market value of the equity claim after the investment is sunk) is $E(X) + (1 - \ell)I(K)$.
+
+Above the default boundary:
 $$
 E(X) = A_s X K^\alpha s_i - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} - A_s X_D K^\alpha s_i + \frac{\delta K}{r} + (1 - \ell)I(K)\right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
 where $s_i = K^\alpha / (K^\alpha + K_j^\alpha)$ is the contest share, $A_s = 1/(r - \mu_s)$, and $\beta_s^- < 0$ is the negative characteristic root.
 The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
-At $X = X_D$, equity equals zero by the smooth-pasting condition.
-Without debt ($\ell = 0$), equity simplifies to $E(X) = A_s X K^\alpha s_i - \delta K / r - I(K)$.
+At $X = X_D$, $E(X_D) = 0$ by the smooth-pasting condition: equity holders are indifferent between continuing to service debt and defaulting.^[Since $(1 - \ell)I(K)$ is a constant (sunk at the time of investment), it cancels in the smooth-pasting derivative condition $E'(X_D) = 0$ and does not affect the default boundary $X_D$ in @eq-default-boundary. The default boundary depends only on the flow terms (revenue, operating cost, coupon) and the option-value discount $\beta_s^-$.]
+Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_s X K^\alpha s_i - \delta K / r - I(K)$.
 
 Debt value is:
 $$
@@ -181,7 +187,17 @@ where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy and $A_s X_
 
 #### Preemption equilibrium
 
-I solve for the subgame perfect equilibrium of the investment timing game following @fudenberg1985preemption, @huisman2015strategic, and @pawlina2006real.
+I solve for the subgame perfect equilibrium of the following investment timing game.
+*Timing:* continuous; each firm chooses a stopping time (investment trigger) and a capacity level.
+*Strategy spaces:* firm $i$'s strategy is a pair $(X_i^*, K_i)$ specifying the demand threshold at which it invests and the capacity it installs.
+*Observability:* investment is immediately and publicly observed (closed-loop information), so the follower conditions on the leader's realized capacity $K_L$.
+*Solution concept:* I follow the preemption construction of @fudenberg1985preemption, extended to asymmetric capacity choice by @huisman2015strategic and @pawlina2006real.
+The equilibrium is solved by backward induction: the follower's optimal response is derived first, and the leader's trigger is then determined by rent equalization.
+
+The key conditions from @huisman2015strategic that underwrite the preemption construction are: (i) the value of being the leader exceeds the value of simultaneous investment at the preemption trigger; (ii) the follower's optimal trigger exceeds the leader's.
+Both conditions are verified numerically for all parameterizations, including those with leverage and default risk, which extend the payoff structure beyond @huisman2015strategic.
+Default risk modifies the leader's and follower's values (through the limited-liability option), but does not alter the sequential structure of the game because the default decision occurs *after* investment and does not change the timing incentives.
+
 By symmetry, both firms are identical ex ante.
 The equilibrium features sequential investment: one firm (the *leader*) invests first at trigger $X_L$, and the other (the *follower*) invests later at trigger $X_F > X_L$.
 

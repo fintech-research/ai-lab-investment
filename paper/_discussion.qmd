@@ -67,7 +67,8 @@ In reality, firms can expand incrementally, adjust training-inference ratios, an
 A more general model would feature sequential expansion options, which I leave for future work.
 
 **Risk-adjusted discounting.**
-I value cash flows using a risk-adjusted discount rate (WACC), which captures the systematic risk premium demanded by both equity and debt holders. This is standard in corporate finance but abstracts from the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth).
+All valuation uses a reduced-form risk-adjusted framework: the discount rate $r$ is the WACC and the growth rates $\mu_s$ are risk-adjusted (physical growth minus a risk premium), as detailed in @sec-model.
+This approach captures the systematic risk premium demanded by both equity and debt holders but abstracts from the risk preferences of concentrated shareholders (e.g., startup founders with undiversified wealth) and from any state-dependence of the risk premium across the $L$ and $H$ regimes.
 
 **Talent and organizational constraints.**
 The model treats the cost of capacity expansion as purely financial, parameterized by the investment cost function $I(K) = cK^\gamma$. In practice, scarce specialized talent---researchers capable of designing novel architectures, engineers who can operate clusters at scale---may be the binding constraint on expansion. A richer model would incorporate a human capital dimension alongside physical compute.

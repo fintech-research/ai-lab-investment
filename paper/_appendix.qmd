@@ -171,7 +171,7 @@ The calibration uses data from the following sources:
 | Demand growth ($\mu$) | Cloud revenue growth rates (AWS, Azure, GCP) |
 | Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
 | Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training |
-| Depreciation ($\delta$) | GAAP useful life for data center equipment (3--5 years) |
+| Operating cost rate ($\delta$) | Industry estimates of power, cooling, and maintenance costs; GAAP useful life used as cross-check |
 
 : Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
 
@@ -189,7 +189,7 @@ The stylized firms are composites designed to capture the key features of each f
 | H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ |
 | H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ |
 | Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ |
-| Depreciation | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
+| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
 
 : Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities tbl-colwidths="[30,14,14,21,21]"}
 

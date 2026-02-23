@@ -2,25 +2,27 @@
 
 ### $N$-Firm Sequential Equilibrium
 
-I extend the duopoly to $N \geq 2$ symmetric firms using the backward induction approach of @bouis2009multistage.
+I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
 Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into account the capacity of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
+The equilibrium concept is a Nash equilibrium in entry-order-contingent strategies: each firm $k$ chooses its trigger $X_k^*$ and capacity $K_k$ to maximize its option value, taking other firms' strategies as given.
 
 #### Revenue sharing with $N$ firms
 
-With $N$ firms in the market, firm $i$'s revenue combines the production technology with a Tullock contest share, as in the duopoly case (@eq-contest):
+With $N$ firms in the market, firm $i$'s revenue extends the duopoly Tullock contest (@eq-contest):
 $$
-\pi_i(X, K_1, \ldots, K_N) = X \cdot K_i^\alpha \cdot \frac{K_i^\alpha}{\sum_{j=1}^{N} K_j^\alpha}.
+\pi_i(X, K_1, \ldots, K_N) = X \cdot \frac{K_i^{2\alpha}}{\sum_{j=1}^{N} K_j^\alpha},
 $$ {#eq-contest-N}
 
-The first factor $K_i^\alpha$ is the production function; the second factor is the contest share.
+equivalently $\pi_i = X \cdot K_i^\alpha \cdot s_i$ where $s_i = K_i^\alpha / \sum_j K_j^\alpha$ is the contest share.
 This nests the duopoly: when $N=2$, @eq-contest-N reduces to @eq-contest.
 Adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
 
-#### Iterative refinement
+#### Numerical solution
 
-I solve the game by iterative refinement (fixed-point iteration).
+I compute the equilibrium using iterative best-response (fixed-point iteration on the capacity profile), which is a numerical method distinct from the backward-induction solution concept of the duopoly.
 Each firm's optimal trigger and capacity are computed given all other firms' capacities, and the process repeats until convergence.
 In each iteration, each firm $k$ solves a follower problem taking the current capacity estimates of all $N-1$ other firms as given.
+Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
 
 **Proposition 4** ($N$-firm equilibrium properties).
 *In the $N$-firm sequential equilibrium:*
