@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Research Project
 
-"Investing in Intelligence: Real Options, Default Risk, and Strategic Competition in AI Compute Infrastructure"
+"Investing in Artificial General Intelligence"
 
 A unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default, and diminishing returns calibrated to AI scaling laws. The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, (ii) numerical solutions for N firms with dynamic training/inference allocation, and (iii) a "revealed beliefs" methodology for inferring AI labs' private probability assessments of transformative AI arrival from observable investment decisions. Target: JF, RFS, or Econometrica.
 
@@ -44,7 +44,7 @@ All commands use `just` (task runner) and `uv` (Python package manager). Run `ju
 
 ### Outputs
 
-- **Research paper**: `paper/` directory, Quarto → PDF (lualatex, Econometrica style)
+- **Research paper**: `paper/` directory, Quarto → PDF/HTML
 - **Slides**: `slides/long-form/`, Quarto → RevealJS HTML
 - **API docs**: MkDocs with mkdocstrings, served from `docs/`
 
