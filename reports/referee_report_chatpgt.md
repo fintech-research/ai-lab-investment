@@ -1,204 +1,274 @@
-Referee Report on “Investing in Artificial General Intelligence”
+# Referee Report on “Investing in Artificial General Intelligence”
 
-Recommendation: Reject (encourage resubmission elsewhere after substantial revision)
+### Recommendation (for a top general-interest finance journal)
 
-This paper develops a dynamic investment model for frontier AI labs that combines irreversible investment, strategic competition, endogenous default, regime switching, and a training-versus-inference allocation choice. The paper is ambitious and timely. The central idea is interesting: firms invest in compute capacity, choose how much to allocate to current revenue (inference) versus capability-building (training), and this allocation affects both current cash flows and the arrival rate of a high-demand “AGI” regime. The paper also proposes a “revealed beliefs” inversion to infer firms’ implied AGI timeline beliefs from observed investment and allocation choices.
+**Reject (encourage substantial reworking and resubmission elsewhere first).**
 
-The topic is important, and the paper is creative. The draft is also unusually broad for a first pass: it integrates multiple literatures and tries to deliver both theory and an applied calibration. The framing is compelling and the paper is clearly written in many places.
+The paper is ambitious, creative, and timely. It combines real options, strategic investment, regime switching, default, and an AI-specific training/inference allocation mechanism in one framework. That is a real strength. The paper also has strong instincts about what is economically distinctive in frontier AI infrastructure competition, especially the training-vs-inference trade-off and the idea of recovering implied beliefs from observed investment choices. The paper clearly states these intended contributions in the introduction and related literature sections.
 
-That said, in its current form, the paper is not ready for a top finance journal. My main concerns are (i) the theoretical derivations/proofs are not yet at the level implied by the claims, (ii) several key results are asserted with sketch proofs or numerical verification only, (iii) there are internal inconsistencies in the derivation and proof logic, and (iv) the calibration/revealed-beliefs exercise is too illustrative and under-identified for the strength of the empirical claims. I would encourage the author to continue developing this project, but it needs a substantial tightening of scope and a more rigorous theoretical core before it can be evaluated as a top-field theory contribution.
+That said, for a top finance journal, the paper currently falls short on three fronts:
 
-## 1) Contribution and overall assessment
+1. **The theoretical contribution is over-claimed relative to what is rigorously established.**
+2. **Several key propositions/proofs are not fully general as stated (and in places rely on baseline-specific or additional conditions).**
+3. **The empirical/calibration/revealed-beliefs section is interesting but too fragile for the claims made, especially given the paper’s own sensitivity results.**
 
-The paper’s strongest contribution is conceptual: putting the training/inference allocation at the center of irreversible investment under strategic competition and default risk. That is a genuinely interesting mechanism, and the “faith-based survival” idea (training investment raises continuation value and can lower the default boundary) is novel and potentially important.
+The paper could become a strong theory-plus-calibration piece (or a first step toward a stronger structural/empirical paper), but it needs a sharper objective and more discipline in theorem statements, assumptions, and identification claims.
 
-The paper also does a good job motivating why standard real-options capacity models miss something essential in this setting (the same hardware supports both current revenue and future capability competition). The high-level economic story is strong.
+---
 
-However, the current contribution is overstated relative to what is actually established. The paper repeatedly emphasizes “closed-form” solutions and formal propositions, but many of the key results are either:
+## Summary of contribution (what works)
 
-* only partially derived,
-* dependent on unproven assertions,
-* established numerically rather than analytically,
-* or internally inconsistent with the stated model equations.
+The paper’s core idea is to model AI-lab compute investment as a joint choice of:
 
-For a Journal of Finance-style theory paper, the theoretical foundation has to be much tighter than this.
+* **when to invest**
+* **how much capacity to build**
+* **what fraction of capacity to allocate to training vs inference**
 
-## 2) Major technical concerns (model derivation and proofs)
+with regime switching from a low-demand to high-demand “AGI” regime, and with the regime arrival rate potentially endogenous to industry training investment. This is a novel and economically meaningful mechanism. The introduction presents this well, and the “faith-based survival” intuition is memorable and potentially publishable if cleanly established.
 
-### A. The low-regime option value derivation appears internally inconsistent
+The related literature section is broad and mostly appropriate in terms of categories: real options, strategic timing/capacity, structural credit/default, and some economics of AI/scaling laws.
 
-The paper states in the low regime that the option value takes the form (F(X)=B X^{\beta_H}) and explicitly says “the option value uses (\beta_H) as the characteristic exponent” because the option value is driven by H-regime expectations (Section 2.3.3). It then uses this to derive the low-regime trigger formula by directly replacing the revenue coefficient with (A_{\text{eff}}). This is a central step in the paper.
+The paper also appropriately tempers some claims in Section 5 by calling the inversion “illustrative” and stressing sensitivity/ordinal rather than cardinal inference. That self-awareness is a plus.
 
-I do not think this is justified as written. In a regime-switching stopping problem with Poisson transitions, the low-regime value typically solves a coupled ODE (or HJB) involving the L-regime differential operator and a switching term into the H-regime value. One generally obtains:
+---
 
-* a homogeneous solution with exponents driven by L-regime parameters (and (r+\lambda)-type terms), and
-* a particular solution tied to the H-regime continuation.
+## Main concerns
 
-The text itself hints at this by later referencing a “particular-solution coefficient (C)” in Figure 4 discussion, but the displayed low-regime option-value formula omits such a term and proceeds as if the H-regime exponent alone is sufficient. That is a red flag.
+### 1) The paper tries to do too much, and the strongest parts get diluted
 
-This is not a minor notation issue. It affects:
+Right now this is simultaneously:
 
-* the low-regime trigger formula,
-* comparative statics with respect to (\tilde\lambda),
-* the entire logic of the revealed-beliefs inversion if low-regime policies are built on the wrong option structure.
+* a new strategic real-options theory paper,
+* a structural credit/default paper,
+* an AI economics paper,
+* a calibration paper,
+* a revealed-beliefs inversion paper,
+* and a policy paper.
 
-At minimum, the author needs to derive the coupled L/H stopping problem explicitly and show under what special assumptions the reduced form in Section 2.3.3 is valid.
+For JoF-level standards, that breadth is only an advantage if each piece is airtight. Here, it creates the opposite problem: the model is rich, but many results are only partially established (baseline-specific, heuristic, or numerical), while the calibration/inversion is too fragile to carry the empirical ambition.
 
-### B. The proofs are mostly proof sketches, not proofs
+You need to decide what the paper is.
 
-The appendix proofs (especially Propositions 3–5) are not at top-journal standard.
+**My view:** the strongest paper is either:
 
-* Proposition 3 (preemption equilibrium): existence/uniqueness is delegated to Huisman and Kort “applied to enriched payoff functions,” with conditions said to be “verified numerically.” That is not sufficient if the proposition is stated as a theorem-level claim under the new model. The enrichment here is not cosmetic; the payoff functions now include endogenous (\tilde\lambda), training allocation, and default risk. Those changes can alter monotonicity, single crossing, and regularity conditions.
+* a **theory paper** centered on the training–inference allocation under strategic investment and regime switching, with a disciplined set of propositions and clean comparative statics, or
+* a **theory + calibration note** with much humbler revealed-beliefs claims.
 
-* Proposition 4 (N-firm equilibrium): again mostly intuitive arguments plus numerical verification. The section itself acknowledges some statements are “numerical observations.” Those should be labeled as such, not stated as formal proposition claims.
+As written, the manuscript reads like it wants top-journal breadth, but the proof architecture and identification arguments are not yet at that level.
 
-* Proposition 5 (asymmetric investment dilemma): the proof is essentially an intuition/Taylor expansion argument plus “verified numerically” when leverage is present. That may be fine as a conjecture or calibrated result, but not as a formal proposition unless the theorem is weakened.
+---
 
-In short: either prove the propositions rigorously (with full assumptions and lemmas), or reframe them as numerical findings.
+### 2) Theoretical statements are stronger than the proofs support
 
-### C. Proposition 3 proof contains an economically and mathematically problematic statement
+This is the biggest issue for a theory-heavy submission.
 
-In the appendix proof of Proposition 3, the argument for the leader having higher training fraction includes the claim that during monopoly phase the leader “earns (X \cdot K_L^\alpha) regardless of (\phi).” That is inconsistent with the model’s low-regime revenue specification, where revenue depends on inference capacity ((1-\phi)K). In the low regime, (\phi) should matter directly for revenue. This undermines the proof intuition as written.
+#### 2.1 Proposition 1 is not stated at the right level of generality
 
-That is a serious issue because Proposition 3(ii) is one of the paper’s distinctive strategic predictions.
+Proposition 1 presents broad statements about interiority, uniqueness, and comparative statics of the optimal training fraction. But Appendix A explicitly says the proof applies in the **baseline regime where the simplified low-regime option value** (F_L(X)=C X^{\beta_H}) is valid (i.e., a parameter region in which there is no interior L-regime trigger).
 
-### D. Proposition 2 proof and statements need tightening
+That is a materially narrower claim than the proposition language suggests. If the proposition is intended to be general, the proof is incomplete. If it is baseline-specific, the proposition should be rewritten to say so.
 
-The default-boundary proposition is one of the paper’s more attractive results, but the proof is loose and contains at least one confusing/inaccurate statement.
+This matters because the economics of the training decision is precisely where the paper claims novelty. A top referee will push hard on whether the result survives beyond the calibration region.
 
-Examples:
+#### 2.2 There is a clear sign error in the Appendix A uniqueness argument
 
-* In the leverage-training substitution discussion, the wording suggests both leverage and training “increase (A_{\text{eff}}),” but leverage should primarily affect the numerator (coupon/debt service burden), not (A_{\text{eff}}).
-* The sign claim for (\partial A_{\text{eff}}/\partial \tilde\lambda) is asserted under broad conditions that may not be sufficient once contest shares and the L-regime inference term are included.
-* Comparative statics depend on whether (\phi) and (K) are held fixed or optimized jointly (the text shifts between partial and equilibrium effects).
+In the proof of Proposition 1, the uniqueness argument states (paraphrasing): because (\alpha\in(0,1)), one gets (\alpha(\alpha-1)>0), while bracketed terms are positive, which implies strict concavity. This sign is wrong: for (\alpha\in(0,1)), **(\alpha(\alpha-1)<0)**. The conclusion (strict concavity) may still be correct, but the written argument contains a mathematical sign mistake. (This is exactly the kind of thing that hurts credibility in a top-journal theory submission.) The extracted appendix text shows this explicitly.  (and the underlying proof text around the uniqueness step)
 
-These can be fixed, but they need precise statements and notation.
+This is fixable, but it signals insufficient theorem-proof polishing.
 
-### E. Proposition 1 proof (interior (\phi^*)) is too informal and has sign/asymptotic issues
+#### 2.3 Proposition 2 (“default boundary decreasing in (\tilde\lambda)”) appears to require an additional condition that is not emphasized in the proposition statement
 
-The proof of interiority for the training fraction relies on boundary arguments that are sketched informally. The asymptotic logic near (\phi \to 0) and (\phi \to 1) is plausible under (\alpha\in(0,1)), but the proof needs explicit derivatives and limits. As written, the sign discussion is muddled and easy to misread. Since the interior allocation is central to the economics, this should be a formal lemma, not a narrative argument.
+The proposition states that the default boundary decreases in (\tilde\lambda) because H-regime continuation value raises (A_{\text{eff},i}).
 
-## 3) Literature review: strong breadth, but uneven weighting and some missing anchors
+However, the proof sketch differentiates (A_{\text{eff},i}) w.r.t. (\tilde\lambda) and the sign depends on a difference term (effectively (R_H-R_L)); the derivative is not globally positive without a condition. The appendix itself appears to rely on this condition for the leverage-training substitution discussion (“when (R_H>R_L)”).
 
-The literature review is broad and, in many places, well informed. The paper does a good job covering the core finance building blocks (real options, strategic investment, structural credit risk, regime-switching valuation), and the positioning relative to Huisman & Kort is sensible.
+So either:
 
-That said, the review has three problems in its current form:
+* add a maintained condition (e.g., H-regime continuation sufficiently valuable relative to L-regime revenues), or
+* weaken the proposition to a conditional statement.
 
-1. Overstatement of novelty
-   The paper repeatedly claims no existing model combines all features. That may be true in a literal sense, but top journals care more about whether the new combination yields a sharp, robust, and testable insight. The review should spend less space on “feature stacking” and more on identifying the one or two genuinely new mechanisms.
+As currently written, the proposition overstates the proof.
 
-2. Missing/underweighted adjacent theory literatures
-   Given the focus on endogenous technological arrival and strategic allocation to future capability, the paper should engage more directly with:
+#### 2.4 Proposition 3 (preemption equilibrium) relies on a heuristic extension of a known result without enough verification
 
-   * strategic R&D races / patent race / innovation timing models,
-   * innovation tournaments and dynamic competition in technology races,
-   * endogenous technology arrival in IO/macro settings,
-   * possibly learning and belief heterogeneity in real options games (if the paper wants to emphasize revealed beliefs).
+The appendix says the proof follows Huisman and Kort (2015), and claims continuity/monotonicity/single-crossing hold in the “enriched” model with training allocation, endogenous (\tilde\lambda), and default risk.
 
-   The current review has related pieces, but the core “technology race with strategic capability-building” ancestry is not fully developed.
+But the single-crossing argument is justified using a simplified comparison (“leader value grows linearly in (X) while follower value grows as (X^{\beta_H})”), which is too loose in this enriched environment because:
 
-3. Heavy reliance on executive quotes and industry narratives in the academic positioning
-   The motivation is effective, but some citations and claims read more like a policy essay than a top finance theory paper. The paper can keep the executive quotes, but the literature review should more cleanly separate:
+* leader value includes regime-switch continuation and default considerations,
+* allocation choices differ by leader/follower,
+* and default boundaries can create kinks/nonlinearities.
 
-   * formal theory contribution,
-   * institutional motivation,
-   * illustrative sector application.
+This may still be true, but you need a real proof or a clearly labeled conjecture + numerical verification. For top-journal theory standards, “the enriched model satisfies the same conditions” is not enough unless the conditions are checked carefully and explicitly.
 
-## 4) Calibration and revealed-beliefs inversion: promising idea, but too weakly identified for current claims
+---
 
-The inversion from observed CapEx and training allocation to implied (\lambda) is a clever idea. The paper is upfront that the exercise is illustrative, and that is appropriate.
+### 3) The model’s economics are interesting, but some mechanisms are partly imposed rather than derived
 
-But the current draft still draws stronger inferences than the empirical setup can support.
+The paper’s central mechanism is compelling, but several choices are highly stylized:
 
-Main concerns:
+* fixed training fraction after investment,
+* fixed installed capacity (no staged expansion),
+* absorbing H regime,
+* Tullock contest in both regimes,
+* reduced-form mapping from training compute to arrival intensity.
 
-* Many parameters are not directly observable and are jointly influential (e.g., cost convexity, operating cost, discount rate, revenue elasticities, contest structure, leverage assumptions).
-* “Training fraction” is not directly observed in a clean way for the firms used in calibration; any proxy is likely noisy and model-dependent.
-* The mapping from firm-level CapEx to “frontier training compute” versus broader infrastructure (including cloud, power, networking, redundancy, etc.) is extremely imperfect.
-* Endogeneity is severe: observed investment reflects beliefs, financing constraints, contracting frictions, strategic signaling, customer commitments, and ecosystem complementarities.
+You do acknowledge some of these limitations, which is good.
 
-As a result, the “revealed beliefs” section is better viewed as:
+But a top finance referee will ask: does the result hinge on these choices?
 
-* a structural thought experiment,
-* a sensitivity analysis,
-* or a partial-identification exercise (set-valued implied beliefs under parameter uncertainty),
+For example, the “faith-based survival” effect is striking, but it may be driven heavily by the modeling choice that training both:
 
-rather than a point-inference method.
+1. directly improves H-regime revenues, and
+2. increases the arrival rate of the favorable regime.
 
-If the author wants this to be a serious empirical contribution, the paper needs a much more disciplined identification strategy (or a narrower claim).
+That double channel is economically plausible, but it also stacks the deck. You need sharper separation of what is robust to:
 
-## 5) Scope and positioning problem
+* exogenous (\lambda),
+* alternative contest/market-share structures,
+* dynamic reallocation of training/inference post-investment,
+* staged capacity expansion,
+* debt covenants/rollover constraints (especially if CoreWeave-style firms are a calibration target).
 
-The paper is trying to do too much at once:
+Without that, the paper risks being read as a rich but fragile parable.
 
-* new theory model,
-* closed-form results,
-* duopoly preemption game,
-* N-firm extension,
-* endogenous default,
-* calibration,
-* revealed-beliefs inversion,
-* policy implications.
+---
 
-This breadth is impressive, but it dilutes the paper and makes the weakest parts too visible. For a top-journal submission, I would strongly recommend narrowing the scope.
+### 4) The literature review is broad and competent, but not yet disciplined enough for JoF positioning
 
-A more credible path would be one of:
+The literature review is generally appropriate and cites the expected foundations (McDonald-Siegel, Grenadier, Huisman-Kort, Leland, etc.), plus AI scaling and macro-AI references.
 
-Option A (theory-first paper)
+The problem is not coverage. The problem is positioning.
 
-* Focus on the core model and one or two robust propositions:
+At times the review reads like a comprehensive map of adjacent literatures rather than a sharp argument for why this paper belongs in a top finance journal. The paper should distinguish more clearly between:
 
-  * training/inference allocation under regime-switching demand,
-  * endogenous default boundary and “faith-based survival.”
-* Provide rigorous derivations and proofs.
-* Keep calibration minimal and illustrative.
+* **what is genuinely finance** (investment timing/capacity under uncertainty, strategic preemption, financing/default interactions),
+* **what is AI-specific economics seasoning**, and
+* **what is calibration context rather than contribution**.
 
-Option B (quantitative/modeling paper)
+Right now the review’s breadth may backfire by inviting specialists to ask why each omitted paper or mechanism is not included.
 
-* Be explicit that many results are numerical.
-* Recast some propositions as “numerical findings.”
-* Build a transparent sensitivity/identification analysis around the inversion exercise.
+A stronger JoF-style framing would be:
 
-Right now the draft wants theorem-level authority and calibrated relevance at the same time, but the theory is not yet airtight and the quantitative exercise is not yet disciplined enough.
+* one core finance question,
+* one core theoretical innovation,
+* one disciplined set of testable/model-implied comparative statics,
+* optional AI application.
 
-## 6) Specific comments and suggestions for revision
+---
 
-1. Re-derive Section 2.3.3 from the correct coupled regime-switching stopping problem.
-   This is the highest-priority issue. If the current low-regime trigger is only an approximation, say so clearly and test its accuracy.
+### 5) The revealed-beliefs inversion is interesting but currently too fragile to support strong claims
 
-2. Downgrade several propositions to numerical propositions/observations unless formal proofs are added.
-   In particular Propositions 3–5.
+Section 5 is conceptually appealing: use investment intensity and training fraction as two moments to infer an implied AGI arrival-rate belief.
 
-3. Clean up notation and distinguish clearly:
+The paper is right that the training fraction can break degeneracies that CapEx/Revenue alone cannot. The CoreWeave-vs-Anthropic contrast is a good illustration of the mechanism.
 
-   * exogenous (\lambda_0),
-   * endogenous (\tilde\lambda),
-   * partial vs equilibrium comparative statics,
-   * fixed-((K,\phi)) vs optimized comparative statics.
+However, the identification is much weaker than the prose sometimes suggests:
 
-4. Tighten the default-risk section:
+* the inversion is conditional on many calibrated parameters and on the model structure itself,
+* several “observable” inputs are in practice noisy or difficult to map cleanly (especially training fraction),
+* and your own sensitivity results show extreme instability in cardinal (\hat\lambda), especially to (\sigma_H). For example, the Anthropic-like (\hat\lambda) spanning roughly ([0.003, 0.90]) under a ±25% volatility perturbation is not a minor sensitivity; it is near-total lack of cardinal identification.
 
-   * define exactly what is held fixed in Proposition 2,
-   * clean up the leverage-training substitution wording,
-   * prove (or appropriately qualify) monotonicity conditions.
+You acknowledge this and emphasize ordinal rankings, which is the right instinct.  But then the inversion should be reframed more aggressively as:
 
-5. Revisit Proposition 3(ii) proof intuition.
-   The current monopoly-phase argument appears inconsistent with the model’s own revenue function.
+* **a structural interpretation device**
+* **not an estimate**
+* **not a revealed probability**
+* and not even a tight “implied belief” absent much stronger measurement/validation.
 
-6. Clarify the equilibrium concept in the N-firm section.
-   The text alternates between “sequential equilibrium” language and iterative fixed-point best responses. Those are not the same object. State precisely what equilibrium is being computed.
+For a top finance journal, this section would need either:
 
-7. Rebalance the literature review.
-   Less emphasis on “this paper combines X+Y+Z” and more on the single novel mechanism and where it sits relative to strategic R&D / technology race models.
+1. a much more credible empirical measurement strategy for training allocation and firm-level model primitives, or
+2. a tighter theorem/identification proposition about what is and is not identified under observable sufficient statistics.
 
-8. Soften empirical claims in the revealed-beliefs section or provide a partial-identification framework.
-   The current claims about inferred beliefs are interesting, but too brittle for strong interpretation.
+---
 
-9. Consider a shorter paper with a cleaner theorem set.
-   The model is interesting enough to stand on a tighter core.
+## Comments on derivations and proofs (specific technical points)
 
-## 7) Bottom line
+These are the issues I would expect an editor/referee to flag.
 
-This is a creative, timely, and potentially important project. The economic intuition is strong, and the training/inference allocation mechanism is genuinely novel in this context. But the paper is not yet ready for a top finance journal because the mathematical derivations and proofs do not currently support the strength of the claims, and the calibration/inversion section is too illustrative for the inferences drawn.
+### A. Proposition 1 proof should be revised for correctness and scope
 
-I would encourage the author to continue with the project, but with a sharper focus and substantially stronger theory.
+* **Scope mismatch**: Appendix A states the proof is for the baseline parameter region where the simplified (F_L) solution applies; proposition language sounds broader.
+* **Sign error** in concavity/uniqueness argument ((\alpha(\alpha-1)>0) should be (<0)); conclusion may remain valid but the written proof is incorrect as stated.
+* Comparative statics rely on an implicit function argument over (A_{\text{eff}}), but if (\tilde\lambda) itself depends on training choices (through Equation 2 in the duopoly/endogenous-arrival setting), then you need to be explicit about whether the proposition is proved under:
+
+  * exogenous (\tilde\lambda),
+  * partial equilibrium in (\tilde\lambda),
+  * or fixed-point equilibrium.
+
+### B. Proposition 2 likely needs conditional wording
+
+* The sign of (\partial A_{\text{eff}}/\partial \tilde\lambda) is not obviously always positive; the appendix derivation itself suggests dependence on relative magnitudes of L- and H-regime payoffs.
+* The leverage-training substitution statement in part (iii) is economically interesting, but it seems to rely on the same condition (H continuation sufficiently valuable). This should be stated cleanly.
+
+### C. Proposition 3 proof is too heuristic for a central equilibrium claim
+
+* If preemption equilibrium existence/uniqueness is a main result, the extension from Huisman-Kort should be formalized.
+* At minimum, provide:
+
+  * exact conditions,
+  * a lemma showing monotonicity and single crossing in the enriched model,
+  * and numerical verification across the parameter region used in calibration (not just baseline).
+
+### D. Baseline-specific simplifications should be surfaced earlier
+
+The statement that the L-regime option can reduce to a particular solution because no interior L-trigger exists under baseline parameters is important for understanding what is analytical vs numerical in the paper. This currently appears as a technical discussion after the derivation.
+
+Bring this up more explicitly in the roadmap and theorem statements.
+
+---
+
+## What would make this paper much stronger (practical roadmap)
+
+### Path A (best chance for top theory/finance outlet): Narrow and harden the theory
+
+1. **Center the paper on one main theoretical contribution**
+   Training–inference allocation under strategic real options with regime switching (and possibly default as an extension).
+2. **Rewrite propositions with exact domains/conditions**
+   No overbroad “always” statements.
+3. **Turn Proposition 3 into a real theorem (or demote it)**
+   If proof is not ready, label as proposition supported numerically.
+4. **Separate exogenous-(\lambda) and endogenous-(\lambda) results clearly**
+5. **Move revealed-beliefs calibration to a shorter section or appendix**
+   Present as illustration, not inference.
+
+### Path B (application-oriented): Keep breadth, lower claims, and target field journal
+
+1. Emphasize the paper as a **structural framework + scenario tool**
+2. Reframe Section 5 as **interpretive inversion under maintained assumptions**
+3. Add extensive robustness/alternative specifications
+4. Drop/soften strong wording around “revealed beliefs” and policy implications
+
+---
+
+## Minor comments (but worth fixing)
+
+1. **Claim discipline / wording**
+   Phrases like “delivering analytical investment triggers and capacity in a duopoly” read stronger than what is actually closed-form vs semi-analytical/numerical in the text. Tighten this.
+
+2. **Literature positioning**
+   The related literature is long and competent, but you should shorten and sharpen the “closest paper” comparisons. The current version invites debates over completeness rather than persuading the reader of contribution.
+
+3. **Notation clarity**
+   The use of (\lambda), (\tilde\lambda), and different parameterizations across sections/propositions should be standardized more aggressively. This is especially important once (\tilde\lambda) becomes endogenous to strategic choices.
+
+4. **Empirical observability of training fraction**
+   Section 5 treats training fraction as observable or calibratable; in practice this is noisy, inferred, and potentially strategic/unobservable. You should discuss measurement error explicitly and show how inference degrades under noise.
+
+5. **Sensitivity presentation**
+   The paper is commendably honest about sensitivity, but the implication should be stronger: when (\hat\lambda) spans almost the entire parameter space under plausible perturbations, cardinal claims are not “noisy”; they are essentially non-identified in practice.
+
+---
+
+## Bottom line
+
+This is a smart and original paper with a genuinely interesting mechanism. The author has good taste in the economic problem and has assembled an ambitious framework. But at the current stage, it reads more like a promising working paper than a JoF-ready submission.
+
+The main issue is not the idea. It is the gap between:
+
+* what is claimed,
+* what is proved,
+* and what is identified.
+
+If the paper is narrowed and the theory/proofs are made precise (especially Proposition 1 scope, Proposition 2 conditions, and Proposition 3 proof), it could become a strong contribution. As it stands, I would not recommend publication at a top general-interest finance journal.
