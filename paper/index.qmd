@@ -1,5 +1,5 @@
 ---
-title: "Investing in Intelligence: Real Options, Default Risk, and Strategic Competition in AI Compute Infrastructure"
+title: "Investing in Artificial General Intelligence"
 date: today
 date-format: long
 format:
@@ -16,11 +16,11 @@ affiliations:
   - id: 1
     name: HEC Montréal
 abstract: |
-  I develop a unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
-  At the center of the model is the training-inference allocation: firms choose how to split compute capacity between model training (which builds capabilities for the future and contributes to an endogenous regime switch arrival rate) and inference serving (which generates current revenue), facing regime-specific Tullock contests over inference capacity today and training quality tomorrow.
-  The model delivers: (i) closed-form optimal investment triggers, capacity, and training fraction in a duopoly with default risk, where a "faith-based survival" mechanism---optimism about transformative AI backed by training investment---lowers the endogenous default boundary; (ii) numerical solutions for $N$-firm sequential equilibrium; and (iii) a "revealed beliefs" methodology that uses both investment intensity and training fraction to extract AI labs' private beliefs about transformative AI arrival.
-  Calibrated to stylized versions of Anthropic, OpenAI, Google DeepMind, and CoreWeave, the model reveals substantial dispersion in implied beliefs, with the training fraction diagnostic breaking the degeneracy of single-moment inversion.
-  I introduce the "AI investment dilemma"---the asymmetric cost of belief mismatches, amplified by the training channel---showing that aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing extreme capital commitments only under genuinely optimistic beliefs.
+  I model the investment decisions of frontier AI laboratories racing to develop Artificial General Intelligence (AGI).
+  Firms choose when to invest, how much compute capacity to build, and how to split it between model training---which builds capabilities and contributes to an endogenous regime switch---and inference serving, which generates current revenue.
+  The model combines real options, regime switching, oligopoly competition, endogenous default risk, and diminishing returns calibrated to scaling laws, delivering closed-form investment triggers and capacity in a duopoly with default risk.
+  A "faith-based survival" mechanism emerges: optimism about AGI, backed by training investment, lowers the default boundary---the hope of AGI literally keeps the firm alive.
+  An illustrative calibration to Anthropic, OpenAI, Google DeepMind, and CoreWeave reveals dispersion in implied beliefs about AGI timelines and an asymmetric "AI investment dilemma" in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
 keywords:
   - real options
   - AI infrastructure

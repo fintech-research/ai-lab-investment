@@ -201,24 +201,17 @@ Conservative underinvestment, by contrast, simply delays investment and reduces 
 
 #### Implications
 
-The AI investment dilemma has several implications:
-
-1. **Rationalization of extreme investment**: the observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs. Investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly---both from building too much capacity and from over-allocating to training.
-
-2. **Information content of investment and training fraction**: the asymmetry means that overinvestment is more informative than underinvestment. A firm investing aggressively *and* allocating heavily to training is more likely to genuinely believe in high $\lambda$ than a conservative firm is to genuinely believe in low $\lambda$. The training fraction provides additional information: firms that train more reveal conviction about the H-regime payoff.
-
-3. **Optimal hedging**: the asymmetric loss function implies that firms should hedge against aggressive overinvestment more than conservative underinvestment, consistent with the phased investment strategies observed in practice (start with smaller clusters, scale up as demand materializes).
+The AI investment dilemma has several implications.
+The observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs: investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly, both from building too much capacity and from over-allocating to training.
+The asymmetry also means that overinvestment is more informative than underinvestment---a firm investing aggressively *and* allocating heavily to training is more likely to genuinely believe in high $\lambda$ than a conservative firm is to genuinely believe in low $\lambda$, because the training fraction provides additional information about conviction regarding the H-regime payoff.
+Finally, the asymmetric loss function implies that firms should hedge against aggressive overinvestment more than conservative underinvestment, consistent with the phased investment strategies observed in practice (start with smaller clusters, scale up as demand materializes).
 
 ### Equity Valuation Sensitivity
 
 The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
 I compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
 
-The results show that equity value is:
-
-- **Increasing in $\lambda$**: higher $\lambda$ implies earlier and larger investment with more training, generating more value from the growth option.
-- **Convex in $\lambda$**: the marginal effect of higher $\lambda$ is increasing, meaning that the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
-- **Sensitive to $\lambda$ at moderate values**: the steepest part of the valuation curve is around $\lambda \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
-
+The results show that equity value is increasing and convex in $\lambda$: higher $\lambda$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\lambda$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
+The steepest part of the valuation curve lies around $\lambda \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
 This convexity implies that a portfolio of AI infrastructure firms should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.
 The training allocation channel amplifies this convexity: at higher $\lambda$, firms not only invest more but allocate more to training, compounding the H-regime upside.
