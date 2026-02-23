@@ -36,7 +36,7 @@ The dominant strategic margin is not atomistic competition but rivalry among a f
 Duopoly is the minimal model that captures the key forces: strategic preemption, race-like training allocation incentives, and continuation-value effects under leverage.
 The paper does not claim the industry is literally two firms; it claims that duopoly captures the dominant strategic force.
 Broader oligopoly crowding, coalition effects, entry and exit of smaller labs, and endogenous financing interactions across many firms are important but second-order relative to the mechanisms studied here.
-I verify numerically that the qualitative patterns survive with $N > 2$ firms in @sec-nfirm-appendix.
+I verify numerically that the qualitative patterns survive with $N > 2$ firms in Appendix C.
 
 {{< include _literature.qmd >}}
 
@@ -46,4 +46,4 @@ The paper proceeds as follows.
 @sec-valuation develops quantitative implications: growth option decomposition, credit risk, the AI investment dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.
 @sec-conclusion concludes.
-Supplementary material on the $N$-firm numerical extension appears in @sec-nfirm-appendix.
+Supplementary material on the $N$-firm numerical extension appears in Appendix C.

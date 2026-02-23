@@ -25,7 +25,7 @@
 
 ### A. Proofs {.unnumbered}
 
-#### Proof of Proposition 1 (exogenous $\tilde{\lambda}$, Assumption 1) {.unnumbered}
+#### Proof of Proposition 1 {.unnumbered}
 
 *Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A4). It applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (condition A3)---i.e., where no interior L-regime trigger exists, so the firm waits for the regime switch rather than investing in the low regime (see @eq-option-L-general and the discussion following it).^[For parameters outside this region (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and the optimization involves additional boundary conditions. All figures and tables in the paper verify that condition (A3) holds at the specific parameter values used.] *Scope.* The proof is stated for exogenous $\tilde{\lambda}$ ($\xi = 0$); the extension to endogenous $\tilde{\lambda}$ is discussed in Corollary 1.
 The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
@@ -93,7 +93,7 @@ From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\
 (ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel.
 (iii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
 
-#### Proof of Proposition 2 (Endogenous default with faith-based survival; exogenous $\tilde{\lambda}$) {.unnumbered}
+#### Proof of Proposition 2 {.unnumbered}
 
 *Maintained assumptions.* Assumption 1(A1), exogenous $\tilde{\lambda}$ ($\xi = 0$). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
 In the L-regime, the equity value $E(X)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting).
@@ -128,7 +128,7 @@ Write the default boundary as $X_D = N(\ell) / A_{\text{eff},i}(\phi_i)$, where 
 *(iv) Default boundary increasing in rival capacity.*
 Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\alpha$ and $s_i^H = (\phi_i K_i)^\alpha / \sum_j (\phi_j K_j)^\alpha$ are decreasing in $K_j$ (holding $K_i$ fixed). Since $A_{\text{eff},i}$ is increasing in both contest shares, $\partial A_{\text{eff},i} / \partial K_j < 0$, and $\partial X_D / \partial K_j > 0$: stronger rivals raise the default boundary. $\square$
 
-#### Proof of Proposition 3 (Preemption equilibrium with training allocation; exogenous $\tilde{\lambda}$) {.unnumbered}
+#### Proof of Proposition 3 {.unnumbered}
 
 *Maintained assumptions.* Assumption 1(A1)--(A2), exogenous $\tilde{\lambda}$ ($\xi = 0$). The analytical construction in part (i) follows @huisman2015strategic; single crossing is verified numerically. Parts (ii)--(v) combine analytical arguments with numerical verification as indicated in the proposition statement.
 
@@ -190,7 +190,7 @@ Single crossing of leader and follower values is verified at each parameterizati
 No case of multiple crossings was found across all parameterizations tested (varying $\sigma_H \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda_0 \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
 Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
 
-### C. $N$-Firm Numerical Extension {#sec-nfirm-appendix .unnumbered}
+### C. N-Firm Numerical Extension {.unnumbered}
 
 I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
 This extension is presented as supplementary robustness material; the core analytical contributions of the paper are contained in the duopoly model of @sec-model.
