@@ -34,8 +34,8 @@ Each firm's optimal trigger, capacity, and training fraction are computed given 
 In each iteration, each firm $k$ solves a follower problem taking the current capacity and training estimates of all $N-1$ other firms as given.
 Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
 
-**Proposition 4** ($N$-firm equilibrium properties).
-*In the $N$-firm sequential equilibrium with training allocation:*
+**Numerical Finding 1** ($N$-firm equilibrium properties).
+*The following properties are established computationally across all parameterizations tested. In the $N$-firm sequential equilibrium with training allocation:*
 
 *(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing at the lowest trigger.*
 
@@ -43,9 +43,9 @@ Convergence of the iterative scheme to a Nash equilibrium is verified by checkin
 
 *(iii) Training fractions are decreasing in entry order: earlier entrants allocate more to training ($\phi_1 \geq \phi_2 \geq \cdots \geq \phi_N$), because they have longer to benefit from both the H-regime position and the contribution to $\tilde{\lambda}$.*
 
-*(iv) The equilibrium reduces to the duopoly solution when $N = 2$.*
+*(iv) The equilibrium reduces to the analytical duopoly solution when $N = 2$.*
 
-**Numerical Observation.** *In all parameterizations tested, total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate. The intuition is that the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$), so aggregate output rises even as each firm builds less. Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$. A formal proof would require bounding the rate of per-firm capacity decline, which I leave for future work.*
+*Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate, since the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$). Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$.*
 
 The numerical solution iterates until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$ (see Appendix B for details).
 I verify the implementation by checking that the $N=2$ solution matches the analytical duopoly equilibrium.
