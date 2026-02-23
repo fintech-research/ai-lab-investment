@@ -17,10 +17,10 @@ affiliations:
     name: HEC Montréal
 abstract: |
   I model the investment decisions of frontier AI laboratories racing to develop Artificial General Intelligence (AGI).
-  Firms choose when to invest, how much compute capacity to build, and how to split it between model training---which builds capabilities and contributes to an endogenous regime switch---and inference serving, which generates current revenue.
+  Firms choose when to invest, how much compute capacity to build, and how to split it between model training, which builds capabilities and contributes to an endogenous regime switch to AGI, and inference serving, which generates current revenue.
   The model combines real options, regime switching, oligopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws, delivering analytical investment triggers and capacity in a duopoly.
   A "faith-based survival" mechanism emerges: optimism about AGI, backed by training investment, lowers the default boundary---the hope of AGI literally keeps the firm alive.
-  An illustrative calibration to leading AI firms reveals dispersion in implied beliefs about AGI timelines and an asymmetric "AI investment dilemma" in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
+  An asymmetric "AI investment dilemma" arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing the extreme capital commitments observed in practice only under genuinely optimistic beliefs about AI timelines.
 keywords:
   - real options
   - AI infrastructure
@@ -28,7 +28,6 @@ keywords:
   - training-inference allocation
   - strategic investment
   - default risk
-  - revealed beliefs
 thanks: "I thank Charles Martineau for helpful comments. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
 

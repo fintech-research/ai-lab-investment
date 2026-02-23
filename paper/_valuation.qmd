@@ -1,109 +1,14 @@
-## Revealed Beliefs and Valuation {#sec-valuation}
+## Quantitative Implications {#sec-valuation}
 
-### The Revealed Beliefs Methodology
+This section develops quantitative implications of the model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
 
-I develop an illustrative methodology for extracting firms' implied beliefs about AI timelines from their observable investment decisions.
-The approach exploits the fact that all model parameters except $\lambda$ are either directly observable (leverage, WACC, revenue, training fraction) or can be calibrated from public data (demand volatility, revenue elasticity, cost convexity).
-The parameter $\lambda$---the arrival rate of transformative AI---encodes the firm's *implied belief* about when AI capabilities will reach a level sufficient to generate sustained high demand for compute infrastructure.
-I emphasize that this exercise is an illustrative calibration that recovers beliefs conditional on maintained assumptions; see the discussion of identification below for caveats and the sensitivity analysis in @tbl-sensitivity-beliefs for confidence sets.
-
-With the training-inference allocation $\phi$ as an observable, the methodology now has access to *two identifying moments*:
-
-1. **Investment intensity** (CapEx/Revenue): reveals the overall aggressiveness of the firm's investment posture.
-2. **Training fraction** ($\hat{\phi}$): reveals the firm's allocation between current revenue generation and future capability building.
-
-These two moments jointly pin down the implied $\lambda$ more tightly than investment intensity alone, because $\phi$ carries independent information: a firm that allocates heavily to training reveals that it values the H-regime payoff highly, which is informative about $\lambda$ through the mechanism formalized in Proposition 1.
-
-#### Inversion algorithm
-
-For a firm with observable investment intensity and training fraction, I infer $\lambda$ as follows:
-
-1. **Parameterize.** Set all observable and calibrated parameters to their baseline values: demand growth rates $\mu_s$, volatilities $\sigma_s$, revenue elasticity $\alpha$, cost parameters $c$ and $\gamma$, scaling exponent $\eta$, and discount rate $r$.
-
-2. **Model prediction.** For each candidate $\lambda$, compute the model's predicted investment intensity and optimal training fraction $\phi^*(\lambda)$ using the $A_{\text{eff}}$-based option value from @eq-a-eff. The key insight is that both $A_{\text{eff}}$ and $\phi^*$ are monotonic functions of $\lambda$: higher $\lambda$ raises $A_{\text{eff}}$ (by increasing the H-regime continuation value) and raises $\phi^*$ (by increasing the relative value of training), providing two independent channels for identification.
-
-3. **Invert.** Find $\hat{\lambda}$ such that the model-predicted investment intensity matches the observed intensity:
-$$
-\frac{F(X_{\text{ref}}; \hat{\lambda})}{I(K^*(\hat{\lambda}))} = \frac{\text{CapEx}_i}{\text{Revenue}_i}.
-$$ {#eq-inversion}
-
-4. **Diagnostic.** Compare the model-predicted $\phi^*(\hat{\lambda})$ against the observed training fraction $\hat{\phi}_i$. Concordance between the two moments provides a specification check: if the model is well-specified, the $\lambda$ that rationalizes a firm's investment intensity should also predict a training fraction close to what is observed.
-
-5. **Robustness.** Assess sensitivity to calibration assumptions by varying each parameter and re-inverting.
-
-The inversion uses Brent's method for root-finding, which is robust and does not require derivative information.
-I search over $\lambda \in [0.001, 2.0]$, covering expected regime-switch times from 6 months to 1000 years.
-
-@fig-lambda-timeline provides intuition for the economic content of $\lambda$.
+@fig-lambda-timeline provides intuition for the economic content of the arrival rate parameter $\lambda$.
 Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
 Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\lambda}$.
 At $\lambda = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\lambda = 0.50$, this rises to 92\%.
 The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
 
 ![Interpretation of the arrival rate parameter $\lambda$. (a) Expected time to regime switch $E[T] = 1/\lambda$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\lambda \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
-
-#### Identification
-
-The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
-This is a form of *revealed preference* in the spirit of @samuelson1938note: I do not ask what firms *say* about AI timelines; I infer what they *believe* from what they *do*.
-
-The addition of the training fraction $\hat{\phi}$ as a second moment provides a useful diagnostic relative to the single-moment (CapEx/Revenue only) approach.
-With one moment, the inversion recovers $\hat{\lambda}$ conditional on all other parameters being correctly specified.
-The training fraction serves as an internal consistency check: the $\lambda$ inferred from investment intensity should also predict a training fraction reasonably close to the observed $\hat{\phi}$.
-Discrepancies between the model-predicted and observed $\phi$ signal potential misspecification or unmodeled heterogeneity (e.g., different business models, financing constraints), providing a diagnostic that the single-moment approach lacks.
-I note that many parameters---cost convexity, operating cost, revenue elasticities, contest structure, leverage---are jointly influential and imperfectly observed. The exercise is therefore best viewed as a structural thought experiment or partial-identification exercise rather than a formal estimation.
-
-GPU procurement costs, power purchase agreements, and accounting treatment of capital leases versus outright purchases all vary across firms and could generate cross-sectional variation in investment intensity independent of beliefs about AI timelines.
-The training fraction provides a complementary signal because it is a *within-firm allocation decision* that is less affected by these cost-side confounds: conditional on having chosen to invest $I(K)$, the decision of how to split $K$ between training and inference reveals information about the relative valuation of L-regime versus H-regime revenue.
-
-Several additional moments could further sharpen identification.
-Market capitalization provides an independent read on the growth option value; credit spreads or CDS prices pin down default risk and effective leverage; and capacity proxies such as GPU counts, rack deployments, or contracted megawatts help calibrate the technology parameters $\alpha$, $\gamma$, and $c$ directly.
-Incorporating these moments would move from the current two-moment inversion to a fully overidentified GMM framework, enabling formal specification tests.
-I leave this extension for future work and frame the current exercise as an *illustrative calibration* that recovers beliefs conditional on maintained assumptions, rather than a structural estimation with formal identification guarantees.
-
-A further caveat concerns the timing of investment decisions.
-The model treats the observed CapEx/Revenue ratio and training fraction as reflecting a contemporaneous optimal decision, but in practice firms committed much of their 2025 capital expenditure in prior periods---signing GPU purchase agreements, breaking ground on data centers, and negotiating power contracts 12--24 months in advance.
-The implied $\hat{\lambda}$ therefore reflects beliefs at the time of commitment, not necessarily current beliefs, which may have updated in light of new capability demonstrations or demand realizations.
-To the extent that beliefs have shifted (e.g., post-DeepSeek reassessment of training efficiency), the revealed $\hat{\lambda}$ is a lagged indicator.
-This lag is inherent in any revealed-preference approach applied to long-lived capital goods.
-
-#### Results
-
-@tbl-revealed-beliefs presents the implied arrival rates for each stylized firm, using both the legacy single-moment inversion (CapEx/Revenue only) and the $\phi$-aware two-moment approach.
-The inversion reveals substantial dispersion in beliefs: the most aggressive investors (Anthropic-like and CoreWeave-like) imply $\hat{\lambda} \approx 0.90$, corresponding to an expected regime switch in approximately one year, while the hyperscaler (Google-like) implies $\hat{\lambda} \approx 0.08$, an expected switch in twelve years.
-
-| Firm | CapEx/Rev | $\hat{\phi}$ | $\hat{\lambda}$ | $\phi^*_{\text{model}}$ | $E[T]$ (yrs) | $P(\leq 5\text{yr})$ |
-|:-----|:---------:|:-------:|:----:|:-----:|:-----:|:-----:|
-| Anthropic-like | 2.00 | 0.60 | 0.90 | 0.52 | 1.1 | 99% |
-| OpenAI-like | 1.25 | 0.55 | 0.11 | 0.28 | 9.0 | 42% |
-| Google-like | 1.09 | 0.40 | 0.08 | 0.24 | 12.0 | 33% |
-| CoreWeave-like | 2.00 | 0.20 | 0.90 | 0.52 | 1.1 | 99% |
-
-: Revealed beliefs with training fraction diagnostic. $\hat{\lambda}$: implied arrival rate from investment intensity inversion. $\phi^*_{\text{model}}$: model-predicted optimal training fraction at $\hat{\lambda}$. $\hat{\phi}$: observed training fraction. Discrepancies between $\hat{\phi}$ and $\phi^*_{\text{model}}$ indicate potential model misspecification or unmodeled heterogeneity. {#tbl-revealed-beliefs tbl-colwidths="[20,12,10,10,13,13,12]"}
-
-Two patterns stand out.
-First, the belief dispersion is large: the ratio of the highest to lowest implied $\lambda$ is approximately 11$\times$.
-This means the most aggressive firms behave as if transformative AI is roughly an order of magnitude more imminent than the most conservative firm believes.
-Second, firms investing more than twice their revenue (Anthropic-like and CoreWeave-like) reveal near-certainty that the regime switch will occur within five years.
-
-The training fraction diagnostic reveals important information.
-For the Anthropic-like firm, the observed $\hat{\phi} = 0.60$ exceeds the model-predicted $\phi^*_{\text{model}} = 0.52$, suggesting that Anthropic's training intensity is even higher than what $\hat{\lambda} = 0.90$ alone would predict---consistent with a mission-driven firm that overweights training relative to the purely profit-maximizing allocation.
-For the CoreWeave-like firm, the observed $\hat{\phi} = 0.20$ is well below the model-predicted $\phi^*_{\text{model}} = 0.52$, despite both firms having identical implied $\lambda$ from the CapEx/Revenue inversion.
-This discrepancy breaks the degeneracy that the single-moment inversion could not resolve: CoreWeave's low training fraction reveals that its high investment intensity reflects a debt-funded infrastructure play rather than a belief-driven training push.
-Economically, a debt-financed infrastructure provider investing at $2\times$ revenue with low $\phi$ reveals different information than an equity-financed frontier lab at the same ratio with high $\phi$: the former faces binding debt covenants and rollover risk that constrain its ability to act on beliefs, while the latter has chosen to dilute equity holders and invest aggressively in training---a costlier signal of conviction about AI timelines.
-
-#### Sensitivity and confidence sets
-
-The cardinal values in @tbl-revealed-beliefs are sensitive to calibration assumptions and should be interpreted as confidence sets conditional on parameter ranges rather than point estimates.
-@tbl-sensitivity-beliefs reports the implied $\hat{\lambda}$ under $\pm 25\%$ variation in key parameters.
-The most consequential is H-regime volatility: varying $\sigma_H$ by $\pm 25\%$ shifts the Anthropic-like $\hat{\lambda}$ from 0.003 to 0.90, spanning nearly the entire parameter space.
-Higher volatility raises the H-regime option value, reducing the $\lambda$ needed to rationalize observed investment intensity; lower volatility has the opposite effect.
-Cost convexity $\gamma$ also matters, though less dramatically: $\gamma \pm 25\%$ moves the Anthropic-like implied belief across the range [0.07, 0.90].
-
-The most reliable inference is therefore the *ordinal ranking*---frontier labs reveal more aggressive beliefs than hyperscalers---and the approximate *order-of-magnitude dispersion* in implied beliefs across firm types.
-The qualitative ordering is robust across all parameter perturbations tested: in no specification does the Google-like archetype imply a higher $\hat{\lambda}$ than the Anthropic-like archetype.
-The training fraction diagnostic is similarly robust: the discrepancy between Anthropic-like and CoreWeave-like training fractions persists across all calibration scenarios.
-Cardinal values are illustrative and should be read as "beliefs consistent with investment behavior under maintained assumptions" rather than precise estimates of firms' private probabilities.
 
 ### Growth Option Decomposition
 
@@ -164,11 +69,9 @@ This is the structural default probability from @merton1974pricing, adapted to o
 Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level moderately above the default boundary.
 Spreads are convex in leverage: approximately 300 bps for low-leverage firms ($\ell \approx 0.10$), rising to over 500 bps at moderate leverage ($\ell = 0.40$) and exceeding 1,200 bps at $\ell = 0.70$.
 Panel (b) shows the 5-year default probability, which rises sharply at leverage ratios above 0.40.
-At $\ell = 0.70$ (the CoreWeave-like archetype), the default probability approaches 40\%, reflecting the combined burden of high coupon payments and the proximity of the default boundary to current demand.
+At high leverage ($\ell = 0.70$), the default probability approaches 40\%, reflecting the combined burden of high coupon payments and the proximity of the default boundary to current demand.
 
 ![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Both quantities are convex in leverage, with a pronounced increase above $\ell = 0.40$. Evaluated at a demand level twice the default boundary at moderate leverage ($\ell = 0.40$), using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
-
-The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the highest credit risk, consistent with the market's pricing of CoreWeave debt at significantly elevated yields relative to investment-grade benchmarks.
 
 ### The AI Investment Dilemma
 
@@ -200,6 +103,14 @@ The training fraction enters the value loss through two channels: a mismatched $
 The intuition is that aggressive overinvestment leads to excess capacity that incurs disproportionate costs (convex in $K$) while generating diminishing additional revenue (concave in $K$), and also increases default risk through higher leverage.
 The training channel amplifies this: an overly optimistic firm not only builds too much, but allocates too much to training, reducing current inference revenue and raising the default boundary.
 Conservative underinvestment, by contrast, simply delays investment and reduces capacity---a lost opportunity, but not an existential risk.
+This asymmetry is captured by Anthropic CEO Dario Amodei's observation: "I could buy \$1 trillion of compute that starts at the end of 2027. If my revenue is not \$1 trillion dollars, if it's even \$800 billion, there's no force on Earth, there's no hedge on Earth that could stop me from going bankrupt" [@amodei2026cone].
+
+@fig-investment-dilemma visualizes the asymmetry by plotting the value loss $\Delta V$ as a function of $\lambda_{\text{invest}}$ for a fixed $\lambda_{\text{true}} = 0.10$.
+The loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ (correct beliefs) and increases in both directions, but the right branch (overinvestment, $\lambda_{\text{invest}} > \lambda_{\text{true}}$) rises more steeply than the left (underinvestment).
+With leverage ($\ell = 0.40$, dashed line), the asymmetry is amplified: overinvestment triggers default risk that creates a sharp nonlinear increase in losses, while underinvestment remains a smooth, moderate opportunity cost.
+The shaded region marks the "danger zone" where overinvestment losses exceed a 20\% threshold, illustrating the narrow margin for error that highly levered AI firms face.
+
+![The AI investment dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The right branch (overinvestment) rises more steeply than the left (underinvestment), and leverage amplifies the asymmetry through default risk. The shaded region marks losses exceeding 20\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
 
 #### Implications
 

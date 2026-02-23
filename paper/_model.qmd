@@ -17,7 +17,7 @@ A central innovation of this paper is that the arrival rate $\tilde{\lambda}$ is
 $$
 \tilde{\lambda}(\phi_i, K_i, \phi_j, K_j) = \lambda_0 + \xi \cdot \bigl[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta\bigr],
 $$ {#eq-endogenous-lambda}
-where $\lambda_0 > 0$ is the exogenous baseline arrival rate (reflecting rest-of-world progress, algorithmic advances outside these firms), $\xi \geq 0$ scales the contribution of the modeled firms' training compute to the arrival rate, $\eta \in (0,1)$ is the scaling law exponent capturing diminishing returns to training compute [@kaplan2020scaling; @hoffmann2022training], and $\phi_i K_i$ is firm $i$'s training compute (defined below).^[The dispersion in executive timeline estimates maps directly to heterogeneity in $\lambda_0$. @amodei2024machines predicts AI "smarter than a Nobel Prize winner" as early as 2026, implying $\lambda_0 \approx 0.30$--$0.50$; @hassabis2025breakthroughs gives roughly 50% probability by the end of the decade ($\lambda_0 \approx 0.10$--$0.15$); and @nadella2025formula proposes an economic test---developed-world GDP growth of 10%---that implicitly pushes the threshold further out. These differences in $\lambda_0$ are what the revealed beliefs methodology in @sec-valuation is designed to recover.]
+where $\lambda_0 > 0$ is the exogenous baseline arrival rate (reflecting rest-of-world progress, algorithmic advances outside these firms), $\xi \geq 0$ scales the contribution of the modeled firms' training compute to the arrival rate, $\eta \in (0,1)$ is the scaling law exponent capturing diminishing returns to training compute [@kaplan2020scaling; @hoffmann2022training], and $\phi_i K_i$ is firm $i$'s training compute (defined below).^[The dispersion in executive timeline estimates maps directly to heterogeneity in $\lambda_0$. @amodei2024machines predicts AI "smarter than a Nobel Prize winner" as early as 2026, implying $\lambda_0 \approx 0.30$--$0.50$; @hassabis2025breakthroughs gives roughly 50% probability by the end of the decade ($\lambda_0 \approx 0.10$--$0.15$); and @nadella2025formula proposes an economic test---developed-world GDP growth of 10%---that implicitly pushes the threshold further out. These differences in $\lambda_0$ drive the heterogeneity in investment behavior analyzed in @sec-valuation.]
 When $\xi = 0$, the model reduces to the exogenous-$\lambda$ baseline.
 When $\xi > 0$, firms' training investments collectively accelerate the arrival of transformative AI, creating a positive externality: each firm's training contributes to a common arrival rate that benefits all participants.
 
@@ -71,6 +71,8 @@ The training fraction $\phi$ is chosen at investment time and fixed thereafter.^
 
 Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
+@tbl-parameters in the Appendix summarizes all model parameters, their baseline values, and economic interpretations; the calibration rationale for each value is discussed in @sec-calibration.
+
 ### Single-Firm Benchmark {#sec-single-firm}
 
 I begin with a single firm holding an option to invest.
@@ -115,7 +117,7 @@ $$ {#eq-beta-H}
 
 The optimal trigger satisfies the smooth-pasting condition:
 $$
-X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{(\phi K)^{\alpha}} \left(c K^\gamma + \frac{\delta K}{r}\right),
+X_H^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{(\phi K)^{\alpha}} \left(c K^\gamma + \frac{\delta K}{r}\right),
 $$ {#eq-trigger-H}
 which shows the standard result that the trigger exceeds the Marshallian (NPV = 0) level by the factor $\beta_H / (\beta_H - 1) > 1$---the *option premium* that reflects the value of waiting.
 
@@ -133,7 +135,7 @@ K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H 
 $$
 *provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$.*
 
-*When the firm operates in the L-regime with the possibility of a regime switch, it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
+*When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (i.e., no interior L-regime trigger; see the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ discussed after @eq-option-L-general), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. For exogenous $\tilde{\lambda}$, the optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
 
 *(i) $\phi^*$ is increasing in $\lambda_0$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
@@ -141,7 +143,10 @@ $$
 
 *(iii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
 
-*Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$. The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
+*Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
+
+**Remark** (Exogenous vs. endogenous $\tilde{\lambda}$).
+*Proposition 1 is stated and proved for exogenous $\tilde{\lambda}$. When $\tilde{\lambda}$ is endogenous (@eq-endogenous-lambda), the optimal $\phi^*$ additionally affects $\tilde{\lambda}$ through the firm's training compute, creating a feedback loop. The interior solution and uniqueness results extend to this case because the endogenous channel is quantitatively small: with $\eta = 0.07$, doubling training compute raises the firm's contribution to $\tilde{\lambda}$ by only 5%, so the fixed-point $\phi^*$ remains close to the exogenous-$\tilde{\lambda}$ solution. The comparative statics signs are preserved under the endogenous specification and are verified numerically. All subsequent propositions are similarly stated for exogenous $\tilde{\lambda}$ and verified to extend to the endogenous case.*
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -238,7 +243,7 @@ $$
 V_i^H(X) = A_H \cdot X \cdot (\phi_i K_i)^\alpha \cdot s_i^H - \frac{\delta K_i}{r}.
 $$
 
-The effective revenue coefficient $A_{\text{eff},i}$ embodies the central economic trade-off: the first term captures the value of inference in the current regime (which depends on $(1-\phi_i)K_i$ and the L-regime contest share), while the second captures the expected value of training quality in the future regime (which depends on $\phi_i K_i$ and the H-regime contest share, weighted by the arrival rate $\tilde{\lambda}$).
+The effective revenue coefficient $A_{\text{eff},i}$ embodies the central economic trade-off: the first term captures the value of inference in the current regime (which depends on $(1-\phi_i)K_i$ and the L-regime contest share), while the second captures the expected value of training quality in the future regime (which depends on $\phi_i K_i$ and the H-regime contest share, weighted by the arrival rate $\tilde{\lambda}$). When $K_j = 0$ (no rival), the contest shares reduce to $s_i^L = s_i^H = 1$ and @eq-a-eff-duopoly reduces to the single-firm $A_{\text{eff}}$ in @eq-a-eff.
 
 #### Capital structure
 
@@ -255,8 +260,8 @@ For a levered firm with capacity $K_i$, training fraction $\phi_i$, facing a riv
 $$
 X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}},
 $$ {#eq-default-boundary}
-where $\beta_s^- < 0$ is the negative root of the characteristic equation, $c_D$ is the coupon payment, and $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duopoly.
-The factor $\beta_s^- / (\beta_s^- - 1) < 1$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.
+where $\beta_s^-$ (with $s = L$) is the negative root of the L-regime characteristic equation $\tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, incorporating the regime-switching term through the effective discount rate $r + \tilde{\lambda}$; $c_D$ is the coupon payment; and $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duopoly.
+The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.
 
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\tilde{\lambda}$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) and thereby raises $\tilde{\lambda}$ (through @eq-endogenous-lambda) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
@@ -268,7 +273,7 @@ Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives 
 
 *(i) $X_D$ is increasing in leverage $\ell$ and the coupon rate $c_d$.*
 
-*(ii) $X_D$ is decreasing in $\tilde{\lambda}$: higher arrival rates lower the default boundary by increasing the H-regime continuation value in $A_{\text{eff},i}$.*
+*(ii) $X_D$ is decreasing in $\tilde{\lambda}$ provided the faith-based survival condition holds: $(r - \mu_L) \cdot (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H) > [(1-\phi_i)K_i]^\alpha \cdot s_i^L$. This requires that the H-regime continuation value contributes sufficiently to $A_{\text{eff},i}$, which holds when $\phi_i$ exceeds a threshold $\underline{\phi}$ that depends on model parameters. For the baseline calibration, $\underline{\phi} \approx 0.15$.*
 
 *(iii) For a given capacity $K$, there exists a leverage-training substitution: a firm can maintain the same default boundary $X_D$ while increasing leverage (which raises the coupon obligation in the numerator) by simultaneously increasing the training fraction (which raises $A_{\text{eff},i}$ through the H-regime term in the denominator).*
 
@@ -348,7 +353,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 *(iv) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
 
-*(v) The credit spread at the preemption trigger is increasing in $\lambda_0$: firms that invest earlier due to more optimistic beliefs face higher credit risk.*
+*(v) (Computational result) The credit spread at the preemption trigger is increasing in $\lambda_0$: firms that invest earlier due to more optimistic beliefs face higher credit risk. This comparative static is verified numerically across the full parameter space; see Appendix A for discussion.*
 
 @fig-competition-effect quantifies the preemption effect.
 Panel (a) plots the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of demand volatility $\sigma_H$.

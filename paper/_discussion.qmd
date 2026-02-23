@@ -1,13 +1,4 @@
-## Discussion and Policy Implications {#sec-discussion}
-
-### Market Efficiency and Information Aggregation
-
-The revealed beliefs methodology raises questions about market efficiency in the AI infrastructure sector.
-If firms' investment decisions contain private information about AI timelines, then the stock market should, in an efficient equilibrium, aggregate this information into prices.
-However, several frictions may prevent efficient aggregation.
-Even if investors observe firms' capital expenditure and training allocation, they may disagree about the mapping from investment to beliefs; our model provides one such mapping, but alternative models with different assumptions about competition, costs, or demand could yield different implied $\lambda$ values.
-Short-sale constraints may compound this problem: if pessimistic investors cannot easily short AI infrastructure stocks, prices may reflect the beliefs of optimists, leading to overvaluation relative to the median belief---a pattern consistent with the high short interest observed in some AI infrastructure stocks.
-Finally, firms and investors update their beliefs over time as new data about AI capabilities arrives; the model's comparative statics with respect to $\lambda$ describe the cross-section of beliefs at a point in time, and the time-series dynamics of belief updating are an important direction for future work.
+## Discussion {#sec-discussion}
 
 ### Welfare and Overinvestment
 
@@ -21,39 +12,52 @@ In the decentralized equilibrium, firms underweight this externality relative to
 This creates a tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality generates *under-investment* in training.
 The net welfare effect depends on the relative magnitudes of these two distortions.
 
-However, in the AI context, overinvestment may have positive externalities not captured by the model: excess capacity reduces the price of inference, benefiting downstream users and accelerating AI adoption; surplus compute can be allocated to alignment research and safety testing; and redundant capacity provides insurance against supply disruptions and geopolitical risks.
-A full welfare analysis would need to weigh these benefits against the deadweight loss from overinvestment and the systemic risk from excessive leverage in the AI infrastructure sector.
+### Testable Predictions
 
-### Regulatory Implications
+The model generates several cross-sectional predictions that are in principle testable using the (admittedly small) cross-section of AI infrastructure firms:
 
-The model has implications for several policy areas.
+1. **Training-credit spread nexus.** Firms with higher $\hat{\phi}$ should have *lower* credit spreads conditional on leverage (Proposition 2, faith-based survival): the H-regime option value provides a valuation floor that reduces default risk.
+2. **Training-beta relationship.** Firms with higher $\hat{\phi}$ should have higher equity betas, because a larger share of their value derives from the growth option (H-regime upside) rather than assets-in-place, making them more sensitive to systematic risk.
+3. **Asymmetric response to AI news.** The convexity of equity value in $\lambda$ (@sec-valuation) implies that positive AI capability news should increase AI infrastructure valuations more than negative news decreases them, with the effect stronger for high-$\hat{\phi}$ firms.
+4. **Leader-follower training gap.** In markets with clear sequential entry, first movers should allocate more to training than later entrants (Proposition 3(ii)), because the monopoly phase reduces the opportunity cost of training.
+
+These predictions are directional and could be assessed as the cross-section of publicly traded AI infrastructure firms expands (e.g., post-CoreWeave IPO), though the small sample size currently limits formal statistical testing.
+
+### Policy Implications
+
+The model has implications for financial stability, competition policy, and disclosure.
 On financial stability, the combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk: if multiple highly levered AI infrastructure firms default simultaneously during a low-demand period, fire sales could depress asset values and trigger contagion.
-The faith-based survival mechanism (Proposition 2) suggests that optimism about AI timelines may be propping up equity values, masking the underlying credit risk; regulators may wish to monitor leverage ratios and credit risk in the sector, particularly for firms like CoreWeave that combine high leverage with concentrated exposure to a single technology.
+The faith-based survival mechanism (Proposition 2) suggests that optimism about AI timelines may be propping up equity values, masking underlying credit risk.
 
 On competition policy, the preemption mechanism implies that capacity investment serves a dual purpose---generating revenue and deterring rivals---while the endogenous arrival rate adds a third dimension, as training investment accelerates the regime switch in ways that can be either pro- or anti-competitive depending on market structure.
-Antitrust authorities should consider whether strategic overinvestment constitutes an exclusionary practice, particularly by dominant firms (the Google-like hyperscaler in our model) that can cross-subsidize AI infrastructure from other business lines.
 
-On disclosure, firms' investment decisions convey information about AI capabilities that may be material to investors; requiring AI labs to disclose their compute expenditure *and training allocation* in standardized formats would facilitate the kind of two-moment analysis developed here, improving market efficiency and enabling better risk assessment.
+On disclosure, requiring AI labs to disclose compute expenditure *and training allocation* in standardized formats would improve market efficiency and enable better risk assessment.
 The training fraction $\hat{\phi}$ is particularly informative because it reveals the firm's intertemporal trade-off between current revenue and future capability.
+
+### Direction of Bias from Static $\phi$
+
+The assumption that $\phi$ is fixed at investment time is the most-flagged limitation. A two-period extension provides intuition for the direction of bias. Suppose the firm chooses $\phi_1$ at investment time and can update to $\phi_2$ after observing demand for one period.
+
+If the regime switch has not occurred after one period, the firm observes that it remains in regime $L$, which is (weakly) bad news about $\lambda_{\text{true}}$. The optimal response is to *decrease* $\phi$---shift from training to inference to bolster L-regime revenue. If the regime switch *has* occurred, the firm wants to *increase* $\phi$ to capture H-regime market share.
+
+The option to reallocate is therefore valuable, and its availability at the initial date affects the optimal $\phi_1$. With the option to increase $\phi$ later if the switch occurs, the firm can afford to start with *lower* $\phi_1$ (more inference) and shift to training upon observing the switch. The static model, which lacks this option, forces the firm to "pre-commit" to its long-run training allocation, biasing $\phi^*$ upward relative to the dynamic optimum.
+
+This suggests that the static model *overstates* the initial training fraction: firms in practice can and do reallocate GPUs between training and inference on timescales of weeks. The implied $\lambda$ that rationalizes a given observed $\phi$ would therefore be *higher* under the dynamic model than under the static model, because the observed $\phi$ represents a deliberate choice despite the option to reallocate, rather than an irreversible commitment. A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB equation) is left for future work.
 
 ### Limitations
 
 Several limitations should be noted.
-The model fixes the training fraction $\phi$ at investment time. This is a reasonable first approximation for large-scale capacity decisions, which involve 18--24 month planning horizons: a firm committing to a new training cluster must decide its GPU architecture, interconnect topology, and power envelope well before the cluster comes online, and these choices effectively determine the training-inference split for the useful life of the hardware.
-However, the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation) blurs the boundary between training and inference by enabling models to "think longer" at inference time, substituting compute for pre-trained capability [@brown2024inference].
-A dynamic extension in which $\phi$ responds to realized demand and capability milestones would enrich the model's predictions about the time path of compute allocation; I leave this for future work.
+The model fixes the training fraction $\phi$ at investment time---a reasonable first approximation for large-scale capacity decisions with 18--24 month planning horizons, but limiting given the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation) that blurs the boundary between training and inference [@brown2024inference].
+A dynamic extension in which $\phi$ responds to realized demand would enrich the model; I leave this for future work.
 
-The Leland (1994) structural default framework assumes publicly traded equity, continuously tradeable debt, and an endogenous default boundary chosen by equity holders.
-Several frontier AI labs (Anthropic, OpenAI) are VC-backed with complex capital structures involving SAFE notes, convertible debt, revenue-based financing, and multi-class equity---far from the Leland setting.
-The default mechanism in the model is best interpreted as applying to the *infrastructure providers* (CoreWeave, cloud hyperscalers) that issue publicly traded debt, rather than to the VC-backed labs directly.
-For the latter, the relevant financial constraint is more likely funding-round risk (inability to raise the next round) than Leland-style default, and the "faith-based survival" mechanism should be reinterpreted as optimism enabling continued fundraising rather than literally lowering a default boundary.
+The Leland (1994) structural default framework assumes publicly traded equity and continuously tradeable debt.
+Several frontier AI labs (Anthropic, OpenAI) have complex capital structures involving SAFE notes, convertible debt, and multi-class equity---far from the Leland setting.
+The default mechanism is best interpreted as applying to *infrastructure providers* (CoreWeave, cloud hyperscalers) that issue publicly traded debt; for VC-backed labs, the relevant constraint is funding-round risk rather than Leland-style default.
 
-The Tullock contest function is a reduced-form representation of competition that abstracts from product differentiation, network effects, and switching costs present in practice.
-Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market.
-The transition from single-firm to duopoly revenue is discontinuous as $K_j \to 0$; a Cournot specification would avoid this discontinuity at the cost of additional complexity (see Appendix F).
+The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
+Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; a Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix F).
 
-All valuation uses a reduced-form risk-adjusted framework (@sec-model), abstracting from the risk preferences of concentrated shareholders and from state-dependence of the risk premium across regimes.
-The cost of expansion is purely financial ($I(K) = cK^\gamma$), omitting scarce specialized talent that may be a binding constraint.
-I assume profit maximization, but several frontier labs have stated missions that divert compute from revenue-maximizing activities; the training fraction diagnostic in @tbl-revealed-beliefs partially captures this, as the Anthropic-like archetype's observed $\hat{\phi}$ exceeds $\phi^*$.
-The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal. In practice, a "winter" scenario---in which initial enthusiasm fades and demand returns to the low regime---is a material risk that the model abstracts from.
-Finally, the model treats competition among a fixed set of domestic firms, omitting international dynamics---such as DeepSeek's demonstration that frontier performance is achievable at dramatically lower cost [@deepseek2025r1]---as well as export controls, industrial policy, and sovereign AI initiatives.
+All valuation uses a reduced-form risk-adjusted framework, abstracting from state-dependence of risk premia across regimes.
+The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal.
+In practice, an "AI winter" scenario is a material risk that the model abstracts from.
+Finally, the model treats competition among a fixed set of domestic firms, omitting international dynamics, export controls, and sovereign AI initiatives.
