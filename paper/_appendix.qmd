@@ -86,12 +86,13 @@ $$
 $$
 which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\square$
 
-*Step 6: Comparative statics.*
+*Step 6: Comparative statics (exogenous $\tilde{\lambda}$, i.e., $\xi = 0$).*
 From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
 
 (i) $\partial \phi^* / \partial \lambda_0 > 0$: Higher $\lambda_0$ raises $\tilde{\lambda}$, which increases $w_H / w_L = \tilde{\lambda} A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
-(ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel.
-(iii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
+(ii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
+
+*Corollary 1 extension.* When $\xi > 0$, higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel as $\lambda_0$. However, the endogenous feedback $\partial \tilde{\lambda}/\partial \phi$ complicates the implicit differentiation, so the comparative static $\partial \phi^* / \partial \xi > 0$ is established numerically across the calibration-relevant parameter region rather than analytically.
 
 #### Proof of Proposition 2 {.unnumbered}
 
@@ -119,7 +120,13 @@ This is positive whenever $b(r - \mu_L) > a$, i.e., when the H-regime revenue pr
 $$
 \frac{(\phi_i K_i)^\alpha \cdot s_i^H}{r - \mu_H} \cdot (r - \mu_L) > [(1-\phi_i)K_i]^\alpha \cdot s_i^L.
 $$ {#eq-faith-condition}
-Since $\mu_H > \mu_L$ implies $(r - \mu_L)/(r - \mu_H) > 1$, the factor $(r - \mu_L)$ amplifies the H-regime term, making the condition easier to satisfy. Intuitively, the condition requires that the training fraction $\phi_i$ is large enough that the H-regime continuation value contributes meaningfully to $A_{\text{eff},i}$. For the baseline calibration ($\mu_H = 0.06$, $\mu_L = 0.01$, $r = 0.12$), the condition holds for all $\phi_i \gtrsim 0.15$ with symmetric contest shares.
+Since $\mu_H > \mu_L$ implies $(r - \mu_L)/(r - \mu_H) > 1$, the factor $(r - \mu_L)$ amplifies the H-regime term, making the condition easier to satisfy. Intuitively, the condition requires that the training fraction $\phi_i$ is large enough that the H-regime continuation value contributes meaningfully to $A_{\text{eff},i}$.
+
+*Closed-form threshold (symmetric duopoly).* In the symmetric case with $s_i^L = s_i^H = 1/2$ and equal capacity, the contest shares and $K^\alpha$ terms cancel, and the condition reduces to $(r - \mu_L)/(r - \mu_H) \cdot \phi^\alpha > (1-\phi)^\alpha$, i.e., $(\phi/(1-\phi))^\alpha > (r-\mu_H)/(r-\mu_L)$. Solving for $\phi$:
+$$
+\phi > \underline{\phi} = \frac{R}{1 + R}, \quad R = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+$$
+For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$): $R = (0.06/0.11)^{2.5} \approx 0.22$, giving $\underline{\phi} \approx 0.18$.
 Since $X_D \propto 1/A_{\text{eff},i}$ (holding the numerator fixed), $\partial A_{\text{eff},i}/\partial \tilde{\lambda} > 0$ implies $\partial X_D / \partial \tilde{\lambda} < 0$: higher arrival rate lowers the default boundary.
 
 *(iii) Leverage-training substitution.*
@@ -130,20 +137,27 @@ Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\al
 
 #### Proof of Proposition 3 {.unnumbered}
 
-*Maintained assumptions.* Assumption 1(A1)--(A2), exogenous $\tilde{\lambda}$ ($\xi = 0$). The analytical construction in part (i) follows @huisman2015strategic; single crossing is verified numerically. Parts (ii)--(v) combine analytical arguments with numerical verification as indicated in the proposition statement.
+*Maintained assumptions.* Assumption 1(A1)--(A2), exogenous $\tilde{\lambda}$ ($\xi = 0$). Part (i) separates existence (analytical) from uniqueness (computational). Parts (ii)--(v) combine analytical motivation with numerical verification as indicated in the proposition statement.
 
-*Part (i): Existence and uniqueness of $X_P$.*
-The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation and default risk. I verify that the three conditions required by their construction---continuity, monotonicity, and single crossing of the leader and follower values---hold for the enriched model.
+*Part (i): Existence of $X_P$ (Analytical).*
+The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation and default risk. I verify that continuity and the required boundary conditions hold for the enriched model.
 
-**Continuity and monotonicity.** The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. Default risk introduces a kink at $X = X_D$ where $L(X_D) = 0$, but for $X > X_D$ the value is smooth and increasing. The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
+**Continuity and monotonicity.** The leader value $L(X)$ is continuous and increasing in $X$ for $X > X_D$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. Default risk implies $L(X_D) = 0$; for $X > X_D$ the value is smooth and increasing. The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
 
-**Boundary conditions.** At $X = 0$: $L(0) < 0$ (the leader has incurred sunk cost $I(K_L)$) while $F(0) = 0$, so $F > L$. At $X = X_F^*$: the leader has accumulated monopoly rents over $[X_P, X_F^*]$ while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$. This holds because the leader's cumulative monopoly-phase profits (earned without inference competition) exceed the follower's option value at the point of indifference.
+**Boundary conditions.** At $X = 0$: $L(0) < 0$ (the leader has incurred sunk cost $I(K_L)$) while $F(0) = 0$, so $F > L$. At $X = X_F^*$: the leader has accumulated monopoly rents over the interval since entry while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$. This holds because the leader's cumulative monopoly-phase profits (earned with contest share $s_L = 1$) exceed the follower's option value at the point of indifference. Formally, the leader's installed value at $X_F^*$ includes the present value of monopoly revenue over $[X_P, X_F^*]$ plus the duopoly continuation value, which exceeds the follower's option value $F(X_F^*)$ because the follower at $X_F^*$ is indifferent between investing and waiting (its NPV is zero at the trigger), while the leader strictly benefits from having entered earlier.
 
 By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$.
 
-**Single crossing.** For $X$ large (well above $X_F^*$), both firms have invested and the leader's value grows approximately linearly in $X$ (since installed revenue $A_{\text{eff}} \cdot X$ dominates the option component). The follower's option value for $X < X_F^*$ grows as $X^{\beta_H}$ with $\beta_H > 1$, so $F(X)$ is convex and eventually dominates any linear function. However, the relevant comparison is over the bounded interval $(0, X_F^*)$: on this interval, the leader already earns monopoly revenue (linear in $X$) while the follower holds only an option (convex but starting from zero). Because $L(X)$ is approximately affine in $X$ on this interval (installed revenue minus debt service) and $F(X)$ is strictly convex with $F(0) = 0 > L(0)$, there is at most one crossing. This single-crossing argument is verified numerically across all parameterizations in the calibration, including those with leverage, training allocation, and endogenous $\tilde{\lambda}$; no case of multiple crossings was found.
+*Uniqueness of $X_P$ (Computational).*
+In the standard @huisman2015strategic framework, uniqueness follows from single crossing: the leader value $L(X)$ crosses the follower value $F(X)$ exactly once on $(0, X_F^*)$. In their model, $L(X)$ is approximately affine in $X$ (installed revenue minus costs) while $F(X) \propto X^{\beta_H}$ is strictly convex with $F(0) = 0 > L(0)$, yielding at most one crossing.
 
-*Part (ii): $\phi_L^* \geq \phi_F^*$.*
+The enriched payoff environment of this paper introduces additional features---capacity choice, training allocation, leverage with default, and regime switching---that modify the value function shapes beyond the standard framework. In particular: (a) the default kink at $X_D$ introduces a non-smooth point in $L(X)$; (b) the training allocation creates an additional channel through which the leader value depends on $X$; and (c) the regime-switching option adds a convex component to both $L(X)$ and $F(X)$. Providing analytical sufficient conditions for single crossing in this enriched environment---while possible in principle through restrictions on parameter ranges---would require establishing shape properties (concavity/convexity) of the leader value function that depend on the interaction of all model features simultaneously.
+
+Instead, uniqueness is verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_F^*)$ and exactly one sign change is confirmed (see Appendix B for details). No case of multiple crossings was found across all parameterizations tested, including those with leverage, training allocation, and endogenous $\tilde{\lambda}$.
+
+*Part (ii): $\phi_L^* \geq \phi_F^*$ (Computational regularity with analytical motivation).*
+The following argument identifies the economic mechanism; the inequality itself is verified computationally.
+
 The leader's total value comprises two phases: a *monopoly phase* (from leader entry at $X_P$ until follower entry at $X_F$) and a *duopoly phase* (after follower entry). In the monopoly phase, the leader operates with contest share $s_L^L = 1$ in the L-regime (no rival in inference) and $s_L^H = 1$ in the H-regime. In the duopoly phase, both contest shares fall below 1 as the follower competes.
 
 The leader's marginal cost of increasing $\phi_L$ differs across phases:
@@ -156,7 +170,7 @@ The follower, by contrast, enters directly into the duopoly phase and always fac
 
 The monopoly-phase effect dominates because: (a) the monopoly phase occurs first, so its cash flows are discounted less; (b) the duration of the monopoly phase $[X_P, X_F]$ is endogenous and substantial (typically $X_F / X_P \approx 1.3$--$1.8$ in the baseline calibration); and (c) the H-regime benefit of training is independent of the competitive phase, so the leader's higher marginal benefit from uncontested H-regime positioning applies equally in both phases.
 
-Since both the marginal cost of training (in forgone L-regime revenue) is lower for the leader (due to the monopoly phase) and the expected marginal benefit (from a longer horizon and uncontested positioning) is higher, the leader's optimal $\phi_L^*$ exceeds the follower's $\phi_F^*$. This result is verified numerically across the full parameter space used in the calibration: in all parameterizations tested (varying $\sigma_H$, $\mu_H$, $\alpha$, $\gamma$, $\lambda_0$, and $\ell$ over their calibration ranges), $\phi_L^* \geq \phi_F^*$ holds. $\square$
+A formal proof would require showing that the leader's FOC for $\phi$ evaluated at $\phi_F^*$ is strictly positive, accounting for the endogenous follower response $\partial(K_F, \phi_F)/\partial(K_L, \phi_L)$ and the regime-switching arrival rate channel. The interaction of these effects makes an analytical monotone comparative-static argument intractable in the current model. Instead, the inequality $\phi_L^* \geq \phi_F^*$ is verified computationally across the full parameter space used in the calibration: in all parameterizations tested (varying $\sigma_H$, $\mu_H$, $\alpha$, $\gamma$, $\lambda_0$, and $\ell$ over their calibration ranges), $\phi_L^* \geq \phi_F^*$ holds; no parameter configuration yielding the reverse inequality was found. $\square$
 
 *Part (v): Credit spread increasing in $\lambda_0$ (computational result).* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. An analytical proof would require showing the elasticity inequality $\varepsilon_{X_P, \lambda_0} < \varepsilon_{X_D, \lambda_0} < 0$; this is verified numerically across the full parameter space used in the calibration rather than derived in closed form. $\square$
 
@@ -182,13 +196,17 @@ Since all three channels contribute weakly negative third derivatives, $W'''(\la
 
 ### B. Numerical Verification Methods {.unnumbered}
 
-All numerical results are computed using SciPy optimization routines in Python 3.13.
+All numerical results are computed using SciPy 1.14 optimization routines in Python 3.13.
 The single-firm and duopoly optimizations use bounded Nelder-Mead over $(K, \phi) \in [0.01, 10] \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation.
 Convergence tolerance is $10^{-8}$ on function values.
 For the preemption trigger $X_P$, I use Brent's root-finding method on $L(X) - F(X) = 0$ over $(X_D, X_F^*)$.
 Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a grid of 500 points and confirming exactly one sign change.
 No case of multiple crossings was found across all parameterizations tested (varying $\sigma_H \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda_0 \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
 Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
+
+**Assumption (A3) boundary.** The no-investment-in-$L$ condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 1.63$), this yields the constraint $\alpha \leq 1 - 1/\beta_L^+ \approx 0.39$. Sensitivity analysis results for $\alpha > 0.39$ therefore lie outside the (A3)-admissible region: the simplified option value $F_L = C \cdot X^{\beta_H}$ no longer applies, and the full two-term solution @eq-option-L-general must be used. The results reported for $\alpha \in [0.40, 0.60]$ should be interpreted with this caveat; I have verified that the qualitative patterns (interior $\phi^*$, preemption, faith-based survival) are preserved when using the full two-term solution in the (A3)-violating region, but the numerical magnitudes differ.
+
+**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds comfortably. At the extreme archetype WACCs: the hyperscaler ($r = 0.10$) yields $\beta_H \approx 1.33$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 0.63 < 1/\gamma = 0.67$, violating the lower bound; the infrastructure provider ($r = 0.18$) yields $\beta_H \approx 1.84$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 1.14 > 1$, violating the upper bound. The analytical Proposition 1 capacity formula therefore applies at the baseline and intermediate WACCs ($r = 0.12$, $0.14$, $0.15$) but not at the extremes. All archetype-specific quantitative results in @sec-calibration and @sec-valuation are computed using the full numerical optimization, which does not require (A2); the archetype results are therefore valid regardless of whether (A2) holds analytically.
 
 ### C. N-Firm Numerical Extension {.unnumbered}
 
