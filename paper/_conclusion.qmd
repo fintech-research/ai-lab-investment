@@ -1,6 +1,6 @@
 ## Conclusion {#sec-conclusion}
 
-This paper develops a unified model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, strategic preemption in oligopoly, endogenous default risk, and diminishing returns calibrated to scaling laws.
+This paper develops a unified model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, strategic preemption in oligopoly, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
 At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the allocation interacting with an endogenous regime switch mechanism in which aggregate training compute accelerates the arrival of transformative AI.
 The model produces closed-form investment triggers for the duopoly with training allocation and default risk (Propositions 1--3), numerical characterization of $N$-firm equilibrium properties (Numerical Findings 1--2), and an illustrative revealed beliefs methodology that uses both investment intensity and training fraction to extract implied AI timeline beliefs from observable decisions.
 

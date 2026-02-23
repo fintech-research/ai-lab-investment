@@ -39,24 +39,19 @@ The training fraction $\hat{\phi}$ is particularly informative because it reveal
 ### Limitations
 
 Several limitations should be noted.
-
-**Static training fraction.**
 The model fixes the training fraction $\phi$ at investment time. This is a reasonable first approximation for large-scale capacity decisions, which involve 18--24 month planning horizons: a firm committing to a new training cluster must decide its GPU architecture, interconnect topology, and power envelope well before the cluster comes online, and these choices effectively determine the training-inference split for the useful life of the hardware.
 However, the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation) blurs the boundary between training and inference by enabling models to "think longer" at inference time, substituting compute for pre-trained capability [@brown2024inference].
 A dynamic extension in which $\phi$ responds to realized demand and capability milestones would enrich the model's predictions about the time path of compute allocation; I leave this for future work.
 
-**Leland default framework and VC-backed firms.**
 The Leland (1994) structural default framework assumes publicly traded equity, continuously tradeable debt, and an endogenous default boundary chosen by equity holders.
 Several frontier AI labs (Anthropic, OpenAI) are VC-backed with complex capital structures involving SAFE notes, convertible debt, revenue-based financing, and multi-class equity---far from the Leland setting.
 The default mechanism in the model is best interpreted as applying to the *infrastructure providers* (CoreWeave, cloud hyperscalers) that issue publicly traded debt, rather than to the VC-backed labs directly.
 For the latter, the relevant financial constraint is more likely funding-round risk (inability to raise the next round) than Leland-style default, and the "faith-based survival" mechanism should be reinterpreted as optimism enabling continued fundraising rather than literally lowering a default boundary.
 
-**Contest specification.**
 The Tullock contest function is a reduced-form representation of competition that abstracts from product differentiation, network effects, and switching costs present in practice.
 Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market.
 The transition from single-firm to duopoly revenue is discontinuous as $K_j \to 0$; a Cournot specification would avoid this discontinuity at the cost of additional complexity (see Appendix F).
 
-**Other limitations.**
 All valuation uses a reduced-form risk-adjusted framework (@sec-model), abstracting from the risk preferences of concentrated shareholders and from state-dependence of the risk premium across regimes.
 The cost of expansion is purely financial ($I(K) = cK^\gamma$), omitting scarce specialized talent that may be a binding constraint.
 I assume profit maximization, but several frontier labs have stated missions that divert compute from revenue-maximizing activities; the training fraction diagnostic in @tbl-revealed-beliefs partially captures this, as the Anthropic-like archetype's observed $\hat{\phi}$ exceeds $\phi^*$.
