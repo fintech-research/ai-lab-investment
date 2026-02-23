@@ -1,7 +1,5 @@
 ## Appendix {.unnumbered}
 
-\newpage
-
 | Symbol | Parameter | Baseline | Interpretation |
 |:--------:|:----------|:--------:|:---------------|
 | $\mu_L$ | L-regime drift | 0.01 | Risk-adjusted demand growth, pre-adoption |
