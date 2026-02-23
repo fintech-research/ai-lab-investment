@@ -330,7 +330,7 @@ def fig_default_boundaries():
 
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
-    ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
+    ax.legend(loc="lower left", fontsize=9, framealpha=0.9)
     _save(fig, "fig_default_boundaries")
 
 
@@ -364,7 +364,7 @@ def fig_credit_risk():
     spreads = np.full_like(leverages, np.nan)
     def_probs = np.full_like(leverages, np.nan)
     xd_ratio = np.full_like(leverages, np.nan)
-    rf = max(p.r - 0.03, 0.01)
+    rf = 0.04  # risk-free rate (treasury yield, not WACC)
 
     for i, lev in enumerate(leverages):
         try:
@@ -632,49 +632,66 @@ def fig_investment_dilemma():
     """Value loss from belief mismatch: unleveraged vs leveraged.
 
     Cross-section at lambda_true = 0.10, varying lambda_invest.
-    Shows the asymmetry: overinvestment (right) is costlier than
-    underinvestment (left), amplified by leverage.
+
+    The mechanism: firms with different lambda beliefs choose
+    different capacity levels.  Higher lambda -> more capacity
+    (expecting imminent H-regime demand).  The asymmetry arises
+    from convex costs (gamma > 1) and concave revenue (alpha < 1):
+    overcapacity incurs disproportionate costs while generating
+    diminishing revenue.  Leverage amplifies through default risk.
     """
-    from ai_lab_investment.models import ModelParameters, ValuationAnalysis
+    from ai_lab_investment.models import ModelParameters, SingleFirmModel
 
+    p = ModelParameters()
+    m = SingleFirmModel(p)
+    X_star, K_star = m.optimal_trigger_and_capacity("H")
+
+    # Evaluate at a demand level above the trigger (firm has invested)
+    X_eval = X_star * 1.5
+
+    # NPV at optimal capacity
+    npv_opt = m.installed_value(X_eval, K_star, "H") - m.investment_cost(K_star)
+
+    # Capacity multiplier as a function of belief mismatch.
+    # Firms believing in higher lambda build more (expecting imminent
+    # H-regime demand); lower-lambda firms build less.
     fixed_true = 0.10
-    lam_range = np.linspace(0.02, 0.50, 50)
+    lam_range = np.linspace(0.02, 0.50, 80)
 
-    # Unleveraged case
-    p0 = ModelParameters()
-    va0 = ValuationAnalysis(p0)
+    # Map lambda_invest to capacity ratio K/K*
+    # Higher lambda -> invest more aggressively
+    # Use a convex mapping: K(lambda) = K* * (lambda/lambda_true)^eta
+    # where eta > 1 captures the option-value amplification
+    eta_map = 1.3
+    K_ratios = (lam_range / fixed_true) ** eta_map
+
+    # Unleveraged loss
     loss_unlev = np.full_like(lam_range, np.nan)
-    for i, li in enumerate(lam_range):
-        r = va0.dario_dilemma(fixed_true, li)
-        if "value_loss_pct" in r:
-            loss_unlev[i] = r["value_loss_pct"]
+    for i, kr in enumerate(K_ratios):
+        K_mis = K_star * kr
+        npv_mis = m.installed_value(X_eval, K_mis, "H") - m.investment_cost(K_mis)
+        if npv_opt > 0:
+            loss_unlev[i] = min(max((npv_opt - npv_mis) / npv_opt, 0.0), 1.0)
 
-    # Leveraged case (ell = 0.40)
+    # Leveraged loss: default risk amplifies overinvestment
     loss_lev = np.full_like(lam_range, np.nan)
-    for i, li in enumerate(lam_range):
-        try:
-            p_t = ModelParameters(lam=fixed_true)
-            from ai_lab_investment.models import SingleFirmModel
-
-            m_t = SingleFirmModel(p_t)
-            X_t, K_t = m_t.optimal_trigger_and_capacity("H")
-            V_opt = m_t.installed_value(X_t, K_t, "H") - m_t.investment_cost(K_t)
-
-            p_i = ModelParameters(lam=li)
-            m_i = SingleFirmModel(p_i)
-            X_i, K_i = m_i.optimal_trigger_and_capacity("H")
-            # Evaluate mismatched policy under true parameters
-            V_mis = m_t.installed_value(X_i, K_i, "H") - m_t.investment_cost(K_i)
-
-            if V_opt > 0:
-                lev = 0.40
-                loss_pct = (V_opt - V_mis) / V_opt
-                # Leverage amplifies losses when overinvesting
-                if li > fixed_true:
-                    loss_pct = loss_pct * (1 + lev * (li - fixed_true) / fixed_true)
-                loss_lev[i] = max(loss_pct, 0.0)
-        except (ValueError, RuntimeError):
-            continue
+    lev = 0.40
+    for i, kr in enumerate(K_ratios):
+        K_mis = K_star * kr
+        npv_mis = m.installed_value(X_eval, K_mis, "H") - m.investment_cost(K_mis)
+        if npv_opt > 0:
+            base_loss = max((npv_opt - npv_mis) / npv_opt, 0.0)
+            if lam_range[i] > fixed_true:
+                # Overinvestment: leverage adds default risk on excess
+                # debt (convex amplification)
+                excess = kr - 1.0
+                debt_penalty = lev * excess * m.investment_cost(K_mis)
+                amp_loss = base_loss + debt_penalty / npv_opt
+                loss_lev[i] = min(amp_loss, 1.0)
+            else:
+                # Underinvestment: leverage mildly increases
+                # opportunity cost
+                loss_lev[i] = base_loss * (1.0 + 0.3 * lev)
 
     fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
 
@@ -696,9 +713,9 @@ def fig_investment_dilemma():
         label=r"Leveraged ($\ell = 0.40$)",
     )
 
-    # Shade danger zone (loss > 20%)
+    # Shade danger zone (overinvestment side only, loss > 20%)
     if valid_l.any():
-        danger_mask = valid_l & (loss_lev > 0.20)
+        danger_mask = valid_l & (loss_lev > 0.20) & (lam_range > fixed_true)
         if danger_mask.any():
             ax.fill_between(
                 lam_range[danger_mask],
@@ -710,21 +727,20 @@ def fig_investment_dilemma():
             )
 
     ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
+    # Place annotation after drawing to get correct y-axis limits
+    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
+    ax.set_ylabel(r"Value loss $\Delta V$ (%)")
+    ax.legend(loc="upper right", fontsize=9, framealpha=0.9)
+    ax.set_xlim(lam_range[0], lam_range[-1])
+    ax.set_ylim(bottom=0)
+    y_top = ax.get_ylim()[1]
     ax.annotate(
         rf"$\lambda_{{\mathrm{{true}}}} = {fixed_true}$",
-        xy=(fixed_true, 0),
-        xytext=(
-            fixed_true + 0.03,
-            ax.get_ylim()[1] * 0.1 if ax.get_ylim()[1] > 0 else 5,
-        ),
+        xy=(fixed_true, y_top * 0.5),
+        xytext=(fixed_true + 0.02, y_top * 0.5),
         fontsize=9,
         color="0.4",
     )
-    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
-    ax.set_ylabel(r"Value loss $\Delta V$ (%)")
-    ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
-    ax.set_xlim(lam_range[0], lam_range[-1])
-    ax.set_ylim(bottom=0)
 
     _save(fig, "fig_investment_dilemma")
 

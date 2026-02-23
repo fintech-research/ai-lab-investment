@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Investing in Artificial General Intelligence"
 
-A unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default, and diminishing returns calibrated to AI scaling laws. The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, (ii) numerical solutions for N firms with dynamic training/inference allocation, and (iii) a "revealed beliefs" methodology for inferring AI labs' private probability assessments of transformative AI arrival from observable investment decisions. Target: JF, RFS, or Econometrica.
+A unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default, and diminishing returns calibrated to AI scaling laws. The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, (ii) numerical solutions for N firms with dynamic training/inference allocation, and (iii) an asymmetric "AI investment dilemma" showing that overinvestment carries greater downside risk than underinvestment. Target: JF, RFS, or Econometrica.
 
 The research plan is detailed in `plan.md`.
 
@@ -47,6 +47,11 @@ All commands use `just` (task runner) and `uv` (Python package manager). Run `ju
 - **Research paper**: `paper/` directory, Quarto → PDF/HTML
 - **Slides**: `slides/long-form/`, Quarto → RevealJS HTML
 - **API docs**: MkDocs with mkdocstrings, served from `docs/`
+
+## Paper Writing Style
+
+- **No bold paragraph headings.** Never use `**Bold text.**` as a pseudo-heading to start a paragraph in the paper. If a section needs subdivision, use proper Quarto/markdown headings (`###`, `####`). Otherwise, just start the paragraph with its content — no label.
+- Target style: top finance journals (JF, RFS, Econometrica). Concise, formal, no filler.
 
 ## Code Style
 

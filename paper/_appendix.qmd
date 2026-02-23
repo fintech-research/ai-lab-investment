@@ -1,5 +1,30 @@
 ## Appendix {.unnumbered}
 
+\newpage
+
+| Symbol | Parameter | Baseline | Interpretation |
+|:--------:|:----------|:--------:|:---------------|
+| $\mu_L$ | L-regime drift | 0.01 | Risk-adjusted demand growth, pre-adoption |
+| $\mu_H$ | H-regime drift | 0.06 | Risk-adjusted demand growth, post-adoption |
+| $\sigma_L$ | L-regime volatility | 0.25 | Demand uncertainty, pre-adoption |
+| $\sigma_H$ | H-regime volatility | 0.30 | Demand uncertainty, post-adoption |
+| $r$ | Discount rate (WACC) | 0.12 | Risk-adjusted cost of capital |
+| $\lambda_0$ | Exogenous arrival rate | 0.05 | Rest-of-world AI progress |
+| $\xi$ | Endogenous scaling | 0 | Firms' training contribution to $\tilde{\lambda}$ |
+| $\eta$ | Scaling law exponent | 0.07 | Diminishing returns to training compute |
+| $\alpha$ | Revenue elasticity | 0.40 | Diminishing returns to capacity in revenue |
+| $\gamma$ | Cost convexity | 1.50 | Increasing marginal cost of capacity |
+| $c$ | Unit cost (normalization) | 1.00 | Investment cost scale |
+| $\delta$ | Operating cost rate | 0.03 | Power, cooling, maintenance per unit capacity |
+| $\phi$ | Training fraction | --- | Endogenous; share of capacity allocated to training |
+| $\ell$ | Leverage ratio | --- | Debt / investment cost |
+| $c_d$ | Coupon rate | 0.05 | Cost of debt |
+| $b$ | Bankruptcy cost | 0.30 | Fraction of value lost in default |
+
+: Model parameters with baseline values and interpretations. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. {#tbl-parameters tbl-colwidths="[10,25,12,53]"}
+
+\newpage
+
 ### A. Proofs {.unnumbered}
 
 #### Proof of Proposition 1 {.unnumbered}
