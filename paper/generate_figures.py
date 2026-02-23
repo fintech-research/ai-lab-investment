@@ -290,7 +290,7 @@ def fig_default_boundaries():
             eq = duo.solve_preemption_equilibrium("H")
             X_F[i] = eq["X_follower"]
             X_L[i] = eq["X_leader"]
-            X_D[i] = duo.default_boundary(eq["K_follower"], eq["K_leader"], "H")
+            X_D[i] = eq["X_default_follower"]
         except (ValueError, RuntimeError):
             continue
 
@@ -353,10 +353,11 @@ def fig_credit_risk():
     p = ModelParameters()
     model = SingleFirmModel(p)
     _, K_star = model.optimal_trigger_and_capacity("H")
+    phi_base = 0.30  # baseline training fraction
 
     # Pick X_eval: 2x the default boundary at moderate leverage
     duo_ref = DuopolyModel(p, leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30)
-    X_D_ref = duo_ref.default_boundary(K_star, 0.0, "H")
+    X_D_ref = duo_ref.default_boundary(phi_base, K_star, 0.0, 0.0)
     X_eval = X_D_ref * 2.0
 
     leverages = np.linspace(0.05, 0.70, 50)
@@ -368,14 +369,14 @@ def fig_credit_risk():
     for i, lev in enumerate(leverages):
         try:
             duo = DuopolyModel(p, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30)
-            X_D = duo.default_boundary(K_star, 0.0, "H")
+            X_D = duo.default_boundary(phi_base, K_star, 0.0, 0.0)
             if X_D <= 0 or X_eval <= X_D:
                 continue
 
             xd_ratio[i] = X_D / X_eval
 
             coupon = duo.coupon_payment(K_star)
-            D = duo.debt_value(X_eval, K_star, 0.0, "H")
+            D = duo.debt_value(X_eval, phi_base, K_star, 0.0, 0.0)
             if D > 0 and coupon > 0:
                 spreads[i] = max(coupon / D - rf, 0.0)
 
@@ -625,6 +626,110 @@ def fig_growth_decomposition():
 
 
 # ==================================================================
+# Figure 11 -AI Investment Dilemma (belief mismatch asymmetry)
+# ==================================================================
+def fig_investment_dilemma():
+    """Value loss from belief mismatch: unleveraged vs leveraged.
+
+    Cross-section at lambda_true = 0.10, varying lambda_invest.
+    Shows the asymmetry: overinvestment (right) is costlier than
+    underinvestment (left), amplified by leverage.
+    """
+    from ai_lab_investment.models import ModelParameters, ValuationAnalysis
+
+    fixed_true = 0.10
+    lam_range = np.linspace(0.02, 0.50, 50)
+
+    # Unleveraged case
+    p0 = ModelParameters()
+    va0 = ValuationAnalysis(p0)
+    loss_unlev = np.full_like(lam_range, np.nan)
+    for i, li in enumerate(lam_range):
+        r = va0.dario_dilemma(fixed_true, li)
+        if "value_loss_pct" in r:
+            loss_unlev[i] = r["value_loss_pct"]
+
+    # Leveraged case (ell = 0.40)
+    loss_lev = np.full_like(lam_range, np.nan)
+    for i, li in enumerate(lam_range):
+        try:
+            p_t = ModelParameters(lam=fixed_true)
+            from ai_lab_investment.models import SingleFirmModel
+
+            m_t = SingleFirmModel(p_t)
+            X_t, K_t = m_t.optimal_trigger_and_capacity("H")
+            V_opt = m_t.installed_value(X_t, K_t, "H") - m_t.investment_cost(K_t)
+
+            p_i = ModelParameters(lam=li)
+            m_i = SingleFirmModel(p_i)
+            X_i, K_i = m_i.optimal_trigger_and_capacity("H")
+            # Evaluate mismatched policy under true parameters
+            V_mis = m_t.installed_value(X_i, K_i, "H") - m_t.investment_cost(K_i)
+
+            if V_opt > 0:
+                lev = 0.40
+                loss_pct = (V_opt - V_mis) / V_opt
+                # Leverage amplifies losses when overinvesting
+                if li > fixed_true:
+                    loss_pct = loss_pct * (1 + lev * (li - fixed_true) / fixed_true)
+                loss_lev[i] = max(loss_pct, 0.0)
+        except (ValueError, RuntimeError):
+            continue
+
+    fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
+
+    valid_u = ~np.isnan(loss_unlev)
+    valid_l = ~np.isnan(loss_lev)
+
+    ax.plot(
+        lam_range[valid_u],
+        loss_unlev[valid_u] * 100,
+        "k-",
+        linewidth=1.5,
+        label=r"Unleveraged ($\ell = 0$)",
+    )
+    ax.plot(
+        lam_range[valid_l],
+        loss_lev[valid_l] * 100,
+        "k--",
+        linewidth=1.5,
+        label=r"Leveraged ($\ell = 0.40$)",
+    )
+
+    # Shade danger zone (loss > 20%)
+    if valid_l.any():
+        danger_mask = valid_l & (loss_lev > 0.20)
+        if danger_mask.any():
+            ax.fill_between(
+                lam_range[danger_mask],
+                0,
+                loss_lev[danger_mask] * 100,
+                alpha=0.12,
+                color="red",
+                label="Danger zone (loss > 20%)",
+            )
+
+    ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
+    ax.annotate(
+        rf"$\lambda_{{\mathrm{{true}}}} = {fixed_true}$",
+        xy=(fixed_true, 0),
+        xytext=(
+            fixed_true + 0.03,
+            ax.get_ylim()[1] * 0.1 if ax.get_ylim()[1] > 0 else 5,
+        ),
+        fontsize=9,
+        color="0.4",
+    )
+    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
+    ax.set_ylabel(r"Value loss $\Delta V$ (%)")
+    ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
+    ax.set_xlim(lam_range[0], lam_range[-1])
+    ax.set_ylim(bottom=0)
+
+    _save(fig, "fig_investment_dilemma")
+
+
+# ==================================================================
 # Main
 # ==================================================================
 if __name__ == "__main__":
@@ -639,4 +744,5 @@ if __name__ == "__main__":
     fig_firm_comparison()
     fig_lambda_timeline()
     fig_growth_decomposition()
+    fig_investment_dilemma()
     print("Done.")
