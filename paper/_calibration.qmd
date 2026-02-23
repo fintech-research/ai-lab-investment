@@ -37,7 +37,8 @@ At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are u
 Following @kaplan2020scaling and @hoffmann2022training, the scaling exponent $\eta = 0.07$ governs diminishing returns in the contribution of training compute to AI progress: doubling training compute raises the arrival rate contribution by only $2^{0.07} - 1 \approx 5\%$.
 The firm contribution scaling parameter $\xi$ converts the modeled firms' training compute into arrival rate units.
 The baseline $\xi = 0$ corresponds to the exogenous-$\lambda$ model; for the endogenous analysis, I calibrate $\xi$ so that the industry's current training compute ($\sum \phi_i K_i$ across the four stylized firms) contributes approximately half of the total arrival rate, yielding $\tilde{\lambda} \approx 2\lambda_0$.
-This implies that frontier AI labs collectively account for roughly half of the effective progress toward transformative AI, with the remainder coming from academic research, open-source projects, and international competitors.
+This 50\% split reflects the observation that frontier AI labs collectively conduct the majority of the world's largest training runs, but that academic research, open-source projects (e.g., Llama, Mistral), and international competitors (e.g., DeepSeek) contribute substantially to overall progress.
+The choice is inherently uncertain; varying the endogenous share from 25\% to 75\% shifts the quantitative importance of the training externality but preserves all qualitative results (see Appendix F on exogenous vs. endogenous $\lambda$ robustness). With $\eta = 0.07$, the endogenous channel is quantitatively modest: doubling a single firm's training compute raises its contribution to $\tilde{\lambda}$ by only $2^{0.07} - 1 \approx 5\%$, so the model effectively reduces to the exogenous-$\lambda$ case for most firm-level decisions.
 
 ### Stylized Firms
 

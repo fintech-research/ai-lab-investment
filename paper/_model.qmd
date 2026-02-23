@@ -71,6 +71,29 @@ The training fraction $\phi$ is chosen at investment time and fixed thereafter.^
 
 Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
+@tbl-parameters summarizes all model parameters, their baseline values, and economic interpretations. This table serves as a reference for the analysis that follows; the calibration rationale for each value is discussed in @sec-calibration.
+
+| Symbol | Parameter | Baseline | Interpretation |
+|:------:|:----------|:--------:|:---------------|
+| $\mu_L$ | L-regime drift | 0.01 | Risk-adjusted demand growth, pre-adoption |
+| $\mu_H$ | H-regime drift | 0.06 | Risk-adjusted demand growth, post-adoption |
+| $\sigma_L$ | L-regime volatility | 0.25 | Demand uncertainty, pre-adoption |
+| $\sigma_H$ | H-regime volatility | 0.30 | Demand uncertainty, post-adoption |
+| $r$ | Discount rate (WACC) | 0.12 | Risk-adjusted cost of capital |
+| $\lambda_0$ | Exogenous arrival rate | 0.05 | Rest-of-world AI progress |
+| $\xi$ | Endogenous scaling | 0 | Firms' training contribution to $\tilde{\lambda}$ |
+| $\eta$ | Scaling law exponent | 0.07 | Diminishing returns to training compute |
+| $\alpha$ | Revenue elasticity | 0.40 | Diminishing returns to capacity in revenue |
+| $\gamma$ | Cost convexity | 1.50 | Increasing marginal cost of capacity |
+| $c$ | Unit cost (normalization) | 1.00 | Investment cost scale |
+| $\delta$ | Operating cost rate | 0.03 | Power, cooling, maintenance per unit capacity |
+| $\phi$ | Training fraction | --- | Endogenous; share of capacity allocated to training |
+| $\ell$ | Leverage ratio | --- | Debt / investment cost |
+| $c_d$ | Coupon rate | 0.05 | Cost of debt |
+| $b$ | Bankruptcy cost | 0.30 | Fraction of value lost in default |
+
+: Model parameters with baseline values and interpretations. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. {#tbl-parameters tbl-colwidths="[8,27,12,53]"}
+
 ### Single-Firm Benchmark {#sec-single-firm}
 
 I begin with a single firm holding an option to invest.
@@ -241,7 +264,7 @@ $$
 V_i^H(X) = A_H \cdot X \cdot (\phi_i K_i)^\alpha \cdot s_i^H - \frac{\delta K_i}{r}.
 $$
 
-The effective revenue coefficient $A_{\text{eff},i}$ embodies the central economic trade-off: the first term captures the value of inference in the current regime (which depends on $(1-\phi_i)K_i$ and the L-regime contest share), while the second captures the expected value of training quality in the future regime (which depends on $\phi_i K_i$ and the H-regime contest share, weighted by the arrival rate $\tilde{\lambda}$).
+The effective revenue coefficient $A_{\text{eff},i}$ embodies the central economic trade-off: the first term captures the value of inference in the current regime (which depends on $(1-\phi_i)K_i$ and the L-regime contest share), while the second captures the expected value of training quality in the future regime (which depends on $\phi_i K_i$ and the H-regime contest share, weighted by the arrival rate $\tilde{\lambda}$). When $K_j = 0$ (no rival), the contest shares reduce to $s_i^L = s_i^H = 1$ and @eq-a-eff-duopoly reduces to the single-firm $A_{\text{eff}}$ in @eq-a-eff.
 
 #### Capital structure
 
