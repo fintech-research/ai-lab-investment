@@ -38,8 +38,14 @@ The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, whic
 The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
 This is a form of *revealed preference* in the spirit of @samuelson1938note: I do not ask what firms *say* about AI timelines; I infer what they *believe* from what they *do*.
 
-The key identification assumption is that cross-firm variation in investment intensity, conditional on observable parameters, reflects variation in beliefs about $\lambda$ rather than unobserved heterogeneity in costs or technology.
-I assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
+A single observable moment---the CapEx/Revenue ratio---cannot separately identify $\lambda$ from unobserved heterogeneity in costs, technology, or business models.
+GPU procurement costs, power purchase agreements, and accounting treatment of capital leases versus outright purchases all vary across firms and could generate cross-sectional variation in investment intensity independent of beliefs about AI timelines.
+The inversion therefore recovers $\hat{\lambda}$ *conditional on* the maintained assumption that these cost and technology parameters are correctly specified.
+
+Several additional moments could sharpen identification.
+Market capitalization provides an independent read on the growth option value; credit spreads or CDS prices pin down default risk and effective leverage; and capacity proxies such as GPU counts, rack deployments, or contracted megawatts help calibrate the technology parameters $\alpha$, $\gamma$, and $c$ directly.
+Incorporating these moments would move from a single-equation inversion to an overidentified GMM framework, enabling formal specification tests.
+I leave this extension for future work and frame the current exercise as an *illustrative calibration* that recovers beliefs conditional on maintained assumptions, rather than a structural estimation with formal identification guarantees.
 
 #### Results
 
@@ -60,6 +66,24 @@ First, the belief dispersion is large: the ratio of the highest to lowest implie
 This means the most aggressive firms behave as if transformative AI is roughly an order of magnitude more imminent than the most conservative firm believes.
 Second, firms investing more than twice their revenue (Anthropic-like and CoreWeave-like) reveal near-certainty that the regime switch will occur within five years.
 Their different financial structures (leverage 0.20 vs. 0.70) suggest that one category backs its beliefs with equity while the other relies on debt---a distinction with important implications for default risk.
+
+That the model produces identical $\hat{\lambda}$ for Anthropic-like and CoreWeave-like firms despite their very different financial structures is a limitation of the single-moment inversion.
+The L-regime option value depends on CapEx/Revenue and shared parameters ($r$, $\sigma$, $\alpha$, $\gamma$, $\delta$) but not on firm-specific leverage or WACC, so any two firms with the same investment intensity map to the same implied belief.
+Economically, however, a debt-financed infrastructure provider investing at $2\times$ revenue reveals different information than an equity-financed frontier lab at the same ratio: the former faces binding debt covenants and rollover risk that constrain its ability to act on beliefs, while the latter has chosen to dilute equity holders---a costlier signal of conviction.
+Incorporating leverage or WACC as additional identifying moments would break this degeneracy, allowing the model to distinguish equity-backed conviction from debt-funded speculation.
+This motivates the multi-moment extension discussed above.
+
+#### Sensitivity and confidence sets
+
+The cardinal values in @tbl-revealed-beliefs are sensitive to calibration assumptions and should be interpreted as confidence sets conditional on parameter ranges rather than point estimates.
+@tbl-sensitivity-beliefs reports the implied $\hat{\lambda}$ under $\pm 25\%$ variation in key parameters.
+The most consequential is H-regime volatility: varying $\sigma_H$ by $\pm 25\%$ shifts the Anthropic-like $\hat{\lambda}$ from 0.003 to 0.90, spanning nearly the entire parameter space.
+Higher volatility raises the H-regime option value, reducing the $\lambda$ needed to rationalize observed investment intensity; lower volatility has the opposite effect.
+Cost convexity $\gamma$ also matters, though less dramatically: $\gamma \pm 25\%$ moves the Anthropic-like implied belief across the range [0.07, 0.90].
+
+The most reliable inference is therefore the *ordinal ranking*---frontier labs reveal more aggressive beliefs than hyperscalers---and the approximate *order-of-magnitude dispersion* in implied beliefs across firm types.
+The qualitative ordering is robust across all parameter perturbations tested: in no specification does the Google-like archetype imply a higher $\hat{\lambda}$ than the Anthropic-like archetype.
+Cardinal values are illustrative and should be read as "beliefs consistent with investment behavior under maintained assumptions" rather than precise estimates of firms' private probabilities.
 
 ### Growth Option Decomposition
 

@@ -203,7 +203,7 @@ The discount rate $r$ and revenue elasticity $\alpha$ are the most influential p
 | $\sigma_H \pm 25\%$ | [0.003, 0.90] | [0.002, 0.08] |
 | $\gamma \pm 25\%$ | [0.07, 0.90] | [0.03, 0.08] |
 
-: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. {#tbl-sensitivity-beliefs}
+: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. See @sec-valuation for discussion of these confidence sets. {#tbl-sensitivity-beliefs}
 
 ### F. Robustness {.unnumbered}
 

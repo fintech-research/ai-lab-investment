@@ -22,6 +22,8 @@ This is the key parameter that our revealed beliefs methodology will infer from 
 **Discount rate.**
 I set $r = 0.12$, consistent with the weighted average cost of capital (WACC) for AI infrastructure firms.
 This exceeds typical corporate WACCs because AI infrastructure investments carry substantial technology risk and the firms are typically high-growth with elevated cost of equity.
+The analytical results and figures in @sec-model and @sec-extensions use $r = 0.12$ throughout; these illustrate model properties at a representative WACC and do not correspond to any specific firm archetype.
+The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sensitivity analysis; I use the common baseline in the revealed beliefs inversion to isolate the role of $\lambda$ from discount-rate heterogeneity.
 
 ### Technology Parameters
 
@@ -39,7 +41,13 @@ I normalize the cost parameter to unity; all monetary values are interpreted rel
 
 **Operating cost rate** ($\delta = 0.03$).
 The parameter $\delta$ represents the ongoing cost of maintaining installed capacity---power, cooling, maintenance, and personnel---expressed as a fraction of capacity per year.
-This is distinct from accounting depreciation of GPU hardware (which is faster), and captures the perpetual operating cost that the firm must cover from revenue to avoid negative cash flow.
+This is distinct from both accounting depreciation and economic depreciation of GPU hardware.
+Accounting depreciation for data center equipment typically implies a 3--5 year useful life (20--33\% per year), and power costs alone can reach \$0.05--0.10/kWh at hyperscale.
+In the model, the *capital* cost of hardware is captured in the investment cost function $cK^\gamma$; $\delta$ captures only the *operating* flow cost of running installed capacity.
+Economic depreciation through technological obsolescence (e.g., H100$\to$B200 transitions) would justify a higher effective $\delta$, making the baseline of 0.03 conservative.
+The model is relatively insensitive to this parameter: @tbl-elasticities reports elasticities of $+2.2$ for the trigger and $+2.0$ for capacity, among the smallest of all parameters.
+At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged.
+A higher $\delta$ strengthens the paper's conclusions: it makes the Dario dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
 
 ### Stylized Firms
 
@@ -55,6 +63,11 @@ I calibrate four stylized firms representing the major categories of AI infrastr
 | WACC | 0.15 | 0.14 | 0.10 | 0.18 |
 
 : Stylized firm parameters calibrated from public filings and analyst reports. {#tbl-firms tbl-colwidths="[30,17,17,18,18]"}
+
+The figures in @tbl-firms are approximate composites derived from public filings (10-K, 10-Q), earnings call guidance, and analyst estimates, rounded for expositional clarity.
+I cross-referenced multiple sources where available (e.g., Bloomberg, S\&P Capital IQ, Damodaran industry data; see @tbl-sources).
+The stylized firms are designed to capture salient features of each category rather than to replicate any single company's financials precisely.
+The revealed beliefs methodology is robust to moderate perturbation of these inputs: @tbl-sensitivity-beliefs shows that $\pm 25\%$ variation in key parameters produces bounded confidence sets that preserve the qualitative ordering of implied beliefs across firm types.
 
 @fig-firm-comparison provides a visual summary of the calibration targets.
 Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.
