@@ -730,7 +730,7 @@ def fig_investment_dilemma():
     # Place annotation after drawing to get correct y-axis limits
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
     ax.set_ylabel(r"Value loss $\Delta V$ (%)")
-    ax.legend(loc="upper right", fontsize=9, framealpha=0.9)
+    ax.legend(loc="lower right", fontsize=9, framealpha=0.9)
     ax.set_xlim(lam_range[0], lam_range[-1])
     ax.set_ylim(bottom=0)
     y_top = ax.get_ylim()[1]
