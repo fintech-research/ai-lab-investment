@@ -2,6 +2,13 @@
 
 ### Environment
 
+@fig-sample-paths illustrates the demand environment by simulating five sample paths of the demand process under regime switching.
+In each realization, demand begins in the low regime $L$ and may jump to the high regime $H$ at a random Poisson time.
+The dashed line marks the optimal investment trigger $X_H^*$: paths that cross this threshold in the high regime trigger investment.
+The figure highlights both the uncertainty about the timing of the regime switch and the substantial variation in demand trajectories conditional on switching, which together generate the option value of waiting that is central to the analysis.
+
+![Simulated demand paths under regime switching. Each path begins in the low regime ($L$, thin lines) and may transition to the high regime ($H$, thick lines) at a random Poisson time (marked by dots). The dashed line indicates the optimal H-regime investment trigger $X_H^*$. Parameters: $\mu_L = 0.01$, $\mu_H = 0.06$, $\sigma_L = 0.25$, $\sigma_H = 0.30$, $\lambda = 0.10$, $r = 0.12$.](figures/fig_sample_paths.pdf){#fig-sample-paths}
+
 Time is continuous. A stochastic demand process $X_t$ governs the revenue available to AI infrastructure firms.
 Demand follows a geometric Brownian motion (GBM) with regime-dependent drift and volatility:
 $$

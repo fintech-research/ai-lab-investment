@@ -88,21 +88,4 @@ I allow for heterogeneity by assigning each firm $i$ its own parameter vector $\
 
 With heterogeneous firms, the sequential equilibrium no longer features symmetric entry.
 Firms with lower costs, lower discount rates, or higher $\lambda$ (more optimistic beliefs) enter earlier and build more capacity.
-I solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage.
-
-### Numerical Method
-
-The computational approach proceeds in five steps:
-
-1. **Last entrant.** Solve the $N$-th firm's follower problem analytically (or by one-dimensional optimization) given total incumbent capacity.
-
-2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing and capacity problem by optimizing over $K_k$ using scalar optimization, computing the trigger $X_k^*(K_k)$ at each evaluation.
-
-3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants.
-
-4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
-
-5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered and that no firm has an incentive to deviate.
-
-All numerical solutions are implemented in Python using `scipy.optimize` for one-dimensional optimization and root-finding [@judd1998numerical].
-The code is publicly available.
+I solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage (see Appendix C for details).
