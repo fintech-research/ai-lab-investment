@@ -1,5 +1,8 @@
 ## Discussion {#sec-discussion}
 
+The duopoly model generates its economic content through three core tensions: (i) current cash flow versus future capability (inference versus training), (ii) waiting value versus preemption pressure, and (iii) growth-option upside versus leverage and default risk.
+This section discusses implications, testable predictions, and limitations.
+
 ### Welfare and Overinvestment
 
 The strategic preemption mechanism generates potential overinvestment relative to the social optimum.
