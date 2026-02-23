@@ -4,6 +4,7 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
+The proof applies in the baseline regime where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (see @eq-option-L-general and the discussion following it; the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ is verified for the baseline calibration).
 The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
 
 *Step 1: Optimal trigger given $(K, \phi)$.*
@@ -22,9 +23,9 @@ $$
 *Step 3: Joint optimization over $(K, \phi)$.*
 Substituting the trigger and NPV into $F(X_0)$:
 $$
-F(X_0) = C \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv C \cdot h(K, \phi),
+F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
 $$
-where $C = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H}$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}$.
+where $\mathcal{C} = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H} > 0$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}$.
 
 *Step 4: First-order condition for $K$.*
 Setting $(\partial \ln h / \partial K) = 0$:
@@ -33,47 +34,97 @@ $$
 $$ {#eq-foc-K}
 which for the pure H-regime case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simplifies to the closed-form expression in Proposition 1.
 
-*Step 5: Existence of interior $\phi^*$.*
-For $\phi \to 0$: $A_{\text{eff}} \to K^\alpha / (r - \mu_L + \tilde{\lambda})$, so $\partial A_{\text{eff}} / \partial \phi < 0$ (reducing inference capacity) plus $\partial A_{\text{eff}} / \partial \phi > 0$ from the H-regime term, with the H-regime term vanishing because $(\phi K)^\alpha \to 0$. The net is $\partial h / \partial \phi \to +\infty$ (the H-regime term's marginal value diverges).
-For $\phi \to 1$: $[(1-\phi)K]^\alpha \to 0$, so the L-regime term vanishes while the H-regime term saturates. The net is $\partial h / \partial \phi < 0$ for $\phi$ close to 1 (the marginal cost of reducing inference exceeds the marginal benefit of training).
-By continuity, an interior $\phi^* \in (0, 1)$ exists.
+*Step 5: Existence of interior $\phi^*$ (Lemma).*
+
+Write $A_{\text{eff}}(\phi) = w_L \cdot [(1-\phi)K]^\alpha + w_H \cdot (\phi K)^\alpha$, where $w_L = 1/(r - \mu_L + \tilde{\lambda}) > 0$ and $w_H = \tilde{\lambda} A_H / (r - \mu_L + \tilde{\lambda}) > 0$.
+Since $b(K)$ is independent of $\phi$, maximizing $h$ over $\phi$ is equivalent to maximizing $A_{\text{eff}}(\phi)^{\beta_H}$, or equivalently $A_{\text{eff}}(\phi)$.
+
+The first derivative with respect to $\phi$ is:
+$$
+\frac{\partial A_{\text{eff}}}{\partial \phi} = \alpha K^\alpha \bigl[-w_L (1-\phi)^{\alpha - 1} + w_H \phi^{\alpha - 1}\bigr].
+$$
+
+*Boundary behavior.* Since $\alpha \in (0,1)$, the exponent $\alpha - 1 < 0$, so:
+
+- As $\phi \to 0^+$: $\phi^{\alpha - 1} \to +\infty$ while $(1-\phi)^{\alpha-1} \to 1$, so $\partial A_{\text{eff}}/\partial \phi \to +\infty$. (Inada condition: the first unit of training has infinite marginal value.)
+- As $\phi \to 1^-$: $(1-\phi)^{\alpha - 1} \to +\infty$ while $\phi^{\alpha-1} \to 1$, so $\partial A_{\text{eff}}/\partial \phi \to -\infty$. (Inada condition: the last unit of inference has infinite marginal value.)
+
+Since $\partial A_{\text{eff}}/\partial \phi$ is continuous on $(0,1)$, positive near $\phi = 0$, and negative near $\phi = 1$, by the intermediate value theorem there exists $\phi^* \in (0,1)$ with $\partial A_{\text{eff}}/\partial \phi = 0$.
+
+*Uniqueness.* The second derivative is:
+$$
+\frac{\partial^2 A_{\text{eff}}}{\partial \phi^2} = \alpha(\alpha - 1) K^\alpha \bigl[w_L (1-\phi)^{\alpha - 2} + w_H \phi^{\alpha - 2}\bigr] < 0
+$$
+for all $\phi \in (0,1)$, since $\alpha - 1 < 0$ and $\alpha - 2 < 0$ imply $\alpha(\alpha-1) > 0$ while both terms in brackets are positive. Strict concavity of $A_{\text{eff}}$ in $\phi$ guarantees uniqueness.
+
+*Interior solution.* Setting $\partial A_{\text{eff}} / \partial \phi = 0$ yields:
+$$
+\frac{w_H}{w_L} = \left(\frac{1-\phi^*}{\phi^*}\right)^{\alpha - 1},
+$$
+which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\square$
 
 *Step 6: Comparative statics.*
-(i) $\partial \phi^* / \partial \lambda_0 > 0$: Higher $\lambda_0$ raises $\tilde{\lambda}$, which increases the weight $\tilde{\lambda} / (r - \mu_L + \tilde{\lambda})$ on the H-regime term in $A_{\text{eff}}$, shifting the optimal allocation toward training.
-(ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, further increasing the H-regime weight.
-(iii) Higher L-regime revenue premium $(r - \mu_L)^{-1}$ raises the L-regime inference value, shifting allocation toward inference. $\square$
+From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
+
+(i) $\partial \phi^* / \partial \lambda_0 > 0$: Higher $\lambda_0$ raises $\tilde{\lambda}$, which increases $w_H / w_L = \tilde{\lambda} A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
+(ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel.
+(iii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
 
 #### Proof of Proposition 2 (Endogenous default with faith-based survival) {.unnumbered}
 
-The default boundary is $X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}}$.
-
-*(i)* $X_D$ is increasing in leverage $\ell$ because $c_D = c_d \cdot \ell \cdot I(K)$ is increasing in $\ell$, so the numerator increases.
-
-*(ii)* $X_D$ is decreasing in $\tilde{\lambda}$: the effective revenue coefficient $A_{\text{eff},i}$ has an H-regime component $\tilde{\lambda} / (r - \mu_L + \tilde{\lambda}) \cdot (\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H$ that is increasing in $\tilde{\lambda}$. Differentiating:
+The default boundary follows from the Leland (1994) framework adapted to regime switching.
+In the L-regime, the equity value $E(X)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting).
+The resulting default boundary is:
 $$
-\frac{\partial A_{\text{eff},i}}{\partial \tilde{\lambda}} = \frac{(r - \mu_L)}{(r - \mu_L + \tilde{\lambda})^2} \left[(\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H - [(1-\phi_i)K_i]^\alpha \cdot s_i^L \cdot \frac{1}{r - \mu_L}\right].
+X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}},
 $$
-This is positive whenever the H-regime revenue (per unit $X$) exceeds the L-regime revenue (per unit $X$) after appropriate discounting, which holds for $\phi > 0$ and $A_H > 1/(r - \mu_L)$ (i.e., $\mu_H > \mu_L$). Since $X_D \propto 1/A_{\text{eff},i}$, higher $\tilde{\lambda}$ lowers $X_D$.
+where $\beta_s^-$ is the negative characteristic root, $c_D = c_d \cdot \ell \cdot I(K)$ is the coupon, and all comparative statics below hold *with $(K_i, \phi_i)$ fixed at their optimal values*.
 
-*(iii)* Leverage-training substitution: from the formula $X_D = \text{const} \cdot (c_D/r + \delta K/r) / A_{\text{eff},i}$, a firm can maintain the same $X_D$ by simultaneously increasing $\ell$ (raising $c_D$, hence the numerator) and increasing $\phi$ (raising $A_{\text{eff},i}$ through the H-regime term, hence the denominator).
+*(i) Default boundary increasing in leverage.*
+$X_D$ depends on $\ell$ only through the numerator via $c_D = c_d \cdot \ell \cdot I(K)$, which is strictly increasing in $\ell$. Since $A_{\text{eff},i}$ is independent of $\ell$ (holding capacity and training fixed), $\partial X_D / \partial \ell > 0$.
 
-*(iv)* $X_D$ is increasing in rival capacity $K_j$ because both contest shares $s_i^L$ and $s_i^H$ are decreasing in $K_j$, reducing $A_{\text{eff},i}$ and increasing $X_D$. $\square$
+*(ii) Default boundary decreasing in $\tilde{\lambda}$ (faith-based survival).*
+Holding $(K_i, \phi_i, K_j, \phi_j)$ fixed, the effective revenue coefficient has the form:
+$$
+A_{\text{eff},i} = \frac{1}{r - \mu_L + \tilde{\lambda}} \left[R_L + \tilde{\lambda} \cdot R_H\right],
+$$
+where $R_L \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L / (r - \mu_L)$ and $R_H \equiv (\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H$ are the L- and H-regime revenue components per unit $X$, both positive.
+Differentiating:
+$$
+\frac{\partial A_{\text{eff},i}}{\partial \tilde{\lambda}} = \frac{(r - \mu_L)}{(r - \mu_L + \tilde{\lambda})^2} \left[R_H - R_L\right].
+$$
+This is positive whenever $R_H > R_L$, i.e., when H-regime revenue per unit $X$ exceeds L-regime revenue per unit $X$. A sufficient condition is $(\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H > [(1-\phi_i)K_i]^\alpha \cdot s_i^L / (r - \mu_L)$, which holds when $\mu_H > \mu_L$ (the H-regime offers higher growth) and the contest shares are not too asymmetric.
+Since $X_D \propto 1/A_{\text{eff},i}$ (holding the numerator fixed), $\partial A_{\text{eff},i}/\partial \tilde{\lambda} > 0$ implies $\partial X_D / \partial \tilde{\lambda} < 0$: higher arrival rate lowers the default boundary.
+
+*(iii) Leverage-training substitution.*
+Write the default boundary as $X_D = N(\ell) / A_{\text{eff},i}(\phi_i)$, where $N(\ell) = [\beta_s^- / (\beta_s^- - 1)] \cdot (c_d \ell I(K) / r + \delta K/r)$ is strictly increasing in leverage, and $A_{\text{eff},i}(\phi_i)$ is increasing in $\phi_i$ when $R_H > R_L$ (from part ii). A firm can therefore maintain a given default boundary $X_D$ while increasing leverage $\ell$ (raising the numerator) by simultaneously increasing training allocation $\phi_i$ (raising $A_{\text{eff},i}$ in the denominator through the H-regime term). Note that leverage affects the firm through the coupon obligation (numerator), while training allocation affects the firm through the expected revenue (denominator); the two channels are distinct.
+
+*(iv) Default boundary increasing in rival capacity.*
+Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\alpha$ and $s_i^H = (\phi_i K_i)^\alpha / \sum_j (\phi_j K_j)^\alpha$ are decreasing in $K_j$ (holding $K_i$ fixed). Since $A_{\text{eff},i}$ is increasing in both contest shares, $\partial A_{\text{eff},i} / \partial K_j < 0$, and $\partial X_D / \partial K_j > 0$: stronger rivals raise the default boundary. $\square$
 
 #### Proof of Proposition 3 (Preemption equilibrium with training allocation) {.unnumbered}
 
-Existence and uniqueness of the preemption trigger $X_P$ follow from @huisman2015strategic, Theorem 1, applied to the enriched payoff functions.
+*Part (i): Existence and uniqueness of $X_P$.*
+The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation, endogenous $\tilde{\lambda}$, and default risk. I verify that the required conditions---continuity, monotonicity, and single crossing of the leader and follower values---hold for the enriched model.
 
-The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$. The follower option value $F(X) \propto X^{\beta_H}$ is also continuous, increasing, and convex.
+The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component.
+The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
 
-At $X = 0$: $L(0) < 0$ (sunk cost) while $F(0) = 0$, so $F > L$.
+At $X = 0$: $L(0) < 0$ (the leader has incurred sunk cost $I(K_L)$) while $F(0) = 0$, so $F > L$.
 
-At $X = X_F^*$: the leader has earned monopoly rents while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$ under typical calibrations.
+At $X = X_F^*$: the leader has accumulated monopoly rents over $[X_P, X_F^*]$ while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$. This holds because the leader's cumulative monopoly-phase profits (earned without inference competition) exceed the follower's option value at the point of indifference.
 
-By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property.
+By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. The single-crossing property (leader value grows linearly in $X$ while follower value grows as $X^{\beta_H}$ with $\beta_H > 1$, so the curves cross at most once from below) guarantees uniqueness.
 
-*Part (ii): $\phi_L^* \geq \phi_F^*$.* The leader has a longer expected duration in the monopoly phase (L-regime with no rival in inference), during which it earns $X \cdot K_L^\alpha$ regardless of $\phi$. The leader's H-regime contest share depends on $\phi_L K_L$ relative to $\phi_F K_F$ (future follower). A higher $\phi_L$ raises the leader's H-regime share at no cost to monopoly-phase revenue. The follower, by contrast, immediately faces L-regime inference competition and must weigh $\phi_F$ against the L-regime contest share $s_F^L$, which depends on $(1-\phi_F)K_F$. This tilts the follower's optimal $\phi$ downward. The result is verified numerically across the full parameter space.
+*Part (ii): $\phi_L^* \geq \phi_F^*$.*
+During the monopoly phase (between leader entry and follower entry), the leader operates as a monopolist with contest share $s_L^L = 1$ in the L-regime (no rival in inference).
+The leader's L-regime monopoly revenue is $X \cdot [(1-\phi_L)K_L]^\alpha$, which *does* depend on $\phi_L$: higher training allocation reduces inference capacity and therefore L-regime revenue.
 
-*Part (v): Credit spread increasing in $\lambda_0$.* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. The comparative static is verified numerically. $\square$
+However, the *marginal cost* of increasing $\phi_L$ is lower for the leader than for the follower. The leader's L-regime revenue during the monopoly phase is $X \cdot [(1-\phi_L) K_L]^\alpha$ with no competition for market share, whereas the follower immediately faces a duopoly in inference: its L-regime revenue is $X \cdot s_F^L \cdot [(1-\phi_F) K_F]^\alpha$, where $s_F^L < 1$ depends on $(1-\phi_F)K_F / [(1-\phi_F)K_F + (1-\phi_L)K_L]$. The follower therefore faces a *double penalty* from reducing inference capacity---both the direct capacity reduction and the contest share loss---while the leader's monopoly share is unaffected by its own allocation.
+
+Simultaneously, the leader has a longer expected duration in the monopoly phase, providing more time to recoup H-regime training benefits. Since both the marginal cost of training (in forgone L-regime revenue) is lower and the expected marginal benefit (from a longer horizon and uncontested H-regime positioning) is higher, the leader's optimal $\phi_L^*$ exceeds the follower's $\phi_F^*$. This result is verified numerically across the full parameter space. $\square$
+
+*Part (v): Credit spread increasing in $\lambda_0$.* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. The comparative static is verified numerically. $\square$
 
 #### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
 

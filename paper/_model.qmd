@@ -139,7 +139,7 @@ $$
 
 *(iii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
 
-*Proof.* The joint optimization over $(K, \phi)$ and existence of the interior solution are in Appendix A. The comparative statics follow from implicit differentiation of the first-order conditions. $\square$
+*Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$. The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -152,19 +152,33 @@ Panel (d) demonstrates that higher operating cost $\delta$ raises both the trigg
 #### Option value in regime $L$
 
 In the low regime, the firm's investment option reflects both the possibility of investing in regime $L$ and the potential for a regime switch to $H$.
-The key economic insight is that the firm optimizes its investment policy---choosing $(X^*, K^*, \phi^*)$---to maximize the combined value from current inference revenue and the expected H-regime continuation.
-
-The option value uses $\beta_H$ as the characteristic exponent, because the investment option value is driven by H-regime expectations.
-The firm's option value in $L$ takes the form:
+The option value satisfies the Hamilton-Jacobi-Bellman equation incorporating the regime-switching term:
 $$
-F(X) = B \cdot X^{\beta_H}, \quad X < X^*,
+\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' + \tilde{\lambda}\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0,
+$$ {#eq-hjb-L}
+where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime option value (@eq-option-H).
+Substituting and rearranging, this becomes a second-order Euler ODE with non-homogeneous term $\tilde{\lambda} B_H X^{\beta_H}$:
 $$
-where $B$ is determined by value-matching at the trigger:
-$$
-B \cdot (X^*)^{\beta_H} = A_{\text{eff}}(\phi^*, K^*) \cdot X^* - \frac{\delta K^*}{r} - I(K^*).
+\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' - (r + \tilde{\lambda})\, F_L + \tilde{\lambda} B_H X^{\beta_H} = 0.
 $$
 
-The investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
+The general solution has two components.
+The *homogeneous* solution has characteristic equation $\tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, with positive root $\beta_L^+$ that depends on L-regime parameters $(\sigma_L, \mu_L)$ and the effective discount rate $r + \tilde{\lambda}$.
+The *particular* solution, of the form $C \cdot X^{\beta_H}$, arises from the regime-switching term, with coefficient:
+$$
+C = \frac{-\tilde{\lambda}\, B_H}{Q_L(\beta_H)}, \quad Q_L(\beta) \equiv \tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}).
+$$ {#eq-particular-C}
+Applying the boundary condition $F_L(0) = 0$ (which eliminates the negative root) yields:
+$$
+F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
+$$ {#eq-option-L-general}
+
+**When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
+The homogeneous coefficient $A_1$ is determined by value-matching and smooth-pasting at the L-regime investment trigger.
+When no interior trigger exists in regime $L$---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that the option to wait is sufficiently valuable that the firm never invests in $L$ and instead waits for the regime switch---there are no boundary conditions to pin down $A_1$, and the option value reduces to $F_L(X) = C \cdot X^{\beta_H}$.
+For the baseline calibration ($\sigma_L = 0.25$, $\mu_L = 0.01$, $r = 0.12$, $\tilde{\lambda} = 0.10$), the option premium ratio exceeds unity, so this simplification is valid and the option value derives entirely from the expected regime switch.^[With these parameters, $\beta_L^+ \approx 1.63$ and $(1 - 1/\beta_L^+)/\alpha \approx 0.97/0.40 = 2.42 > 1$. The condition fails for sufficiently high $\alpha$ or low volatility, in which case the full two-term solution @eq-option-L-general must be used.]
+
+When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
 $$ {#eq-trigger-phi}
@@ -253,7 +267,7 @@ Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives 
 
 *(ii) $X_D$ is decreasing in $\tilde{\lambda}$: higher arrival rates lower the default boundary by increasing the H-regime continuation value in $A_{\text{eff},i}$.*
 
-*(iii) For a given capacity $K$, there exists a leverage-training substitution: a firm can achieve the same default boundary $X_D$ by trading off between higher leverage and higher training fraction, because both increase $A_{\text{eff},i}$ (training through the H-regime term) while higher leverage increases the numerator.*
+*(iii) For a given capacity $K$, there exists a leverage-training substitution: a firm can maintain the same default boundary $X_D$ while increasing leverage (which raises the coupon obligation in the numerator) by simultaneously increasing the training fraction (which raises $A_{\text{eff},i}$ through the H-regime term in the denominator).*
 
 *(iv) $X_D$ is increasing in rival capacity $K_j$, because higher rival capacity reduces the contest shares $s_i^L$ and $s_i^H$.*
 
@@ -325,7 +339,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 *(i) The preemption trigger $X_P < X_F$ exists and is unique under the existence condition.*
 
-*(ii) The leader's training fraction exceeds the follower's: $\phi_L^* \geq \phi_F^*$. The leader invests more in training because it has more time before the H-regime arrives and more to gain from a favorable position in the quality-based competition.*
+*(ii) The leader's training fraction exceeds the follower's: $\phi_L^* \geq \phi_F^*$. The leader invests more in training because the marginal cost of training (forgone L-regime inference revenue) is lower during the monopoly phase---the leader's contest share is 1 regardless of allocation---while the marginal benefit (H-regime positioning against the future follower) is higher due to the longer expected monopoly duration.*
 
 *(iii) Higher $\lambda_0$ (more optimistic baseline beliefs) increases $\phi^*$ for both firms and lowers the preemption trigger $X_P$, amplifying the acceleration effect relative to the exogenous-$\lambda$ model because the training channel provides an additional mechanism for beliefs to affect investment.*
 
