@@ -266,6 +266,9 @@ with H-regime contest share $s_i^H = (\phi_i K_i)^\alpha / \{(\phi_i K_i)^\alpha
 This regime-specific contest structure formalizes the arms-race logic that executives describe: in the current market, what matters is the capacity to *serve* demand (inference), while in a post-AGI world, what matters is the capability of your *models* (training).
 When $K_j = 0$, both contest shares reduce to $s_i = 1$ and revenue simplifies to the single-firm case (@eq-revenue-L, @eq-revenue-H).
 The parameter $\alpha$ controls the sensitivity of market share to the relevant capacity measure: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
+Note that the Tullock specification implies that total industry revenue in the symmetric case equals $X \cdot K^\alpha$ (i.e., the standard single-firm revenue), but under *asymmetric* capacities, total industry revenue $\sum_i \pi_i = X \cdot \sum_i [(1-\phi_i)K_i]^{2\alpha} / \sum_j [(1-\phi_j)K_j]^\alpha$ can exceed this benchmark: the larger firm captures a disproportionate share, and the sum of $2\alpha$-terms in the numerator exceeds the squared sum of $\alpha$-terms.
+This property---that asymmetry increases total industry revenue---is a feature of the Tullock contest form and may be appropriate for AI markets where the leading model captures a disproportionate share of demand (a "winner-take-more" dynamic), but it would be undesirable in markets with more elastic total demand.
+A Cournot specification would avoid this property at the cost of additional complexity; see Appendix F for a comparison.
 The training fraction $\phi$ introduces a new strategic dimension: a firm's choice of $\phi$ affects its competitive position *differently* in each regime, creating a trade-off between L-regime and H-regime market share.
 
 #### Installed value in the duopoly

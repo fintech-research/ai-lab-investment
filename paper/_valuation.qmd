@@ -116,7 +116,8 @@ The shaded region marks the "danger zone" where overinvestment losses exceed a 2
 #### Implications
 
 The AI investment dilemma has several implications.
-The observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs: investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly, both from building too much capacity and from over-allocating to training.
+Within the model, the observed investment patterns of frontier AI labs are *consistent with* genuinely high-$\lambda$ beliefs: investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly under the model, both from building too much capacity and from over-allocating to training.
+This illustrative inversion should be distinguished from a formal revealed-beliefs methodology, which would require a richer model (dynamic $\phi$, heterogeneous information), proper identification, and estimation; such an exercise is left for future work.
 The asymmetry also means that overinvestment is more informative than underinvestment---a firm investing aggressively *and* allocating heavily to training is more likely to genuinely believe in high $\lambda$ than a conservative firm is to genuinely believe in low $\lambda$, because the training fraction provides additional information about conviction regarding the H-regime payoff.
 Finally, the asymmetric loss function implies that firms should hedge against aggressive overinvestment more than conservative underinvestment, consistent with the phased investment strategies observed in practice (start with smaller clusters, scale up as demand materializes).
 
