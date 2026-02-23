@@ -1,6 +1,7 @@
 ## The Model {#sec-model}
 
 This section develops the model in three stages: the demand environment and technology (including the training-inference allocation), the single-firm benchmark, and the duopoly with default risk.
+Unless otherwise stated, analytical propositions are proved under the exogenous-switch hazard specification ($\xi = 0$); when the hazard depends endogenously on training allocation ($\xi > 0$), I report numerical analogues and verify robustness in calibration-relevant regions.
 
 ### Environment
 

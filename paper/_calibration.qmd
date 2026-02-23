@@ -16,7 +16,7 @@ Under the baseline calibration with $\xi = 0$ (exogenous model), the total $\lam
 I set the discount rate $r = 0.12$, the risk-adjusted WACC for a representative AI infrastructure firm.
 As discussed in @sec-model, $r$ is the WACC and $\mu_s$ is the risk-adjusted (certainty-equivalent) growth rate; all valuation uses this reduced-form framework throughout.
 The baseline exceeds typical corporate WACCs because AI infrastructure investments carry substantial technology risk and the firms are typically high-growth with elevated cost of equity.
-The analytical results and figures in @sec-model and @sec-extensions use $r = 0.12$ throughout; these illustrate model properties at a representative WACC and do not correspond to any specific firm archetype.
+The analytical results and figures in @sec-model use $r = 0.12$ throughout; these illustrate model properties at a representative WACC and do not correspond to any specific firm archetype.
 The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sensitivity analysis.
 
 ### Technology Parameters
