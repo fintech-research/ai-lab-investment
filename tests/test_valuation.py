@@ -206,3 +206,46 @@ class TestSummary:
         d = s["decomposition"]
         assert d["total_value"] >= 0.0
         assert 0.0 <= d["assets_fraction"] <= 1.0
+
+
+# ------------------------------------------------------------------
+# Phi-aware valuation
+# ------------------------------------------------------------------
+
+
+class TestPhiAwareValuation:
+    def test_decomposition_with_phi_pre_investment(self, va):
+        """Pre-investment decomposition should have zero assets."""
+        result = va.growth_option_decomposition_with_phi(X=1.0)
+        assert result["assets_in_place"] == 0.0
+        assert result["expansion_option"] >= 0.0
+        assert result["phi_optimal"] > 0.0
+
+    def test_decomposition_with_phi_installed(self, va):
+        """With installed capacity, assets should be positive."""
+        result = va.growth_option_decomposition_with_phi(
+            X=2.0, K_installed=1.0, phi=0.4
+        )
+        assert result["assets_in_place"] > 0.0
+        assert result["phi_installed"] == 0.4
+
+    def test_decomposition_fractions_valid(self, va):
+        """Asset and growth fractions should be in [0, 1]."""
+        result = va.growth_option_decomposition_with_phi(X=1.0)
+        assert 0.0 <= result["assets_fraction"] <= 1.0
+        assert 0.0 <= result["growth_fraction"] <= 1.0
+
+    def test_equity_vs_lambda_with_phi_shape(self, va):
+        """Should return arrays with correct length."""
+        lam_vals = np.array([0.05, 0.10, 0.20, 0.50])
+        result = va.equity_value_vs_lambda_with_phi(lam_vals)
+        assert len(result["lambda_values"]) == 4
+        assert len(result["phis"]) == 4
+
+    def test_equity_vs_lambda_with_phi_values(self, va):
+        """Phi should increase with lambda."""
+        lam_vals = np.array([0.05, 0.50])
+        result = va.equity_value_vs_lambda_with_phi(lam_vals)
+        valid = ~np.isnan(result["phis"])
+        if valid.sum() == 2:
+            assert result["phis"][1] > result["phis"][0]

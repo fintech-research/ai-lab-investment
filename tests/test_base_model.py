@@ -196,3 +196,124 @@ class TestSummary:
         s = model.summary()
         assert s["L"]["trigger_exists"] is False
         assert s["L"]["C"] > 0
+
+
+# ------------------------------------------------------------------
+# Training-inference allocation (phi) extensions
+# ------------------------------------------------------------------
+
+
+class TestEffectiveRevenueCoeff:
+    def test_positive(self, model):
+        """A_eff should be positive for reasonable phi and K."""
+        a_eff = model._effective_revenue_coeff_single(0.5, 1.0)
+        assert a_eff > 0
+
+    def test_phi_zero_only_inference(self, model):
+        """phi=0.01 should give mostly inference revenue."""
+        a_eff_low = model._effective_revenue_coeff_single(0.01, 1.0)
+        a_eff_high = model._effective_revenue_coeff_single(0.99, 1.0)
+        # Both should be positive
+        assert a_eff_low > 0
+        assert a_eff_high > 0
+
+    def test_no_switching_only_inference(self):
+        """With lam=0, A_eff reduces to inference-only L-regime value."""
+        p = ModelParameters(lam=1e-10, lam_0=0.0)
+        m = SingleFirmModel(p)
+        K, phi = 1.0, 0.3
+        a_eff = m._effective_revenue_coeff_single(phi, K)
+        # Should be approximately [(1-phi)*K]^alpha / (r - mu_L)
+        expected = ((1.0 - phi) * K) ** p.alpha / (p.r - p.mu_L)
+        assert abs(a_eff - expected) / expected < 0.01
+
+    def test_increases_with_K(self, model):
+        """A_eff should increase with capacity."""
+        a1 = model._effective_revenue_coeff_single(0.5, 0.5)
+        a2 = model._effective_revenue_coeff_single(0.5, 2.0)
+        assert a2 > a1
+
+
+class TestInstalledValueWithPhi:
+    def test_H_regime_training_only(self, model):
+        """H-regime value depends on training capacity (phi*K)^alpha."""
+        p = model.params
+        X, phi, K = 1.0, 0.5, 2.0
+        V = model.installed_value_with_phi(X, phi, K, "H")
+        expected = p.A_H * X * (phi * K) ** p.alpha - p.delta * K / p.r
+        assert abs(V - expected) < 1e-12
+
+    def test_H_regime_higher_phi_higher_value(self, model):
+        """In H-regime, higher phi means more training → higher value."""
+        V1 = model.installed_value_with_phi(1.0, 0.3, 1.0, "H")
+        V2 = model.installed_value_with_phi(1.0, 0.7, 1.0, "H")
+        assert V2 > V1
+
+    def test_L_regime_positive(self, model):
+        """L-regime installed value should be positive for moderate X."""
+        V = model.installed_value_with_phi(2.0, 0.5, 1.0, "L")
+        assert V > 0
+
+    def test_L_regime_increases_with_X(self, model):
+        """Higher demand should increase L-regime value."""
+        V1 = model.installed_value_with_phi(0.5, 0.5, 1.0, "L")
+        V2 = model.installed_value_with_phi(2.0, 0.5, 1.0, "L")
+        assert V2 > V1
+
+
+class TestOptimalTriggerCapacityPhi:
+    def test_solution_exists(self, model):
+        """Joint (K, phi) optimization should find a solution."""
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        assert X_star > 0
+        assert K_star > 0
+        assert 0.01 <= phi_star <= 0.99
+
+    def test_trigger_positive(self, model):
+        X_star, _, _ = model.optimal_trigger_capacity_phi()
+        assert X_star > 0
+
+    def test_phi_interior(self, model):
+        """Optimal phi should be interior (not at boundary)."""
+        _, _, phi_star = model.optimal_trigger_capacity_phi()
+        assert 0.05 < phi_star < 0.95
+
+    def test_phi_depends_on_lambda(self):
+        """Higher lambda should shift phi toward training."""
+        p_low = ModelParameters(lam=0.05)
+        p_high = ModelParameters(lam=0.50)
+        m_low = SingleFirmModel(p_low)
+        m_high = SingleFirmModel(p_high)
+        _, _, phi_low = m_low.optimal_trigger_capacity_phi()
+        _, _, phi_high = m_high.optimal_trigger_capacity_phi()
+        # Higher switching rate → more valuable to have training capacity
+        assert phi_high > phi_low
+
+    def test_npv_positive_at_trigger(self, model):
+        """NPV at the optimal trigger should be positive."""
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        V = model.installed_value_with_phi(X_star, phi_star, K_star, "L")
+        cost = model.investment_cost(K_star)
+        assert V - cost > 0
+
+
+class TestOptionValueWithPhi:
+    def test_positive(self, model):
+        """Option value should be positive."""
+        assert model.option_value_with_phi(0.5) > 0
+
+    def test_increasing_in_X(self, model):
+        """Option value should increase with demand."""
+        V1 = model.option_value_with_phi(0.3)
+        V2 = model.option_value_with_phi(0.8)
+        assert V2 > V1
+
+    def test_exceeds_npv_before_trigger(self, model):
+        """Option value should exceed immediate NPV before the trigger."""
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        X = X_star * 0.5
+        option = model.option_value_with_phi(X)
+        npv = model.installed_value_with_phi(
+            X, phi_star, K_star, "L"
+        ) - model.investment_cost(K_star)
+        assert option >= npv - 1e-10

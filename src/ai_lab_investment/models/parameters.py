@@ -5,15 +5,19 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ModelParameters:
-    """Parameters for the single-firm investment model with regime switching.
+    """Parameters for the investment model with regime switching.
 
     The demand shifter X_t follows a GBM with regime-dependent drift and
     volatility. The firm invests irreversibly in capacity K at convex cost
-    I(K) = c * K^gamma, earning flow revenue pi(K, X) = X * K^alpha with
-    operating costs delta * K.
+    I(K) = c * K^gamma, allocating a fraction phi to training and (1-phi)
+    to inference. Revenue depends on regime:
+      L-regime: pi_i^L = X * [(1-phi_i)*K_i]^alpha * s_i^L
+      H-regime: pi_i^H = X * [phi_i*K_i]^alpha * s_i^H
 
-    The drift parameters represent risk-neutral drifts (net of risk premium).
-    The discount rate r is the risk-adjusted rate (WACC).
+    The regime switch arrival rate lambda_tilde is endogenous:
+      lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
+
+    When xi = 0, the model reduces to the exogenous-lambda baseline.
 
     Attributes:
         r: Risk-adjusted discount rate (WACC).
@@ -21,7 +25,16 @@ class ModelParameters:
         mu_H: Risk-neutral demand drift in regime H (post-adoption).
         sigma_L: Volatility of demand in regime L.
         sigma_H: Volatility of demand in regime H.
-        lam: Poisson arrival rate of regime switch L -> H.
+        lam: Total effective arrival rate of regime switch L -> H.
+            In the exogenous-lambda model, this is the primitive parameter.
+            In the endogenous model, set this to lam_0 for base derived
+            quantities; the actual lambda_tilde is computed dynamically.
+        lam_0: Exogenous baseline arrival rate (rest-of-world progress).
+        xi: Scaling of firms' training contribution to arrival rate.
+            Set to 0 for the exogenous-lambda model.
+        eta: Scaling law exponent for training compute contribution to
+            arrival rate (Kaplan et al. 2020). eta < 1 implies
+            diminishing returns.
         alpha: Revenue elasticity to capacity (0 < alpha < 1).
         gamma: Cost convexity exponent (gamma > 1).
         c: Investment cost scale parameter.
@@ -37,8 +50,14 @@ class ModelParameters:
     mu_H: float = 0.06
     sigma_L: float = 0.25
     sigma_H: float = 0.30
-    # Poisson arrival rate of regime switch L -> H
+    # Poisson arrival rate of regime switch L -> H (effective total)
     lam: float = 0.10
+    # Exogenous baseline arrival rate (rest-of-world AI progress)
+    lam_0: float = 0.05
+    # Scaling of firms' training contribution to lambda
+    xi: float = 0.0
+    # Scaling law exponent for training compute
+    eta: float = 0.07
     # Revenue elasticity to capacity; must satisfy alpha > 1 - 1/beta_H
     # for an interior solution. With sigma_H=0.30, beta_H ~ 1.47,
     # so alpha > 0.32 is needed. We use 0.40.
@@ -60,6 +79,10 @@ class ModelParameters:
         self._compute_derived()
 
     def _validate(self):
+        self._validate_core()
+        self._validate_endogenous()
+
+    def _validate_core(self):
         if self.r <= 0:
             msg = f"Discount rate r must be positive, got {self.r}"
             raise ValueError(msg)
@@ -97,6 +120,17 @@ class ModelParameters:
             msg = f"Time-to-build tau must be non-negative, got {self.tau}"
             raise ValueError(msg)
 
+    def _validate_endogenous(self):
+        if self.lam_0 < 0:
+            msg = f"Baseline arrival rate lam_0 must be non-negative, got {self.lam_0}"
+            raise ValueError(msg)
+        if self.xi < 0:
+            msg = f"Training scaling xi must be non-negative, got {self.xi}"
+            raise ValueError(msg)
+        if self.eta <= 0 or self.eta >= 1:
+            msg = f"Scaling exponent eta must be in (0,1), got {self.eta}"
+            raise ValueError(msg)
+
     def _compute_derived(self):
         """Compute derived quantities from primitive parameters."""
         self._beta_H = _positive_root(self.sigma_H, self.mu_H, self.r)
@@ -129,6 +163,62 @@ class ModelParameters:
         """Present-value multiplier for revenue in regime L with switching."""
         return self._A_L
 
+    def lambda_tilde(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+    ) -> float:
+        """Compute the endogenous arrival rate.
+
+        When xi = 0 (exogenous model):
+            Returns self.lam — exact recovery of the baseline model.
+
+        When xi > 0 (endogenous model):
+            lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
+
+        Args:
+            phi_i: Firm i's training fraction.
+            K_i: Firm i's total capacity.
+            phi_j: Firm j's training fraction.
+            K_j: Firm j's total capacity.
+
+        Returns:
+            Endogenous arrival rate lambda_tilde.
+        """
+        if self.xi == 0:
+            return self.lam
+
+        training_i = phi_i * K_i
+        training_j = phi_j * K_j
+        contribution = 0.0
+        if training_i > 0:
+            contribution += training_i**self.eta
+        if training_j > 0:
+            contribution += training_j**self.eta
+        return self.lam_0 + self.xi * contribution
+
+    def A_L_at_lambda(self, lam_eff: float) -> float:
+        """Compute A_L multiplier at a specific effective lambda.
+
+        A_L(lambda) = (r - mu_H + lambda) / [(r - mu_H)(r - mu_L + lambda)]
+
+        Used when lambda_tilde differs from the stored lam.
+        """
+        if lam_eff > 0:
+            return (self.r - self.mu_H + lam_eff) / (
+                (self.r - self.mu_H) * (self.r - self.mu_L + lam_eff)
+            )
+        return 1.0 / (self.r - self.mu_L)
+
+    def beta_L_at_lambda(self, lam_eff: float) -> float:
+        """Compute beta_L at a specific effective lambda.
+
+        beta_L solves: (sigma_L^2/2)*b*(b-1) + mu_L*b - (r + lambda) = 0
+        """
+        return _positive_root(self.sigma_L, self.mu_L, self.r + lam_eff)
+
     def with_param(self, **kwargs) -> "ModelParameters":
         """Return a new ModelParameters with specified parameters changed."""
         params = {
@@ -138,6 +228,9 @@ class ModelParameters:
             "sigma_L": self.sigma_L,
             "sigma_H": self.sigma_H,
             "lam": self.lam,
+            "lam_0": self.lam_0,
+            "xi": self.xi,
+            "eta": self.eta,
             "alpha": self.alpha,
             "gamma": self.gamma,
             "c": self.c,

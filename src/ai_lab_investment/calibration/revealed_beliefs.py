@@ -7,6 +7,13 @@ All parameters except lambda are observable or can be calibrated from
 public data. Therefore, we can invert the model to back out each firm's
 implied lambda — its "revealed belief" about AI timelines.
 
+Extended methodology with training-inference allocation:
+  With phi (training fraction) as a new observable, we have two moments:
+  1. CapEx/Revenue ratio → investment intensity
+  2. Training fraction phi → allocation choice
+  These jointly identify (lambda, phi) or, given observed phi, provide
+  a tighter identification of lambda alone.
+
 If firms have private information about AI progress (internal benchmarks,
 scaling curves, emergent capabilities), the revealed lambda contains
 information not available to outside observers.
@@ -167,6 +174,124 @@ class RevealedBeliefs:
         except (ValueError, RuntimeError):
             return None
 
+    # ------------------------------------------------------------------
+    # Phi-aware inversion methods
+    # ------------------------------------------------------------------
+
+    def _model_phi_intensity_at_lambda(
+        self, lam: float, X_ref: float = 0.01
+    ) -> tuple[float, float]:
+        """Model-predicted (intensity, phi*) at a given lambda.
+
+        Uses the phi-aware single-firm model to jointly predict
+        investment intensity and optimal training fraction.
+
+        Returns:
+            (intensity, phi*) tuple. intensity = F(X_ref) / I(K*).
+        """
+        try:
+            params = self.calibration.to_model_params(lam=lam)
+            model = SingleFirmModel(params)
+            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+            I_K = model.investment_cost(K_star)
+            F = model.option_value_with_phi(X_ref)
+            if I_K <= 0:
+                return np.inf, phi_star
+            return F / I_K, phi_star
+        except (ValueError, RuntimeError):
+            return np.inf, 0.5
+
+    def infer_lambda_with_phi(
+        self,
+        firm: FirmData,
+        X_ref: float = 0.01,
+        lam_bounds: tuple[float, float] = (0.001, 2.0),
+    ) -> dict[str, float | None]:
+        """Infer lambda using the phi-aware model.
+
+        Uses two moments when training_fraction is available:
+        1. CapEx/Revenue → investment intensity (primary)
+        2. Training fraction → model-predicted phi* (diagnostic)
+
+        The inversion targets intensity (moment 1) and reports the
+        model-predicted phi* as a consistency check against the
+        observed training fraction.
+
+        Args:
+            firm: Firm data with observed revenue, capex, and
+                optionally training_fraction.
+            X_ref: Reference demand level.
+            lam_bounds: Search bounds for lambda.
+
+        Returns:
+            Dict with lambda_implied, phi_model, phi_observed, etc.
+        """
+        if firm.revenue_2025 <= 0:
+            return {"lambda_implied": None, "error": "zero revenue"}
+
+        observed_intensity = firm.capex_2025 / firm.revenue_2025
+
+        def gap(lam: float) -> float:
+            intensity, _ = self._model_phi_intensity_at_lambda(lam, X_ref)
+            if np.isinf(intensity):
+                return 1e10
+            return intensity - observed_intensity
+
+        lambda_implied = None
+        phi_model = None
+        try:
+            g_lo = gap(lam_bounds[0])
+            g_hi = gap(lam_bounds[1])
+            if abs(g_lo) <= 1e9 and abs(g_hi) <= 1e9 and g_lo * g_hi < 0:
+                lambda_implied = optimize.brentq(
+                    gap, lam_bounds[0], lam_bounds[1], xtol=1e-6
+                )
+                _, phi_model = self._model_phi_intensity_at_lambda(
+                    lambda_implied, X_ref
+                )
+        except (ValueError, RuntimeError):
+            pass
+
+        return {
+            "lambda_implied": lambda_implied,
+            "phi_model": phi_model,
+            "phi_observed": (
+                firm.training_fraction if firm.training_fraction > 0 else None
+            ),
+            "capex_intensity": observed_intensity,
+        }
+
+    def compute_all_revealed_beliefs_with_phi(self, X_ref: float = 0.01) -> list[dict]:
+        """Compute revealed beliefs using the phi-aware model.
+
+        Returns:
+            List of dicts with firm name, inferred lambda, model-predicted
+            phi, observed phi, and diagnostic information.
+        """
+        results = []
+        for firm in self.calibration.firms:
+            result = {
+                "firm": firm.name,
+                "revenue_growth": (
+                    firm.revenue_2025 / firm.revenue_2024
+                    if firm.revenue_2024 > 0
+                    else np.inf
+                ),
+                "leverage": firm.leverage_ratio,
+                "wacc": firm.wacc,
+            }
+
+            belief = self.infer_lambda_with_phi(firm, X_ref=X_ref)
+            result.update(belief)
+
+            # Also compute legacy single-moment inversion
+            lam_legacy = self.infer_lambda_from_capex(firm, X_ref=X_ref)
+            result["lambda_from_capex_legacy"] = lam_legacy
+
+            results.append(result)
+
+        return results
+
     def sensitivity_analysis(
         self,
         firm: FirmData,
@@ -244,6 +369,7 @@ class RevealedBeliefs:
                 ),
                 "leverage": firm.leverage_ratio,
                 "wacc": firm.wacc,
+                "training_fraction": firm.training_fraction,
             }
 
             # Infer from capex intensity using L-regime option value
@@ -300,6 +426,7 @@ class RevealedBeliefs:
     def summary(self) -> dict:
         """Return a summary of revealed beliefs analysis."""
         beliefs = self.compute_all_revealed_beliefs()
+        beliefs_phi = self.compute_all_revealed_beliefs_with_phi()
         predictions = self.investment_predictions(
             np.array([0.05, 0.10, 0.20, 0.50, 1.0])
         )
@@ -307,6 +434,7 @@ class RevealedBeliefs:
         return {
             "n_firms": len(self.calibration.firms),
             "revealed_beliefs": beliefs,
+            "revealed_beliefs_with_phi": beliefs_phi,
             "predictions_by_lambda": {
                 "lambda": predictions["lambda_values"].tolist(),
                 "triggers": [

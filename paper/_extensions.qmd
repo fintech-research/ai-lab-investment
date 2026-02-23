@@ -3,98 +3,59 @@
 ### $N$-Firm Sequential Equilibrium
 
 I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
-Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into account the capacity of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
-The equilibrium concept is a Nash equilibrium in entry-order-contingent strategies: each firm $k$ chooses its trigger $X_k^*$ and capacity $K_k$ to maximize its option value, taking other firms' strategies as given.
+Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into account the capacity and training allocation of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
+The equilibrium concept is a Nash equilibrium in entry-order-contingent strategies: each firm $k$ chooses its trigger $X_k^*$, capacity $K_k$, and training fraction $\phi_k$ to maximize its option value, taking other firms' strategies as given.
 
 #### Revenue sharing with $N$ firms
 
-With $N$ firms in the market, firm $i$'s revenue extends the duopoly Tullock contest (@eq-contest):
+With $N$ firms in the market, the regime-specific contest functions extend naturally from the duopoly (@eq-contest-L, @eq-contest-H).
+In the L-regime (inference-based competition):
 $$
-\pi_i(X, K_1, \ldots, K_N) = X \cdot \frac{K_i^{2\alpha}}{\sum_{j=1}^{N} K_j^\alpha},
-$$ {#eq-contest-N}
+\pi_i^L(X, \mathbf{K}, \boldsymbol{\phi}) = X \cdot \frac{[(1-\phi_i)K_i]^{2\alpha}}{\sum_{j=1}^{N} [(1-\phi_j)K_j]^\alpha},
+$$ {#eq-contest-N-L}
+and in the H-regime (training/quality-based competition):
+$$
+\pi_i^H(X, \mathbf{K}, \boldsymbol{\phi}) = X \cdot \frac{(\phi_i K_i)^{2\alpha}}{\sum_{j=1}^{N} (\phi_j K_j)^\alpha}.
+$$ {#eq-contest-N-H}
 
-equivalently $\pi_i = X \cdot K_i^\alpha \cdot s_i$ where $s_i = K_i^\alpha / \sum_j K_j^\alpha$ is the contest share.
-This nests the duopoly: when $N=2$, @eq-contest-N reduces to @eq-contest.
-Adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
+These nest the duopoly: when $N=2$, @eq-contest-N-L reduces to @eq-contest-L and @eq-contest-N-H reduces to @eq-contest-H.
+Adding firms dilutes each incumbent's share in both regimes, creating a congestion externality that limits entry.
+
+The endogenous arrival rate (@eq-endogenous-lambda) generalizes to $N$ firms:
+$$
+\tilde{\lambda} = \lambda_0 + \xi \cdot \sum_{j=1}^{N} (\phi_j K_j)^\eta.
+$$
+Each additional entrant's training compute contributes to the common arrival rate, generating a positive externality: more firms investing in training accelerates the arrival of transformative AI.
 
 #### Numerical solution
 
-I compute the equilibrium using iterative best-response (fixed-point iteration on the capacity profile), which is a numerical method distinct from the backward-induction solution concept of the duopoly.
-Each firm's optimal trigger and capacity are computed given all other firms' capacities, and the process repeats until convergence.
-In each iteration, each firm $k$ solves a follower problem taking the current capacity estimates of all $N-1$ other firms as given.
+I compute the equilibrium using iterative best-response (fixed-point iteration on the capacity and training fraction profiles), which is a numerical method distinct from the backward-induction solution concept of the duopoly.
+Each firm's optimal trigger, capacity, and training fraction are computed given all other firms' choices, and the process repeats until convergence.
+In each iteration, each firm $k$ solves a follower problem taking the current capacity and training estimates of all $N-1$ other firms as given.
 Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
 
 **Proposition 4** ($N$-firm equilibrium properties).
-*In the $N$-firm sequential equilibrium:*
+*In the $N$-firm sequential equilibrium with training allocation:*
 
 *(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing at the lowest trigger.*
 
 *(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
 
-*(iii) The equilibrium reduces to the duopoly solution when $N = 2$.*
+*(iii) Training fractions are decreasing in entry order: earlier entrants allocate more to training ($\phi_1 \geq \phi_2 \geq \cdots \geq \phi_N$), because they have longer to benefit from both the H-regime position and the contribution to $\tilde{\lambda}$.*
 
-**Numerical Observation.** *In all parameterizations tested, total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate. The intuition is that the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$), so aggregate output $\sum K_i^\alpha$ rises even as each firm builds less. A formal proof would require bounding the rate of per-firm capacity decline, which I leave for future work.*
+*(iv) The equilibrium reduces to the duopoly solution when $N = 2$.*
+
+**Numerical Observation.** *In all parameterizations tested, total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate. The intuition is that the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$), so aggregate output rises even as each firm builds less. Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$. A formal proof would require bounding the rate of per-firm capacity decline, which I leave for future work.*
 
 The numerical solution iterates until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$ (see Appendix B for details).
 I verify the implementation by checking that the $N=2$ solution matches the analytical duopoly equilibrium.
 
-### Training-Inference Allocation
-
-A distinctive feature of AI infrastructure is the dual use of compute: a GPU cluster can be allocated between model *training* (which improves AI quality but does not directly serve demand) and *inference* (which serves demand and generates revenue). Amodei describes this allocation as an equilibrium constraint: "Why doesn't everyone spend 100% of their compute on training? It's because if they didn't get any revenue, they couldn't raise money... As a stylized fact, it's 50%" [@amodei2025training]. The emergence of inference-time scaling---the discovery that spending more compute *at inference* can substitute for larger pre-trained models---has further intensified this trade-off [@brown2024inference].
-
-#### Scaling laws
-
-Following @kaplan2020scaling and @hoffmann2022training, model quality $Q$ is a power-law function of training compute $C_{\text{train}}$:
-$$
-Q(C_{\text{train}}) = A \cdot C_{\text{train}}^{\eta},
-$$ {#eq-scaling-law}
-where $\eta \in (0, 1)$ captures the diminishing returns to training compute documented in the scaling laws literature.
-The parameter $A$ reflects the efficiency of the training process (architecture, data quality, optimization).
-
-Empirically, @kaplan2020scaling estimate $\eta \approx 0.07$ for language model loss, while @hoffmann2022training find similar scaling exponents.
-The key implication is that doubling training compute yields only modest quality improvements, creating a meaningful trade-off between training and inference.
-
-#### Optimal allocation
-
-A firm with total capacity $K$ allocates fraction $\phi \in [0, 1]$ to training and $1 - \phi$ to inference.
-Revenue depends on both inference capacity and model quality:
-$$
-\pi(X, K, \phi) = X \cdot Q(\phi K) \cdot (1 - \phi)^\alpha K^\alpha = X \cdot A (\phi K)^{\eta} \cdot ((1-\phi)K)^\alpha.
-$$
-
-**Proposition 5** (Optimal training fraction).
-*The optimal training allocation is:*
-$$
-\phi^* = \frac{\eta}{\alpha + \eta},
-$$
-*which is independent of demand $X$ and capacity $K$. The fraction allocated to training is increasing in the scaling exponent $\eta$ and decreasing in the revenue elasticity $\alpha$.*
-
-*Proof.* The first-order condition with respect to $\phi$ yields $\eta(1 - \phi) = \alpha \phi$, from which $\phi^* = \eta / (\alpha + \eta)$. The second-order condition is satisfied since the objective is concave in $\phi$. $\square$
-
-For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.^[Amodei's "50\% stylized fact" [@amodei2025training] is higher than our $\phi^* \approx 15\%$ because his figure includes post-training reinforcement learning, fine-tuning, and evaluation runs, which our model subsumes into the training scaling law. When narrowly defined as pre-training compute only, the 10--20\% range aligns with our prediction.]
-
-**Remark 2** (Separability).
-*Because $\phi^*$ is independent of $X$, $K$, and the demand regime, it enters the revenue function as a multiplicative constant $A(\phi^*)^\eta(1-\phi^*)^\alpha$ that rescales revenue without interacting with investment timing, competition, or default risk.
-The core model results---optimal triggers, preemption equilibrium, revealed beliefs---are therefore unaffected by the training-inference decomposition; it serves as a microfoundation for the level of revenue per unit of capacity rather than a source of new strategic interactions.
-Making $\eta$ or $A$ state-dependent (e.g., allowing the scaling exponent to differ across regimes, or modeling inference-time scaling as a substitute for training) would break the separability and generate richer dynamics, but at the cost of additional parameters that are difficult to calibrate with current data.*
-
-#### Quality dynamics
-
-Over time, a firm can improve its model quality by accumulating training compute.
-If a firm invests at time $\tau$ and allocates $\phi^* K$ to training continuously, quality evolves as:
-$$
-Q(t) = A \cdot (\phi^* K \cdot (t - \tau))^{\eta}, \quad t > \tau.
-$$
-
-This creates a potential *learning-by-investing* channel: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
-However, this quality dynamics channel is not formally integrated into the equilibrium analysis or the calibration---doing so would require modeling quality as a state variable in the option-value problem, substantially increasing computational complexity.
-I note it here as a qualitative implication and a direction for future work.
-
 ### Heterogeneous Firms
 
-In practice, AI infrastructure firms differ along multiple dimensions: cost of capital, investment cost parameters, existing capacity, and beliefs about $\lambda$.
-I allow for heterogeneity by assigning each firm $i$ its own parameter vector $\theta_i = (c_i, \gamma_i, \alpha_i, r_i, \lambda_i)$.
+In practice, AI infrastructure firms differ along multiple dimensions: cost of capital, investment cost parameters, existing capacity, beliefs about $\lambda_0$, and training intensity.
+I allow for heterogeneity by assigning each firm $i$ its own parameter vector $\theta_i = (c_i, \gamma_i, \alpha_i, r_i, \lambda_{0,i})$.
 
 With heterogeneous firms, the sequential equilibrium no longer features symmetric entry.
-Firms with lower costs, lower discount rates, or higher $\lambda$ (more optimistic beliefs) enter earlier and build more capacity.
+Firms with lower costs, lower discount rates, or higher $\lambda_0$ (more optimistic beliefs) enter earlier and build more capacity, and---consistent with Proposition 1---allocate more to training.
+The heterogeneous equilibrium interacts with the endogenous arrival rate: a firm with high $\lambda_{0,i}$ that invests heavily in training contributes more to $\tilde{\lambda}$, potentially validating the optimistic beliefs of all participants.
 I solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage (see Appendix C for details).

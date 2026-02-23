@@ -140,3 +140,85 @@ class TestRevealedBeliefs:
         """Model capacity should be positive."""
         K = rb._model_capacity_at_lambda(0.10)
         assert K > 0
+
+
+# ------------------------------------------------------------------
+# Phi-aware revealed beliefs
+# ------------------------------------------------------------------
+
+
+class TestPhiAwareBeliefs:
+    @pytest.fixture
+    def rb(self):
+        calib = get_baseline_calibration()
+        return RevealedBeliefs(calib)
+
+    def test_model_phi_intensity(self, rb):
+        """Phi-aware model should return valid intensity and phi."""
+        intensity, phi = rb._model_phi_intensity_at_lambda(0.10)
+        assert intensity > 0
+        assert 0.01 <= phi <= 0.99
+
+    def test_higher_lambda_higher_phi(self, rb):
+        """Higher lambda should shift optimal phi toward training."""
+        _, phi_lo = rb._model_phi_intensity_at_lambda(0.05)
+        _, phi_hi = rb._model_phi_intensity_at_lambda(0.50)
+        assert phi_hi > phi_lo
+
+    def test_infer_lambda_with_phi(self, rb):
+        """Should infer lambda using phi-aware model."""
+        firm = rb.calibration.firms[0]
+        result = rb.infer_lambda_with_phi(firm)
+        assert "lambda_implied" in result
+        assert "phi_model" in result
+        assert "phi_observed" in result
+        assert "capex_intensity" in result
+
+    def test_infer_lambda_with_phi_positive(self, rb):
+        """Inferred lambda should be positive for all firms."""
+        for firm in rb.calibration.firms:
+            result = rb.infer_lambda_with_phi(firm)
+            if result["lambda_implied"] is not None:
+                assert result["lambda_implied"] > 0
+
+    def test_phi_observed_from_firm_data(self, rb):
+        """Should pass through observed training fraction."""
+        firm = rb.calibration.firms[0]
+        result = rb.infer_lambda_with_phi(firm)
+        if firm.training_fraction > 0:
+            assert result["phi_observed"] == firm.training_fraction
+
+    def test_compute_all_with_phi(self, rb):
+        """Should compute phi-aware beliefs for all firms."""
+        beliefs = rb.compute_all_revealed_beliefs_with_phi()
+        assert len(beliefs) == len(rb.calibration.firms)
+        for b in beliefs:
+            assert "lambda_implied" in b
+            assert "phi_model" in b
+            assert "lambda_from_capex_legacy" in b
+
+    def test_summary_includes_phi_beliefs(self, rb):
+        """Summary should include phi-aware beliefs."""
+        s = rb.summary()
+        assert "revealed_beliefs_with_phi" in s
+
+    def test_firms_have_training_fraction(self):
+        """Stylized firms should have training fraction estimates."""
+        firms = get_stylized_firms()
+        for firm in firms:
+            assert hasattr(firm, "training_fraction")
+            assert firm.training_fraction >= 0
+
+    def test_calibration_passes_endogenous_params(self):
+        """to_model_params should pass lam_0, xi, eta."""
+        calib = get_baseline_calibration()
+        params = calib.to_model_params()
+        assert params.lam_0 == calib.lam_0
+        assert params.xi == calib.xi
+        assert params.eta == calib.eta
+
+    def test_calibration_xi_override(self):
+        """Should support xi override in to_model_params."""
+        calib = get_baseline_calibration()
+        params = calib.to_model_params(xi=0.05)
+        assert params.xi == 0.05

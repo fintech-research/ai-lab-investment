@@ -100,6 +100,7 @@ class ValuationAnalysis:
         self,
         leverage: float,
         K: float = 1.0,
+        phi: float = 0.5,
         regime: str = "H",
         risk_free_rate: float | None = None,
     ) -> float:
@@ -111,6 +112,7 @@ class ValuationAnalysis:
         Args:
             leverage: Debt-to-investment ratio.
             K: Capacity level.
+            phi: Training fraction (default 0.5).
             regime: Demand regime.
             risk_free_rate: Risk-free rate (defaults to r - 0.03).
 
@@ -131,11 +133,11 @@ class ValuationAnalysis:
         )
 
         # Compute at a demand level above the default boundary
-        X_D = duo.default_boundary(K, 0.0, regime)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         X = max(X_D * 3, 0.1)
 
         coupon = duo.coupon_payment(K)
-        D = duo.debt_value(X, K, 0.0, regime)
+        D = duo.debt_value(X, phi, K, 0.0, 0.0)
 
         if D <= 0 or coupon <= 0:
             return 0.0
@@ -149,6 +151,7 @@ class ValuationAnalysis:
         X_current: float,
         K: float,
         leverage: float,
+        phi: float = 0.5,
         regime: str = "H",
         horizon: float = 5.0,
     ) -> float:
@@ -163,6 +166,7 @@ class ValuationAnalysis:
             X_current: Current demand level.
             K: Capacity.
             leverage: Debt-to-investment ratio.
+            phi: Training fraction (default 0.5).
             regime: Demand regime.
             horizon: Time horizon in years.
 
@@ -178,7 +182,7 @@ class ValuationAnalysis:
             coupon_rate=0.05,
             bankruptcy_cost=0.30,
         )
-        X_D = duo.default_boundary(K, 0.0, regime)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         if X_D <= 0 or X_current <= X_D:
             return 1.0 if X_D > 0 else 0.0
 
@@ -357,6 +361,94 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
+    # Phi-aware valuation
+    # ------------------------------------------------------------------
+
+    def growth_option_decomposition_with_phi(
+        self,
+        X: float,
+        K_installed: float = 0.0,
+        phi: float = 0.5,
+    ) -> dict[str, float]:
+        """Decompose firm value using the phi-aware model.
+
+        Uses the combined L+H revenue structure where phi determines
+        the split between inference revenue and training value.
+
+        Args:
+            X: Current demand level.
+            K_installed: Currently installed capacity (0 if pre-investment).
+            phi: Training fraction.
+
+        Returns:
+            Dict with value components.
+        """
+        model = SingleFirmModel(self.params)
+
+        # Assets-in-place with phi
+        if K_installed > 0:
+            assets = model.installed_value_with_phi(X, phi, K_installed, "L")
+        else:
+            assets = 0.0
+
+        # Option value with phi optimization
+        option_val = model.option_value_with_phi(X)
+
+        # Decompose: option includes optimal (K*, phi*)
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+
+        expansion_option = option_val - assets if option_val > assets else 0.0
+        total = assets + expansion_option
+
+        return {
+            "total_value": total,
+            "assets_in_place": assets,
+            "expansion_option": expansion_option,
+            "assets_fraction": assets / total if total > 0 else 0.0,
+            "growth_fraction": expansion_option / total if total > 0 else 0.0,
+            "phi_installed": phi,
+            "phi_optimal": phi_star,
+            "K_optimal": K_star,
+            "X_trigger": X_star,
+        }
+
+    def equity_value_vs_lambda_with_phi(
+        self,
+        lambda_values: np.ndarray,
+        X: float = 1.0,
+    ) -> dict[str, np.ndarray]:
+        """Equity value and optimal phi across lambda values.
+
+        Shows how both valuation and training allocation respond to
+        different beliefs about AI timelines.
+        """
+        n = len(lambda_values)
+        option_values = np.full(n, np.nan)
+        triggers = np.full(n, np.nan)
+        capacities = np.full(n, np.nan)
+        phis = np.full(n, np.nan)
+
+        for i, lam in enumerate(lambda_values):
+            try:
+                p = self.params.with_param(lam=lam)
+                model = SingleFirmModel(p)
+                option_values[i] = model.option_value_with_phi(X)
+                X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+                triggers[i] = X_star
+                capacities[i] = K_star
+                phis[i] = phi_star
+            except (ValueError, RuntimeError):
+                continue
+
+        return {
+            "lambda_values": lambda_values,
+            "option_values": option_values,
+            "triggers": triggers,
+            "capacities": capacities,
+            "phis": phis,
+        }
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
 
@@ -374,7 +466,7 @@ class ValuationAnalysis:
         result["credit"] = {}
         for lev in leverages:
             spread = self.credit_spread(lev, regime=regime)
-            prob = self.default_probability(X, 1.0, lev, regime)
+            prob = self.default_probability(X, 1.0, lev, regime=regime)
             result["credit"][f"leverage_{lev}"] = {
                 "spread_bps": spread * 10000,
                 "default_prob_5yr": prob,

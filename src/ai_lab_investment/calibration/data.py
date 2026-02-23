@@ -28,6 +28,8 @@ class FirmData:
         gpu_count: Estimated GPU fleet size (thousands).
         leverage_ratio: Debt-to-total-capital ratio.
         wacc: Weighted average cost of capital estimate.
+        training_fraction: Estimated fraction of compute allocated to
+            training (vs inference). 0.0 = unknown/not estimated.
         description: Brief characterization.
     """
 
@@ -39,6 +41,7 @@ class FirmData:
     gpu_count: float  # Thousands
     leverage_ratio: float
     wacc: float
+    training_fraction: float = 0.0
     description: str = ""
 
 
@@ -67,7 +70,10 @@ class CalibrationData:
     tau: float = 0.0  # Time-to-build (years)
 
     # Regime switching
-    lam: float = 0.10  # Baseline arrival rate
+    lam: float = 0.10  # Baseline arrival rate (total effective)
+    lam_0: float = 0.05  # Exogenous baseline arrival rate
+    xi: float = 0.0  # Training scaling (0 = exogenous model)
+    eta: float = 0.07  # Scaling law exponent (Kaplan et al. 2020)
 
     # Firm data
     firms: list[FirmData] = field(default_factory=list)
@@ -75,11 +81,16 @@ class CalibrationData:
     # Data sources
     sources: dict[str, str] = field(default_factory=dict)
 
-    def to_model_params(self, lam: float | None = None) -> ModelParameters:
+    def to_model_params(
+        self,
+        lam: float | None = None,
+        xi: float | None = None,
+    ) -> ModelParameters:
         """Convert calibration data to model parameters.
 
         Args:
             lam: Override arrival rate (used in revealed beliefs inversion).
+            xi: Override training scaling parameter.
         """
         return ModelParameters(
             r=self.r,
@@ -88,6 +99,9 @@ class CalibrationData:
             sigma_L=self.sigma_L,
             sigma_H=self.sigma_H,
             lam=lam if lam is not None else self.lam,
+            lam_0=self.lam_0,
+            xi=xi if xi is not None else self.xi,
+            eta=self.eta,
             alpha=self.alpha,
             gamma=self.gamma,
             c=self.c,
@@ -113,6 +127,7 @@ def get_stylized_firms() -> list[FirmData]:
             gpu_count=50,
             leverage_ratio=0.20,
             wacc=0.15,
+            training_fraction=0.60,
             description=(
                 "Pure-play AI lab, rapid revenue growth, "
                 "moderate leverage via venture debt"
@@ -127,6 +142,7 @@ def get_stylized_firms() -> list[FirmData]:
             gpu_count=80,
             leverage_ratio=0.30,
             wacc=0.14,
+            training_fraction=0.55,
             description=(
                 "Largest pure-play AI lab, high revenue, "
                 "growing debt from credit facilities"
@@ -141,6 +157,7 @@ def get_stylized_firms() -> list[FirmData]:
             gpu_count=200,
             leverage_ratio=0.10,
             wacc=0.10,
+            training_fraction=0.40,
             description=(
                 "Hyperscaler with massive existing infrastructure, "
                 "low leverage, low cost of capital"
@@ -155,6 +172,7 @@ def get_stylized_firms() -> list[FirmData]:
             gpu_count=100,
             leverage_ratio=0.70,
             wacc=0.18,
+            training_fraction=0.20,
             description=(
                 "GPU cloud provider, very high leverage, "
                 "high cost of capital, high growth"
