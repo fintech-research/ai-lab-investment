@@ -105,6 +105,13 @@ The training channel amplifies this: an overly optimistic firm not only builds t
 Conservative underinvestment, by contrast, simply delays investment and reduces capacity---a lost opportunity, but not an existential risk.
 This asymmetry is captured by Anthropic CEO Dario Amodei's observation: "I could buy \$1 trillion of compute that starts at the end of 2027. If my revenue is not \$1 trillion dollars, if it's even \$800 billion, there's no force on Earth, there's no hedge on Earth that could stop me from going bankrupt" [@amodei2026cone].
 
+@fig-investment-dilemma visualizes the asymmetry by plotting the value loss $\Delta V$ as a function of $\lambda_{\text{invest}}$ for a fixed $\lambda_{\text{true}} = 0.10$.
+The loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ (correct beliefs) and increases in both directions, but the right branch (overinvestment, $\lambda_{\text{invest}} > \lambda_{\text{true}}$) rises more steeply than the left (underinvestment).
+With leverage ($\ell = 0.40$, dashed line), the asymmetry is amplified: overinvestment triggers default risk that creates a sharp nonlinear increase in losses, while underinvestment remains a smooth, moderate opportunity cost.
+The shaded region marks the "danger zone" where overinvestment losses exceed a 20\% threshold, illustrating the narrow margin for error that highly levered AI firms face.
+
+![The AI investment dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The right branch (overinvestment) rises more steeply than the left (underinvestment), and leverage amplifies the asymmetry through default risk. The shaded region marks losses exceeding 20\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
+
 #### Implications
 
 The AI investment dilemma has several implications.

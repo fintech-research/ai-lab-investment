@@ -12,6 +12,17 @@ In the decentralized equilibrium, firms underweight this externality relative to
 This creates a tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality generates *under-investment* in training.
 The net welfare effect depends on the relative magnitudes of these two distortions.
 
+### Testable Predictions
+
+The model generates several cross-sectional predictions that are in principle testable using the (admittedly small) cross-section of AI infrastructure firms:
+
+1. **Training-credit spread nexus.** Firms with higher $\hat{\phi}$ should have *lower* credit spreads conditional on leverage (Proposition 2, faith-based survival): the H-regime option value provides a valuation floor that reduces default risk.
+2. **Training-beta relationship.** Firms with higher $\hat{\phi}$ should have higher equity betas, because a larger share of their value derives from the growth option (H-regime upside) rather than assets-in-place, making them more sensitive to systematic risk.
+3. **Asymmetric response to AI news.** The convexity of equity value in $\lambda$ (@sec-valuation) implies that positive AI capability news should increase AI infrastructure valuations more than negative news decreases them, with the effect stronger for high-$\hat{\phi}$ firms.
+4. **Leader-follower training gap.** In markets with clear sequential entry, first movers should allocate more to training than later entrants (Proposition 3(ii)), because the monopoly phase reduces the opportunity cost of training.
+
+These predictions are directional and could be assessed as the cross-section of publicly traded AI infrastructure firms expands (e.g., post-CoreWeave IPO), though the small sample size currently limits formal statistical testing.
+
 ### Policy Implications
 
 The model has implications for financial stability, competition policy, and disclosure.
@@ -22,6 +33,16 @@ On competition policy, the preemption mechanism implies that capacity investment
 
 On disclosure, requiring AI labs to disclose compute expenditure *and training allocation* in standardized formats would improve market efficiency and enable better risk assessment.
 The training fraction $\hat{\phi}$ is particularly informative because it reveals the firm's intertemporal trade-off between current revenue and future capability.
+
+### Direction of Bias from Static $\phi$
+
+The assumption that $\phi$ is fixed at investment time is the most-flagged limitation. A two-period extension provides intuition for the direction of bias. Suppose the firm chooses $\phi_1$ at investment time and can update to $\phi_2$ after observing demand for one period.
+
+If the regime switch has not occurred after one period, the firm observes that it remains in regime $L$, which is (weakly) bad news about $\lambda_{\text{true}}$. The optimal response is to *decrease* $\phi$---shift from training to inference to bolster L-regime revenue. If the regime switch *has* occurred, the firm wants to *increase* $\phi$ to capture H-regime market share.
+
+The option to reallocate is therefore valuable, and its availability at the initial date affects the optimal $\phi_1$. With the option to increase $\phi$ later if the switch occurs, the firm can afford to start with *lower* $\phi_1$ (more inference) and shift to training upon observing the switch. The static model, which lacks this option, forces the firm to "pre-commit" to its long-run training allocation, biasing $\phi^*$ upward relative to the dynamic optimum.
+
+This suggests that the static model *overstates* the initial training fraction: firms in practice can and do reallocate GPUs between training and inference on timescales of weeks. The implied $\lambda$ that rationalizes a given observed $\phi$ would therefore be *higher* under the dynamic model than under the static model, because the observed $\phi$ represents a deliberate choice despite the option to reallocate, rather than an irreversible commitment. A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB equation) is left for future work.
 
 ### Limitations
 
