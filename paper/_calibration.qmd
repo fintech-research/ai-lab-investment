@@ -54,7 +54,7 @@ I calibrate four stylized firms representing the major categories of AI infrastr
 | Leverage | 0.20 | 0.30 | 0.10 | 0.70 |
 | WACC | 0.15 | 0.14 | 0.10 | 0.18 |
 
-: Stylized firm parameters calibrated from public filings and analyst reports. {#tbl-firms}
+: Stylized firm parameters calibrated from public filings and analyst reports. {#tbl-firms tbl-colwidths="[30,17,17,18,18]"}
 
 @fig-firm-comparison provides a visual summary of the calibration targets.
 Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.

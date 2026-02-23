@@ -166,7 +166,7 @@ The calibration uses data from the following sources:
 | Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training |
 | Depreciation ($\delta$) | GAAP useful life for data center equipment (3--5 years) |
 
-: Data sources for calibration parameters. {#tbl-sources}
+: Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
 
 All firm-level data reflects publicly available information as of Q4 2025.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
@@ -184,7 +184,7 @@ The stylized firms are composites designed to capture the key features of each f
 | Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ |
 | Depreciation | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
 
-: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities}
+: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities tbl-colwidths="[30,14,14,21,21]"}
 
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
 
