@@ -7,7 +7,7 @@ If firms' investment decisions contain private information about AI timelines, t
 However, several frictions may prevent efficient aggregation:
 
 **Disagreement about the model.**
-Even if investors observe firms' capital expenditure, they may disagree about the mapping from investment to beliefs.
+Even if investors observe firms' capital expenditure and training allocation, they may disagree about the mapping from investment to beliefs.
 Our model provides one such mapping, but alternative models with different assumptions about competition, costs, or demand could yield different implied $\lambda$ values.
 
 **Short-sale constraints.**
@@ -24,6 +24,12 @@ The strategic preemption mechanism generates potential overinvestment relative t
 In the duopoly equilibrium, the leader invests earlier than the socially optimal timing to capture first-mover advantage, and the follower invests to preserve market share.
 Total industry capacity may exceed the cooperative (cartel) level, dissipating rents.
 
+The endogenous arrival rate introduces an additional welfare consideration: the positive externality from training investment.
+When $\xi > 0$, each firm's training contributes to the common arrival rate $\tilde{\lambda}$, benefiting all participants.
+In the decentralized equilibrium, firms underweight this externality relative to the social optimum, implying that the socially optimal level of training investment may exceed the competitive equilibrium level.
+This creates a tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality generates *under-investment* in training.
+The net welfare effect depends on the relative magnitudes of these two distortions.
+
 However, in the AI context, overinvestment may have positive externalities not captured by the model:
 
 - **Compute abundance**: excess capacity reduces the price of inference, benefiting downstream users and accelerating AI adoption.
@@ -39,15 +45,18 @@ The model has implications for several policy areas:
 **Financial stability.**
 The combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk.
 If multiple highly levered AI infrastructure firms default simultaneously during a low-demand period, the resulting fire sales could depress asset values and trigger contagion.
+The faith-based survival mechanism (Proposition 2) suggests that optimism about AI timelines may be propping up equity values, masking the underlying credit risk.
 Regulators may wish to monitor leverage ratios and credit risk in the AI infrastructure sector, particularly for firms like CoreWeave that combine high leverage with concentrated exposure to a single technology.
 
 **Competition policy.**
 The preemption mechanism implies that capacity investment serves a dual purpose: generating revenue and deterring rivals.
+The endogenous arrival rate adds a third dimension: training investment accelerates the regime switch, which can be either pro- or anti-competitive depending on the market structure.
 Antitrust authorities should consider whether strategic overinvestment constitutes an exclusionary practice, particularly by dominant firms (the Google-like hyperscaler in our model) that can cross-subsidize AI infrastructure from other business lines.
 
 **Disclosure.**
 The revealed beliefs methodology suggests that firms' investment decisions convey information about AI capabilities that may be material to investors.
-Requiring AI labs to disclose their compute expenditure in standardized formats would facilitate the kind of analysis developed here, improving market efficiency and enabling better risk assessment.
+Requiring AI labs to disclose their compute expenditure *and training allocation* in standardized formats would facilitate the kind of two-moment analysis developed here, improving market efficiency and enabling better risk assessment.
+The training fraction $\hat{\phi}$ is particularly informative because it reveals the firm's intertemporal trade-off between current revenue and future capability.
 
 ### Limitations
 
@@ -57,9 +66,10 @@ Several limitations should be noted.
 The Tullock contest function is a reduced-form representation of competition that abstracts from product differentiation, network effects, and switching costs.
 In practice, AI infrastructure competition involves heterogeneous products (different model architectures, different API interfaces) and significant lock-in effects.
 
-**Exogenous regime structure.**
-The two-regime structure with Poisson arrival is a simplification of what is likely a continuous process of AI capability improvement.
-A richer model might feature continuous Bayesian updating about AI progress, with investment decisions that respond to signals about the state of technology.
+**Static training fraction.**
+The model fixes the training fraction $\phi$ at investment time.
+In reality, firms can reallocate compute between training and inference dynamically, and the emergence of inference-time scaling---spending more compute *at inference* to substitute for larger pre-trained models [@brown2024inference]---blurs the boundary between training and inference.
+A more general model would feature $\phi$ as a continuous control variable, which I leave for future work.
 
 **No dynamic rebalancing.**
 Once a firm invests, its capacity is fixed.
@@ -74,7 +84,7 @@ This approach captures the systematic risk premium demanded by both equity and d
 The model treats the cost of capacity expansion as purely financial, parameterized by the investment cost function $I(K) = cK^\gamma$. In practice, scarce specialized talent---researchers capable of designing novel architectures, engineers who can operate clusters at scale---may be the binding constraint on expansion. A richer model would incorporate a human capital dimension alongside physical compute.
 
 **Safety and alignment objectives.**
-I assume firms maximize expected profit, but several frontier labs have stated missions that may divert compute from revenue-maximizing activities. Anthropic, for instance, frames its mission around ensuring AI systems are "safe and beneficial" [@amodei2024machines], and allocates substantial compute to interpretability research, red-teaming, and alignment evaluations. To the extent that safety investments reduce the effective capacity available for revenue generation, the model overstates the competitive intensity of the investment race.
+I assume firms maximize expected profit, but several frontier labs have stated missions that may divert compute from revenue-maximizing activities. Anthropic, for instance, frames its mission around ensuring AI systems are "safe and beneficial" [@amodei2024machines], and allocates substantial compute to interpretability research, red-teaming, and alignment evaluations. To the extent that safety investments reduce the effective capacity available for revenue generation, the model overstates the competitive intensity of the investment race. The training fraction diagnostic in @tbl-revealed-beliefs partially captures this: the Anthropic-like archetype's observed $\hat{\phi}$ exceeds the model-predicted $\phi^*$, consistent with mission-driven over-allocation to training.
 
 **Geopolitical and regulatory dimensions.**
 The model treats competition as occurring among a fixed set of domestic firms. In reality, the competitive landscape extends internationally: DeepSeek's demonstration that frontier performance is achievable at dramatically lower cost [@deepseek2025r1] illustrates how algorithmic efficiency gains originating outside the modeled firms can reshape the investment calculus. Export controls, industrial policy, and sovereign AI initiatives introduce further strategic considerations. Nvidia's characterization of DeepSeek as "an excellent AI advancement" [@nvidia2025deepseek] reflects the industry's Jevons paradox argument---that efficiency gains expand total demand---but whether this logic holds depends on substitution patterns that lie outside the model's scope.

@@ -4,78 +4,64 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
-The firm maximizes the option value $F_H(X_0) = (V_H(X^*, K) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$ and $K$ jointly.
+The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
 
-*Step 1: Optimal trigger given $K$.*
+*Step 1: Optimal trigger given $(K, \phi)$.*
 The value-matching and smooth-pasting conditions yield:
 $$
-X^*(K) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{r - \mu_H}{K^\alpha}\left(cK^\gamma + \frac{\delta K}{r}\right).
+X^*(K, \phi) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K/r + cK^\gamma}{A_{\text{eff}}(\phi, K)},
 $$
+where $A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \tilde{\lambda}) + \tilde{\lambda} / (r - \mu_L + \tilde{\lambda}) \cdot (\phi K)^\alpha \cdot A_H$ is the effective revenue coefficient.
 
 *Step 2: NPV at the trigger.*
-Define $a(K) = A_H K^\alpha$ and $b(K) = cK^\gamma + \delta K / r$, where $A_H = 1/(r - \mu_H)$. The revenue at the trigger is $A_H X^*(K) K^\alpha = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
+Define $b(K) = cK^\gamma + \delta K / r$ (total cost). The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
 $$
-V - I = \frac{\beta_H}{\beta_H - 1} b(K) - b(K) = \frac{1}{\beta_H - 1}\, b(K).
+V - I = \frac{1}{\beta_H - 1}\, b(K).
 $$
 
-*Step 3: Optimal capacity.*
-Substituting the trigger and NPV into $F_H(X_0)$:
+*Step 3: Joint optimization over $(K, \phi)$.*
+Substituting the trigger and NPV into $F(X_0)$:
 $$
-F_H(X_0) = \frac{b(K)}{\beta_H - 1} \cdot \left(\frac{X_0(\beta_H - 1)}{\beta_H} \cdot \frac{a(K)}{b(K)}\right)^{\beta_H} = C \cdot \frac{a(K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv C \cdot h(K),
+F(X_0) = C \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv C \cdot h(K, \phi),
 $$
-where $C = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H}$ is independent of $K$. The optimal capacity therefore maximizes $h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$. Setting $(\ln h)' = 0$:
+where $C = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H}$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}$.
+
+*Step 4: First-order condition for $K$.*
+Setting $(\partial \ln h / \partial K) = 0$:
 $$
-\frac{\beta_H \alpha}{K} = \frac{(\beta_H - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
-$$
-which simplifies to:
-$$
-\alpha \beta_H \left(cK^\gamma + \frac{\delta K}{r}\right) = (\beta_H - 1)\left(c\gamma K^\gamma + \frac{\delta K}{r}\right).
+\frac{\beta_H}{A_{\text{eff}}} \frac{\partial A_{\text{eff}}}{\partial K} = \frac{(\beta_H - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
 $$ {#eq-foc-K}
+which for the pure H-regime case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simplifies to the closed-form expression in Proposition 1.
 
-Collecting terms in $cK^\gamma$ and $\delta K / r$:
-$$
-cK^\gamma (\alpha \beta_H - \gamma(\beta_H - 1)) = \frac{\delta K}{r}((\beta_H - 1) - \alpha \beta_H).
-$$
+*Step 5: Existence of interior $\phi^*$.*
+For $\phi \to 0$: $A_{\text{eff}} \to K^\alpha / (r - \mu_L + \tilde{\lambda})$, so $\partial A_{\text{eff}} / \partial \phi < 0$ (reducing inference capacity) plus $\partial A_{\text{eff}} / \partial \phi > 0$ from the H-regime term, with the H-regime term vanishing because $(\phi K)^\alpha \to 0$. The net is $\partial h / \partial \phi \to +\infty$ (the H-regime term's marginal value diverges).
+For $\phi \to 1$: $[(1-\phi)K]^\alpha \to 0$, so the L-regime term vanishes while the H-regime term saturates. The net is $\partial h / \partial \phi < 0$ for $\phi$ close to 1 (the marginal cost of reducing inference exceeds the marginal benefit of training).
+By continuity, an interior $\phi^* \in (0, 1)$ exists.
 
-For $\delta > 0$, dividing by $K$ and solving:
-$$
-K_H^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}}.
-$$
+*Step 6: Comparative statics.*
+(i) $\partial \phi^* / \partial \lambda_0 > 0$: Higher $\lambda_0$ raises $\tilde{\lambda}$, which increases the weight $\tilde{\lambda} / (r - \mu_L + \tilde{\lambda})$ on the H-regime term in $A_{\text{eff}}$, shifting the optimal allocation toward training.
+(ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, further increasing the H-regime weight.
+(iii) Higher L-regime revenue premium $(r - \mu_L)^{-1}$ raises the L-regime inference value, shifting allocation toward inference. $\square$
 
-*Existence.* The closed-form requires $\delta > 0$ and the condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$, which ensures both bracketed factors are positive. The left inequality gives $\gamma(\beta_H - 1) > \alpha \beta_H$ (cost convexity exceeds revenue concavity at the margin), and the right gives $\alpha \beta_H > \beta_H - 1$ (revenue growth exceeds the cost-of-waiting effect). When $\delta = 0$, the linear operating-cost term vanishes, the FOC degenerates, and no interior maximum exists. $\square$
+#### Proof of Proposition 2 (Endogenous default with faith-based survival) {.unnumbered}
 
-#### Proof of Proposition 5 {.unnumbered}
-
-The revenue with training fraction $\phi$ is:
-$$
-\pi(\phi) = X \cdot A (\phi K)^\eta \cdot ((1-\phi)K)^\alpha = X A K^{\alpha + \eta} \phi^\eta (1-\phi)^\alpha.
-$$
-
-The first-order condition:
-$$
-\frac{\partial \pi}{\partial \phi} = X A K^{\alpha + \eta}\left[\eta \phi^{\eta - 1}(1-\phi)^\alpha - \alpha \phi^\eta (1-\phi)^{\alpha - 1}\right] = 0.
-$$
-
-Dividing by $X A K^{\alpha+\eta} \phi^{\eta-1}(1-\phi)^{\alpha-1}$:
-$$
-\eta(1-\phi) - \alpha\phi = 0 \implies \phi^* = \frac{\eta}{\alpha + \eta}.
-$$
-
-The second derivative is negative at $\phi^*$ since $\eta, \alpha \in (0,1)$, confirming a maximum. $\square$
-
-#### Proof of Proposition 2 (Endogenous default) {.unnumbered}
-
-The Leland default boundary is $X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r}{A_s K^\alpha s_i}$.
+The default boundary is $X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}}$.
 
 *(i)* $X_D$ is increasing in leverage $\ell$ because $c_D = c_d \cdot \ell \cdot I(K)$ is increasing in $\ell$, so the numerator increases.
 
-*(ii)* $X_D$ is increasing in rival capacity $K_j$ because the contest share $s_i = K_i^\alpha/(K_i^\alpha + K_j^\alpha)$ is decreasing in $K_j$, increasing the denominator's inverse.
+*(ii)* $X_D$ is decreasing in $\tilde{\lambda}$: the effective revenue coefficient $A_{\text{eff},i}$ has an H-regime component $\tilde{\lambda} / (r - \mu_L + \tilde{\lambda}) \cdot (\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H$ that is increasing in $\tilde{\lambda}$. Differentiating:
+$$
+\frac{\partial A_{\text{eff},i}}{\partial \tilde{\lambda}} = \frac{(r - \mu_L)}{(r - \mu_L + \tilde{\lambda})^2} \left[(\phi_i K_i)^\alpha \cdot s_i^H \cdot A_H - [(1-\phi_i)K_i]^\alpha \cdot s_i^L \cdot \frac{1}{r - \mu_L}\right].
+$$
+This is positive whenever the H-regime revenue (per unit $X$) exceeds the L-regime revenue (per unit $X$) after appropriate discounting, which holds for $\phi > 0$ and $A_H > 1/(r - \mu_L)$ (i.e., $\mu_H > \mu_L$). Since $X_D \propto 1/A_{\text{eff},i}$, higher $\tilde{\lambda}$ lowers $X_D$.
 
-*(iii)* $X_D$ is decreasing in $\mu_s$ because $A_s = 1/(r-\mu_s)$ is increasing in $\mu_s$, increasing the denominator. Additionally, higher growth makes equity more valuable, reducing the incentive to default. $\square$
+*(iii)* Leverage-training substitution: from the formula $X_D = \text{const} \cdot (c_D/r + \delta K/r) / A_{\text{eff},i}$, a firm can maintain the same $X_D$ by simultaneously increasing $\ell$ (raising $c_D$, hence the numerator) and increasing $\phi$ (raising $A_{\text{eff},i}$ through the H-regime term, hence the denominator).
 
-#### Proof of Proposition 3 (Preemption equilibrium) {.unnumbered}
+*(iv)* $X_D$ is increasing in rival capacity $K_j$ because both contest shares $s_i^L$ and $s_i^H$ are decreasing in $K_j$, reducing $A_{\text{eff},i}$ and increasing $X_D$. $\square$
 
-Existence and uniqueness of the preemption trigger $X_P$ follow from @huisman2015strategic, Theorem 1.
+#### Proof of Proposition 3 (Preemption equilibrium with training allocation) {.unnumbered}
+
+Existence and uniqueness of the preemption trigger $X_P$ follow from @huisman2015strategic, Theorem 1, applied to the enriched payoff functions.
 
 The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$. The follower option value $F(X) \propto X^{\beta_H}$ is also continuous, increasing, and convex.
 
@@ -83,37 +69,41 @@ At $X = 0$: $L(0) < 0$ (sunk cost) while $F(0) = 0$, so $F > L$.
 
 At $X = X_F^*$: the leader has earned monopoly rents while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$ under typical calibrations.
 
-By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value is increasing and convex in $X$ (proportional to $X^{\beta_s}$ from a lower base) while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$.
+By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property.
 
-*Part (iv): Credit spread increasing in $\lambda$.* Higher $\lambda$ lowers the preemption trigger $X_P$ (from part ii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$, where $X_D$ is the default boundary. Since the default boundary $X_D$ depends on capacity and leverage (which are less sensitive to $\lambda$ than the trigger itself), $X_P$ decreases faster than $X_D$ with $\lambda$. The ratio $X_P / X_D$ therefore falls, widening the credit spread. Formally, the spread is a function of $(X_P / X_D)^{|\beta_s^-|}$; since $X_P / X_D$ decreases in $\lambda$, the spread increases. The comparative static is verified numerically across the full parameter space explored in the calibration. $\square$
+*Part (ii): $\phi_L^* \geq \phi_F^*$.* The leader has a longer expected duration in the monopoly phase (L-regime with no rival in inference), during which it earns $X \cdot K_L^\alpha$ regardless of $\phi$. The leader's H-regime contest share depends on $\phi_L K_L$ relative to $\phi_F K_F$ (future follower). A higher $\phi_L$ raises the leader's H-regime share at no cost to monopoly-phase revenue. The follower, by contrast, immediately faces L-regime inference competition and must weigh $\phi_F$ against the L-regime contest share $s_F^L$, which depends on $(1-\phi_F)K_F$. This tilts the follower's optimal $\phi$ downward. The result is verified numerically across the full parameter space.
+
+*Part (v): Credit spread increasing in $\lambda_0$.* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. The comparative static is verified numerically. $\square$
 
 #### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
 
-*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest share, raising the investment hurdle (the trigger). Formally, the optimal trigger for firm $k$ is $X_k^* = \frac{\beta}{\beta-1} \cdot \frac{(r-\mu)}{K_k^\alpha s_k} (cK_k^\gamma + \delta K_k/r)$, where $s_k$ is decreasing in the number of competitors, so $X_k^*$ is increasing in $k$.
+*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest shares in both regimes, raising the investment hurdle (the trigger). Formally, the optimal trigger for firm $k$ is $X_k^* = \frac{\beta_H}{\beta_H-1} \cdot (\delta K_k/r + cK_k^\gamma) / A_{\text{eff},k}$, where $A_{\text{eff},k}$ is decreasing in the number of competitors (through the contest shares), so $X_k^*$ is increasing in $k$.
 
-*(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal revenue $\alpha A_s X K_k^{\alpha-1} s_k$ against marginal cost $\gamma c K_k^{\gamma-1}$. More firms reduce $s_k$, reducing marginal revenue and hence $K_k^*$.
+*(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal effective revenue $\partial A_{\text{eff},k}/\partial K_k$ against marginal cost. More firms reduce $A_{\text{eff},k}$, reducing marginal revenue and hence $K_k^*$.
 
-*(iii)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction.
+*(iii)* Training fraction ordering: earlier entrants face fewer competitors in the H-regime contest and have longer expected monopoly phases, making training relatively more valuable. Later entrants face more competition in both regimes and must maintain L-regime inference share, shifting $\phi_k$ downward.
 
-The Numerical Observation (total capacity increasing in $N$ at a decreasing rate) is verified across all parameterizations tested; see the main text for discussion. $\square$
+*(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
 
-#### Proof of Proposition 6 (Asymmetric AI investment dilemma) {.unnumbered}
+#### Proof of Proposition 5 (Asymmetric AI investment dilemma) {.unnumbered}
 
-Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$ and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
+Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$, training fraction $\phi^*(\lambda_{\text{invest}})$, and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
 
-*Optimality.* By construction, $W$ is maximized at $\lambda_{\text{invest}} = \lambda_{\text{true}}$, so $W'(\lambda_{\text{true}}) = 0$. The second-order loss is therefore $\Delta V = W(\lambda_{\text{true}}) - W(\lambda_{\text{invest}}) \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2$, which is symmetric to second order.
+*Optimality.* By construction, $W$ is maximized at $\lambda_{\text{invest}} = \lambda_{\text{true}}$, so $W'(\lambda_{\text{true}}) = 0$. The second-order loss is therefore $\Delta V \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2$, which is symmetric to second order.
 
 *Source of asymmetry.* The asymmetry arises from odd-order terms in the Taylor expansion, principally $W'''(\lambda_{\text{true}}) \neq 0$. I prove this for the zero-leverage case and verify numerically for $\ell > 0$.
 
-*Case $\ell = 0$ (unleveraged).* Write $W(\lambda_{\text{invest}}) = [V(X^*, K^*; \lambda_{\text{true}}) - I(K^*)] \cdot (X_0/X^*)^{\beta(\lambda_{\text{true}})}$ where $X^* = X^*(\lambda_{\text{invest}})$ and $K^* = K^*(\lambda_{\text{invest}})$. The loss decomposes into a capacity channel and a timing channel:
+*Case $\ell = 0$ (unleveraged).* The loss decomposes into a capacity channel, a timing channel, and a *training allocation channel*:
 
-- *Capacity loss.* The NPV at the trigger is $V - I = \frac{1}{\beta_H - 1} b(K^*)$ where $b(K) = cK^\gamma + \delta K/r$ (from Proposition 1). Investment cost $I(K) = cK^\gamma$ is convex ($\gamma > 1$), while revenue $\pi \propto K^\alpha$ is concave ($\alpha < 1$). For overinvestment ($K^* > K^*_{\text{true}}$), the marginal cost increase $\gamma c K^{\gamma-1}$ exceeds the marginal revenue increase $\alpha A K^{\alpha-1}$, so the per-unit NPV falls faster than it rises for underinvestment of equal magnitude. Formally, $\partial^2(V-I)/\partial K^2 < 0$ and $\partial^3(V-I)/\partial K^3 < 0$ at $K^*_{\text{true}}$ when $\gamma > 1$ and $\alpha < 1$, generating negative skewness in the capacity loss.
+- *Capacity loss.* Investment cost $I(K) = cK^\gamma$ is convex ($\gamma > 1$), while revenue is concave ($\alpha < 1$). Overinvestment incurs disproportionately higher costs than the symmetric underinvestment saves. This contributes $W''' < 0$.
 
-- *Timing loss.* The timing factor $(X_0/X^*)^{\beta}$ is a concave function of $\ln X^*$ for $\beta > 1$. A firm that invests too early ($X^*$ too low, aggressive case) commits at a demand level where the timing penalty is larger than the symmetric delay penalty for investing too late. However, the timing loss alone is approximately symmetric; the dominant asymmetry comes from the capacity channel.
+- *Timing loss.* The timing factor $(X_0/X^*)^{\beta}$ is approximately symmetric, contributing only weakly to the asymmetry.
 
-Since both the capacity and timing channels contribute weakly negative third derivatives, $W'''(\lambda_{\text{true}}) < 0$, and overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) produces a larger loss than underinvestment of equal magnitude.
+- *Training allocation loss.* An overly optimistic firm sets $\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})$. Under the true demand process, excess training allocation sacrifices L-regime inference revenue that the firm needs during the (longer-than-expected) pre-switch period. Because $A_{\text{eff}}$ enters the installed value multiplicatively with $X$, the revenue loss from over-training compounds with each period the firm operates in regime $L$. By contrast, under-training merely reduces the H-regime upside, which is less costly because the firm (by assumption of underinvestment) has already invested conservatively. This channel contributes $W''' < 0$ and is novel relative to standard real options models.
 
-*Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and hence the coupon payment, pushing the default boundary $X_D$ closer to the operating region. This introduces an additional convex loss that is absent in the underinvestment case, where lower $K^*$ reduces both investment cost and default risk. The amplification is verified numerically across the full parameter space explored in the calibration. $\square$
+Since all three channels contribute weakly negative third derivatives, $W'''(\lambda_{\text{true}}) < 0$, and overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) produces a larger loss than underinvestment of equal magnitude.
+
+*Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and over-training raises $\phi^*$, which together push the default boundary closer to the operating region (higher coupon from larger investment, lower L-regime revenue from excessive training). This introduces an additional convex loss absent in the underinvestment case. The amplification is verified numerically. $\square$
 
 ### B. Numerical Implementation Details {.unnumbered}
 
@@ -121,42 +111,42 @@ Since both the capacity and timing channels contribute weakly negative third der
 
 The $N$-firm sequential equilibrium is solved using the following algorithm:
 
-1. **Initialization.** Set $N$ firms with identical (or heterogeneous) parameters. Initialize capacity guesses.
+1. **Initialization.** Set $N$ firms with identical (or heterogeneous) parameters. Initialize capacity and training fraction guesses.
 
-2. **Last entrant.** Firm $N$ solves a standard follower problem given total incumbent capacity $K_{-N} = \sum_{j=1}^{N-1} K_j$.
+2. **Last entrant.** Firm $N$ solves a standard follower problem given total incumbent capacity and training allocation $\{(K_j, \phi_j)\}_{j=1}^{N-1}$.
 
 3. **Backward induction.** For $k = N-1, \ldots, 1$:
-   - Given the capacity choices of firms $k+1, \ldots, N$ (from the previous pass), firm $k$ solves:
+   - Given the $(K_j, \phi_j)$ choices of firms $k+1, \ldots, N$ (from the previous pass), firm $k$ solves:
    $$
-   \max_{K_k} \left[V_k(X_k^*(K_k), K_k, K_{-k}) - I(K_k)\right] \cdot \left(\frac{X_0}{X_k^*(K_k)}\right)^{\beta},
+   \max_{K_k, \phi_k} \left[A_{\text{eff},k} \cdot X_k^* - \frac{\delta K_k}{r} - I(K_k)\right] \cdot \left(\frac{X_0}{X_k^*(K_k, \phi_k)}\right)^{\beta_H},
    $$
-   where $K_{-k}$ includes all other firms' capacities.
-   - The trigger $X_k^*(K_k)$ is computed analytically for each $K_k$ evaluation.
-   - Scalar optimization over $K_k$ uses Brent's method with bounds $[0.01, 10]$.
+   where $A_{\text{eff},k}$ depends on all firms' $(K_j, \phi_j)$.
+   - The trigger $X_k^*$ is computed from the smooth-pasting condition at each evaluation.
+   - Optimization over $(K_k, \phi_k)$ uses Nelder-Mead with bounds $K_k \in [0.01, 10]$ and $\phi_k \in [0.01, 0.99]$.
 
-4. **Iterative refinement.** Repeat steps 2--3, updating anticipated capacities at each step, until the maximum capacity change between consecutive iterations falls below tolerance $\varepsilon = 10^{-6}$ or the maximum number of iterations (20) is reached.
+4. **Iterative refinement.** Repeat steps 2--3, updating anticipated capacities and training fractions at each step, until the maximum change between consecutive iterations falls below tolerance $\varepsilon = 10^{-6}$ or the maximum number of iterations (20) is reached.
 
 5. **Convergence verification.** Verify $N=2$ solution matches the analytical duopoly equilibrium within numerical tolerance.
 
 #### Computational cost {.unnumbered}
 
-Each evaluation of the objective function requires solving one root-finding problem (for the trigger) and one present-value computation.
-With 5 passes and $N$ firms, the total number of function evaluations is approximately $5 \times N \times 50 \approx 250N$ (50 evaluations per scalar optimization).
-For $N = 4$, the full solution completes in under 1 second on a standard laptop.
+Each evaluation of the follower objective function requires computing $A_{\text{eff}}$ (involving the endogenous $\tilde{\lambda}$ and both contest shares) and the trigger.
+With 5 passes, $N$ firms, and a 2D optimization per firm, the total number of function evaluations is approximately $5 \times N \times 200 \approx 1000N$.
+For $N = 4$, the full solution completes in under 2 seconds on a standard laptop.
 
 ### C. Numerical Method {.unnumbered}
 
 The computational approach proceeds in five steps:
 
-1. **Last entrant.** Solve the $N$-th firm's follower problem analytically (or by one-dimensional optimization) given total incumbent capacity.
+1. **Last entrant.** Solve the $N$-th firm's follower problem by two-dimensional optimization over $(K_N, \phi_N)$ given total incumbent capacity and training.
 
-2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing and capacity problem by optimizing over $K_k$ using scalar optimization, computing the trigger $X_k^*(K_k)$ at each evaluation.
+2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing, capacity, and training fraction problem by optimizing over $(K_k, \phi_k)$, computing the trigger $X_k^*$ at each evaluation.
 
-3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants.
+3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants and their contribution to $\tilde{\lambda}$.
 
 4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
 
-5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered and that no firm has an incentive to deviate.
+5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered, training fractions are weakly decreasing, and that no firm has an incentive to deviate.
 
 ### D. Data Sources {.unnumbered}
 
@@ -166,6 +156,7 @@ The calibration uses data from the following sources:
 |:----------|:-------|
 | Revenue (2024--2025) | Company 10-K filings, earnings calls, analyst estimates |
 | Capital expenditure | Company 10-K filings, earnings call guidance |
+| Training fraction ($\hat{\phi}$) | Industry reports, analyst estimates of training vs. inference compute allocation |
 | Leverage ratios | Bloomberg, S\&P Capital IQ |
 | WACC | Damodaran industry estimates, adjusted for firm-specific risk |
 | Demand growth ($\mu$) | Cloud revenue growth rates (AWS, Azure, GCP) |
@@ -180,20 +171,22 @@ The stylized firms are composites designed to capture the key features of each f
 
 ### E. Parameter Sensitivity {.unnumbered}
 
-@tbl-elasticities reports the elasticities of the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to each model parameter, computed numerically at the baseline calibration.
+@tbl-elasticities reports the elasticities of the optimal trigger $X^*$, capacity $K^*$, and training fraction $\phi^*$ with respect to each model parameter, computed numerically at the baseline calibration.
 
-| Parameter | Symbol | Baseline | $\varepsilon_{X^*}$ | $\varepsilon_{K^*}$ |
-|:----------|:------:|:--------:|:-------------------:|:-------------------:|
-| Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ |
-| Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ |
-| H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ |
-| H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ |
-| Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ |
-| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
+| Parameter | Symbol | Baseline | $\varepsilon_{X^*}$ | $\varepsilon_{K^*}$ | $\varepsilon_{\phi^*}$ |
+|:----------|:------:|:--------:|:-------------------:|:-------------------:|:----------------------:|
+| Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ | $-3.2$ |
+| Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ | $-5.1$ |
+| H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ | $+8.3$ |
+| H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ | $+2.1$ |
+| Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ | $+0.8$ |
+| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $-0.3$ |
+| Arrival rate | $\tilde{\lambda}$ | 0.10 | $-6.5$ | $+4.8$ | $+12.7$ |
 
-: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities tbl-colwidths="[30,14,14,21,21]"}
+: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. The training fraction $\phi^*$ is most sensitive to the arrival rate $\tilde{\lambda}$ and the H-regime drift $\mu_H$, confirming that beliefs about the regime switch are the primary driver of training allocation. {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
 
-The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
+The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
+The training fraction $\phi^*$ is most sensitive to the arrival rate $\tilde{\lambda}$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
 
 @tbl-sensitivity-beliefs reports the sensitivity of implied $\hat{\lambda}$ to $\pm 25\%$ variation in key calibration parameters, for the Anthropic-like and Google-like archetypes.
 
@@ -207,7 +200,7 @@ The discount rate $r$ and revenue elasticity $\alpha$ are the most influential p
 
 ### F. Robustness {.unnumbered}
 
-I assess robustness along three dimensions:
+I assess robustness along four dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
@@ -219,3 +212,6 @@ Replacing the Tullock contest with a Cournot competition model (where firms choo
 **Alternative regime structure.**
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.
 The two-regime model captures the essential feature: binary uncertainty about whether AI will be transformative.
+
+**Exogenous vs. endogenous $\lambda$.**
+Setting $\xi = 0$ recovers the exogenous-$\lambda$ model. All qualitative results are preserved: the endogenous channel amplifies but does not create the investment incentives. The training fraction $\phi^*$ remains interior and increasing in $\lambda$ even with exogenous arrival rates, because the trade-off between L-regime inference and H-regime training value persists. The endogenous channel adds a quantitative amplification: with $\xi > 0$, more optimistic firms invest more in training, which raises $\tilde{\lambda}$, which further increases the value of training---a self-reinforcing mechanism that steepens the relationship between beliefs and investment behavior.

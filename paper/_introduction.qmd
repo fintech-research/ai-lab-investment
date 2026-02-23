@@ -11,34 +11,35 @@ This paper develops a unified model of irreversible capacity investment under de
 I combine real options theory [@mcdonald1986value; @dixit1994investment] with regime switching [@guo2005investment], oligopoly competition [@grenadier2002option; @huisman2015strategic], endogenous default risk [@leland1994corporate], and diminishing returns calibrated to empirical scaling laws [@kaplan2020scaling; @hoffmann2022training].
 The model delivers three main contributions.
 
-First, I provide closed-form expressions for optimal investment triggers and capacity choice in a duopoly with default risk.
-Firms choose both when to invest and how much capacity to install, facing a Tullock contest function [@tullock1980efficient; @skaperdas1996contest] that governs the division of revenue based on relative capacity.
-I show that the interaction between strategic preemption and default risk generates a novel trade-off: firms invest earlier to preempt rivals but must limit capacity to avoid excessive leverage.
-The model produces closed-form investment triggers, extending @huisman2015strategic to incorporate capacity choice with diminishing returns and endogenous default.
+First, I place the training-inference allocation at the center of the investment problem.
+Firms choose not only when to invest and how much capacity to install, but how to split that capacity between model training (which builds capabilities for the future) and inference serving (which generates revenue today).
+This allocation interacts with a novel *endogenous regime switch* mechanism: firms' aggregate training compute contributes to the arrival of transformative AI, making the regime switch arrival rate $\tilde{\lambda}$ a function of industry investment decisions.
+In the current (low) regime, revenue depends on inference capacity through a Tullock contest; in the post-adoption (high) regime, revenue depends on training quality.
+This regime-specific competition creates a genuine strategic trade-off absent from standard capacity models: a firm that allocates too much to training sacrifices current revenue and risks default, while a firm that allocates too little sacrifices its competitive position in the transformative AI regime.
 
-Second, I develop numerical solutions for $N$-firm sequential equilibrium with dynamic training-inference allocation.
-Using backward induction [@bouis2009multistage], I solve for the entry order, capacity choices, and investment timing of $N$ heterogeneous firms.
-A key feature is the training-inference frontier: firms allocate compute between model training (which improves quality according to scaling laws) and inference (which serves demand), creating an intertemporal trade-off absent from standard capacity models.
-I show that the $N$-firm equilibrium converges to the duopoly solution as $N \to 2$, and that increasing competition accelerates investment but reduces individual capacity, consistent with the stylized facts of AI infrastructure buildout.
+Second, I provide closed-form expressions for optimal investment triggers and capacity choice in a duopoly with default risk, and show that the interaction between training allocation and leverage creates a *faith-based survival* mechanism: optimism about transformative AI, backed by training investment, raises the effective revenue coefficient $A_{\text{eff}}$ and thereby lowers the default boundary---the hope of AGI literally keeps the firm alive.
+The model produces closed-form investment triggers extending @huisman2015strategic to incorporate capacity choice, training allocation, diminishing returns, and endogenous default.
 
 Third, and most novel, I develop a *revealed beliefs* methodology for inferring AI labs' private probability assessments of transformative AI from their observable investment decisions.
-The key insight is that a firm's investment behavior (when it invests and how much capacity it builds) is a deterministic function of model parameters, all of which are publicly observable or can be calibrated *except* for $\lambda$, the Poisson arrival rate of a high-demand regime.
-The parameter $\lambda$ encodes the firm's belief about when AI will become sufficiently capable to generate sustained demand for massive compute capacity.
-By inverting the model, I back out each firm's implied $\lambda$, its *revealed belief* about AI timelines, from its observed capital expenditure.
+The key insight is that a firm's investment behavior (when it invests, how much capacity it builds, and how it allocates between training and inference) is a deterministic function of model parameters, all of which are publicly observable or can be calibrated *except* for $\lambda$, the arrival rate of a high-demand regime.
+The training fraction $\hat{\phi}$ provides a second identifying moment beyond the CapEx/Revenue ratio used in the single-moment inversion, enabling tighter identification and a diagnostic check for model specification.
+By inverting the model, I back out each firm's implied $\lambda$, its *revealed belief* about AI timelines, from its observed capital expenditure and training allocation.
 In the spirit of @samuelson1938note, this approach extracts private information from observable choices rather than stated forecasts.
 
 If AI labs have private information about progress (internal benchmarks, emergent capabilities, scaling projections not available to outside observers), then the revealed $\lambda$ contains information valuable to investors, policymakers, and researchers.
 I calibrate the model to stylized versions of Anthropic, OpenAI, Google DeepMind, and CoreWeave, and show that their investment patterns imply a wide dispersion of AI timeline beliefs, with frontier labs investing as if they assign substantially higher probability to near-term transformative AI than market consensus.
+The training fraction diagnostic reveals that firms with identical investment intensity but different training allocations (e.g., Anthropic vs. CoreWeave) reveal fundamentally different information about their beliefs.
 
 I also introduce the *AI investment dilemma*: the cost to a firm of investing according to a $\lambda$ that differs from its true belief. The asymmetry of this trade-off is captured by Anthropic CEO Dario Amodei's observation: "I could buy \$1 trillion of compute that starts at the end of 2027. If my revenue is not \$1 trillion dollars, if it's even \$800 billion, there's no force on Earth, there's no hedge on Earth that could stop me from going bankrupt" [@amodei2026cone].
 If a firm is conservative (investing with $\lambda_{\text{invest}} < \lambda_{\text{true}}$), it invests too late and loses first-mover advantage; if aggressive ($\lambda_{\text{invest}} > \lambda_{\text{true}}$), it overbuilds and risks default.
+The training channel amplifies this asymmetry: an overly optimistic firm over-allocates to training, sacrificing the inference revenue it needs to survive.
 I quantify this trade-off across the parameter space, showing that the asymmetry is substantial: aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing the extreme capital commitments observed in practice only if firms hold genuinely optimistic beliefs about AI timelines.
 
 {{< include _literature.qmd >}}
 
 The paper proceeds as follows.
-@sec-model presents the model environment, the single-firm benchmark, and the duopoly equilibrium with default risk.
-@sec-extensions develops the $N$-firm game with training-inference allocation.
+@sec-model presents the model environment with training-inference allocation, endogenous regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk.
+@sec-extensions develops the $N$-firm game.
 @sec-calibration describes the calibration to AI infrastructure firms.
 @sec-valuation presents the revealed beliefs methodology, valuation analysis, and the AI investment dilemma.
 @sec-discussion considers policy implications.
