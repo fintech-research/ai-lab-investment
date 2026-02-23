@@ -2,12 +2,12 @@
 
 ### Market Efficiency and Information Aggregation
 
-The revealed beliefs methodology raises questions about market efficiency in the AI infrastructure sector.
+The model's comparative statics with respect to $\lambda$ raise questions about market efficiency in the AI infrastructure sector.
 If firms' investment decisions contain private information about AI timelines, then the stock market should, in an efficient equilibrium, aggregate this information into prices.
 However, several frictions may prevent efficient aggregation.
-Even if investors observe firms' capital expenditure and training allocation, they may disagree about the mapping from investment to beliefs; our model provides one such mapping, but alternative models with different assumptions about competition, costs, or demand could yield different implied $\lambda$ values.
+Even if investors observe firms' capital expenditure and training allocation, they may disagree about the mapping from investment to beliefs; different model assumptions about competition, costs, or demand could yield different implied $\lambda$ values.
 Short-sale constraints may compound this problem: if pessimistic investors cannot easily short AI infrastructure stocks, prices may reflect the beliefs of optimists, leading to overvaluation relative to the median belief---a pattern consistent with the high short interest observed in some AI infrastructure stocks.
-Finally, firms and investors update their beliefs over time as new data about AI capabilities arrives; the model's comparative statics with respect to $\lambda$ describe the cross-section of beliefs at a point in time, and the time-series dynamics of belief updating are an important direction for future work.
+Finally, firms and investors update their beliefs over time as new data about AI capabilities arrives; the time-series dynamics of belief updating are an important direction for future work.
 
 ### Welfare and Overinvestment
 
@@ -33,7 +33,7 @@ The faith-based survival mechanism (Proposition 2) suggests that optimism about 
 On competition policy, the preemption mechanism implies that capacity investment serves a dual purpose---generating revenue and deterring rivals---while the endogenous arrival rate adds a third dimension, as training investment accelerates the regime switch in ways that can be either pro- or anti-competitive depending on market structure.
 Antitrust authorities should consider whether strategic overinvestment constitutes an exclusionary practice, particularly by dominant firms (the Google-like hyperscaler in our model) that can cross-subsidize AI infrastructure from other business lines.
 
-On disclosure, firms' investment decisions convey information about AI capabilities that may be material to investors; requiring AI labs to disclose their compute expenditure *and training allocation* in standardized formats would facilitate the kind of two-moment analysis developed here, improving market efficiency and enabling better risk assessment.
+On disclosure, firms' investment decisions convey information about AI capabilities that may be material to investors; requiring AI labs to disclose their compute expenditure *and training allocation* in standardized formats would improve market efficiency and enable better risk assessment.
 The training fraction $\hat{\phi}$ is particularly informative because it reveals the firm's intertemporal trade-off between current revenue and future capability.
 
 ### Limitations
@@ -54,6 +54,6 @@ The transition from single-firm to duopoly revenue is discontinuous as $K_j \to 
 
 All valuation uses a reduced-form risk-adjusted framework (@sec-model), abstracting from the risk preferences of concentrated shareholders and from state-dependence of the risk premium across regimes.
 The cost of expansion is purely financial ($I(K) = cK^\gamma$), omitting scarce specialized talent that may be a binding constraint.
-I assume profit maximization, but several frontier labs have stated missions that divert compute from revenue-maximizing activities; the training fraction diagnostic in @tbl-revealed-beliefs partially captures this, as the Anthropic-like archetype's observed $\hat{\phi}$ exceeds $\phi^*$.
+I assume profit maximization, but several frontier labs have stated missions that divert compute from revenue-maximizing activities; observed training fractions at mission-driven firms may exceed the model-predicted $\phi^*$.
 The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal. In practice, a "winter" scenario---in which initial enthusiasm fades and demand returns to the low regime---is a material risk that the model abstracts from.
 Finally, the model treats competition among a fixed set of domestic firms, omitting international dynamics---such as DeepSeek's demonstration that frontier performance is achievable at dramatically lower cost [@deepseek2025r1]---as well as export controls, industrial policy, and sovereign AI initiatives.

@@ -11,13 +11,13 @@ In the high regime ($H$), I set $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting
 
 The exogenous component of the arrival rate is $\lambda_0 = 0.05$ per year, reflecting rest-of-world AI progress (algorithmic advances, academic research, open-source contributions) that occurs independently of the modeled firms' investments.
 The total effective arrival rate $\tilde{\lambda}$ combines this baseline with the endogenous contribution from firms' training compute (@eq-endogenous-lambda).
-Under the baseline calibration with $\xi = 0$ (exogenous model), the total $\lambda = 0.10$ per year implies an expected time to regime switch of 10 years; the baseline value represents a moderate prior, and the revealed beliefs methodology will infer firm-specific values from observed behavior.
+Under the baseline calibration with $\xi = 0$ (exogenous model), the total $\lambda = 0.10$ per year implies an expected time to regime switch of 10 years; the baseline value represents a moderate prior.
 
 I set the discount rate $r = 0.12$, the risk-adjusted WACC for a representative AI infrastructure firm.
 As discussed in @sec-model, $r$ is the WACC and $\mu_s$ is the risk-adjusted (certainty-equivalent) growth rate; all valuation uses this reduced-form framework throughout.
 The baseline exceeds typical corporate WACCs because AI infrastructure investments carry substantial technology risk and the firms are typically high-growth with elevated cost of equity.
 The analytical results and figures in @sec-model and @sec-extensions use $r = 0.12$ throughout; these illustrate model properties at a representative WACC and do not correspond to any specific firm archetype.
-The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sensitivity analysis; I use the common baseline in the revealed beliefs inversion to isolate the role of $\lambda$ from discount-rate heterogeneity.
+The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sensitivity analysis.
 
 ### Technology Parameters
 
@@ -59,7 +59,7 @@ I calibrate four stylized firms representing the major categories of AI infrastr
 The figures in @tbl-firms are approximate composites derived from public filings (10-K, 10-Q), earnings call guidance, and analyst estimates, rounded for expositional clarity.
 I cross-referenced multiple sources where available (e.g., Bloomberg, S\&P Capital IQ, Damodaran industry data; see @tbl-sources).
 The stylized firms are designed to capture salient features of each category rather than to replicate any single company's financials precisely.
-The revealed beliefs methodology is robust to moderate perturbation of these inputs: @tbl-sensitivity-beliefs shows that $\pm 25\%$ variation in key parameters produces bounded confidence sets that preserve the qualitative ordering of implied beliefs across firm types.
+The qualitative results are robust to moderate perturbation of these inputs: @tbl-elasticities shows that the model's comparative statics are well-behaved across the calibration range.
 For the Google-like archetype, the relevant revenue concept is Google Cloud revenue (growing 25--35\% annually), not Alphabet's total revenue.
 The \$40--55B figures in @tbl-firms approximate Google Cloud's AI-related infrastructure spending and cloud revenue; using Alphabet-wide revenue (\$350B+) would dramatically reduce the CapEx/Revenue ratio and understate Google's AI investment intensity.
 The same sector-specific revenue concept applies to all archetypes: revenue from AI-related activities, not diversified corporate totals.
@@ -67,14 +67,14 @@ The same sector-specific revenue concept applies to all archetypes: revenue from
 The training fraction $\hat{\phi}$ estimates reflect the approximate share of compute allocated to model training versus inference serving.
 The Anthropic-like frontier lab allocates the most to training ($\hat{\phi} = 0.60$), consistent with its mission-driven focus on developing the most capable models.
 The CoreWeave-like infrastructure provider allocates the least ($\hat{\phi} = 0.20$), reflecting its business model as primarily an inference-serving platform.
-These observed training fractions provide a second moment for the revealed beliefs inversion, enabling tighter identification of the arrival rate $\lambda$ (see @sec-valuation).
+These observed training fractions provide important cross-sectional variation for the quantitative analysis in @sec-valuation.
 
 @fig-firm-comparison provides a visual summary of the calibration targets.
 Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.
 All four firms have investment intensities well above the unity threshold (dotted line), confirming that each is investing far ahead of current demand.
 The CoreWeave-like and Anthropic-like firms have the highest ratios, suggesting the most aggressive investment postures.
 Panel (b) plots each firm in revenue-growth versus leverage space, revealing two distinct clusters: high-growth, low-leverage firms (Anthropic-like, Google/Alphabet-like) and high-leverage firms with more moderate growth (CoreWeave-like, OpenAI-like).
-This dispersion in financial characteristics drives the heterogeneity in revealed beliefs that I exploit in @sec-valuation.
+This dispersion in financial characteristics drives the heterogeneous investment behavior analyzed in @sec-valuation.
 
 ![Stylized firm comparison. (a) Capital expenditure to revenue ratio (2025). All firms invest above the 1.0x threshold (dotted line), indicating investment ahead of current demand. (b) Revenue growth (2024--2025) versus leverage ratio. The four firm archetypes occupy distinct positions in this space, reflecting different investment strategies and financial structures.](figures/fig_firm_comparison.pdf){#fig-firm-comparison}
 

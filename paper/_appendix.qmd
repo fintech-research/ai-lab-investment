@@ -250,23 +250,13 @@ The stylized firms are composites designed to capture the key features of each f
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
 The training fraction $\phi^*$ is most sensitive to the arrival rate $\tilde{\lambda}$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
 
-@tbl-sensitivity-beliefs reports the sensitivity of implied $\hat{\lambda}$ to $\pm 25\%$ variation in key calibration parameters, for the Anthropic-like and Google-like archetypes.
-
-| Parameter | Anthropic-like $\hat{\lambda}$ | Google-like $\hat{\lambda}$ |
-|:----------|:------------------------------:|:---------------------------:|
-| Baseline | 0.90 | 0.08 |
-| $\sigma_H \pm 25\%$ | [0.003, 0.90] | [0.002, 0.08] |
-| $\gamma \pm 25\%$ | [0.07, 0.90] | [0.03, 0.08] |
-
-: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. See @sec-valuation for discussion of these confidence sets. {#tbl-sensitivity-beliefs}
-
 ### F. Robustness {.unnumbered}
 
 I assess robustness along four dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
-The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the AI investment dilemma, and the high growth option fraction are preserved across all parameter perturbations.
+The qualitative findings are robust: the asymmetry of the AI investment dilemma, the high growth option fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.
