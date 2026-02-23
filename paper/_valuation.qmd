@@ -151,9 +151,9 @@ where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according 
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 
 **Proposition 6** (Asymmetric Dario dilemma).
-*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. This asymmetry increases with leverage.*
+*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. For $\ell = 0$, the asymmetry follows from the convexity of investment costs ($\gamma > 1$) and concavity of revenue ($\alpha < 1$). For $\ell > 0$, leverage amplifies the asymmetry through endogenous default risk. The firm chooses leverage simultaneously according to $\lambda_{\text{invest}}$.*
 
-The intuition is that aggressive overinvestment leads to excess capacity that incurs maintenance costs and dilutes revenue per unit of capacity, while also increasing default risk through higher leverage.
+The intuition is that aggressive overinvestment leads to excess capacity that incurs disproportionate costs (convex in $K$) while generating diminishing additional revenue (concave in $K$), and also increases default risk through higher leverage.
 Conservative underinvestment, by contrast, simply delays investment and reduces capacity---a lost opportunity, but not an existential risk.
 
 #### Implications

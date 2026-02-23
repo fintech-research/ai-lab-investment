@@ -78,19 +78,19 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 ![Option value versus NPV of immediate investment in regime $H$. The solid curve shows the option value $F_H(X)$; the dashed curve shows the NPV of investing immediately at the optimal scale $K_H^*$. The shaded region represents the "value of waiting"---the excess of the option value over the NPV. The vertical dotted line marks the optimal trigger $X_H^*$ where smooth pasting holds. Parameters: baseline calibration ($\sigma_H = 0.30$, $\mu_H = 0.06$, $r = 0.12$, $\alpha = 0.40$, $\gamma = 1.50$).](figures/fig_option_value.pdf){#fig-option-value}
 
 **Proposition 1** (Optimal capacity in regime $H$).
-*The optimal capacity $K_H^*$ satisfies:*
+*For $\delta > 0$, the optimal capacity is:*
 $$
-K_H^* = \left(\frac{\alpha}{\gamma} \cdot \frac{\beta_H - 1}{\beta_H} \cdot \frac{1}{c(r-\mu_H)} - \frac{\delta}{r(r - \mu_H)} \cdot \frac{1}{\gamma c} K^{1-\gamma}\right)^{\frac{1}{\gamma - \alpha}},
+K_H^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
 $$
-*provided the existence condition $\frac{1}{\gamma} < \frac{1 - 1/\beta_H}{\alpha} < 1$ holds. The optimal capacity is increasing in demand growth $\mu_H$, decreasing in investment cost $c$ and cost convexity $\gamma$, and decreasing in the depreciation rate $\delta$.*
+*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. The optimal capacity is increasing in demand growth $\mu_H$ and the depreciation rate $\delta$, and decreasing in investment cost $c$ and cost convexity $\gamma$.*
 
-*Proof.* The firm jointly optimizes over $X$ and $K$. The first-order condition for $K$ equates the marginal revenue from capacity to the marginal investment cost plus the marginal maintenance cost, scaled by the option premium. The existence condition ensures an interior solution. $\square$
+*Proof.* The firm maximizes the option value $F_H(X_0) \propto h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$, where $a(K) = A_H K^\alpha$ and $b(K) = cK^\gamma + \delta K/r$, over $K$. The first-order condition and closed-form derivation are in Appendix A. The existence condition ensures an interior solution; the requirement $\delta > 0$ is necessary for the linear operating-cost term to create an interior maximum. $\square$
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
 Panel (b) illustrates the effect of revenue elasticity $\alpha$: higher $\alpha$ (less diminishing returns) raises the trigger and substantially increases capacity, since the marginal value of additional capacity is higher.
 Panel (c) shows that greater cost convexity $\gamma$ has a non-monotone effect on the trigger while sharply reducing optimal capacity, reflecting the rapidly increasing marginal cost of building at scale.
-Panel (d) demonstrates that higher depreciation $\delta$ raises the trigger (higher operating costs raise the hurdle for investment) and reduces capacity.
+Panel (d) demonstrates that higher depreciation $\delta$ raises both the trigger and the optimal capacity: operating costs provide the linear cost floor that creates the interior optimum (@eq-foc-K), and increasing $\delta$ shifts the cost balance toward larger scale.
 
 ![Comparative statics of the single-firm investment policy in regime $H$. Each panel varies one parameter while holding others at baseline values. Solid lines (left axis) show the optimal trigger $X_H^*$; dashed lines (right axis) show the optimal capacity $K_H^*$. (a) Demand volatility $\sigma_H$; (b) revenue elasticity $\alpha$; (c) investment cost convexity $\gamma$; (d) depreciation rate $\delta$.](figures/fig_comparative_statics.pdf){#fig-comparative-statics}
 
@@ -101,7 +101,7 @@ The value satisfies the differential equation:
 $$
 \frac{1}{2}\sigma_L^2 X^2 F_L''(X) + \mu_L X F_L'(X) - (r + \lambda) F_L(X) + \lambda F_H(X) = 0,
 $$ {#eq-ode-L}
-where the term $\lambda F_H(X)$ captures the expected gain from transitioning to the high regime.
+where the term $\lambda F_H(X)$ captures the expected gain from transitioning to the high regime.^[Note that $F_H(X)$ takes different forms depending on whether $X < X_H^*$ (the option value form in @eq-option-H) or $X \geq X_H^*$ (the net present value $V_H(X, K_H^*) - I(K_H^*)$). For the solution of the $L$-regime ODE, the relevant domain is $X < X_H^*$, since at demand levels above the $H$-regime trigger, a firm already in regime $H$ would invest immediately.]
 The arrival rate $\lambda$ enters the effective discount rate as $r + \lambda$, increasing the cost of delay and thus lowering the investment trigger relative to a world without regime switching.
 
 The solution takes the form $F_L(X) = G_L X^{\beta_L} + C X^{\beta_H}$, where $G_L$ is a free constant determined by boundary conditions, $C = -\lambda B_H / Q_L(\beta_H)$ is the particular-solution coefficient with $Q_L(\beta) = \tfrac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \lambda)$, and $\beta_L$ is the positive root of:

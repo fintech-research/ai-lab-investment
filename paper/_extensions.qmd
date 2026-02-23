@@ -29,9 +29,9 @@ In each iteration, each firm $k$ solves a follower problem taking the current ca
 
 *(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
 
-*(iii) Total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate.*
+*(iii) The equilibrium reduces to the duopoly solution when $N = 2$.*
 
-*(iv) The equilibrium reduces to the duopoly solution when $N = 2$.*
+**Numerical Observation.** *In all parameterizations tested, total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate. The intuition is that the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$), so aggregate output $\sum K_i^\alpha$ rises even as each firm builds less. A formal proof would require bounding the rate of per-firm capacity decline, which I leave for future work.*
 
 The numerical solution iterates until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$ (see Appendix B for details).
 I verify the implementation by checking that the $N=2$ solution matches the analytical duopoly equilibrium.
