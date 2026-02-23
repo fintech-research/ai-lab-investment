@@ -48,7 +48,7 @@ In the model, the *capital* cost of hardware is captured in the investment cost 
 Economic depreciation through technological obsolescence (e.g., H100$\to$B200 transitions) would justify a higher effective $\delta$, making the baseline of 0.03 conservative.
 The model is relatively insensitive to this parameter: @tbl-elasticities reports elasticities of $+2.2$ for the trigger and $+2.0$ for capacity, among the smallest of all parameters.
 At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged.
-A higher $\delta$ strengthens the paper's conclusions: it makes the Dario dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
+A higher $\delta$ strengthens the paper's conclusions: it makes the AI investment dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
 
 ### Stylized Firms
 
@@ -69,6 +69,9 @@ The figures in @tbl-firms are approximate composites derived from public filings
 I cross-referenced multiple sources where available (e.g., Bloomberg, S\&P Capital IQ, Damodaran industry data; see @tbl-sources).
 The stylized firms are designed to capture salient features of each category rather than to replicate any single company's financials precisely.
 The revealed beliefs methodology is robust to moderate perturbation of these inputs: @tbl-sensitivity-beliefs shows that $\pm 25\%$ variation in key parameters produces bounded confidence sets that preserve the qualitative ordering of implied beliefs across firm types.
+For the Google-like archetype, the relevant revenue concept is Google Cloud revenue (growing 25--35\% annually), not Alphabet's total revenue.
+The \$40--55B figures in @tbl-firms approximate Google Cloud's AI-related infrastructure spending and cloud revenue; using Alphabet-wide revenue (\$350B+) would dramatically reduce the CapEx/Revenue ratio and understate Google's AI investment intensity.
+The same sector-specific revenue concept applies to all archetypes: revenue from AI-related activities, not diversified corporate totals.
 
 @fig-firm-comparison provides a visual summary of the calibration targets.
 Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.

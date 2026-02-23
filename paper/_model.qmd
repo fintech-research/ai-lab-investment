@@ -7,7 +7,7 @@ In each realization, demand begins in the low regime $L$ and may jump to the hig
 The dashed line marks the optimal investment trigger $X_H^*$: paths that cross this threshold in the high regime trigger investment.
 The figure highlights both the uncertainty about the timing of the regime switch and the substantial variation in demand trajectories conditional on switching, which together generate the option value of waiting that is central to the analysis.
 
-![Simulated demand paths under regime switching. Each path begins in the low regime ($L$, thin lines) and may transition to the high regime ($H$, thick lines) at a random Poisson time (marked by dots). The dashed line indicates the optimal H-regime investment trigger $X_H^*$. Parameters: $\mu_L = 0.01$, $\mu_H = 0.06$, $\sigma_L = 0.25$, $\sigma_H = 0.30$, $\lambda = 0.10$, $r = 0.12$.](figures/fig_sample_paths.pdf){#fig-sample-paths}
+![Simulated demand paths under regime switching. Each path begins in the low regime ($L$, thin lines) and may transition to the high regime ($H$, thick lines) at a random Poisson time (marked by dots). The dashed line indicates the optimal H-regime investment trigger $X_H^*$. Note: the log scale on the $y$-axis compresses the visual magnitude of the regime switch; the jump in drift from $\mu_L = 0.01$ to $\mu_H = 0.06$ produces trajectories that diverge by an order of magnitude or more over the horizon shown. Parameters: $\mu_L = 0.01$, $\mu_H = 0.06$, $\sigma_L = 0.25$, $\sigma_H = 0.30$, $\lambda = 0.10$, $r = 0.12$.](figures/fig_sample_paths.pdf){#fig-sample-paths}
 
 Time is continuous. A stochastic demand process $X_t$ governs the revenue available to AI infrastructure firms.
 Demand follows a geometric Brownian motion (GBM) with regime-dependent drift and volatility:
@@ -28,8 +28,10 @@ For the model to have well-defined present values, I require $r > \mu_H > \mu_L$
 
 A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures diminishing returns (equivalently, convex investment costs).
 This specification nests the standard linear cost ($\gamma = 1$, constant returns) and reflects the empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]: doubling compute does not double capability.
+Two simplifying assumptions should be flagged at the outset: capacity is fixed once installed (no incremental expansion or mothballing), and the investment decision is a single irreversible commitment rather than a sequence of staged options.
+In practice, firms expand incrementally and can repurpose compute across workloads; these extensions are discussed in @sec-discussion.
 
-Once installed, capacity generates revenue at rate $\pi(X, K)$ that depends on demand and the firm's market share.
+Once installed, capacity generates revenue at rate $\pi(X, K)$ that depends on demand and the firm's competitive position.
 For a monopolist, $\pi(X, K) = X K^\alpha$ with $\alpha \in (0, 1)$ capturing diminishing returns to capacity in revenue generation.
 Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
@@ -110,7 +112,7 @@ $$
 $$ {#eq-beta-L}
 
 **Remark 1** (Role of $\lambda$).
-*The arrival rate $\lambda$ has two effects on investment timing. First, it raises the effective discount rate from $r$ to $r + \lambda$, making waiting more costly and lowering the trigger. Second, it adds the continuation value $\lambda F_H(X)$ from regime switching, which raises the option value. The net effect on the trigger depends on parameters, but for typical calibrations, the option value effect dominates, and higher $\lambda$ encourages earlier, larger investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively.*
+*The arrival rate $\lambda$ has two effects on investment timing. First, it raises the effective discount rate from $r$ to $r + \lambda$, making waiting more costly and lowering the trigger. Second, it adds the continuation value $\lambda F_H(X)$ from regime switching, which raises the option value. The net effect on the trigger depends on parameters. The discount-rate channel dominates when $\mu_H - \mu_L$ is small (the regime switch offers little growth improvement) or when $\sigma_H$ is low (the H-regime option value is small). The continuation-value channel dominates when $\mu_H - \mu_L$ is large and $\sigma_H$ is moderate to high. For the baseline calibration ($\mu_H - \mu_L = 0.05$, $\sigma_H = 0.30$), the continuation-value effect dominates throughout $\lambda \in [0.01, 2.0]$: higher $\lambda$ raises $F_L$ monotonically and encourages earlier, larger investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively.*
 
 @fig-lambda-option-value quantifies the effect of $\lambda$ on the low-regime option value.
 Panel (a) shows that $F_L(X)$ increases concavely in $\lambda$: firms with higher arrival-rate beliefs value the investment option more because they expect the high-demand regime sooner.

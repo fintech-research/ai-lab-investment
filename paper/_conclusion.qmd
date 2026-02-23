@@ -1,7 +1,7 @@
 ## Conclusion {#sec-conclusion}
 
 This paper develops a unified model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, strategic preemption in oligopoly, endogenous default risk, and diminishing returns calibrated to scaling laws.
-The model produces analytical investment triggers for the duopoly, numerical solutions for $N$-firm equilibrium with training-inference allocation, and a novel revealed beliefs methodology for extracting AI labs' private probability assessments from observable investment decisions.
+The model produces closed-form investment triggers for the duopoly, numerical solutions for $N$-firm equilibrium with training-inference allocation, and a revealed beliefs methodology that numerically inverts the model to extract AI labs' private probability assessments from observable investment decisions.
 
 Three findings stand out.
 First, the interaction between strategic preemption and default risk creates a knife-edge for levered firms: they must invest early enough to capture market share but not so aggressively that they risk default if the high-demand regime fails to materialize.
@@ -10,7 +10,7 @@ This trade-off is quantitatively important for the highly levered infrastructure
 Second, the revealed beliefs methodology shows that frontier AI labs are investing as if they believe transformative AI is substantially closer than market consensus suggests.
 The dispersion in implied $\lambda$ across firms is large, indicating genuine disagreement about AI timelines rather than differences in observable fundamentals.
 
-Third, the Dario dilemma reveals an asymmetric cost of belief mismatches: the downside of overinvestment (excess leverage, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
+Third, the AI investment dilemma reveals an asymmetric cost of belief mismatches: the downside of overinvestment (excess leverage, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
 This asymmetry implies that the extreme capital commitments observed in practice can be rationalized only by genuinely optimistic beliefs, not by strategic posturing or agency problems.
 
 The model necessarily abstracts from several dimensions of the full decision space that executives navigate. It does not capture talent constraints, safety and alignment objectives, geopolitical competition from actors like DeepSeek [@deepseek2025r1], or the ongoing debate about whether pre-training scaling has reached its limits [@sutskever2024scaling]. It treats inference as a simple revenue-generating activity, whereas the emergence of inference-time reasoning has opened a qualitatively new scaling dimension [@brown2024inference]. And it does not address the \$600 billion revenue gap between AI infrastructure spending and current AI revenue [@cahn2024gap] that may discipline the investment race through financial markets before any technological resolution occurs. These omissions define the frontier for extending the framework developed here.

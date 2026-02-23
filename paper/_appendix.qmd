@@ -97,7 +97,7 @@ By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $
 
 The Numerical Observation (total capacity increasing in $N$ at a decreasing rate) is verified across all parameterizations tested; see the main text for discussion. $\square$
 
-#### Proof of Proposition 6 (Asymmetric Dario dilemma) {.unnumbered}
+#### Proof of Proposition 6 (Asymmetric AI investment dilemma) {.unnumbered}
 
 Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$ and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
 
@@ -211,7 +211,7 @@ I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
-The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the Dario dilemma, and the high growth option fraction are preserved across all parameter perturbations.
+The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the AI investment dilemma, and the high growth option fraction are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.

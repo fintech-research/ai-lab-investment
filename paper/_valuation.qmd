@@ -47,6 +47,12 @@ Market capitalization provides an independent read on the growth option value; c
 Incorporating these moments would move from a single-equation inversion to an overidentified GMM framework, enabling formal specification tests.
 I leave this extension for future work and frame the current exercise as an *illustrative calibration* that recovers beliefs conditional on maintained assumptions, rather than a structural estimation with formal identification guarantees.
 
+A further caveat concerns the timing of investment decisions.
+The model treats the observed CapEx/Revenue ratio as reflecting a contemporaneous optimal decision, but in practice firms committed much of their 2025 capital expenditure in prior periods---signing GPU purchase agreements, breaking ground on data centers, and negotiating power contracts 12--24 months in advance.
+The implied $\hat{\lambda}$ therefore reflects beliefs at the time of commitment, not necessarily current beliefs, which may have updated in light of new capability demonstrations or demand realizations.
+To the extent that beliefs have shifted (e.g., post-DeepSeek reassessment of training efficiency), the revealed $\hat{\lambda}$ is a lagged indicator.
+This lag is inherent in any revealed-preference approach applied to long-lived capital goods.
+
 #### Results
 
 @tbl-revealed-beliefs presents the implied arrival rates for each stylized firm.
@@ -152,9 +158,9 @@ At $\ell = 0.70$ (the CoreWeave-like archetype), the default probability approac
 
 The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the highest credit risk, consistent with the market's pricing of CoreWeave debt at significantly elevated yields relative to investment-grade benchmarks.
 
-### The Dario Dilemma
+### The AI Investment Dilemma
 
-I now formalize the cost of belief mismatches---what I call the *Dario dilemma*, named for the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
+I now formalize the cost of belief mismatches---what I call the *AI investment dilemma*, the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
 
 #### Setup
 
@@ -174,7 +180,7 @@ $$
 where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$ when the true parameter is $\lambda_a$.
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 
-**Proposition 6** (Asymmetric Dario dilemma).
+**Proposition 6** (Asymmetric AI investment dilemma).
 *The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. For $\ell = 0$, the asymmetry follows from the convexity of investment costs ($\gamma > 1$) and concavity of revenue ($\alpha < 1$). For $\ell > 0$, leverage amplifies the asymmetry through endogenous default risk. The firm chooses leverage simultaneously according to $\lambda_{\text{invest}}$.*
 
 The intuition is that aggressive overinvestment leads to excess capacity that incurs disproportionate costs (convex in $K$) while generating diminishing additional revenue (concave in $K$), and also increases default risk through higher leverage.
@@ -182,7 +188,7 @@ Conservative underinvestment, by contrast, simply delays investment and reduces 
 
 #### Implications
 
-The Dario dilemma has several implications:
+The AI investment dilemma has several implications:
 
 1. **Rationalization of extreme investment**: the observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs. Investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly.
 
