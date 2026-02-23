@@ -330,7 +330,7 @@ def fig_default_boundaries():
 
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
-    ax.legend(loc="lower left", fontsize=9, framealpha=0.9)
+    ax.legend(loc="center left", fontsize=9, framealpha=0.9)
     _save(fig, "fig_default_boundaries")
 
 
