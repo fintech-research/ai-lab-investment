@@ -361,6 +361,94 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
+    # Phi-aware valuation
+    # ------------------------------------------------------------------
+
+    def growth_option_decomposition_with_phi(
+        self,
+        X: float,
+        K_installed: float = 0.0,
+        phi: float = 0.5,
+    ) -> dict[str, float]:
+        """Decompose firm value using the phi-aware model.
+
+        Uses the combined L+H revenue structure where phi determines
+        the split between inference revenue and training value.
+
+        Args:
+            X: Current demand level.
+            K_installed: Currently installed capacity (0 if pre-investment).
+            phi: Training fraction.
+
+        Returns:
+            Dict with value components.
+        """
+        model = SingleFirmModel(self.params)
+
+        # Assets-in-place with phi
+        if K_installed > 0:
+            assets = model.installed_value_with_phi(X, phi, K_installed, "L")
+        else:
+            assets = 0.0
+
+        # Option value with phi optimization
+        option_val = model.option_value_with_phi(X)
+
+        # Decompose: option includes optimal (K*, phi*)
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+
+        expansion_option = option_val - assets if option_val > assets else 0.0
+        total = assets + expansion_option
+
+        return {
+            "total_value": total,
+            "assets_in_place": assets,
+            "expansion_option": expansion_option,
+            "assets_fraction": assets / total if total > 0 else 0.0,
+            "growth_fraction": expansion_option / total if total > 0 else 0.0,
+            "phi_installed": phi,
+            "phi_optimal": phi_star,
+            "K_optimal": K_star,
+            "X_trigger": X_star,
+        }
+
+    def equity_value_vs_lambda_with_phi(
+        self,
+        lambda_values: np.ndarray,
+        X: float = 1.0,
+    ) -> dict[str, np.ndarray]:
+        """Equity value and optimal phi across lambda values.
+
+        Shows how both valuation and training allocation respond to
+        different beliefs about AI timelines.
+        """
+        n = len(lambda_values)
+        option_values = np.full(n, np.nan)
+        triggers = np.full(n, np.nan)
+        capacities = np.full(n, np.nan)
+        phis = np.full(n, np.nan)
+
+        for i, lam in enumerate(lambda_values):
+            try:
+                p = self.params.with_param(lam=lam)
+                model = SingleFirmModel(p)
+                option_values[i] = model.option_value_with_phi(X)
+                X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+                triggers[i] = X_star
+                capacities[i] = K_star
+                phis[i] = phi_star
+            except (ValueError, RuntimeError):
+                continue
+
+        return {
+            "lambda_values": lambda_values,
+            "option_values": option_values,
+            "triggers": triggers,
+            "capacities": capacities,
+            "phis": phis,
+        }
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
 
