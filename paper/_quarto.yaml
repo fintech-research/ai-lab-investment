@@ -21,9 +21,6 @@ format:
     fontsize: 11pt
     fig-pos: '!htb'
     indent: true
-    mainfont: "Libertinus Serif"
-    mathfont: "Libertinus Math"
-    sansfont: "Libertinus Serif"
     monofont: "DejaVu Sans Mono"
     monofontoptions: "Scale=0.7"
     cite-method: natbib
@@ -32,7 +29,7 @@ format:
       - title.tex
     include-in-header:
       text: |
-        \usepackage{libertinus}
+        \setkomafont{disposition}{\rmfamily\bfseries}
         \usepackage[noblocks]{authblk}
         \renewcommand*{\Authsep}{, }
         \renewcommand*{\Authand}{, }

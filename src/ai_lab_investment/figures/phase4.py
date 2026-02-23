@@ -14,6 +14,7 @@ from ..calibration.revealed_beliefs import RevealedBeliefs
 
 # Publication style
 plt.rcParams.update({
+    "text.usetex": True,
     "font.family": "serif",
     "font.size": 11,
     "axes.labelsize": 12,
@@ -23,7 +24,6 @@ plt.rcParams.update({
     "ytick.labelsize": 10,
     "figure.dpi": 300,
     "savefig.dpi": 300,
-    "text.usetex": False,
 })
 
 

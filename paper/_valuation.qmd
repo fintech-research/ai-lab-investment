@@ -38,8 +38,20 @@ The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, whic
 The identification of $\lambda$ relies on the assumption that firms make investment decisions that are optimal given their beliefs and observable parameters.
 This is a form of *revealed preference* in the spirit of @samuelson1938note: I do not ask what firms *say* about AI timelines; I infer what they *believe* from what they *do*.
 
-The key identification assumption is that cross-firm variation in investment intensity, conditional on observable parameters, reflects variation in beliefs about $\lambda$ rather than unobserved heterogeneity in costs or technology.
-I assess this assumption through sensitivity analysis, showing that reasonable variation in calibration parameters produces bounded changes in implied $\lambda$.
+A single observable moment---the CapEx/Revenue ratio---cannot separately identify $\lambda$ from unobserved heterogeneity in costs, technology, or business models.
+GPU procurement costs, power purchase agreements, and accounting treatment of capital leases versus outright purchases all vary across firms and could generate cross-sectional variation in investment intensity independent of beliefs about AI timelines.
+The inversion therefore recovers $\hat{\lambda}$ *conditional on* the maintained assumption that these cost and technology parameters are correctly specified.
+
+Several additional moments could sharpen identification.
+Market capitalization provides an independent read on the growth option value; credit spreads or CDS prices pin down default risk and effective leverage; and capacity proxies such as GPU counts, rack deployments, or contracted megawatts help calibrate the technology parameters $\alpha$, $\gamma$, and $c$ directly.
+Incorporating these moments would move from a single-equation inversion to an overidentified GMM framework, enabling formal specification tests.
+I leave this extension for future work and frame the current exercise as an *illustrative calibration* that recovers beliefs conditional on maintained assumptions, rather than a structural estimation with formal identification guarantees.
+
+A further caveat concerns the timing of investment decisions.
+The model treats the observed CapEx/Revenue ratio as reflecting a contemporaneous optimal decision, but in practice firms committed much of their 2025 capital expenditure in prior periods---signing GPU purchase agreements, breaking ground on data centers, and negotiating power contracts 12--24 months in advance.
+The implied $\hat{\lambda}$ therefore reflects beliefs at the time of commitment, not necessarily current beliefs, which may have updated in light of new capability demonstrations or demand realizations.
+To the extent that beliefs have shifted (e.g., post-DeepSeek reassessment of training efficiency), the revealed $\hat{\lambda}$ is a lagged indicator.
+This lag is inherent in any revealed-preference approach applied to long-lived capital goods.
 
 #### Results
 
@@ -53,13 +65,31 @@ The inversion reveals substantial dispersion in beliefs: the most aggressive inv
 | Google-like | 1.09 | 0.08 | 12.0 | 33% |
 | CoreWeave-like | 2.00 | 0.90 | 1.1 | 99% |
 
-: Revealed beliefs: implied arrival rate $\hat{\lambda}$ from L-regime option value inversion. Higher CapEx/Revenue ratios imply more aggressive beliefs about transformative AI timing. {#tbl-revealed-beliefs}
+: Revealed beliefs: implied arrival rate $\hat{\lambda}$ from L-regime option value inversion. Higher CapEx/Revenue ratios imply more aggressive beliefs about transformative AI timing. {#tbl-revealed-beliefs tbl-colwidths="[25,15,20,20,20]"}
 
 Two patterns stand out.
 First, the belief dispersion is large: the ratio of the highest to lowest implied $\lambda$ is approximately 11$\times$.
 This means the most aggressive firms behave as if transformative AI is roughly an order of magnitude more imminent than the most conservative firm believes.
 Second, firms investing more than twice their revenue (Anthropic-like and CoreWeave-like) reveal near-certainty that the regime switch will occur within five years.
 Their different financial structures (leverage 0.20 vs. 0.70) suggest that one category backs its beliefs with equity while the other relies on debt---a distinction with important implications for default risk.
+
+That the model produces identical $\hat{\lambda}$ for Anthropic-like and CoreWeave-like firms despite their very different financial structures is a limitation of the single-moment inversion.
+The L-regime option value depends on CapEx/Revenue and shared parameters ($r$, $\sigma$, $\alpha$, $\gamma$, $\delta$) but not on firm-specific leverage or WACC, so any two firms with the same investment intensity map to the same implied belief.
+Economically, however, a debt-financed infrastructure provider investing at $2\times$ revenue reveals different information than an equity-financed frontier lab at the same ratio: the former faces binding debt covenants and rollover risk that constrain its ability to act on beliefs, while the latter has chosen to dilute equity holders---a costlier signal of conviction.
+Incorporating leverage or WACC as additional identifying moments would break this degeneracy, allowing the model to distinguish equity-backed conviction from debt-funded speculation.
+This motivates the multi-moment extension discussed above.
+
+#### Sensitivity and confidence sets
+
+The cardinal values in @tbl-revealed-beliefs are sensitive to calibration assumptions and should be interpreted as confidence sets conditional on parameter ranges rather than point estimates.
+@tbl-sensitivity-beliefs reports the implied $\hat{\lambda}$ under $\pm 25\%$ variation in key parameters.
+The most consequential is H-regime volatility: varying $\sigma_H$ by $\pm 25\%$ shifts the Anthropic-like $\hat{\lambda}$ from 0.003 to 0.90, spanning nearly the entire parameter space.
+Higher volatility raises the H-regime option value, reducing the $\lambda$ needed to rationalize observed investment intensity; lower volatility has the opposite effect.
+Cost convexity $\gamma$ also matters, though less dramatically: $\gamma \pm 25\%$ moves the Anthropic-like implied belief across the range [0.07, 0.90].
+
+The most reliable inference is therefore the *ordinal ranking*---frontier labs reveal more aggressive beliefs than hyperscalers---and the approximate *order-of-magnitude dispersion* in implied beliefs across firm types.
+The qualitative ordering is robust across all parameter perturbations tested: in no specification does the Google-like archetype imply a higher $\hat{\lambda}$ than the Anthropic-like archetype.
+Cardinal values are illustrative and should be read as "beliefs consistent with investment behavior under maintained assumptions" rather than precise estimates of firms' private probabilities.
 
 ### Growth Option Decomposition
 
@@ -128,9 +158,9 @@ At $\ell = 0.70$ (the CoreWeave-like archetype), the default probability approac
 
 The infrastructure-provider archetype (CoreWeave-like, $\ell = 0.70$) faces the highest credit risk, consistent with the market's pricing of CoreWeave debt at significantly elevated yields relative to investment-grade benchmarks.
 
-### The Dario Dilemma
+### The AI Investment Dilemma
 
-I now formalize the cost of belief mismatches---what I call the *Dario dilemma*, named for the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
+I now formalize the cost of belief mismatches---what I call the *AI investment dilemma*, the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
 
 #### Setup
 
@@ -150,15 +180,15 @@ $$
 where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$ when the true parameter is $\lambda_a$.
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 
-**Proposition 6** (Asymmetric Dario dilemma).
-*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. This asymmetry increases with leverage.*
+**Proposition 6** (Asymmetric AI investment dilemma).
+*The value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) exceeds the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. For $\ell = 0$, the asymmetry follows from the convexity of investment costs ($\gamma > 1$) and concavity of revenue ($\alpha < 1$). For $\ell > 0$, leverage amplifies the asymmetry through endogenous default risk. The firm chooses leverage simultaneously according to $\lambda_{\text{invest}}$.*
 
-The intuition is that aggressive overinvestment leads to excess capacity that incurs maintenance costs and dilutes revenue per unit of capacity, while also increasing default risk through higher leverage.
+The intuition is that aggressive overinvestment leads to excess capacity that incurs disproportionate costs (convex in $K$) while generating diminishing additional revenue (concave in $K$), and also increases default risk through higher leverage.
 Conservative underinvestment, by contrast, simply delays investment and reduces capacity---a lost opportunity, but not an existential risk.
 
 #### Implications
 
-The Dario dilemma has several implications:
+The AI investment dilemma has several implications:
 
 1. **Rationalization of extreme investment**: the observed investment patterns of frontier AI labs can be rationalized *only if* these firms genuinely hold high-$\lambda$ beliefs. Investing as if $\lambda = 0.5$ when the true belief is $\lambda = 0.1$ would be enormously costly.
 

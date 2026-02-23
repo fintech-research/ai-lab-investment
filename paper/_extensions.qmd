@@ -2,25 +2,27 @@
 
 ### $N$-Firm Sequential Equilibrium
 
-I extend the duopoly to $N \geq 2$ symmetric firms using the backward induction approach of @bouis2009multistage.
+I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
 Firms enter sequentially, and the $k$-th entrant ($k = 1, \ldots, N$) takes into account the capacity of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
+The equilibrium concept is a Nash equilibrium in entry-order-contingent strategies: each firm $k$ chooses its trigger $X_k^*$ and capacity $K_k$ to maximize its option value, taking other firms' strategies as given.
 
 #### Revenue sharing with $N$ firms
 
-With $N$ firms in the market, firm $i$'s revenue combines the production technology with a Tullock contest share, as in the duopoly case (@eq-contest):
+With $N$ firms in the market, firm $i$'s revenue extends the duopoly Tullock contest (@eq-contest):
 $$
-\pi_i(X, K_1, \ldots, K_N) = X \cdot K_i^\alpha \cdot \frac{K_i^\alpha}{\sum_{j=1}^{N} K_j^\alpha}.
+\pi_i(X, K_1, \ldots, K_N) = X \cdot \frac{K_i^{2\alpha}}{\sum_{j=1}^{N} K_j^\alpha},
 $$ {#eq-contest-N}
 
-The first factor $K_i^\alpha$ is the production function; the second factor is the contest share.
+equivalently $\pi_i = X \cdot K_i^\alpha \cdot s_i$ where $s_i = K_i^\alpha / \sum_j K_j^\alpha$ is the contest share.
 This nests the duopoly: when $N=2$, @eq-contest-N reduces to @eq-contest.
 Adding firms dilutes each incumbent's share, creating a congestion externality that limits entry.
 
-#### Iterative refinement
+#### Numerical solution
 
-I solve the game by iterative refinement (fixed-point iteration).
+I compute the equilibrium using iterative best-response (fixed-point iteration on the capacity profile), which is a numerical method distinct from the backward-induction solution concept of the duopoly.
 Each firm's optimal trigger and capacity are computed given all other firms' capacities, and the process repeats until convergence.
 In each iteration, each firm $k$ solves a follower problem taking the current capacity estimates of all $N-1$ other firms as given.
+Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
 
 **Proposition 4** ($N$-firm equilibrium properties).
 *In the $N$-firm sequential equilibrium:*
@@ -29,9 +31,9 @@ In each iteration, each firm $k$ solves a follower problem taking the current ca
 
 *(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
 
-*(iii) Total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate.*
+*(iii) The equilibrium reduces to the duopoly solution when $N = 2$.*
 
-*(iv) The equilibrium reduces to the duopoly solution when $N = 2$.*
+**Numerical Observation.** *In all parameterizations tested, total industry capacity $\sum K_i$ is increasing in $N$, but at a decreasing rate. The intuition is that the number of entrants grows faster than individual capacity shrinks (for $\alpha < 1$), so aggregate output $\sum K_i^\alpha$ rises even as each firm builds less. A formal proof would require bounding the rate of per-firm capacity decline, which I leave for future work.*
 
 The numerical solution iterates until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$ (see Appendix B for details).
 I verify the implementation by checking that the $N=2$ solution matches the analytical duopoly equilibrium.
@@ -71,6 +73,11 @@ $$
 
 For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.^[Amodei's "50\% stylized fact" [@amodei2025training] is higher than our $\phi^* \approx 15\%$ because his figure includes post-training reinforcement learning, fine-tuning, and evaluation runs, which our model subsumes into the training scaling law. When narrowly defined as pre-training compute only, the 10--20\% range aligns with our prediction.]
 
+**Remark 2** (Separability).
+*Because $\phi^*$ is independent of $X$, $K$, and the demand regime, it enters the revenue function as a multiplicative constant $A(\phi^*)^\eta(1-\phi^*)^\alpha$ that rescales revenue without interacting with investment timing, competition, or default risk.
+The core model results---optimal triggers, preemption equilibrium, revealed beliefs---are therefore unaffected by the training-inference decomposition; it serves as a microfoundation for the level of revenue per unit of capacity rather than a source of new strategic interactions.
+Making $\eta$ or $A$ state-dependent (e.g., allowing the scaling exponent to differ across regimes, or modeling inference-time scaling as a substitute for training) would break the separability and generate richer dynamics, but at the cost of additional parameters that are difficult to calibrate with current data.*
+
 #### Quality dynamics
 
 Over time, a firm can improve its model quality by accumulating training compute.
@@ -79,7 +86,9 @@ $$
 Q(t) = A \cdot (\phi^* K \cdot (t - \tau))^{\eta}, \quad t > \tau.
 $$
 
-This creates a *learning-by-investing* effect: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
+This creates a potential *learning-by-investing* channel: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
+However, this quality dynamics channel is not formally integrated into the equilibrium analysis or the calibration---doing so would require modeling quality as a state variable in the option-value problem, substantially increasing computational complexity.
+I note it here as a qualitative implication and a direction for future work.
 
 ### Heterogeneous Firms
 
@@ -88,21 +97,4 @@ I allow for heterogeneity by assigning each firm $i$ its own parameter vector $\
 
 With heterogeneous firms, the sequential equilibrium no longer features symmetric entry.
 Firms with lower costs, lower discount rates, or higher $\lambda$ (more optimistic beliefs) enter earlier and build more capacity.
-I solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage.
-
-### Numerical Method
-
-The computational approach proceeds in five steps:
-
-1. **Last entrant.** Solve the $N$-th firm's follower problem analytically (or by one-dimensional optimization) given total incumbent capacity.
-
-2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing and capacity problem by optimizing over $K_k$ using scalar optimization, computing the trigger $X_k^*(K_k)$ at each evaluation.
-
-3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants.
-
-4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
-
-5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered and that no firm has an incentive to deviate.
-
-All numerical solutions are implemented in Python using `scipy.optimize` for one-dimensional optimization and root-finding [@judd1998numerical].
-The code is publicly available.
+I solve the heterogeneous game numerically using the same backward induction algorithm, but with firm-specific optimization at each stage (see Appendix C for details).

@@ -4,41 +4,45 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
-The firm maximizes the option value $F_H(X) = (V_H(X^*, K) - I(K))(X/X^*)^{\beta_H}$ by choosing $X^*$ and $K$ jointly.
+The firm maximizes the option value $F_H(X_0) = (V_H(X^*, K) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$ and $K$ jointly.
 
 *Step 1: Optimal trigger given $K$.*
-The smooth-pasting condition $F_H'(X^*) = V_H'(X^*, K)$ yields:
+The value-matching and smooth-pasting conditions yield:
 $$
 X^*(K) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{r - \mu_H}{K^\alpha}\left(cK^\gamma + \frac{\delta K}{r}\right).
 $$
 
-*Step 2: Optimal capacity.*
-Substituting $X^*(K)$ into the NPV at the trigger and differentiating with respect to $K$:
+*Step 2: NPV at the trigger.*
+Define $a(K) = A_H K^\alpha$ and $b(K) = cK^\gamma + \delta K / r$, where $A_H = 1/(r - \mu_H)$. The revenue at the trigger is $A_H X^*(K) K^\alpha = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
 $$
-\frac{\partial}{\partial K}\left[V_H(X^*(K), K) - I(K)\right] = 0.
-$$
-
-The revenue term is $\frac{X^*(K) K^\alpha}{r - \mu_H}$. Substituting:
-$$
-\frac{X^*(K) K^\alpha}{r - \mu_H} = \frac{\beta_H}{\beta_H - 1}\left(cK^\gamma + \frac{\delta K}{r}\right).
+V - I = \frac{\beta_H}{\beta_H - 1} b(K) - b(K) = \frac{1}{\beta_H - 1}\, b(K).
 $$
 
-Therefore the NPV at the trigger is:
+*Step 3: Optimal capacity.*
+Substituting the trigger and NPV into $F_H(X_0)$:
 $$
-V - I = \frac{1}{\beta_H - 1}\left(cK^\gamma + \frac{\delta K}{r}\right) - \frac{\delta K}{r} = \frac{cK^\gamma}{\beta_H - 1} - \frac{(\beta_H - 2)\delta K}{r(\beta_H - 1)}.
+F_H(X_0) = \frac{b(K)}{\beta_H - 1} \cdot \left(\frac{X_0(\beta_H - 1)}{\beta_H} \cdot \frac{a(K)}{b(K)}\right)^{\beta_H} = C \cdot \frac{a(K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv C \cdot h(K),
+$$
+where $C = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H}$ is independent of $K$. The optimal capacity therefore maximizes $h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$. Setting $(\ln h)' = 0$:
+$$
+\frac{\beta_H \alpha}{K} = \frac{(\beta_H - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
+$$
+which simplifies to:
+$$
+\alpha \beta_H \left(cK^\gamma + \frac{\delta K}{r}\right) = (\beta_H - 1)\left(c\gamma K^\gamma + \frac{\delta K}{r}\right).
+$$ {#eq-foc-K}
+
+Collecting terms in $cK^\gamma$ and $\delta K / r$:
+$$
+cK^\gamma (\alpha \beta_H - \gamma(\beta_H - 1)) = \frac{\delta K}{r}((\beta_H - 1) - \alpha \beta_H).
 $$
 
-Differentiating with respect to $K$ and setting to zero:
+For $\delta > 0$, dividing by $K$ and solving:
 $$
-\frac{c\gamma K^{\gamma - 1}}{\beta_H - 1} = \frac{(\beta_H - 2)\delta}{r(\beta_H - 1)}.
-$$
-
-The optimal $K_H^*$ is found by one-dimensional numerical optimization of the option value factor $h(K) = a(K)^{\beta_H} / b(K)^{\beta_H - 1}$ where $a(K) = A_H K^\alpha$ and $b(K) = \delta K / r + c K^\gamma$, with $X^*(K)$ given in closed form above. The first-order condition equates marginal revenue (scaled by the option premium) to marginal cost:
-$$
-\alpha A_H K^{\alpha - 1} \cdot \frac{\beta_H}{\beta_H - 1} = \gamma c K^{\gamma - 1} + \frac{\delta}{r}.
+K_H^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}}.
 $$
 
-The existence condition $1/\gamma < (1 - 1/\beta_H)/\alpha < 1$ ensures that (i) the marginal revenue exceeds marginal cost at small $K$ (left inequality) and (ii) the reverse holds at large $K$ (right inequality), guaranteeing an interior maximum by continuity. $\square$
+*Existence.* The closed-form requires $\delta > 0$ and the condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$, which ensures both bracketed factors are positive. The left inequality gives $\gamma(\beta_H - 1) > \alpha \beta_H$ (cost convexity exceeds revenue concavity at the margin), and the right gives $\alpha \beta_H > \beta_H - 1$ (revenue growth exceeds the cost-of-waiting effect). When $\delta = 0$, the linear operating-cost term vanishes, the FOC degenerates, and no interior maximum exists. $\square$
 
 #### Proof of Proposition 5 {.unnumbered}
 
@@ -79,7 +83,9 @@ At $X = 0$: $L(0) < 0$ (sunk cost) while $F(0) = 0$, so $F > L$.
 
 At $X = X_F^*$: the leader has earned monopoly rents while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$ under typical calibrations.
 
-By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value is increasing and convex in $X$ (proportional to $X^{\beta_s}$ from a lower base) while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$. $\square$
+By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$. Uniqueness follows from the single-crossing property: $L'(X_P) > F'(X_P)$ at the crossing point, since leader value is increasing and convex in $X$ (proportional to $X^{\beta_s}$ from a lower base) while the follower option grows as $X^{\beta_H}$ with $\beta_H > 1$.
+
+*Part (iv): Credit spread increasing in $\lambda$.* Higher $\lambda$ lowers the preemption trigger $X_P$ (from part ii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$, where $X_D$ is the default boundary. Since the default boundary $X_D$ depends on capacity and leverage (which are less sensitive to $\lambda$ than the trigger itself), $X_P$ decreases faster than $X_D$ with $\lambda$. The ratio $X_P / X_D$ therefore falls, widening the credit spread. Formally, the spread is a function of $(X_P / X_D)^{|\beta_s^-|}$; since $X_P / X_D$ decreases in $\lambda$, the spread increases. The comparative static is verified numerically across the full parameter space explored in the calibration. $\square$
 
 #### Proof of Proposition 4 (N-firm equilibrium) {.unnumbered}
 
@@ -87,26 +93,27 @@ By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $
 
 *(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal revenue $\alpha A_s X K_k^{\alpha-1} s_k$ against marginal cost $\gamma c K_k^{\gamma-1}$. More firms reduce $s_k$, reducing marginal revenue and hence $K_k^*$.
 
-*(iii)* I verify numerically that total capacity $\sum_{i=1}^N K_i$ increases with $N$ for all parameterizations tested. The intuition is that the aggregate production $\sum K_i^\alpha$ increases even as individual $K_i$ falls, since the number of contributors grows faster than individual capacity shrinks (for $\alpha < 1$). A formal proof would require bounding the rate of capacity decline per firm, which I leave for future work.
+*(iii)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction.
 
-*(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
+The Numerical Observation (total capacity increasing in $N$ at a decreasing rate) is verified across all parameterizations tested; see the main text for discussion. $\square$
 
-#### Proof of Proposition 6 (Asymmetric Dario dilemma) {.unnumbered}
+#### Proof of Proposition 6 (Asymmetric AI investment dilemma) {.unnumbered}
 
-Consider a firm with true parameter $\lambda_{\text{true}}$ that invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$.
+Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$ and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
 
-The NPV under the true process is:
-$$
-\text{NPV} = \left[V(X^*, K^*; \lambda_{\text{true}}) - I(K^*)\right] \left(\frac{X_0}{X^*}\right)^{\beta(\lambda_{\text{true}})}.
-$$
+*Optimality.* By construction, $W$ is maximized at $\lambda_{\text{invest}} = \lambda_{\text{true}}$, so $W'(\lambda_{\text{true}}) = 0$. The second-order loss is therefore $\Delta V = W(\lambda_{\text{true}}) - W(\lambda_{\text{invest}}) \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2$, which is symmetric to second order.
 
-*Aggressive case* ($\lambda_{\text{invest}} > \lambda_{\text{true}}$): the firm invests too early ($X^*$ too low) and builds too much capacity ($K^*$ too high). Both effects reduce NPV: early investment wastes the option value, and excess capacity incurs unnecessary costs $cK^{*\gamma} + \delta K^*/r$. With leverage, overbuilding also raises the default boundary, increasing the probability of financial distress.
+*Source of asymmetry.* The asymmetry arises from odd-order terms in the Taylor expansion, principally $W'''(\lambda_{\text{true}}) \neq 0$. I prove this for the zero-leverage case and verify numerically for $\ell > 0$.
 
-*Conservative case* ($\lambda_{\text{invest}} < \lambda_{\text{true}}$): the firm invests too late ($X^*$ too high) and builds too little ($K^*$ too low). The NPV loss comes only from the timing delay---the firm foregoes some option value by waiting beyond the true optimum. However, once it invests, it earns positive NPV on a smaller but appropriately sized investment, and default risk remains controlled.
+*Case $\ell = 0$ (unleveraged).* Write $W(\lambda_{\text{invest}}) = [V(X^*, K^*; \lambda_{\text{true}}) - I(K^*)] \cdot (X_0/X^*)^{\beta(\lambda_{\text{true}})}$ where $X^* = X^*(\lambda_{\text{invest}})$ and $K^* = K^*(\lambda_{\text{invest}})$. The loss decomposes into a capacity channel and a timing channel:
 
-The asymmetry arises because the aggressive case compounds two sources of loss (timing + capacity + default risk) while the conservative case involves only timing loss. The convexity of investment costs ($\gamma > 1$) amplifies the overbuilding penalty.
+- *Capacity loss.* The NPV at the trigger is $V - I = \frac{1}{\beta_H - 1} b(K^*)$ where $b(K) = cK^\gamma + \delta K/r$ (from Proposition 1). Investment cost $I(K) = cK^\gamma$ is convex ($\gamma > 1$), while revenue $\pi \propto K^\alpha$ is concave ($\alpha < 1$). For overinvestment ($K^* > K^*_{\text{true}}$), the marginal cost increase $\gamma c K^{\gamma-1}$ exceeds the marginal revenue increase $\alpha A K^{\alpha-1}$, so the per-unit NPV falls faster than it rises for underinvestment of equal magnitude. Formally, $\partial^2(V-I)/\partial K^2 < 0$ and $\partial^3(V-I)/\partial K^3 < 0$ at $K^*_{\text{true}}$ when $\gamma > 1$ and $\alpha < 1$, generating negative skewness in the capacity loss.
 
-More formally, a Taylor expansion of $\Delta V$ around $\lambda_{\text{true}}$ yields $\Delta V \approx \frac{1}{2} |\lambda_{\text{invest}} - \lambda_{\text{true}}|^2 \cdot V''(\lambda)$, where $V''(\lambda) > 0$ for aggressive overinvestment (convexity from compounding timing, capacity, and default effects) and $V''(\lambda)$ is smaller for conservative underinvestment (timing loss only). $\square$
+- *Timing loss.* The timing factor $(X_0/X^*)^{\beta}$ is a concave function of $\ln X^*$ for $\beta > 1$. A firm that invests too early ($X^*$ too low, aggressive case) commits at a demand level where the timing penalty is larger than the symmetric delay penalty for investing too late. However, the timing loss alone is approximately symmetric; the dominant asymmetry comes from the capacity channel.
+
+Since both the capacity and timing channels contribute weakly negative third derivatives, $W'''(\lambda_{\text{true}}) < 0$, and overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) produces a larger loss than underinvestment of equal magnitude.
+
+*Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and hence the coupon payment, pushing the default boundary $X_D$ closer to the operating region. This introduces an additional convex loss that is absent in the underinvestment case, where lower $K^*$ reduces both investment cost and default risk. The amplification is verified numerically across the full parameter space explored in the calibration. $\square$
 
 ### B. Numerical Implementation Details {.unnumbered}
 
@@ -137,7 +144,21 @@ Each evaluation of the objective function requires solving one root-finding prob
 With 5 passes and $N$ firms, the total number of function evaluations is approximately $5 \times N \times 50 \approx 250N$ (50 evaluations per scalar optimization).
 For $N = 4$, the full solution completes in under 1 second on a standard laptop.
 
-### C. Data Sources {.unnumbered}
+### C. Numerical Method {.unnumbered}
+
+The computational approach proceeds in five steps:
+
+1. **Last entrant.** Solve the $N$-th firm's follower problem analytically (or by one-dimensional optimization) given total incumbent capacity.
+
+2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing and capacity problem by optimizing over $K_k$ using scalar optimization, computing the trigger $X_k^*(K_k)$ at each evaluation.
+
+3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants.
+
+4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
+
+5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered and that no firm has an incentive to deviate.
+
+### D. Data Sources {.unnumbered}
 
 The calibration uses data from the following sources:
 
@@ -150,14 +171,14 @@ The calibration uses data from the following sources:
 | Demand growth ($\mu$) | Cloud revenue growth rates (AWS, Azure, GCP) |
 | Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
 | Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training |
-| Depreciation ($\delta$) | GAAP useful life for data center equipment (3--5 years) |
+| Operating cost rate ($\delta$) | Industry estimates of power, cooling, and maintenance costs; GAAP useful life used as cross-check |
 
-: Data sources for calibration parameters. {#tbl-sources}
+: Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
 
 All firm-level data reflects publicly available information as of Q4 2025.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
 
-### D. Parameter Sensitivity {.unnumbered}
+### E. Parameter Sensitivity {.unnumbered}
 
 @tbl-elasticities reports the elasticities of the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to each model parameter, computed numerically at the baseline calibration.
 
@@ -168,9 +189,9 @@ The stylized firms are composites designed to capture the key features of each f
 | H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ |
 | H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ |
 | Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ |
-| Depreciation | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
+| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ |
 
-: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities}
+: Elasticities of optimal trigger and capacity to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. Large elasticities indicate parameters to which the model is most sensitive. {#tbl-elasticities tbl-colwidths="[30,14,14,21,21]"}
 
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
 
@@ -182,15 +203,15 @@ The discount rate $r$ and revenue elasticity $\alpha$ are the most influential p
 | $\sigma_H \pm 25\%$ | [0.003, 0.90] | [0.002, 0.08] |
 | $\gamma \pm 25\%$ | [0.07, 0.90] | [0.03, 0.08] |
 
-: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. {#tbl-sensitivity-beliefs}
+: Sensitivity of implied arrival rate $\hat{\lambda}$ to calibration assumptions. Ranges show implied $\hat{\lambda}$ when the parameter is varied from $-25\%$ to $+25\%$ of baseline. The implied $\hat{\lambda}$ is most sensitive to $\sigma_H$, as higher volatility increases the H-regime option value, reducing the lambda needed to rationalize observed investment. See @sec-valuation for discussion of these confidence sets. {#tbl-sensitivity-beliefs}
 
-### E. Robustness {.unnumbered}
+### F. Robustness {.unnumbered}
 
 I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
-The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the Dario dilemma, and the high growth option fraction are preserved across all parameter perturbations.
+The qualitative findings are robust: the ordering of revealed beliefs across firm types, the asymmetry of the AI investment dilemma, and the high growth option fraction are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.
