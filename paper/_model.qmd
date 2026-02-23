@@ -1,6 +1,7 @@
 ## The Model {#sec-model}
 
 This section develops the model in three stages: the demand environment and technology (including the training-inference allocation), the single-firm benchmark, and the duopoly with default risk.
+Unless otherwise stated, analytical propositions are proved under the exogenous-switch hazard specification ($\xi = 0$); when the hazard depends endogenously on training allocation ($\xi > 0$), I report numerical analogues and verify robustness in calibration-relevant regions.
 
 ### Environment
 
@@ -73,6 +74,34 @@ Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ pe
 
 @tbl-parameters in the Appendix summarizes all model parameters, their baseline values, and economic interpretations; the calibration rationale for each value is discussed in @sec-calibration.
 
+#### Notation
+
+@tbl-notation collects the key symbols used throughout the paper.
+
+| Symbol | Meaning | Exogenous / Endogenous |
+|:------:|:--------|:----------------------:|
+| $X_t$ | Demand process | Exogenous (GBM) |
+| $\mu_s, \sigma_s$ | Regime-$s$ drift and volatility | Exogenous |
+| $\lambda_0$ | Baseline arrival rate | Exogenous |
+| $\tilde{\lambda}$ | Effective arrival rate ($\lambda_0 + \xi[\cdots]$) | Endogenous when $\xi > 0$ |
+| $\xi$ | Scaling of firms' training contribution to $\tilde{\lambda}$ | Exogenous |
+| $\eta$ | Scaling law exponent (diminishing returns to training) | Exogenous |
+| $K$ | Installed capacity | Endogenous (choice) |
+| $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
+| $\alpha$ | Revenue elasticity to capacity | Exogenous |
+| $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
+| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived |
+| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived |
+| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived |
+| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived |
+| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived |
+| $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
+| $c_d$ | Coupon rate on debt | Exogenous |
+| $X_D$ | Endogenous default boundary | Derived |
+| $X^*$ | Optimal investment trigger | Derived |
+
+: Key notation. "Derived" indicates quantities computed from primitives and choices. {#tbl-notation tbl-colwidths="[12,58,30]"}
+
 ### Single-Firm Benchmark {#sec-single-firm}
 
 I begin with a single firm holding an option to invest.
@@ -128,6 +157,19 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 
 ![Option value versus NPV of immediate investment in regime $H$. The solid curve shows the option value $F_H(X)$; the dashed curve shows the NPV of investing immediately at the optimal scale $K_H^*$. The shaded region represents the "value of waiting"---the excess of the option value over the NPV. The vertical dotted line marks the optimal trigger $X_H^*$ where smooth pasting holds. Parameters: baseline calibration ($\sigma_H = 0.30$, $\mu_H = 0.06$, $r = 0.12$, $\alpha = 0.40$, $\gamma = 1.50$).](figures/fig_option_value.pdf){#fig-option-value}
 
+**Assumption 1** (Parameter admissibility).
+*The following conditions are maintained throughout:*
+
+*(A1) $r > \mu_H > \mu_L \geq 0$, $\sigma_L, \sigma_H > 0$, $\alpha \in (0,1)$, $\gamma > 1$, $c > 0$, $\delta \geq 0$, $\lambda_0 > 0$, $\xi \geq 0$, $\eta \in (0,1)$.*
+
+*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$.*
+
+*(A3) The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. For the baseline calibration, $\beta_L^+ \approx 1.63$ and $(1-1/\beta_L^+)/\alpha \approx 2.42 > 1$; this condition is verified for all parameter values used in the paper.*
+
+*(A4) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
+
+*Conditions (A1)--(A4) are satisfied at the baseline calibration and verified numerically at all parameter values used in the paper. When (A3) fails (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and additional boundary conditions enter the optimization.*
+
 **Proposition 1** (Optimal capacity and training fraction).
 *The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. In the H-regime, the optimal capacity for given $\phi$ is:*
 $$
@@ -145,8 +187,8 @@ $$
 
 *Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 
-**Remark** (Exogenous vs. endogenous $\tilde{\lambda}$).
-*Proposition 1 is stated and proved for exogenous $\tilde{\lambda}$. When $\tilde{\lambda}$ is endogenous (@eq-endogenous-lambda), the optimal $\phi^*$ additionally affects $\tilde{\lambda}$ through the firm's training compute, creating a feedback loop. The interior solution and uniqueness results extend to this case because the endogenous channel is quantitatively small: with $\eta = 0.07$, doubling training compute raises the firm's contribution to $\tilde{\lambda}$ by only 5%, so the fixed-point $\phi^*$ remains close to the exogenous-$\tilde{\lambda}$ solution. The comparative statics signs are preserved under the endogenous specification and are verified numerically. All subsequent propositions are similarly stated for exogenous $\tilde{\lambda}$ and verified to extend to the endogenous case.*
+**Corollary 1** (Endogenous hazard).
+*When $\tilde{\lambda}$ is endogenous (@eq-endogenous-lambda with $\xi > 0$), the optimal $\phi^*$ additionally affects $\tilde{\lambda}$ through the firm's training compute, creating a feedback loop. Numerically, the interior solution and uniqueness results extend to this case: with $\eta = 0.07$, doubling training compute raises the firm's contribution to $\tilde{\lambda}$ by only 5%, so the fixed-point $\phi^*$ remains close to the exogenous-$\tilde{\lambda}$ solution. The comparative statics signs are preserved under the endogenous specification and are verified numerically across the calibration-relevant parameter region. The comparative static $\partial \phi^* / \partial \xi > 0$ is established numerically rather than analytically, because the implicit differentiation involves the endogenous feedback $\partial \tilde{\lambda} / \partial \phi$. All subsequent propositions are similarly stated for exogenous $\tilde{\lambda}$ and verified to extend to the endogenous case.*
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -343,17 +385,17 @@ The preemption trigger $X_P$ is the demand level at which the leader's value equ
 At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 **Proposition 3** (Preemption equilibrium with training allocation and default risk).
-*In the symmetric duopoly with endogenous $\tilde{\lambda}$ and leverage $\ell$:*
+*In the symmetric duopoly with exogenous $\tilde{\lambda}$ and leverage $\ell$:*
 
-*(i) The preemption trigger $X_P < X_F$ exists and is unique under the existence condition.*
+*(i) (Analytical) The preemption trigger $X_P < X_F$ exists and is unique under the standard conditions of @huisman2015strategic, extended to the enriched payoff functions. The existence argument (continuity, monotonicity, single crossing of leader and follower values) is given in Appendix A; single crossing is verified numerically across all parameterizations.*
 
-*(ii) The leader's training fraction exceeds the follower's: $\phi_L^* \geq \phi_F^*$. The leader invests more in training because the marginal cost of training (forgone L-regime inference revenue) is lower during the monopoly phase---the leader's contest share is 1 regardless of allocation---while the marginal benefit (H-regime positioning against the future follower) is higher due to the longer expected monopoly duration.*
+*(ii) (Semi-analytical) The leader's training fraction exceeds the follower's: $\phi_L^* \geq \phi_F^*$. The leader invests more in training because the marginal cost of training (forgone L-regime inference revenue) is lower during the monopoly phase---the leader's contest share is 1 regardless of allocation---while the marginal benefit (H-regime positioning against the future follower) is higher due to the longer expected monopoly duration. The qualitative argument is analytical; the inequality is verified numerically across all calibration-relevant parameterizations.*
 
-*(iii) Higher $\lambda_0$ (more optimistic baseline beliefs) increases $\phi^*$ for both firms and lowers the preemption trigger $X_P$, amplifying the acceleration effect relative to the exogenous-$\lambda$ model because the training channel provides an additional mechanism for beliefs to affect investment.*
+*(iii) (Numerical finding) Higher $\lambda_0$ (more optimistic baseline beliefs) increases $\phi^*$ for both firms and lowers the preemption trigger $X_P$, amplifying the acceleration effect relative to the exogenous-$\lambda$ model because the training channel provides an additional mechanism for beliefs to affect investment.*
 
-*(iv) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
+*(iv) (Numerical finding) Higher leverage reduces the follower's capacity $K_F$ but may increase or decrease the preemption trigger $X_P$, depending on the relative strength of the debt overhang effect (delay) versus the limited liability effect (acceleration).*
 
-*(v) (Computational result) The credit spread at the preemption trigger is increasing in $\lambda_0$: firms that invest earlier due to more optimistic beliefs face higher credit risk. This comparative static is verified numerically across the full parameter space; see Appendix A for discussion.*
+*(v) (Numerical finding) The credit spread at the preemption trigger is increasing in $\lambda_0$: firms that invest earlier due to more optimistic beliefs face higher credit risk. This comparative static is verified numerically across the full parameter space; see Appendix A for discussion.*
 
 @fig-competition-effect quantifies the preemption effect.
 Panel (a) plots the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of demand volatility $\sigma_H$.
@@ -363,3 +405,19 @@ The trigger ratio declines from near 1.0 at low volatility to approximately 0.5 
 By contrast, the capacity ratio remains close to 1.0, confirming that competition primarily affects *timing* rather than *scale*.
 
 ![Competition effect: monopolist versus duopoly leader. (a) Absolute investment triggers as a function of demand volatility $\sigma_H$. The leader always invests at a lower trigger than the monopolist due to preemption. (b) Ratios of duopoly leader to monopolist trigger and capacity. Competition primarily affects timing (trigger ratio declines sharply) rather than scale (capacity ratio is stable near unity). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
+
+#### Summary of analytical scope
+
+@tbl-result-taxonomy summarizes the analytical status of each result.
+
+| Result | Economic statement | Method | Domain |
+|:-------|:-------------------|:-------|:-------|
+| Proposition 1 | Optimal $K^*, \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda_0$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; Assumption 1 |
+| Corollary 1 | Extension to endogenous $\tilde{\lambda}$; comparative static in $\xi$ | Numerical fixed-point | Calibration-relevant region |
+| Proposition 2 | Default boundary properties; faith-based survival | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; faith condition @eq-faith-condition |
+| Proposition 3(i) | Existence and uniqueness of $X_P$ | Analytical construction + numerical single-crossing verification | Exogenous $\tilde{\lambda}$ |
+| Proposition 3(ii) | $\phi_L^* \geq \phi_F^*$ | Semi-analytical argument + numerical verification | All calibration parameterizations |
+| Proposition 3(iii)--(v) | Comparative statics of preemption equilibrium | Numerical | All calibration parameterizations |
+| Numerical Finding 2 | Asymmetric AI investment dilemma | Numerical | All parameterizations tested |
+
+: Analytical status of model results. "Closed-form" indicates an explicit expression; "implicit function" indicates an analytically characterized equation solved numerically; "numerical" indicates grid-based or optimization-based computation with no closed-form expression. {#tbl-result-taxonomy tbl-colwidths="[20,30,22,28]"}

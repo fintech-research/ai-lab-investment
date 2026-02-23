@@ -16,17 +16,18 @@ affiliations:
   - id: 1
     name: HEC Montréal
 abstract: |
-  I model the investment decisions of frontier AI laboratories racing to develop Artificial General Intelligence (AGI).
-  Firms choose when to invest, how much compute capacity to build, and how to split it between model training, which builds capabilities and contributes to an endogenous regime switch to AGI, and inference serving, which generates current revenue.
-  The model combines real options, regime switching, oligopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws, delivering analytical investment triggers and capacity in a duopoly.
-  A "faith-based survival" mechanism emerges: optimism about AGI, backed by training investment, lowers the default boundary---the hope of AGI literally keeps the firm alive.
-  An asymmetric "AI investment dilemma" arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment, rationalizing the extreme capital commitments observed in practice only under genuinely optimistic beliefs about AI timelines.
+  Frontier AI laboratories face uncertain timing of transformative demand and must allocate scarce compute between current monetization (inference) and future capability-building (training).
+  I develop a real-options model of irreversible capacity investment with regime switching, duopoly competition via Tullock contests, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
+  The model delivers analytical investment triggers and capacity for a single firm, and semi-analytical characterization of a duopoly preemption equilibrium in which the leader trains more and invests earlier than the follower.
+  A "faith-based survival" mechanism emerges: training investment raises the effective revenue coefficient through the expected post-switch continuation value, lowering the default boundary---the hope of transformative AI keeps the firm alive.
+  An asymmetric "AI investment dilemma" arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
+  A stylized calibration to four AI firm archetypes illustrates the magnitudes and highlights how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
 keywords:
   - real options
   - AI infrastructure
   - regime switching
   - training-inference allocation
-  - strategic investment
+  - duopoly preemption
   - default risk
 thanks: "I thank Charles Martineau for helpful comments. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
@@ -35,8 +36,6 @@ thanks: "I thank Charles Martineau for helpful comments. Vincent Grégoire: HEC 
 {{< include _introduction.qmd >}}
 
 {{< include _model.qmd >}}
-
-{{< include _extensions.qmd >}}
 
 {{< include _calibration.qmd >}}
 

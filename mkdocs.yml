@@ -1,7 +1,7 @@
 site_name: ai-lab-investment
 repo_url: https://github.com/vgreg/ai-lab-investment
 site_url: https://vgreg.github.io/ai-lab-investment
-site_description: This is a template repository for research projects that use Python and Quarto.
+site_description: Analysis code for "Investing in Artificial General Intelligence" — irreversible capacity investment under regime-switching demand with duopoly competition and endogenous default risk.
 site_author: Vincent Grégoire
 edit_uri: edit/main/docs/
 repo_name: vgreg/ai-lab-investment
@@ -9,15 +9,13 @@ copyright: Maintained by <a href="https://vgreg.com">vgreg</a>.
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - API Reference: modules.md
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
-          paths: [
-            "src/ai_lab_investment"
-            ]
+          paths: ["src"]
 theme:
   name: material
   feature:

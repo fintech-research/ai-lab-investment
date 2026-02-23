@@ -1,18 +1,20 @@
 ## Conclusion {#sec-conclusion}
 
-This paper develops a unified model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, strategic preemption in oligopoly, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
+This paper develops a model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, duopoly preemption, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
 At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the allocation interacting with an endogenous regime switch mechanism in which aggregate training compute accelerates the arrival of transformative AI.
-The model produces closed-form investment triggers for the duopoly with training allocation and default risk (Propositions 1--3) and numerical characterization of $N$-firm equilibrium properties (Numerical Findings 1--2).
+The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on the AI investment dilemma and $N$-firm robustness.
 
-Three findings stand out.
-First, the training-inference allocation creates a genuine strategic trade-off: firms must balance L-regime inference revenue (needed to survive and service debt) against H-regime training quality (needed to compete in a post-AGI world).
+Three core tensions drive the results.
+
+First, *current cash flow versus future capability*: firms must balance L-regime inference revenue (needed to survive and service debt) against H-regime training quality (needed to compete in a post-adoption world).
 The optimal training fraction $\phi^*$ is increasing in the arrival rate $\lambda$, meaning that more optimistic firms allocate more to training---a prediction that aligns with the cross-sectional variation in observed training intensity across AI labs.
 
-Second, the interaction between training allocation and leverage produces a *faith-based survival* mechanism: higher training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the H-regime continuation value, which lowers the default boundary.
-Optimism about transformative AI, backed by training investment, literally keeps the firm alive longer.
+Second, *growth-option upside versus leverage and default risk*: the interaction between training allocation and leverage produces a *faith-based survival* mechanism.
+Higher training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, which lowers the default boundary---but only in parameter regions where the continuation-value channel dominates current cash-flow weakness (Proposition 2).
 This creates a knife-edge for levered firms: they must invest early enough to capture market share and maintain enough training to sustain the H-regime option value, but not so aggressively that they risk default if the regime switch fails to materialize.
 
-Third, the AI investment dilemma reveals an asymmetric cost of belief mismatches: the downside of overinvestment (excess leverage, misallocated training, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
+Third, *waiting value versus preemption pressure*: the AI investment dilemma reveals an asymmetric cost of belief mismatches.
+The downside of overinvestment (excess leverage, misallocated training, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
 The training channel amplifies this asymmetry: an overly optimistic firm not only builds too much capacity but over-allocates to training, sacrificing the inference revenue it needs to survive the pre-switch period.
 This asymmetry implies that the extreme capital commitments observed in practice can be rationalized only by genuinely optimistic beliefs, not by strategic posturing or agency problems.
 

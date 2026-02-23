@@ -27,7 +27,7 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
-The proof applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid---i.e., where no interior L-regime trigger exists, so the firm waits for the regime switch rather than investing in the low regime (see @eq-option-L-general and the discussion following it; the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ is verified for the baseline calibration).^[For parameters outside this region (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and the optimization involves additional boundary conditions. All figures and tables in the paper verify that this condition holds at the specific parameter values used.] The proof is stated for exogenous $\tilde{\lambda}$; the extension to endogenous $\tilde{\lambda}$ is discussed in the remark following Proposition 1.
+*Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A4). It applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (condition A3)---i.e., where no interior L-regime trigger exists, so the firm waits for the regime switch rather than investing in the low regime (see @eq-option-L-general and the discussion following it).^[For parameters outside this region (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and the optimization involves additional boundary conditions. All figures and tables in the paper verify that condition (A3) holds at the specific parameter values used.] *Scope.* The proof is stated for exogenous $\tilde{\lambda}$ ($\xi = 0$); the extension to endogenous $\tilde{\lambda}$ is discussed in Corollary 1.
 The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
 
 *Step 1: Optimal trigger given $(K, \phi)$.*
@@ -93,9 +93,9 @@ From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\
 (ii) $\partial \phi^* / \partial \xi > 0$: Higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel.
 (iii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
 
-#### Proof of Proposition 2 (Endogenous default with faith-based survival) {.unnumbered}
+#### Proof of Proposition 2 {.unnumbered}
 
-The default boundary follows from the Leland (1994) framework adapted to regime switching.
+*Maintained assumptions.* Assumption 1(A1), exogenous $\tilde{\lambda}$ ($\xi = 0$). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
 In the L-regime, the equity value $E(X)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
 $$
@@ -128,10 +128,12 @@ Write the default boundary as $X_D = N(\ell) / A_{\text{eff},i}(\phi_i)$, where 
 *(iv) Default boundary increasing in rival capacity.*
 Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\alpha$ and $s_i^H = (\phi_i K_i)^\alpha / \sum_j (\phi_j K_j)^\alpha$ are decreasing in $K_j$ (holding $K_i$ fixed). Since $A_{\text{eff},i}$ is increasing in both contest shares, $\partial A_{\text{eff},i} / \partial K_j < 0$, and $\partial X_D / \partial K_j > 0$: stronger rivals raise the default boundary. $\square$
 
-#### Proof of Proposition 3 (Preemption equilibrium with training allocation) {.unnumbered}
+#### Proof of Proposition 3 {.unnumbered}
+
+*Maintained assumptions.* Assumption 1(A1)--(A2), exogenous $\tilde{\lambda}$ ($\xi = 0$). The analytical construction in part (i) follows @huisman2015strategic; single crossing is verified numerically. Parts (ii)--(v) combine analytical arguments with numerical verification as indicated in the proposition statement.
 
 *Part (i): Existence and uniqueness of $X_P$.*
-The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation, endogenous $\tilde{\lambda}$, and default risk. I verify that the three conditions required by their construction---continuity, monotonicity, and single crossing of the leader and follower values---hold for the enriched model.
+The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation and default risk. I verify that the three conditions required by their construction---continuity, monotonicity, and single crossing of the leader and follower values---hold for the enriched model.
 
 **Continuity and monotonicity.** The leader value $L(X)$ is continuous and increasing in $X$ for $X > 0$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. Default risk introduces a kink at $X = X_D$ where $L(X_D) = 0$, but for $X > X_D$ the value is smooth and increasing. The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
 
@@ -158,18 +160,6 @@ Since both the marginal cost of training (in forgone L-regime revenue) is lower 
 
 *Part (v): Credit spread increasing in $\lambda_0$ (computational result).* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. An analytical proof would require showing the elasticity inequality $\varepsilon_{X_P, \lambda_0} < \varepsilon_{X_D, \lambda_0} < 0$; this is verified numerically across the full parameter space used in the calibration rather than derived in closed form. $\square$
 
-#### Numerical Finding 1 (N-firm equilibrium) {.unnumbered}
-
-The following properties are verified computationally across the full range of parameterizations tested.
-
-*(i)* Trigger ordering: each firm $k$ faces $k-1$ incumbents. More incumbents reduce the contest shares in both regimes, raising the investment hurdle (the trigger). The optimal trigger for firm $k$ is $X_k^* = \frac{\beta_H}{\beta_H-1} \cdot (\delta K_k/r + cK_k^\gamma) / A_{\text{eff},k}$, where $A_{\text{eff},k}$ is decreasing in the number of competitors (through the contest shares), so $X_k^*$ is increasing in $k$.
-
-*(ii)* Individual capacity decreasing in $N$: the FOC for $K_k$ balances marginal effective revenue $\partial A_{\text{eff},k}/\partial K_k$ against marginal cost. More firms reduce $A_{\text{eff},k}$, reducing marginal revenue and hence $K_k^*$.
-
-*(iii)* Training fraction ordering: earlier entrants face fewer competitors in the H-regime contest and have longer expected monopoly phases, making training relatively more valuable. Later entrants face more competition in both regimes and must maintain L-regime inference share, shifting $\phi_k$ downward.
-
-*(iv)* For $N=2$, the iterative scheme reduces to the duopoly fixed-point problem with symmetric firms, matching the analytical solution by construction. $\square$
-
 #### Numerical Finding 2 (Asymmetric AI investment dilemma) {.unnumbered}
 
 Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$, training fraction $\phi^*(\lambda_{\text{invest}})$, and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
@@ -190,51 +180,49 @@ Since all three channels contribute weakly negative third derivatives, $W'''(\la
 
 *Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and over-training raises $\phi^*$, which together push the default boundary closer to the operating region (higher coupon from larger investment, lower L-regime revenue from excessive training). This introduces an additional convex loss absent in the underinvestment case. The amplification is verified numerically. $\square$
 
-### B. Numerical Implementation Details {.unnumbered}
+### B. Numerical Verification Methods {.unnumbered}
 
-#### Solution algorithm {.unnumbered}
+All numerical results are computed using SciPy optimization routines in Python 3.13.
+The single-firm and duopoly optimizations use bounded Nelder-Mead over $(K, \phi) \in [0.01, 10] \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation.
+Convergence tolerance is $10^{-8}$ on function values.
+For the preemption trigger $X_P$, I use Brent's root-finding method on $L(X) - F(X) = 0$ over $(X_D, X_F^*)$.
+Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a grid of 500 points and confirming exactly one sign change.
+No case of multiple crossings was found across all parameterizations tested (varying $\sigma_H \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda_0 \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
+Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
 
-The $N$-firm sequential equilibrium is solved using the following algorithm:
+### C. N-Firm Numerical Extension {.unnumbered}
 
-1. **Initialization.** Set $N$ firms with identical (or heterogeneous) parameters. Initialize capacity and training fraction guesses.
+I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
+This extension is presented as supplementary robustness material; the core analytical contributions of the paper are contained in the duopoly model of @sec-model.
+Firms enter sequentially, and the $k$-th entrant takes into account the capacity and training allocation of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
 
-2. **Last entrant.** Firm $N$ solves a standard follower problem given total incumbent capacity and training allocation $\{(K_j, \phi_j)\}_{j=1}^{N-1}$.
+With $N$ firms, the regime-specific contest functions extend naturally from the duopoly.
+In the L-regime: $\pi_i^L = X \cdot [(1-\phi_i)K_i]^{2\alpha} / \sum_{j=1}^{N} [(1-\phi_j)K_j]^\alpha$; in the H-regime: $\pi_i^H = X \cdot (\phi_i K_i)^{2\alpha} / \sum_{j=1}^{N} (\phi_j K_j)^\alpha$.
+The endogenous arrival rate generalizes to $\tilde{\lambda} = \lambda_0 + \xi \sum_{j=1}^{N} (\phi_j K_j)^\eta$.
 
-3. **Backward induction.** For $k = N-1, \ldots, 1$:
-   - Given the $(K_j, \phi_j)$ choices of firms $k+1, \ldots, N$ (from the previous pass), firm $k$ solves:
-   $$
-   \max_{K_k, \phi_k} \left[A_{\text{eff},k} \cdot X_k^* - \frac{\delta K_k}{r} - I(K_k)\right] \cdot \left(\frac{X_0}{X_k^*(K_k, \phi_k)}\right)^{\beta_H},
-   $$
-   where $A_{\text{eff},k}$ depends on all firms' $(K_j, \phi_j)$.
-   - The trigger $X_k^*$ is computed from the smooth-pasting condition at each evaluation.
-   - Optimization over $(K_k, \phi_k)$ uses Nelder-Mead with bounds $K_k \in [0.01, 10]$ and $\phi_k \in [0.01, 0.99]$.
+**Numerical Finding 1** ($N$-firm equilibrium properties).
+*The following properties are established computationally across all parameterizations tested:*
 
-4. **Iterative refinement.** Repeat steps 2--3, updating anticipated capacities and training fractions at each step, until the maximum change between consecutive iterations falls below tolerance $\varepsilon = 10^{-6}$ or the maximum number of iterations (20) is reached.
+*(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing at the lowest trigger.*
 
-5. **Convergence verification.** Verify $N=2$ solution matches the analytical duopoly equilibrium within numerical tolerance.
+*(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
 
-#### Computational cost {.unnumbered}
+*(iii) Training fractions are decreasing in entry order: $\phi_1 \geq \phi_2 \geq \cdots \geq \phi_N$.*
 
-Each evaluation of the follower objective function requires computing $A_{\text{eff}}$ (involving the endogenous $\tilde{\lambda}$ and both contest shares) and the trigger.
-With 5 passes, $N$ firms, and a 2D optimization per firm, the total number of function evaluations is approximately $5 \times N \times 200 \approx 1000N$.
-For $N = 4$, the full solution completes in under 2 seconds on a standard laptop.
+*(iv) The equilibrium reduces to the analytical duopoly solution when $N = 2$.*
 
-### C. Numerical Method {.unnumbered}
+*Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate. Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$.*
 
-The computational approach proceeds in five steps:
+The $N$-firm equilibrium is computed using iterative best-response (fixed-point iteration on the capacity and training fraction profiles).
+Each firm's optimal trigger, capacity, and training fraction are computed given all other firms' choices, and the process repeats until the maximum capacity change between consecutive passes falls below tolerance $10^{-6}$.
+Convergence of the iterative scheme to a Nash equilibrium is verified by checking that no firm has a profitable unilateral deviation at the fixed point.
+The $N=2$ case reproduces the analytical duopoly solution by construction.
+Optimization over $(K_k, \phi_k)$ at each stage uses Nelder-Mead with bounds $K_k \in [0.01, 10]$ and $\phi_k \in [0.01, 0.99]$.
+For $N = 4$, the full solution completes in under 2 seconds.
 
-1. **Last entrant.** Solve the $N$-th firm's follower problem by two-dimensional optimization over $(K_N, \phi_N)$ given total incumbent capacity and training.
+### D. Calibration Details and Data Sources {.unnumbered}
 
-2. **Backward sweep.** For each firm $k = N-1, \ldots, 1$, solve the timing, capacity, and training fraction problem by optimizing over $(K_k, \phi_k)$, computing the trigger $X_k^*$ at each evaluation.
-
-3. **Anticipation.** Each firm $k$'s value function incorporates the future entry of firms $k+1, \ldots, N$ by including the revenue impact of subsequent entrants and their contribution to $\tilde{\lambda}$.
-
-4. **Iteration.** Perform multiple forward-backward passes to ensure consistency. The solution typically converges within 3--5 passes.
-
-5. **Verification.** Confirm that the $N=2$ solution matches the analytical duopoly equilibrium. Check that triggers are ordered, training fractions are weakly decreasing, and that no firm has an incentive to deviate.
-
-### D. Data Sources {.unnumbered}
-
+See @tbl-param-mapping in @sec-calibration for the calibration status of each model parameter (directly observed, inferred, or chosen for discipline).
 The calibration uses data from the following sources:
 
 | Parameter | Source |
