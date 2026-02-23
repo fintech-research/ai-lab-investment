@@ -52,7 +52,7 @@ For a levered firm with leverage $\ell$ and training fraction $\phi$, the credit
 $$
 \text{spread} = \frac{\text{coupon}}{D(X)} - r_f,
 $$
-where $D(X)$ is the market value of debt (which differs from face value due to default risk) and $r_f$ is the risk-free rate.
+where $D(X)$ is the market value of debt (which differs from face value due to default risk) and $r_f$ is the risk-free rate.^[In the calibration, $r_f = r - \text{equity risk premium}$. The WACC $r$ combines the cost of equity and cost of debt; $r_f$ is the benchmark rate against which the credit spread is measured. For the baseline calibration with $r = 0.12$, I use $r_f = 0.04$, consistent with recent long-term Treasury yields.]
 Higher leverage increases the default boundary $X_D$, reducing debt value and widening spreads.
 The training fraction $\phi$ enters through the faith-based survival mechanism (Proposition 2): higher $\phi$ raises $A_{\text{eff}}$, lowering $X_D$ and compressing spreads for a given leverage level.
 This creates a novel interaction between training allocation and credit risk: firms that invest more in training may have *lower* default risk despite having less current (L-regime) revenue, because the H-regime option value provides a valuation floor.
