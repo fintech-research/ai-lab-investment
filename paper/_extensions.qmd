@@ -73,6 +73,11 @@ $$
 
 For our baseline calibration ($\alpha = 0.40$, $\eta = 0.07$), the optimal training fraction is $\phi^* \approx 15\%$, consistent with industry reports that frontier labs allocate approximately 10--20\% of compute to training.^[Amodei's "50\% stylized fact" [@amodei2025training] is higher than our $\phi^* \approx 15\%$ because his figure includes post-training reinforcement learning, fine-tuning, and evaluation runs, which our model subsumes into the training scaling law. When narrowly defined as pre-training compute only, the 10--20\% range aligns with our prediction.]
 
+**Remark 2** (Separability).
+*Because $\phi^*$ is independent of $X$, $K$, and the demand regime, it enters the revenue function as a multiplicative constant $A(\phi^*)^\eta(1-\phi^*)^\alpha$ that rescales revenue without interacting with investment timing, competition, or default risk.
+The core model results---optimal triggers, preemption equilibrium, revealed beliefs---are therefore unaffected by the training-inference decomposition; it serves as a microfoundation for the level of revenue per unit of capacity rather than a source of new strategic interactions.
+Making $\eta$ or $A$ state-dependent (e.g., allowing the scaling exponent to differ across regimes, or modeling inference-time scaling as a substitute for training) would break the separability and generate richer dynamics, but at the cost of additional parameters that are difficult to calibrate with current data.*
+
 #### Quality dynamics
 
 Over time, a firm can improve its model quality by accumulating training compute.
@@ -81,7 +86,9 @@ $$
 Q(t) = A \cdot (\phi^* K \cdot (t - \tau))^{\eta}, \quad t > \tau.
 $$
 
-This creates a *learning-by-investing* effect: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
+This creates a potential *learning-by-investing* channel: early entrants accumulate more training compute and thus have higher quality, generating a first-mover advantage beyond the standard preemption effect.
+However, this quality dynamics channel is not formally integrated into the equilibrium analysis or the calibration---doing so would require modeling quality as a state variable in the option-value problem, substantially increasing computational complexity.
+I note it here as a qualitative implication and a direction for future work.
 
 ### Heterogeneous Firms
 
