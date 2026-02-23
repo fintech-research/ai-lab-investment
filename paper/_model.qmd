@@ -203,6 +203,7 @@ Two symmetric firms, $i \in \{1, 2\}$, each hold options to invest in capacity a
 #### Regime-specific competition
 
 Revenue in each regime is governed by a Tullock contest success function [@tullock1980efficient; @skaperdas1996contest] over the regime-relevant capacity measure.
+The Tullock specification captures the essential feature of AI compute competition: firms' revenues depend on *relative* capacity, not just absolute capacity, because customers (enterprises, developers) allocate workloads to providers based on relative performance and availability.^[A Cournot specification---in which firms choose quantities and price clears a downward-sloping demand curve---would be an alternative. The main qualitative results (interior $\phi^*$, faith-based survival, preemption) are preserved under Cournot (see Appendix F), but the Tullock form is more tractable for the training-inference allocation problem because it cleanly separates the capacity and share effects.]
 In the L-regime, firms compete over *inference capacity*:
 $$
 \pi_i^L(X, \mathbf{K}, \boldsymbol{\phi}) = X \cdot \frac{[(1-\phi_i)K_i]^{2\alpha}}{[(1-\phi_i)K_i]^\alpha + [(1-\phi_j)K_j]^\alpha},
