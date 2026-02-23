@@ -22,7 +22,7 @@ plt.rcParams.update({
     "ytick.labelsize": 10,
     "figure.dpi": 300,
     "savefig.dpi": 300,
-    "text.usetex": False,
+    "text.usetex": True,
 })
 
 
