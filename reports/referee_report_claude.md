@@ -1,186 +1,202 @@
 # Referee Report
 
-## Manuscript: "Investing in Artificial General Intelligence"
+**Paper:** "Investing in Artificial General Intelligence"
 
-**Recommendation: Revise and Resubmit (Major Revision)**
-
----
-
-## 1. Summary
-
-This paper develops a continuous-time model of irreversible capacity investment by frontier AI laboratories racing to develop Artificial General Intelligence. Firms choose when to invest, how much compute capacity to build, and how to allocate it between model training (which builds capabilities and endogenously accelerates a regime switch to high demand) and inference serving (which generates current revenue). The framework combines real options (McDonald and Siegel, 1986; Dixit and Pindyck, 1994), regime switching (Guo, Miao, and Morellec, 2005), oligopoly competition via Tullock contests (Grenadier, 2002; Huisman and Kort, 2015), endogenous default risk (Leland, 1994), and diminishing returns calibrated to neural scaling laws. The main results include: (i) closed-form and semi-analytical investment triggers in a duopoly with training allocation and default risk; (ii) a "faith-based survival" mechanism whereby optimism about AGI, backed by training investment, lowers the endogenous default boundary; (iii) an illustrative "revealed beliefs" methodology that inverts the model to extract implied AGI timeline beliefs from observable investment decisions using two moments (CapEx/Revenue and training fraction); and (iv) an asymmetric "AI investment dilemma" in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
+**Recommendation:** Revise and Resubmit (Major Revision)
 
 ---
 
-## 2. Assessment of the Contribution
+## Summary
+
+This paper develops a real-options model of irreversible capacity investment for frontier AI laboratories, incorporating regime switching (low to high demand), a training-inference compute allocation decision, duopoly competition via Tullock contests, and endogenous default risk à la Leland (1994). The key novelty is the training-inference allocation: firms choose how to split scarce GPU capacity between model training (building future capability) and inference serving (generating current revenue), with regime-specific competition structures in each use. The paper delivers three propositions (optimal allocation, faith-based survival, preemption equilibrium) and a numerical finding on the asymmetric "AI investment dilemma." A stylized calibration to four firm archetypes illustrates the mechanisms.
+
+The paper tackles a genuinely important question—arguably the largest capital allocation event currently underway—and does so using a well-constructed theoretical framework that combines established tools in creative ways. The training-inference allocation is a novel and economically meaningful addition to the real options literature, and the faith-based survival mechanism is an elegant result. However, several issues in the model derivation, the analytical claims, and the calibration require attention before the paper is suitable for publication.
+
+---
+
+## 1. Contribution Assessment
 
 ### Strengths
 
-The paper tackles an extraordinarily timely and economically significant topic. The amounts being deployed—over $200 billion per year by leading firms—make the AI infrastructure race arguably the most important capital allocation event of the decade, yet formal structural models of these investment decisions are essentially absent from the finance literature. The paper fills a genuine gap.
+The paper's main contribution—embedding a training-inference allocation in a regime-switching real options framework—is genuine and well-motivated. The economic setting is novel: no existing paper in the real options or strategic investment literatures models the intertemporal compute allocation problem facing AI labs. The regime-specific competition structure (inference matters today, training quality matters post-adoption) creates a meaningful strategic trade-off that does not reduce to a standard R&D investment problem. The closest analog is the exploration-exploitation allocation in Akcigit and Kerr (2018), but the compute allocation is sufficiently different (shared hardware, regime-dependent payoff structures, Tullock-style competition) that the paper carves out a distinct niche.
 
-The central innovation—placing the training-inference allocation at the heart of the real options problem—is well motivated and economically compelling. This allocation has no close analog in the standard real options literature: training builds option value for a post-AGI regime while inference generates cash flows needed to survive, and the tension between these two uses of scarce compute is the defining operational challenge facing frontier labs. Embedding this within an endogenous regime-switching framework where aggregate training accelerates the arrival of transformative AI is a natural and elegant modeling choice.
+The faith-based survival mechanism (Proposition 2) is the paper's most striking result and is well-named. The idea that training investment raises the continuation value, which lowers the default boundary, which keeps the firm alive to benefit from the regime switch—this is a clean, economically intuitive channel that emerges naturally from the model structure. It connects real options theory to the "survival through belief" narrative that dominates AI industry discourse.
 
-The "faith-based survival" mechanism (Proposition 2) is the paper's most novel theoretical contribution. The idea that optimism about AGI, when backed by training investment, lowers the default boundary through the effective revenue coefficient $A_{\text{eff}}$ is both mechanically clean and economically insightful. It provides a structural explanation for why highly levered AI firms can sustain valuations that appear disconnected from current cash flows—an observation that has puzzled market commentators.
+The AI investment dilemma (Numerical Finding 2) is a useful quantitative contribution. The asymmetry between overinvestment and underinvestment losses is not obvious ex ante (the standard real options result is that the option value of waiting penalizes premature investment, which would suggest overinvestment is worse—but the training channel and leverage amplification add texture). The connection to the Amodei quote about trillion-dollar commitments is effective.
 
-The revealed beliefs methodology, while appropriately labeled "illustrative," represents a creative application of revealed preference theory to a setting where stated beliefs are noisy and potentially strategic. The use of the training fraction as a second identifying moment beyond CapEx/Revenue is a good insight—as demonstrated by the Anthropic-like vs. CoreWeave-like comparison in Table 2, where identical investment intensity maps to very different implied beliefs once training allocation is considered.
+### Weaknesses in Contribution Framing
 
-The writing is clear and well-organized throughout. The paper does a commendable job of connecting the formal model to real-world executive statements (Amodei, Pichai, Huang), grounding the abstractions in observable behavior.
+The paper somewhat undersells the methodological contribution relative to the applied contribution. The combination of regime switching, Tullock competition, training allocation, and endogenous default in a single tractable framework is technically impressive—but the paper presents this as four separate "contributions" (analytical, strategic, financing, quantitative) rather than emphasizing the integrated framework. I would recommend restructuring the introduction to lead with the unified framework as the primary contribution, with the propositions as results that flow from it.
 
-### Concerns About the Contribution
-
-While the paper assembles an impressive number of ingredients—real options, regime switching, Tullock contests, Leland default, scaling laws, endogenous arrival rates—the integration is at times more additive than synergistic. Many of the individual results (the option premium $\beta_H/(\beta_H - 1)$, the preemption trigger lying below the monopolist trigger, the convexity of credit spreads in leverage) are standard in the constituent literatures. The paper should be more precise about which results are genuinely new versus which are known results applied to a new setting. For instance, the comparative statics in Figure 3 are standard real options results; what is new is the training-allocation dimension and the faith-based survival mechanism. I would recommend reorganizing Section 2 to move more quickly to the novel elements and relegate the standard results to remarks or brief discussion.
-
-The gap between the theoretical model and the empirical application is a concern. The model is a stylized structural framework with many free parameters, and the "revealed beliefs" exercise is a calibration, not an estimation. The paper is admirably transparent about this (Section 5.1.2), but the distinction matters because the headline numbers in Table 2 (e.g., $\hat{\lambda} = 0.90$ for the Anthropic-like archetype) may be taken at face value by readers. The extreme sensitivity of $\hat{\lambda}$ to $\sigma_H$ shown in Table 5—ranging from 0.003 to 0.90 under $\pm 25\%$ variation—substantially undermines the quantitative content of the calibration. A 300-fold range in implied beliefs from a single parameter perturbation is not a confidence set; it is near-non-identification.
+The paper claims the duopoly is a "deliberate scope choice, not a limitation" (p. 3–4). This is somewhat defensive. The justification that frontier AI training is highly concentrated is reasonable, but the paragraph then acknowledges that "broader oligopoly crowding, coalition effects, entry and exit" are important. A more forthright treatment would be to simply state that duopoly is the analytically tractable case, that the N-firm extension in Appendix C confirms robustness, and leave it at that.
 
 ---
 
-## 3. Literature Review
+## 2. Literature Review
 
-The literature review is comprehensive and well-organized, covering the relevant building blocks from real options, strategic investment, structural credit risk, technology adoption, and the economics of AI. I have several specific suggestions.
+The literature review is comprehensive and well-organized. The paper correctly identifies its core building blocks (McDonald and Siegel 1986, Grenadier 2002, Huisman and Kort 2015, Leland 1994, Guo et al. 2005) and articulates clearly how it extends each. A few gaps:
 
-**Missing or underemphasized references:**
+1. **Lambrecht and Perraudin (2003)** study real options in duopoly with incomplete information—relevant given that the paper's key mechanism involves heterogeneous beliefs about λ. The belief heterogeneity across firms is central to the AI investment dilemma but is not connected to the literature on investment under disagreement.
 
-1. The paper should engage more with the literature on investment under learning and Bayesian updating. Décamps, Mariotti, and Villeneuve (2005, "Investment Timing under Incomplete Information," *Mathematics of Operations Research*) and Lambrecht and Perraudin (2003, "Real Options and Preemption under Incomplete Information," *JFQA*) study how firms update beliefs about demand in real time. These are directly relevant because in practice, AI labs continually update their beliefs about $\lambda$ as new capability demonstrations occur, and the static-beliefs assumption in the current model is among its strongest limitations.
+2. **Nishihara and Ohyama (2021)** and the broader literature on multi-stage investment under regime switching may be relevant, particularly given the discussion of staged investment strategies in Section 4.3.3.
 
-2. The connection to the capacity investment under uncertainty literature beyond Pindyck (1988) could be strengthened. Dangl (1999, "Investment and Capacity Choice under Uncertain Demand," *European Journal of Operational Research*) and Huisman and Kort (2015) are cited, but Bar-Ilan and Strange (1998, "A Model of Sequential Investment," *Journal of Economic Dynamics and Control*) on incremental investment and Abel and Eberly (1996, "Optimal Investment with Costly Reversibility," *Review of Economic Studies*) on irreversibility deserve mention given the paper's emphasis on the lumpiness of AI investment.
+3. **Décamps, Mariotti, and Villeneuve (2006)** on irreversible investment with regime switching is a closer predecessor than acknowledged. Their two-regime model with absorbing high state is structurally similar; the paper should discuss how the training-inference allocation and Tullock competition differentiate the present framework.
 
-3. On the AI economics side, the paper cites Acemoglu (2024) and Korinek (2024) but does not engage with Traina (2024, "Computers and the Decline in Manufacturing Investment," *JF*) on how computing capital differs from traditional capital goods, which is relevant to the $I(K) = cK^\gamma$ specification. Tambe, Hitt, Rock, and Brynjolfsson (2020) on complementary investments in AI would also strengthen the discussion of the operating cost parameter $\delta$.
+4. The paper cites the AI economics literature (Acemoglu 2024, Korinek 2024, Jones 2024) but does not engage substantively with it. How does this paper's partial equilibrium model relate to the general equilibrium growth implications? A brief discussion would strengthen the positioning.
 
-4. The endogenous default literature has grown significantly since Leland (1994). The paper cites Hackbarth, Mathews, and Robinson (2014) and Kumar and Yerramilli (2018), but Morellec (2004, "Can Managerial Discretion Explain Observed Leverage Ratios?," *RFS*) on endogenous investment and capital structure and Strebulaev (2007, "Do Tests of Capital Structure Theory Mean What They Say?," *JF*) on dynamic capital structure would provide useful context for the leverage-training substitution result.
-
-**Positioning relative to closest papers:**
-
-The paper correctly identifies Huisman and Kort (2015) as the closest strategic investment model and Kumar and Yerramilli (2018) as the closest investment-default model. The paper should be more explicit about the formal extensions relative to each. A comparison table showing which features each paper includes (capacity choice, training allocation, regime switching, endogenous arrival, default risk, $N$-firm, contest competition) would be efficient and clarify the incremental contribution.
+5. The empirical AI literature (Babina et al. 2024, Eisfeldt et al. 2024) is cited but not leveraged for calibration or testable predictions. If these papers provide relevant estimates (e.g., AI firm betas, investment intensities), they could discipline the calibration.
 
 ---
 
-## 4. Model Review
+## 3. Model Derivation and Proofs
 
-### 4.1 Environment and Technology (Sections 2.1–2.2)
+### 3.1 Proposition 1 (Optimal capacity and training fraction)
 
-**The demand specification is standard and appropriate.** GBM with regime-dependent drift and volatility, plus absorbing Poisson regime switch, is well-suited to the binary uncertainty about transformative AI. The absorbing assumption (no "AI winter") is a limitation the paper acknowledges but should discuss more carefully. The possibility of reversal—a period of exuberance followed by disappointment, as occurred in prior technology cycles—would change the analysis significantly by reducing the value of training and increasing the default risk of highly levered firms. Even a brief formal extension showing how a non-absorbing $H$-regime (with reversion rate $\lambda'$ back to $L$) would affect the faith-based survival mechanism would strengthen the paper.
+The proof is generally correct but has a significant presentation issue. The proposition statement mixes the H-regime closed-form (which is the standard real options result with training allocation) and the L-regime joint optimization (which is the novel result). These should be more clearly separated, since the H-regime capacity formula is essentially a direct calculation while the L-regime optimization involves the effective revenue coefficient $A_{\text{eff}}$.
 
-**The endogenous arrival rate (Equation 2) is novel but raises questions.**
+**Issue with the capacity formula.** The stated optimal capacity (p. 13) is:
 
-First, the functional form $\tilde{\lambda} = \lambda_0 + \xi \cdot [(\phi_i K_i)^\eta + (\phi_j K_j)^\eta]$ assumes additivity across firms—training compute contributions are separable. In practice, there are strong complementarities (e.g., open-source model releases that enable others to build upon) and substitutabilities (duplicative training runs on similar data). The additive form is a natural starting point, but the paper should discuss how alternative aggregation (e.g., $[\sum (\phi_j K_j)]^\eta$ with industry-level diminishing returns versus firm-level diminishing returns) would change the externality and welfare results.
+$$K^* = \left[\frac{\delta(\alpha\beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha\beta_H)}\right]^{1/(\gamma-1)} \cdot \phi^{-\alpha/(\gamma-1)}$$
 
-Second, with $\eta = 0.07$, the contribution of any individual firm's training to $\tilde{\lambda}$ is extremely flat. Doubling training compute raises the firm's contribution by only 5%. This means the endogenous channel is quantitatively weak for realistic parameter values, and the model effectively reduces to the exogenous-$\lambda$ case for most purposes. The paper should be upfront about this: is the endogenous channel meant to be a quantitatively important mechanism or a qualitative illustration of the externality?
+This is derived from the H-regime FOC. The condition $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$ ensures the denominator is positive and the capacity is finite. However, the dependence on $\phi$ through $\phi^{-\alpha/(\gamma-1)}$ means that this is not truly the "optimal capacity" but rather the optimal capacity *conditional on* a given $\phi$. The joint optimization over $(K, \phi)$ must solve the coupled system, and the paper does not provide the reduced-form expression for $K^*$ after substituting the optimal $\phi^*$. This is fine if acknowledged explicitly, but as stated, Proposition 1 is slightly misleading because it gives the impression of a closed-form solution for the joint optimum.
 
-**The training-inference allocation (Section 2.2.1) is the key innovation but the timing assumption warrants more discussion.** The paper assumes $\phi$ is chosen at investment time and fixed thereafter. The justification (18–24 month planning horizons, GPU architecture choices) is reasonable for the initial allocation but increasingly strained as the firm operates: in practice, firms dynamically reallocate GPUs between training and inference on timescales of weeks. The paper acknowledges this limitation in Section 6.4 but should provide intuition for the direction of bias. If dynamic reallocation were allowed, would the initial $\phi^*$ be higher or lower? I conjecture it would be lower (firms can start with more inference and shift to training as signals about the regime switch arrive), which would affect the revealed beliefs calibration.
+**The Inada conditions argument** (Step 5, Appendix A) is correct. The proof that $\partial A_{\text{eff}}/\partial\phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial\phi \to -\infty$ as $\phi \to 1^-$ follows from $\alpha \in (0,1)$, and the strict concavity of $A_{\text{eff}}$ in $\phi$ (second derivative strictly negative) guarantees uniqueness. This is clean.
 
-**The revenue specification deserves scrutiny.** In the L-regime, revenue is $\pi^L_i = X \cdot [(1 - \phi_i)K_i]^\alpha$ (single firm) or the Tullock form (duopoly). In the H-regime, revenue is $\pi^H_i = X \cdot (\phi_i K_i)^\alpha$. This assumes a clean switch: today only inference matters, post-AGI only training quality matters. In reality, the transition is likely gradual, with the relative importance of training versus inference shifting smoothly. A mixing parameter $\theta(t) \in [0, 1]$ that transitions from L-type to H-type revenue over time (rather than a binary switch) would be more realistic and would modify the sharp knife-edge results about $\phi^*$.
+**Comparative statics.** The claims $\partial\phi^*/\partial\lambda_0 > 0$ and $\partial\phi^*/\partial(r-\mu_L)^{-1} < 0$ follow from the implicit function theorem applied to the FOC, using the signs of the cross-partial derivatives. The argument is correct. However, the comparative static $\partial\phi^*/\partial\xi > 0$ (Corollary 1) is stated as "established numerically" rather than analytically, which is appropriate given the endogenous feedback.
 
-### 4.2 Single-Firm Benchmark (Section 2.3)
+### 3.2 Proposition 2 (Faith-based survival)
 
-**Proposition 1 (Optimal capacity and training fraction):** The proof in Appendix A is correct and well-structured. I have verified the key steps:
+This is the paper's cleanest analytical result and the proof is correct. A few observations:
 
-- Step 1 (optimal trigger given $(K, \phi)$): Standard value-matching and smooth-pasting. Correct.
-- Step 2 (NPV at trigger): Uses the standard result that NPV at the optimal trigger is $b(K)/(\beta_H - 1)$. Correct.
-- Step 3 (joint optimization): The proportionality $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / b(K)^{\beta_H - 1}$ follows from substituting the trigger into the option value. Correct.
-- Step 4 (FOC for $K$, Equation 23): I have verified the logarithmic differentiation. The existence condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ ensures the interior solution for capacity, balancing marginal cost convexity against marginal revenue concavity. Correct.
-- Step 5 (interior $\phi^*$): The Inada-condition argument is clean. With $\alpha \in (0,1)$, both boundary derivatives diverge as claimed. Strict concavity of $A_{\text{eff}}$ in $\phi$ follows from $\alpha(\alpha - 1) < 0$ and both bracketed terms being positive. This is the most elegant piece of the proof.
-- Step 6 (comparative statics): These follow directly from the implicit function theorem. The signs are correct.
+**The faith-based survival condition** (Equation 21) is:
 
-**One issue in the H-regime capacity formula:** The expression $K^* = [\cdots]^{1/(\gamma-1)} \cdot \phi^{-\alpha/(\gamma-1)}$ shows that $K^* \to \infty$ as $\phi \to 0$. This is technically correct (if you allocate nothing to training, you need infinite capacity to generate H-regime revenue from training quality, which is zero regardless of $K$)—but the formula is meaningless at $\phi = 0$. The paper should note explicitly that this closed form applies only for $\phi > 0$ and that the joint optimization over $(K, \phi)$ ensures $\phi^* > 0$, preventing the degeneracy.
+$$\frac{(\phi_i K_i)^\alpha \cdot s_i^H}{r - \mu_H} \cdot (r - \mu_L) > [(1 - \phi_i)K_i]^\alpha \cdot s_i^L$$
 
-**The simplified option value $F_L = C \cdot X^{\beta_H}$ (Section 2.3.3):** The condition for this simplification—$(1 - 1/\beta^+_L)/\alpha \geq 1$—is verified for the baseline calibration. However, several of the comparative statics exercises in later sections vary parameters (particularly $\alpha$ and $\sigma_L$) over ranges where this condition may fail. The paper should either: (a) verify the condition holds for all parameter values used in the figures and tables, or (b) use the full two-term solution (Equation 13) throughout. As written, it is unclear whether Figures 3–4 and Tables 4–5 use the simplified or full solution, and whether results could change under the full solution.
+The paper states that this holds for $\phi_i \gtrsim 0.15$ at the baseline. This threshold depends on all model parameters, and the paper should provide the formula for $\underline{\phi}$ explicitly (it can be solved from the condition with $s_i^L = s_i^H = 1/2$ for the symmetric duopoly case). This would make the result more portable and allow readers to assess the condition for alternative calibrations.
 
-### 4.3 Duopoly with Default Risk (Section 2.4)
+**Part (iii) on leverage-training substitution** is described as a "mechanical relationship" rather than a statement about optimality. This is appropriately cautious, but the paper could go further: is there any reason to believe that firms would move along this iso-$X_D$ locus in practice? If not, the result is an accounting identity rather than an economic prediction. The paper should either develop an economic story for when this substitution operates or downgrade the claim.
 
-**Proposition 2 (Endogenous default with faith-based survival):** The proof is largely correct, but Part (ii) requires a sufficient condition ($R_H > R_L$) that is not always satisfied. This is acknowledged in the proof text but deserves more prominence. Specifically:
+**Part (iv)** is straightforward (rival capacity reduces contest shares, raises default boundary). No issues.
 
-- When $\phi$ is low (mostly inference), $R_H$ can be small relative to $R_L$, and $\partial A_{\text{eff}}/\partial \tilde{\lambda}$ could be negative—meaning higher $\tilde{\lambda}$ could *raise* the default boundary. This would reverse the faith-based survival mechanism for inference-heavy firms.
-- The paper should state explicitly the parameter region where faith-based survival holds, ideally as a closed-form condition on $\phi$ (e.g., $\phi > \underline{\phi}(\mu_L, \mu_H, r, s^L, s^H)$). This is important for the CoreWeave-like archetype ($\hat{\phi} = 0.20$), which may or may not satisfy the condition.
+### 3.3 Proposition 3 (Preemption equilibrium)
 
-**Part (iii), the leverage-training substitution, is an interesting comparative static** but the wording could create confusion. The result says a firm can maintain the same $X_D$ while increasing leverage by increasing $\phi$. But this does not mean the firm is *better off*: higher $\phi$ sacrifices L-regime revenue, and the net effect on equity value is ambiguous. The paper should clarify that this is a mechanical relationship, not an optimal strategy.
+This is the paper's most complex result and the proof has both strengths and gaps.
 
-**Proposition 3 (Preemption equilibrium):** The existence and uniqueness argument (Part (i)) follows the Huisman and Kort (2015) construction. The intermediate value theorem application is correct: $L(0) < 0 < F(0)$ and $L(X^*_F) > F(X^*_F)$ by the monopoly-phase profit accumulation argument. The single-crossing claim requires that the leader value grows more slowly than $X^{\beta_H}$ for large $X$; since the leader value is eventually linear in $X$ (once both firms are invested), this is satisfied for $\beta_H > 1$.
+**Part (i): Existence and uniqueness of $X_P$.** The proof follows the Huisman and Kort (2015) construction, which is appropriate. The argument that $L(0) < 0 < F(0)$ and $L(X_F^*) > F(X_F^*)$ establishes existence by the intermediate value theorem. However:
 
-**Part (ii), $\phi^*_L \geq \phi^*_F$:** The economic intuition is persuasive—the leader faces lower marginal cost of training during the monopoly phase because its L-regime contest share is 1 regardless of $\phi_L$. However, the formal argument has a gap. The paper states that the leader's L-regime revenue is "$X \cdot [(1 - \phi_L)K_L]^\alpha$ with no competition for market share"—but this is the *monopoly-phase* revenue. After the follower enters, the leader does face inference competition, and its allocation $\phi_L$ affects its duopoly contest share. The proof should account for both phases of the leader's payoff (monopoly and post-follower-entry) and show that the monopoly-phase effect dominates. The numerical verification is reassuring but a more rigorous argument would strengthen the result.
+- The claim $L(X_F^*) > F(X_F^*)$ is justified by the assertion that "the leader's cumulative monopoly-phase profits exceed the follower's option value at the point of indifference." This is intuitive but not formally proved. A formal argument should show that the monopoly-phase revenue integral exceeds the follower's option value increment over $[X_P, X_F^*]$. This is likely straightforward but needs to be done.
 
-**Part (v), credit spread increasing in $\lambda_0$:** The claim that $X_P$ decreases faster than $X_D$ with $\lambda_0$ is stated but not proven—it is verified numerically. For a top journal, this should either be proved analytically (showing the elasticities satisfy $\varepsilon_{X_P, \lambda_0} < \varepsilon_{X_D, \lambda_0} < 0$) or clearly labeled as a numerical finding rather than part of the proposition.
+- **Single crossing** is verified numerically rather than analytically. The paper provides a heuristic argument (leader value approximately affine, follower value convex on $(0, X_F^*)$) but acknowledges this is not a proof. For a top finance journal, this is the most significant analytical gap. The paper should either (a) provide conditions under which single crossing holds analytically (perhaps restricting to certain parameter regions), or (b) state clearly that uniqueness is a numerical finding and adjust the proposition statement accordingly. Currently, part (i) says the preemption trigger "exists and is unique under the standard conditions"—but the uniqueness relies on numerics, not on those standard conditions alone.
 
-### 4.4 Tullock Contest Specification
+**Part (ii): $\phi_L^* \geq \phi_F^*$.** The qualitative argument is sound: the leader's marginal cost of training is lower during the monopoly phase because the contest share is 1. The dual penalty for the follower (direct capacity reduction plus contest share loss) is a nice observation. However, the result is "semi-analytical"—the inequality is verified numerically across calibration parameterizations. This is acceptable for a top journal if the paper is transparent about the scope of numerical verification (which it is in Table 2), but the paper should note that it has not identified parameter configurations where the inequality fails (or proved that none exist).
 
-The choice of Tullock contests over Cournot is motivated by tractability, and Appendix F notes that the main results are preserved under Cournot. However, the Tullock specification has a conceptual issue in this context. In a standard Tullock contest, the total prize is fixed and firms compete for shares. Here, the "prize" is $X$ (total demand), which is the same regardless of total industry capacity. This means that if all firms double their capacity, individual revenues remain unchanged—total industry output is demand-determined, not supply-determined. This is a strong assumption that rules out the possibility that more compute availability grows the market (e.g., by enabling new applications or lowering prices). The Cournot alternative, where firms' capacity choices affect the equilibrium price, may be more appropriate for this setting. At minimum, the paper should discuss this limitation.
+**Parts (iii)–(v)** are purely numerical findings. Part (v), that credit spreads are increasing in $\lambda_0$ at the preemption trigger, is economically interesting: firms that invest earlier due to optimism face higher credit risk. The appendix provides a plausible explanation (the trigger falls faster than the default boundary), but the lack of an analytical proof means this result is more fragile than the others.
 
-### 4.5 The Revealed Beliefs Methodology (Section 5.1)
+### 3.4 Numerical Finding 2 (Asymmetric AI investment dilemma)
 
-The methodology is creative but has structural identification concerns beyond those the paper already acknowledges:
+The three-channel decomposition (capacity, timing, training allocation) is useful for intuition. The argument that all three channels contribute $W''' < 0$ is heuristic but convincing. The key insight—that over-training sacrifices L-regime inference revenue needed for survival during the longer-than-expected pre-switch period—is novel relative to standard real options.
 
-1. **The inversion uses one moment (CapEx/Revenue) to identify $\hat{\lambda}$, and checks the second moment ($\hat{\phi}$) as a diagnostic.** This is not a joint estimation. A proper two-moment approach would minimize a weighted distance between model-predicted and observed $(I/R, \phi)$ pairs, which could yield different $\hat{\lambda}$ values than the single-moment inversion. The paper should either implement the joint estimation or explain why the sequential approach is preferred.
+However, the paper does not provide the conditions under which the asymmetry holds. Is it possible for parameter configurations to reverse the asymmetry? The paper says "across all parameterizations tested" but does not characterize the boundary of the result. A sufficient condition for $W''' < 0$—even an approximate one—would strengthen the finding considerably.
 
-2. **The mapping from $\lambda$ to investment intensity is non-monotonic in some regions of the parameter space.** Higher $\lambda$ increases the option value and encourages investment, but also shifts allocation toward training, which reduces L-regime revenue (the denominator of CapEx/Revenue). For extreme parameter values, these effects could partially offset. The paper should verify global monotonicity of the CapEx/Revenue-to-$\lambda$ mapping over the relevant range.
+### 3.5 Technical Issues in the Model
 
-3. **Observable heterogeneity is not fully controlled.** The four archetypes differ in WACC, leverage, and training fraction, yet the inversion holds most parameters at common baseline values. Table 1 shows firm-specific WACCs ranging from 0.10 to 0.18—a range that, through the $r$-sensitivity in Table 4 ($\varepsilon_{X^*} = -20.8$), could easily account for the cross-sectional dispersion in investment intensity *without any heterogeneity in $\lambda$*. The paper should present a version of the inversion that uses firm-specific WACCs and show how this affects the implied $\hat{\lambda}$ ordering.
+1. **Equation (7), $A_{\text{eff}}$:** The effective revenue coefficient treats the L-regime inference revenue and H-regime training revenue as additively separable. This is correct under the model's assumption that the firm's capacity allocation $\phi$ is fixed. But the notation $A_{\text{eff}}(\phi, K)$ makes $K$ appear as an argument, while in the single-firm case, $K$ enters only through $[(1-\phi)K]^\alpha$ and $(\phi K)^\alpha$. In the duopoly, $K$ also enters through the contest shares. The paper should be more explicit about when $A_{\text{eff}}$ depends on the rival's choices (Equation 18) versus only on the firm's own choices (Equation 7).
 
----
+2. **The HJB equation (Equation 11):** The substitution of $F_H(X) = B_H X^{\beta_H}$ into the regime-switching term is standard. However, the paper should note explicitly that this assumes the firm has not yet invested in either regime—$F_H(X)$ is the H-regime *option* value, not the installed value. If the firm invests before the regime switch, the post-switch value is $V_H$ (installed), not $F_H$ (option). The current notation is consistent but could confuse readers who are thinking about the installed case.
 
-## 5. Detailed Technical Comments
+3. **Condition (A3):** The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ is crucial for the simplified option value $F_L = C \cdot X^{\beta_H}$ to apply. The paper verifies this for the baseline calibration ($\beta_L^+ \approx 1.63$, ratio $\approx 2.42$). But the sensitivity analysis varies parameters over wide ranges (e.g., $\alpha \in [0.20, 0.60]$ in Appendix B). At $\alpha = 0.60$, the ratio becomes $(1 - 1/1.63)/0.60 \approx 0.64 < 1$, violating (A3). The paper acknowledges this possibility (p. 12–13) but does not provide results for the full two-term solution. If the sensitivity analysis pushes into the (A3)-violating region, the numerical results in those regions may be incorrect (or at least require the two-term solution). This should be checked and discussed.
 
-### Mathematical Issues
+4. **Tullock contest specification:** The L-regime revenue (Equation 15) uses $[(1-\phi_i)K_i]^{2\alpha}$ in the numerator, not $[(1-\phi_i)K_i]^{\alpha}$. This means firm $i$'s revenue is $X \cdot s_i^L \cdot [(1-\phi_i)K_i]^\alpha$, where $s_i^L$ itself depends on $[(1-\phi_i)K_i]^\alpha$. The total industry revenue is therefore:
 
-1. **Equation (7), $A_{\text{eff}}$:** The first term should be $[(1-\phi)K]^\alpha / (r - \mu_L + \tilde{\lambda})$. In the single-firm case, there is no contest share, so this is correct. But the transition to the duopoly version (Equation 18) introduces contest shares multiplicatively. The paper should be more explicit about the nesting: Equation (7) is the single-firm case; Equation (18) is the duopoly generalization. Currently the reader encounters $A_{\text{eff}}$ in both forms and must infer the connection.
+$$\sum_i \pi_i^L = X \cdot \frac{\sum_i [(1-\phi_i)K_i]^{2\alpha}}{\sum_j [(1-\phi_j)K_j]^\alpha}$$
 
-2. **Equation (10):** This is the H-regime trigger, but the LHS is labeled $X^*$ without a regime subscript. Later (Equation 14), $X^*$ appears again for the L-regime trigger. The notation should be consistent—use $X^*_H$ in Equation (10) and $X^*_L$ in Equation (14).
+which in the symmetric case reduces to $X \cdot K^\alpha$—the standard single-firm revenue. This is consistent and correct, but the non-standard exponent $2\alpha$ (rather than the usual $\alpha$ in the numerator with $\alpha$ in the denominator) should be noted. In particular, the Tullock specification has the property that total industry revenue increases when capacity becomes more asymmetric (the large firm captures disproportionately more). Is this a desirable feature for the AI setting? A brief discussion would be helpful.
 
-3. **The default boundary (Equation 19):** The characteristic root $\beta^-_s$ depends on regime-specific parameters $(\sigma_s, \mu_s)$. In the L-regime, the relevant characteristic equation should incorporate the regime-switching term ($r + \tilde{\lambda}$ instead of $r$), analogous to the option value ODE (Equation 11). The paper uses $\beta^-_s$ without specifying which regime's parameters enter. If the firm is in regime $L$ with the possibility of switching to $H$, the default boundary should be computed using the L-regime ODE with the $\tilde{\lambda}$ adjustment. Please clarify.
-
-4. **Proof of Proposition 2, Part (ii):** The expression for $\partial A_{\text{eff},i}/\partial \tilde{\lambda}$ uses $R_L = [(1-\phi_i)K_i]^\alpha \cdot s^L_i / (r - \mu_L)$. But from Equation (18), the L-regime term in $A_{\text{eff},i}$ is $[(1-\phi_i)K_i]^\alpha \cdot s^L_i / (r - \mu_L + \tilde{\lambda})$, not divided by $(r - \mu_L)$. I believe the proof defines $R_L$ and $R_H$ as the *per unit $X$* revenue components extracted from $A_{\text{eff}}$—but the factoring should be shown more explicitly. As written, the derivative may have an error in the denominator. Specifically, writing $A_{\text{eff},i} = \frac{1}{r - \mu_L + \tilde{\lambda}}[R_L + \tilde{\lambda} R_H]$ where $R_L$ and $R_H$ are *independent of $\tilde{\lambda}$* requires:
-   $$R_L = [(1-\phi_i)K_i]^\alpha \cdot s^L_i, \quad R_H = \frac{(\phi_i K_i)^\alpha \cdot s^H_i}{r - \mu_H}$$
-   which differs from what is stated in the proof. Please verify and correct.
-
-5. **Numerical Finding 2 (Asymmetric AI investment dilemma):** The paper claims the asymmetry arises from $W'''(\lambda_{\text{true}}) \neq 0$ but only provides a heuristic decomposition into capacity, timing, and training channels. The signs of each channel's contribution to $W'''$ are stated but not derived. For the capacity channel, the argument that $I(K) = cK^\gamma$ convex and revenue concave in $K$ implies $W''' < 0$ is not immediate—it depends on how $K^*(\lambda)$ maps through the NPV function. A formal derivation of $W'''$ (at least for the unlevered case) would strengthen this finding considerably.
-
-### Calibration Issues
-
-6. **Table 1, Training fractions:** These are described as "estimated from industry reports on compute allocation." The sources should be cited more specifically. If exact figures are unavailable (which is likely, as firms do not disclose $\phi$ directly), the paper should describe the methodology for estimating $\hat{\phi}$ from observable proxies (e.g., reported training run costs, GPU hours dedicated to training, inference API pricing). Without this, the training fraction is effectively a free parameter, which undermines its role as an identifying moment.
-
-7. **The $\xi$ calibration (Section 4.3):** The paper calibrates $\xi$ so that industry training compute contributes "approximately half" of the total arrival rate. This is a consequential assumption—it determines the quantitative importance of the endogenous channel. Yet no justification is provided beyond the 50% figure. What is the basis for this split? If $\xi$ were calibrated to 25% or 75%, how would the results change?
-
-8. **Revenue concepts (Table 1):** The paper correctly notes that Google's relevant revenue is Google Cloud revenue, not Alphabet total. But the same issue applies to other archetypes. OpenAI's $4B (2024) and $12B (2025) figures presumably include ChatGPT subscription revenue, API revenue, and potentially enterprise contracts—but some of this revenue comes from models trained by other firms (via API resale) or from non-compute activities. The revenue concept should be defined precisely and consistently across all archetypes.
-
-### Exposition
-
-9. The paper is 60 pages with appendices. For a journal submission, significant compression is needed. The comparative statics figures (Figures 3, 6) convey standard real options results and could be moved to an online appendix. The policy discussion (Section 6) is interesting but speculative; it could be shortened substantially. The literature review in Section 1.1 is thorough but long—moving some of it to footnotes would improve flow.
-
-10. The paper introduces many parameters ($\mu_L, \mu_H, \sigma_L, \sigma_H, r, \alpha, \gamma, c, \delta, \lambda_0, \xi, \eta, \phi, \ell, c_d, b$). A consolidated parameter table early in the paper, with definitions, baseline values, and interpretations, would greatly aid readability.
-
-11. The term "faith-based survival" is colorful and memorable but may be perceived as informal for a top finance journal. Consider a more neutral label (e.g., "optimism-driven solvency" or "belief-supported survival") and reserve the vivid language for the introduction.
+5. **Static $\phi$ assumption:** Section 5.4 provides a useful discussion of the direction of bias. The argument that the static model overstates $\phi^*$ (because the option to reallocate later means the firm can start with more inference) is correct and important. However, the claim that "implied $\lambda$ would therefore be higher under the dynamic model" is an implication for the revealed beliefs exercise, not for the model's predictions. The paper should separate these two statements more clearly.
 
 ---
 
-## 6. Additional Suggestions
+## 4. Calibration
 
-1. **Monte Carlo validation.** The paper uses analytical and semi-analytical solutions throughout. A Monte Carlo simulation that confirms the theoretical investment triggers and default boundaries by simulating demand paths, investment decisions, and default events would provide independent validation—especially for the preemption equilibrium, where the solution involves numerical optimization.
+### Strengths
 
-2. **Testable predictions.** The model generates several cross-sectional predictions: firms with higher $\hat{\phi}$ should have (i) lower credit spreads conditional on leverage (faith-based survival), (ii) higher equity betas (more growth option content), and (iii) higher implied $\lambda$ (more optimistic beliefs). These are in principle testable using the (admittedly small) cross-section of AI infrastructure firms. Even a preliminary empirical exercise matching these predictions to observable market data would substantially strengthen the paper.
+The calibration is appropriately described as "stylized" and the paper is transparent about which parameters are directly observed, inferred, or chosen for discipline (Table 3). The firm archetypes are plausible composites, and the paper correctly uses sector-specific revenue for Google (Google Cloud, not Alphabet total).
 
-3. **Welfare analysis.** Section 6.2 informally discusses the tension between overinvestment from preemption and underinvestment in training from the externality. This deserves formal treatment. Computing the socially optimal investment policy (maximizing total surplus, internalizing the $\tilde{\lambda}$ externality) and comparing it to the decentralized equilibrium would quantify the welfare losses and provide a foundation for the policy discussion.
+### Issues
 
-4. **Dynamic $\phi$.** The paper repeatedly flags the static $\phi$ assumption as a limitation. Rather than a full dynamic extension, a two-period version (choose $\phi_1$ at investment, then update to $\phi_2$ after observing demand) would provide intuition for the direction of bias and could be solved analytically.
+1. **$\eta = 0.07$ as a "directly observed" scaling law exponent.** The Kaplan et al. (2020) and Hoffmann et al. (2022) papers report scaling exponents for model *loss* as a function of training compute—not for the arrival rate of AGI. The mapping from "doubling compute reduces loss by $X$%" to "doubling compute raises the probability of regime switch by $Y$%" is not straightforward and involves substantial assumptions about what constitutes a "regime switch." Calling this parameter "directly observed" overstates the empirical grounding. I would recommend reclassifying $\eta$ as "inferred" and discussing the mapping from scaling laws to arrival rates more carefully. This is probably the calibration's weakest link.
 
----
+2. **$\alpha = 0.40$ and $\gamma = 1.50$** are both "inferred" or "chosen for discipline" but play central roles in the results (Table 7 shows them among the highest-elasticity parameters). The paper should provide more discussion of alternative values and how the results change. For example, $\alpha = 0.40$ implies substantial diminishing returns—but in a winner-take-most market (which the Tullock specification allows), higher $\alpha$ might be more appropriate.
 
-## 7. Minor Comments
+3. **The baseline $\lambda_0 = 0.05$ with total $\lambda = 0.10$** implies an expected time to regime switch of 10 years—roughly 2035. This is a "moderate prior" as stated, but it is significantly more pessimistic than the beliefs attributed to Amodei ($\lambda \approx 0.30$–$0.50$) or Hassabis ($\lambda \approx 0.10$–$0.15$). The paper should discuss whether the baseline is meant to represent the marginal investor's belief, the median belief, or the author's belief.
 
-- p. 2: "yielding a model whose quality scales as a power law of compute invested"—this elides the distinction between pre-training compute and fine-tuning compute, which have different scaling properties.
-- p. 3: The Amodei (2026) quote about $1 trillion of compute appears before being formally contextualized by the AI investment dilemma framework. Consider moving it to Section 5.4 where it fits naturally.
-- p. 7, Equation (2): The notation $\tilde{\lambda}(\phi_i, K_i, \phi_j, K_j)$ makes explicit the duopoly dependence but is cumbersome. Consider $\Lambda(\mathbf{K}, \boldsymbol{\phi})$ for the general case.
-- p. 9, Equation (3): Revenue is $X \cdot [(1-\phi_i)K_i]^\alpha$ in the single-firm case but $X \cdot [(1-\phi_i)K_i]^{2\alpha} / \{[(1-\phi_i)K_i]^\alpha + [(1-\phi_j)K_j]^\alpha\}$ in the duopoly (Equation 15). The single-firm revenue therefore does *not* nest as $K_j = 0$ in the Tullock form (which gives $X \cdot [(1-\phi_i)K_i]^\alpha$, matching Equation (3))—it does nest, but only because $2\alpha / 1 = 2\alpha$ simplifies when the denominator is the firm's own capacity. This should be noted explicitly.
-- p. 15, Figure 4(b): The $y$-axis label "Switching value coefficient $C$" should define $C$ in the caption for readers who skip to the figures.
-- p. 18, Equation (19): The subscript $s$ on $\beta^-_s$ is ambiguous—does it refer to the current regime at the time of default? Presumably $s = L$ since the firm can default in either regime but the faith-based mechanism operates in $L$. Clarify.
-- p. 22, Section 3.1: "iterative best-response (fixed-point iteration on the capacity and training fraction profiles), which is a numerical method distinct from the backward-induction solution concept of the duopoly"—this distinction should be emphasized more, since the $N$-firm equilibrium concept differs from the duopoly (Nash in strategies vs. subgame perfect with sequential entry).
-- p. 33, Table 2: The Anthropic-like and CoreWeave-like archetypes both show $\hat{\lambda} = 0.90$. This is presented as a limitation of the single-moment inversion that the training fraction diagnostic resolves. But the paper never provides a corrected $\hat{\lambda}$ for CoreWeave using both moments jointly. What would a two-moment estimate for CoreWeave look like?
-- p. 38, Section 5.4.2: The value loss function $\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$ should be plotted as a function of $\lambda_{\text{invest}}$ for a fixed $\lambda_{\text{true}}$ to visualize the asymmetry—currently this key result has no figure.
-- Throughout: References to "Numerical Finding 1" and "Numerical Finding 2" are appropriate labels for computationally verified results, but it should be clear in the main text that these are not theorems—perhaps label them "Computational Result" to avoid ambiguity.
+4. **WACC variation** across archetypes (0.10–0.18) is appropriate given the firm heterogeneity. However, the paper uses $r = 0.12$ for all analytical results and figures in Section 2, then introduces firm-specific WACCs in Section 4. This creates an inconsistency: the propositions are proved at $r = 0.12$, but the quantitative implications use different discount rates. The paper should verify that Assumptions (A1)–(A3) hold at all four archetype WACCs.
+
+5. **Training fractions** $\hat{\phi}$ in Table 4 are described as "estimated from industry reports" but no specific sources are cited. These are crucial inputs: they are the moments that a revealed-beliefs exercise would use for identification. The paper should provide more detail on how these estimates were constructed and discuss their uncertainty.
 
 ---
 
-## 8. Summary Assessment
+## 5. Presentation and Exposition
 
-This paper makes a meaningful contribution to the real options and strategic investment literatures by introducing the training-inference allocation as a novel dimension of the capacity investment problem, with regime-specific competition and an endogenous arrival rate for transformative AI. The faith-based survival mechanism is an original and economically important result. The revealed beliefs methodology is a creative application of structural modeling to extract private information from investment decisions.
+### Strengths
 
-However, the paper needs to address several issues before it is ready for publication at a top journal. The most important are: (1) strengthening the identification in the revealed beliefs exercise, particularly by using firm-specific WACCs and jointly estimating from both moments; (2) addressing the extreme sensitivity of implied $\hat{\lambda}$ to $\sigma_H$, which currently undermines the quantitative calibration; (3) tightening the proofs where they rely on numerical verification (Proposition 3, parts (ii) and (v)); (4) verifying and correcting the potential error in the $\partial A_{\text{eff}}/\partial \tilde{\lambda}$ derivation in the proof of Proposition 2; and (5) substantial compression for journal-length constraints. The paper would also benefit from a Monte Carlo validation, testable empirical predictions, and a formal welfare analysis.
+The paper is exceptionally well-written for a technical theory paper. The figures are clear and well-designed. The use of executive quotes to motivate model features is effective without being excessive. Table 2 (analytical status of results) is a model of transparency that more theory papers should emulate.
 
-Despite these issues, the paper addresses a first-order economic question with a sophisticated and well-motivated structural model. With significant revision, it has the potential to make an important contribution to the literature.
+### Suggestions
+
+1. **Length.** At 58 pages (including appendices), the paper is long. The N-firm extension (Appendix C) and several robustness discussions (Appendix F) could be shortened without loss. The proofs in Appendix A are thorough but could be condensed by referencing standard results more aggressively.
+
+2. **Figure 1** is a nice illustration of the demand environment but adds limited economic content. It could be moved to the appendix or combined with Figure 2.
+
+3. **Section 4 (Quantitative Implications)** mixes several distinct analyses. The growth option decomposition, credit risk analysis, and AI investment dilemma could each be separate subsections with clearer motivation. Currently, the section reads as a collection of numerical exercises rather than a unified quantitative story.
+
+4. **The "revealed beliefs" methodology** is mentioned in the conclusion as future work but is essentially what Section 4.3 already does (inverting the model to understand what beliefs rationalize observed investment). The paper should either develop this formally or remove the suggestion that it is future work.
+
+5. **Notation.** The paper uses $\tilde{\lambda}$ for the effective arrival rate and $\lambda_0$ for the exogenous component, but several places in the text just write $\lambda$ without the tilde. A consistency pass is needed.
+
+---
+
+## 6. Minor Issues
+
+- p. 2: "purpose-built GPU clusters housed in multi-billion-dollar data centers" appears nearly verbatim twice (here and p. 7). Remove one instance.
+- p. 6, Equation (2): The notation $\tilde{\lambda}(\phi_i, K_i, \phi_j, K_j)$ lists firm-level arguments, but when $\xi = 0$, these arguments are irrelevant. Consider writing the endogenous case separately.
+- p. 9, Table 1: "Derived" is used for both $A_H$ (which is a simple function of parameters) and $s_i^L$ (which depends on endogenous choices). A finer classification would help.
+- p. 12, Assumption 1(A2): The condition $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$ should be connected to economic primitives. What does it mean for this to fail? The paper says it ensures an interior capacity solution, but a one-sentence economic interpretation would help.
+- p. 15, Equation (14): The trigger formula uses $A_{\text{eff}}(\phi^*, K^*)$ which itself depends on the trigger through the optimal $(K^*, \phi^*)$. The paper should note that this is an implicit equation, not a closed-form expression.
+- p. 28, Table 4: The "Revenue 2024" and "Revenue 2025" figures for the Anthropic-like archetype ($0.9B and $3.0B) are plausible but hard to verify given Anthropic is private. The paper should note this caveat.
+- p. 34, Section 4.2.1: The credit spread formula uses $r_f$ (risk-free rate), which appears nowhere else in the paper. The relationship between $r_f$ and $r$ (WACC) should be stated.
+- p. 50, Appendix B: "SciPy optimization routines in Python 3.13"—as of the paper's date, this is current, but specifying the SciPy version would aid reproducibility.
+
+---
+
+## 7. Requested Revisions (Summary)
+
+### Major
+
+1. **Resolve the (A3) boundary issue.** Verify that all numerical results in the sensitivity analysis respect condition (A3), or provide the two-term solution for parameter regions where (A3) fails. This is especially important for high-$\alpha$ cases.
+
+2. **Strengthen the single-crossing argument** for Proposition 3(i). Either provide analytical conditions or clearly demote uniqueness to a numerical finding.
+
+3. **Reclassify $\eta$ as "inferred"** and provide a substantive discussion of the mapping from neural scaling law exponents to the arrival rate of AGI. This is a novel mapping that deserves more than a sentence.
+
+4. **Provide the explicit threshold $\underline{\phi}$** for the faith-based survival condition in closed form (at least for the symmetric duopoly case).
+
+5. **Check the Tullock specification's implications** for total industry revenue under asymmetric capacity. Discuss whether the property that asymmetry increases total revenue is desirable.
+
+### Minor
+
+6. Consistency pass on $\lambda$ vs. $\tilde{\lambda}$ notation.
+7. Clarify that the Proposition 1 capacity formula is conditional on $\phi$, not the joint optimum.
+8. Discuss the training fraction estimates more thoroughly and cite specific sources.
+9. Verify Assumptions (A1)–(A3) hold at all four archetype-specific WACCs.
+10. Condense Appendices C and F.
+
+---
+
+## 8. Overall Assessment
+
+This is a strong paper that addresses a first-order economic question with a well-constructed theoretical framework. The training-inference allocation is a genuine innovation in the real options literature, and the faith-based survival mechanism is both novel and economically compelling. The paper is unusually well-written and transparent about the analytical status of its results.
+
+The main concerns are (a) several analytical gaps in the proofs that should be tightened for a top journal, (b) the calibration of the scaling law exponent $\eta$, which is the paper's most important empirical input but is less well-grounded than claimed, and (c) some parameter regions in the sensitivity analysis that may violate the maintained assumptions.
+
+Conditional on addressing these issues, the paper makes a sufficient contribution for a top finance journal. The topic is timely, the model is novel, and the economic insights—particularly the faith-based survival mechanism and the asymmetric AI investment dilemma—will be of broad interest to the finance and economics communities.
