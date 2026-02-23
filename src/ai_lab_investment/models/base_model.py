@@ -4,6 +4,7 @@ Solves for the optimal investment trigger X* and capacity K* under:
 - Regime-switching GBM demand (Guo, Miao & Morellec 2005)
 - Diminishing returns to compute (scaling laws)
 - Convex investment costs
+- Training-inference allocation (phi) as a strategic variable
 
 Key economic results:
 - In regime H (post-adoption): well-defined interior trigger and capacity.
@@ -13,6 +14,14 @@ Key economic results:
   valuable that the firm never exercises in L — it waits for the
   regime switch to H. The option value in L derives entirely from
   the probability of switching regimes.
+
+Training-inference allocation:
+  The firm allocates fraction phi to training and (1-phi) to inference.
+  Revenue depends on regime:
+    L-regime: pi_i^L = X * [(1-phi)*K]^alpha  (inference-based)
+    H-regime: pi_i^H = X * [phi*K]^alpha       (training/quality-based)
+  The optimal phi balances L-regime inference value against H-regime
+  training value, modulated by the arrival rate lambda.
 """
 
 import numpy as np
@@ -48,24 +57,28 @@ class SingleFirmModel:
         """Total investment cost I(K) = c * K^gamma."""
         return self.params.c * K**self.params.gamma
 
-    def _phi(self, regime: str) -> float:
-        """Option premium ratio phi = (1 - 1/beta) / alpha.
+    def _option_premium_ratio(self, regime: str) -> float:
+        """Option premium ratio Phi = (1 - 1/beta) / alpha.
 
-        An interior solution exists when 1/gamma < phi < 1.
+        An interior solution exists when 1/gamma < Phi < 1.
+        Named _option_premium_ratio to distinguish from training fraction phi.
         """
         p = self.params
         beta = p.beta_H if regime == "H" else p.beta_L
         return (1.0 - 1.0 / beta) / p.alpha
 
+    # Legacy alias
+    _phi = _option_premium_ratio
+
     def has_interior_trigger(self, regime: str) -> bool:
         """Check whether an interior investment trigger exists.
 
-        The trigger exists when 1/gamma < phi < 1, where
-        phi = (1-1/beta)/alpha. When phi >= 1, the option to wait
+        The trigger exists when 1/gamma < Phi < 1, where
+        Phi = (1-1/beta)/alpha. When Phi >= 1, the option to wait
         is too valuable and the firm never invests in this regime.
         """
-        phi = self._phi(regime)
-        return 1.0 / self.params.gamma < phi < 1.0
+        Phi = self._option_premium_ratio(regime)
+        return 1.0 / self.params.gamma < Phi < 1.0
 
     def _trigger_for_K(self, K: float, regime: str) -> float:
         """Optimal trigger X*(K) for a given capacity K.
@@ -410,3 +423,145 @@ class SingleFirmModel:
             }
 
         return results
+
+    # ------------------------------------------------------------------
+    # Training-inference allocation (phi) extensions
+    # ------------------------------------------------------------------
+
+    def _effective_revenue_coeff_single(self, phi: float, K: float) -> float:
+        """Compute effective revenue coefficient for a single firm (shares=1).
+
+        A_eff = [(1-phi)*K]^alpha / (r - mu_L + lam)
+              + lam / (r - mu_L + lam) * [phi*K]^alpha * A_H
+
+        This combines L-regime inference revenue and H-regime continuation
+        value (via regime switch) into a single X-multiplier.
+        """
+        p = self.params
+        lam = p.lam
+        inf_cap = (1.0 - phi) * K
+        tr_cap = phi * K
+
+        denom_L = p.r - p.mu_L + lam
+        if denom_L <= 0:
+            return 0.0
+
+        a_eff = inf_cap**p.alpha / denom_L
+
+        if tr_cap > 0 and lam > 0:
+            a_eff += lam / denom_L * tr_cap**p.alpha * p.A_H
+
+        return a_eff
+
+    def installed_value_with_phi(
+        self, X: float, phi: float, K: float, regime: str = "L"
+    ) -> float:
+        """Installed value with explicit training fraction.
+
+        H-regime: V = A_H * X * (phi*K)^alpha - delta*K/r
+        L-regime: V = A_eff(phi, K) * X - delta*K/r
+        """
+        p = self.params
+        if regime == "H":
+            tr_cap = phi * K
+            if tr_cap <= 0:
+                return -p.delta * K / p.r
+            return p.A_H * X * tr_cap**p.alpha - p.delta * K / p.r
+        else:
+            a_eff = self._effective_revenue_coeff_single(phi, K)
+            return a_eff * X - p.delta * K / p.r
+
+    def _objective_K_phi(self, params_vec: np.ndarray) -> float:
+        """Negative of option value factor for joint (K, phi) optimization.
+
+        Maximizes h(K, phi) = A_eff^beta_H / cost^(beta_H-1).
+        Uses beta_H because investment option value is driven by
+        H-regime expectations (same as duopoly model).
+        """
+        log_K, phi = params_vec
+        K = np.exp(log_K)
+
+        if phi <= 0.01 or phi >= 0.99:
+            return 1e20
+
+        p = self.params
+        beta = p.beta_H
+
+        a_eff = self._effective_revenue_coeff_single(phi, K)
+        b = p.delta * K / p.r + p.c * K**p.gamma
+
+        if a_eff <= 0 or b <= 0:
+            return 1e20
+        return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
+
+    def optimal_trigger_capacity_phi(self) -> tuple[float, float, float]:
+        """Solve for optimal (X*, K*, phi*) with training-inference allocation.
+
+        The firm jointly optimizes capacity K and training fraction phi.
+        The investment trigger uses beta_H and the combined A_eff coefficient.
+
+        Returns:
+            (X*, K*, phi*): Optimal trigger, capacity, and training fraction.
+        """
+        cache_key = "phi_opt"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        p = self.params
+        beta = p.beta_H
+        best_val = 1e20
+        best_params = None
+
+        for log_K_init in [-2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50, 0.70]:
+                x0 = np.array([log_K_init, phi_init])
+                try:
+                    result = optimize.minimize(
+                        self._objective_K_phi,
+                        x0,
+                        method="Nelder-Mead",
+                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                    )
+                    if result.fun < best_val:
+                        best_val = result.fun
+                        best_params = result.x
+                except (ValueError, RuntimeError):
+                    continue
+
+        if best_params is None or best_val >= 1e19:
+            msg = "Joint (K, phi) optimization failed"
+            raise RuntimeError(msg)
+
+        K_star = np.exp(best_params[0])
+        phi_star = np.clip(best_params[1], 0.01, 0.99)
+
+        a_eff = self._effective_revenue_coeff_single(phi_star, K_star)
+        markup = beta / (beta - 1.0)
+        total_cost = p.delta * K_star / p.r + p.c * K_star**p.gamma
+        X_star = markup * total_cost / a_eff if a_eff > 0 else np.inf
+
+        self._cache[cache_key] = (X_star, K_star, phi_star)
+        return X_star, K_star, phi_star
+
+    def option_value_with_phi(self, X: float) -> float:
+        """Option value when the firm optimizes over (K, phi).
+
+        F(X) = B * X^beta_H      for X < X*
+        F(X) = V(X, phi*, K*) - I(K*)  for X >= X*
+        """
+        X_star, K_star, phi_star = self.optimal_trigger_capacity_phi()
+        p = self.params
+        beta = p.beta_H
+
+        if X_star <= X:
+            return self.installed_value_with_phi(
+                X, phi_star, K_star, "L"
+            ) - self.investment_cost(K_star)
+
+        npv_at_trigger = self.installed_value_with_phi(
+            X_star, phi_star, K_star, "L"
+        ) - self.investment_cost(K_star)
+        if npv_at_trigger <= 0:
+            return 0.0
+        B = npv_at_trigger / X_star**beta
+        return B * X**beta

@@ -100,6 +100,7 @@ class ValuationAnalysis:
         self,
         leverage: float,
         K: float = 1.0,
+        phi: float = 0.5,
         regime: str = "H",
         risk_free_rate: float | None = None,
     ) -> float:
@@ -111,6 +112,7 @@ class ValuationAnalysis:
         Args:
             leverage: Debt-to-investment ratio.
             K: Capacity level.
+            phi: Training fraction (default 0.5).
             regime: Demand regime.
             risk_free_rate: Risk-free rate (defaults to r - 0.03).
 
@@ -131,11 +133,11 @@ class ValuationAnalysis:
         )
 
         # Compute at a demand level above the default boundary
-        X_D = duo.default_boundary(K, 0.0, regime)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         X = max(X_D * 3, 0.1)
 
         coupon = duo.coupon_payment(K)
-        D = duo.debt_value(X, K, 0.0, regime)
+        D = duo.debt_value(X, phi, K, 0.0, 0.0)
 
         if D <= 0 or coupon <= 0:
             return 0.0
@@ -149,6 +151,7 @@ class ValuationAnalysis:
         X_current: float,
         K: float,
         leverage: float,
+        phi: float = 0.5,
         regime: str = "H",
         horizon: float = 5.0,
     ) -> float:
@@ -163,6 +166,7 @@ class ValuationAnalysis:
             X_current: Current demand level.
             K: Capacity.
             leverage: Debt-to-investment ratio.
+            phi: Training fraction (default 0.5).
             regime: Demand regime.
             horizon: Time horizon in years.
 
@@ -178,7 +182,7 @@ class ValuationAnalysis:
             coupon_rate=0.05,
             bankruptcy_cost=0.30,
         )
-        X_D = duo.default_boundary(K, 0.0, regime)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         if X_D <= 0 or X_current <= X_D:
             return 1.0 if X_D > 0 else 0.0
 
@@ -374,7 +378,7 @@ class ValuationAnalysis:
         result["credit"] = {}
         for lev in leverages:
             spread = self.credit_spread(lev, regime=regime)
-            prob = self.default_probability(X, 1.0, lev, regime)
+            prob = self.default_probability(X, 1.0, lev, regime=regime)
             result["credit"][f"leverage_{lev}"] = {
                 "spread_bps": spread * 10000,
                 "default_prob_5yr": prob,

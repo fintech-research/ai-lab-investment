@@ -1,22 +1,30 @@
-"""Duopoly investment model with default risk and regime switching.
+"""Duopoly model: endogenous lambda, training allocation, default risk.
 
 Solves for the Markov-perfect equilibrium of a preemption game between two
-symmetric firms under:
-- Regime-switching GBM demand (as in the base model)
-- Contest-function revenue sharing: pi_i = X * K_i^alpha / (K_i^alpha + K_j^alpha)
+firms under:
+- Regime-switching GBM demand with endogenous arrival rate
+- Training-inference allocation (phi) as a strategic variable
+- Regime-specific contest functions:
+    L-regime: share over inference capacity [(1-phi)*K]^alpha
+    H-regime: share over training compute [phi*K]^alpha
 - Endogenous default boundary (Leland 1994)
 - Preemption equilibrium (Huisman & Kort 2015)
 
-The three-way interaction (competition x leverage x default) is the paper's
-main mechanism:
-1. Competition pushes investment earlier (preemption effect)
-2. Limited liability pushes capacity larger (risk-shifting effect)
-3. Default risk creates a countervailing force (bankruptcy cost)
+The endogenous arrival rate:
+    lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
 
-Solution approach:
-1. Solve follower's problem (single-firm with competitor present)
-2. Solve leader's problem given follower's best response
-3. Find preemption equilibrium where value of leading = value of following
+creates a positive externality: rival training helps bring AGI closer,
+benefiting both firms. The strategic interaction is in the H-regime share,
+not in the speed of arrival.
+
+When xi = 0, the model reduces to the exogenous-lambda baseline.
+
+Investment trigger methodology:
+    The investment trigger uses beta_H (the H-regime characteristic root)
+    because the investment option value is driven by H-regime expectations.
+    The installed value includes both L-regime inference revenue and
+    H-regime training revenue (via regime-switch continuation value),
+    providing a combined effective revenue coefficient A_eff for the trigger.
 """
 
 import numpy as np
@@ -26,11 +34,15 @@ from .parameters import ModelParameters
 
 
 class DuopolyModel:
-    """Duopoly investment game with default risk and regime switching.
+    """Duopoly investment game with endogenous lambda and training allocation.
 
-    Two symmetric firms hold options to invest irreversibly in capacity.
-    Revenue is shared via a contest function. Each firm finances with
-    equity and debt, with endogenous default.
+    Two firms hold options to invest irreversibly in capacity. Each firm
+    chooses capacity K, training fraction phi, and leverage ell. Revenue
+    is shared via regime-specific contest functions:
+        L-regime: inference-based competition over [(1-phi)*K]^alpha
+        H-regime: training/quality-based competition over [phi*K]^alpha
+
+    The endogenous lambda_tilde depends on both firms' training compute.
 
     The equilibrium features a leader (invests first) and follower
     (invests second), with the leader's trigger pinned by preemption.
@@ -46,8 +58,8 @@ class DuopolyModel:
         """Initialize the duopoly model.
 
         Args:
-            params: Base model parameters.
-            leverage: Debt-to-investment-cost ratio D/I(K). 0 = all equity.
+            params: Base model parameters (includes xi, lam_0, eta).
+            leverage: Default debt-to-investment-cost ratio D/I(K). 0 = all equity.
             coupon_rate: Coupon rate on debt as fraction of face value.
             bankruptcy_cost: Fraction of firm value lost in default (alpha_bc).
         """
@@ -58,13 +70,68 @@ class DuopolyModel:
         self._cache: dict = {}
 
     # ------------------------------------------------------------------
-    # Revenue with competition
+    # Endogenous arrival rate
     # ------------------------------------------------------------------
 
-    def contest_share(self, K_i: float, K_j: float) -> float:
-        """Contest function market share for firm i.
+    def endogenous_lambda(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+    ) -> float:
+        """Compute endogenous arrival rate lambda_tilde.
 
-        share_i = K_i^alpha / (K_i^alpha + K_j^alpha)
+        When xi = 0, returns self.params.lam (exact recovery of baseline).
+        When xi > 0, returns lam_0 + xi * training_contribution.
+        """
+        return self.params.lambda_tilde(phi_i, K_i, phi_j, K_j)
+
+    # ------------------------------------------------------------------
+    # Revenue with regime-specific competition
+    # ------------------------------------------------------------------
+
+    def contest_share_L(
+        self, phi_i: float, K_i: float, phi_j: float, K_j: float
+    ) -> float:
+        """L-regime contest share: inference-based competition.
+
+        share_i^L = [(1-phi_i)*K_i]^alpha
+                    / {[(1-phi_i)*K_i]^alpha + [(1-phi_j)*K_j]^alpha}
+        """
+        alpha = self.params.alpha
+        inf_i = (1.0 - phi_i) * K_i
+        inf_j = (1.0 - phi_j) * K_j
+        num = inf_i**alpha
+        denom = num + inf_j**alpha
+        if denom <= 0:
+            return 0.5
+        return num / denom
+
+    def contest_share_H(
+        self, phi_i: float, K_i: float, phi_j: float, K_j: float
+    ) -> float:
+        """H-regime contest share: training/quality-based competition.
+
+        share_i^H = [phi_i*K_i]^alpha
+                    / {[phi_i*K_i]^alpha + [phi_j*K_j]^alpha}
+        """
+        alpha = self.params.alpha
+        tr_i = phi_i * K_i
+        tr_j = phi_j * K_j
+        if tr_i <= 0 and tr_j <= 0:
+            return 0.5
+        num = tr_i**alpha if tr_i > 0 else 0.0
+        denom = num + (tr_j**alpha if tr_j > 0 else 0.0)
+        if denom <= 0:
+            return 0.5
+        return num / denom
+
+    def contest_share(self, K_i: float, K_j: float) -> float:
+        """Legacy contest share (no phi, uses total capacity).
+
+        Preserved for backward compatibility. Equivalent to the old model
+        where phi is symmetric or absent.
         """
         alpha = self.params.alpha
         num = K_i**alpha
@@ -73,21 +140,131 @@ class DuopolyModel:
             return 0.5
         return num / denom
 
+    # ------------------------------------------------------------------
+    # Effective revenue coefficient (combined L + H)
+    # ------------------------------------------------------------------
+
+    def _effective_revenue_coeff(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        monopolist: bool = False,
+    ) -> float:
+        """Compute effective revenue coefficient per unit X.
+
+        A_eff = [(1-phi)*K]^alpha * s_L / (r - mu_L + lam_tilde)
+              + lam_tilde / (r - mu_L + lam_tilde) * [phi*K]^alpha * s_H * A_H
+
+        This is V(X, K, phi) / X + delta*K/r (i.e., the revenue part only).
+
+        Args:
+            phi_i, K_i: Firm i's training fraction and capacity.
+            phi_j, K_j: Firm j's training fraction and capacity.
+            monopolist: If True, firm i is the only investor (shares = 1).
+
+        Returns:
+            Effective revenue coefficient A_eff.
+        """
+        p = self.params
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+
+        inf_cap = (1.0 - phi_i) * K_i
+        tr_cap = phi_i * K_i
+
+        if monopolist:
+            s_L = 1.0
+            s_H = 1.0
+        else:
+            s_L = self.contest_share_L(phi_i, K_i, phi_j, K_j)
+            s_H = self.contest_share_H(phi_i, K_i, phi_j, K_j)
+
+        denom_L = p.r - p.mu_L + lam_tilde
+        if denom_L <= 0:
+            return 0.0
+
+        # L-regime inference revenue coefficient
+        a_eff = inf_cap**p.alpha * s_L / denom_L
+
+        # H-regime continuation value coefficient
+        if tr_cap > 0 and lam_tilde > 0:
+            a_eff += lam_tilde / denom_L * tr_cap**p.alpha * s_H * p.A_H
+
+        return a_eff
+
+    # ------------------------------------------------------------------
+    # Present value functions with training-inference split
+    # ------------------------------------------------------------------
+
+    def installed_value_L(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+    ) -> float:
+        """L-regime installed value for firm i (post-investment, pre-switch).
+
+        V_i^L(X) = A_eff * X - delta * K_i / r
+        """
+        p = self.params
+        a_eff = self._effective_revenue_coeff(phi_i, K_i, phi_j, K_j)
+        return a_eff * X - p.delta * K_i / p.r
+
+    def installed_value_H(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+    ) -> float:
+        """H-regime installed value for firm i (absorbing state).
+
+        V_i^H(X) = X * (phi_i*K_i)^alpha * s_i^H / (r - mu_H) - delta * K_i / r
+        """
+        p = self.params
+        s_H = self.contest_share_H(phi_i, K_i, phi_j, K_j)
+        tr_cap = phi_i * K_i
+        if tr_cap <= 0:
+            return -p.delta * K_i / p.r
+        return p.A_H * X * tr_cap**p.alpha * s_H - p.delta * K_i / p.r
+
+    def monopolist_value_L(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+    ) -> float:
+        """L-regime value when firm i is the only investor (share = 1)."""
+        p = self.params
+        a_eff = self._effective_revenue_coeff(phi_i, K_i, 0.0, 0.0, monopolist=True)
+        return a_eff * X - p.delta * K_i / p.r
+
+    def monopolist_value_H(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+    ) -> float:
+        """H-regime monopolist value (share = 1).
+
+        V_i^H(X) = X * (phi_i*K_i)^alpha / (r - mu_H) - delta * K_i / r
+        """
+        p = self.params
+        tr_cap = phi_i * K_i
+        if tr_cap <= 0:
+            return -p.delta * K_i / p.r
+        return p.A_H * X * tr_cap**p.alpha - p.delta * K_i / p.r
+
     def duopoly_revenue_pv(
         self, X: float, K_i: float, K_j: float, regime: str
     ) -> float:
-        """Present value of flow revenue for firm i in the duopoly.
+        """Legacy PV of flow revenue (no phi, backward-compatible).
 
         V_i = A_s * X * K_i^alpha / (K_i^alpha + K_j^alpha) - delta * K_i / r
-
-        Args:
-            X: Current demand level.
-            K_i: Own capacity.
-            K_j: Competitor's capacity.
-            regime: 'L' or 'H'.
-
-        Returns:
-            Present value of installed capacity in the duopoly.
         """
         p = self.params
         A = p.A_H if regime == "H" else p.A_L
@@ -95,10 +272,9 @@ class DuopolyModel:
         return A * X * K_i**p.alpha * share - p.delta * K_i / p.r
 
     def monopolist_revenue_pv(self, X: float, K: float, regime: str) -> float:
-        """Present value when the firm is the only investor (leader pre-follower).
+        """Legacy PV when the firm is the only investor (no phi).
 
         V_monopolist = A_s * X * K^alpha - delta * K / r
-        Same as single-firm since share = 1 when no competitor.
         """
         p = self.params
         A = p.A_H if regime == "H" else p.A_L
@@ -112,52 +288,61 @@ class DuopolyModel:
     # Default boundary (Leland 1994)
     # ------------------------------------------------------------------
 
-    def coupon_payment(self, K: float) -> float:
+    def coupon_payment(self, K: float, leverage: float | None = None) -> float:
         """Annual coupon payment on debt.
 
         Debt face value = leverage * I(K).
         Coupon = coupon_rate * face_value.
         """
-        if self.leverage <= 0:
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0:
             return 0.0
-        face_value = self.leverage * self.investment_cost(K)
+        face_value = lev * self.investment_cost(K)
         return self.coupon_rate * face_value
 
-    def default_boundary(self, K_i: float, K_j: float, regime: str) -> float:
+    def default_boundary(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        leverage: float | None = None,
+    ) -> float:
         """Endogenous default boundary X_D (Leland 1994).
 
-        Equity holders default when equity value = 0. The optimal default
-        boundary equates the marginal cost of continuing (coupon - revenue)
-        to the marginal benefit (option value of recovery).
+        Default is driven by L-regime total revenue (inference + H-continuation).
+        Higher phi reduces inference revenue but increases H-regime continuation
+        (the "faith-based survival" mechanism).
 
-        X_D = [beta_neg / (beta_neg - 1)] * [coupon / r] / [A * share * K^alpha]
-
-        where beta_neg is the negative characteristic root, representing
-        the elasticity of the put-like default option.
+        X_D = [beta_neg / (beta_neg - 1)] * [c_D/r + delta*K_i/r] / A_eff
 
         Returns 0 if no debt (leverage = 0).
         """
-        if self.leverage <= 0:
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0:
             return 0.0
 
         p = self.params
-        c_D = self.coupon_payment(K_i)
+        c_D = self.coupon_payment(K_i, lev)
         if c_D <= 0:
             return 0.0
 
-        A = p.A_H if regime == "H" else p.A_L
-        share = self.contest_share(K_i, K_j)
-        revenue_coeff = A * K_i**p.alpha * share
+        is_monopolist = K_j <= 0
+        revenue_coeff = self._effective_revenue_coeff(
+            phi_i, K_i, phi_j, K_j, monopolist=is_monopolist
+        )
 
         if revenue_coeff <= 0:
-            return 0.0
+            return np.inf
 
-        # Negative root of the characteristic equation
-        beta_neg = self._negative_root(regime)
+        # Negative root of the characteristic equation in L-regime
+        beta_neg = self._negative_root("L")
 
-        # Leland default boundary
-        X_D = (beta_neg / (beta_neg - 1.0)) * (c_D / p.r) / revenue_coeff
-
+        X_D = (
+            (beta_neg / (beta_neg - 1.0))
+            * (c_D / p.r + p.delta * K_i / p.r)
+            / revenue_coeff
+        )
         return max(X_D, 0.0)
 
     def _negative_root(self, regime: str) -> float:
@@ -182,55 +367,49 @@ class DuopolyModel:
     def equity_value(
         self,
         X: float,
+        phi_i: float,
         K_i: float,
+        phi_j: float,
         K_j: float,
-        regime: str,
+        leverage: float | None = None,
     ) -> float:
         """Equity value of firm i after investment, accounting for default.
 
-        E(X) = V(X, K_i, K_j) - I(K_i) * (1 - leverage) - coupon/r
-               + [coupon/r - V(X_D, K_i, K_j) + I(K_i)*(1-leverage)]
-                 * (X/X_D)^beta_neg
+        E(X) = V(X) - equity_contribution - coupon/r
+               + [coupon/r + delta*K/r - V(X_D)] * (X/X_D)^beta_neg
 
         For X >= X_D. At X = X_D, equity = 0 by construction.
         Without debt, equity = V(X) - I(K).
         """
         p = self.params
-        K_j_eff = K_j if K_j > 0 else 0.0
+        lev = leverage if leverage is not None else self.leverage
 
-        if self.leverage <= 0:
-            if K_j_eff > 0:
-                return self.duopoly_revenue_pv(
-                    X, K_i, K_j_eff, regime
-                ) - self.investment_cost(K_i)
-            return self.monopolist_revenue_pv(X, K_i, regime) - self.investment_cost(
-                K_i
-            )
-
-        c_D = self.coupon_payment(K_i)
-        I_K = self.investment_cost(K_i)
-        equity_contribution = I_K * (1.0 - self.leverage)
-
-        if K_j_eff > 0:
-            V_X = self.duopoly_revenue_pv(X, K_i, K_j_eff, regime)
+        if K_j > 0:
+            V_X = self.installed_value_L(X, phi_i, K_i, phi_j, K_j)
         else:
-            V_X = self.monopolist_revenue_pv(X, K_i, regime)
+            V_X = self.monopolist_value_L(X, phi_i, K_i)
 
-        X_D = self.default_boundary(K_i, K_j_eff, regime)
+        if lev <= 0:
+            return max(V_X - self.investment_cost(K_i), 0.0)
+
+        c_D = self.coupon_payment(K_i, lev)
+        I_K = self.investment_cost(K_i)
+        equity_contribution = I_K * (1.0 - lev)
+
+        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
 
         if X_D <= 0 or X <= X_D:
-            # No default boundary or already in default
             return max(V_X - equity_contribution - c_D / p.r, 0.0)
 
-        beta_neg = self._negative_root(regime)
+        beta_neg = self._negative_root("L")
 
-        if K_j_eff > 0:
-            V_XD = self.duopoly_revenue_pv(X_D, K_i, K_j_eff, regime)
+        if K_j > 0:
+            V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
         else:
-            V_XD = self.monopolist_revenue_pv(X_D, K_i, regime)
+            V_XD = self.monopolist_value_L(X_D, phi_i, K_i)
 
-        # Default option value (put-like)
-        default_claim = c_D / p.r - V_XD + equity_contribution
+        # Default option value (put-like: value of walking away)
+        default_claim = c_D / p.r + p.delta * K_i / p.r - V_XD
         default_option = default_claim * (X / X_D) ** beta_neg
 
         equity = V_X - equity_contribution - c_D / p.r + default_option
@@ -239,36 +418,34 @@ class DuopolyModel:
     def debt_value(
         self,
         X: float,
+        phi_i: float,
         K_i: float,
+        phi_j: float,
         K_j: float,
-        regime: str,
+        leverage: float | None = None,
     ) -> float:
         """Debt value accounting for default risk.
 
         D(X) = coupon/r - [coupon/r - (1 - alpha_bc) * V(X_D)] * (X/X_D)^beta_neg
-
-        Without debt, returns 0.
         """
-        if self.leverage <= 0:
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0:
             return 0.0
 
         p = self.params
-        c_D = self.coupon_payment(K_i)
-        K_j_eff = K_j if K_j > 0 else 0.0
-        X_D = self.default_boundary(K_i, K_j_eff, regime)
+        c_D = self.coupon_payment(K_i, lev)
+        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
 
         if X_D <= 0:
             return c_D / p.r
 
-        beta_neg = self._negative_root(regime)
+        beta_neg = self._negative_root("L")
 
-        if K_j_eff > 0:
-            V_XD = self.duopoly_revenue_pv(X_D, K_i, K_j_eff, regime)
+        if K_j > 0:
+            V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
         else:
-            V_XD = self.monopolist_revenue_pv(X_D, K_i, regime)
+            V_XD = self.monopolist_value_L(X_D, phi_i, K_i)
 
-        # Recovery is (1-b) times gross asset value at default (Leland 1994).
-        # Gross asset value = revenue PV + maintenance PV = V_XD + delta*K/r
         recovery = (1.0 - self.bankruptcy_cost) * (V_XD + p.delta * K_i / p.r)
         default_loss = c_D / p.r - recovery
         debt = c_D / p.r - default_loss * (X / X_D) ** beta_neg
@@ -277,243 +454,315 @@ class DuopolyModel:
     def firm_value(
         self,
         X: float,
+        phi_i: float,
         K_i: float,
+        phi_j: float,
         K_j: float,
-        regime: str,
+        leverage: float | None = None,
     ) -> float:
         """Total firm value = equity + debt."""
-        return self.equity_value(X, K_i, K_j, regime) + self.debt_value(
-            X, K_i, K_j, regime
+        return self.equity_value(X, phi_i, K_i, phi_j, K_j, leverage) + self.debt_value(
+            X, phi_i, K_i, phi_j, K_j, leverage
         )
 
     # ------------------------------------------------------------------
-    # Follower's problem
+    # Follower's problem (3D: K, phi, leverage)
     # ------------------------------------------------------------------
 
-    def _follower_npv(self, K_F: float, K_L: float, X: float, regime: str) -> float:
-        """NPV of follower investing at demand X with capacity K_F.
+    def _follower_value(
+        self,
+        X: float,
+        K_F: float,
+        phi_F: float,
+        K_L: float,
+        phi_L: float,
+        lev_F: float,
+    ) -> float:
+        """Follower's equity value from investing at demand X."""
+        return self.equity_value(X, phi_F, K_F, phi_L, K_L, lev_F)
 
-        Given leader has already invested K_L.
-        """
-        return self.equity_value(X, K_F, K_L, regime)
+    def _follower_trigger(
+        self,
+        K_F: float,
+        phi_F: float,
+        K_L: float,
+        phi_L: float,
+        lev_F: float,
+    ) -> float:
+        """Follower's optimal trigger X_F* for given (K_F, phi_F, lev_F).
 
-    def _follower_objective(self, log_K: float, K_L: float, regime: str) -> float:
-        """Negative log of follower's option value factor for K optimization.
+        X_F* = [beta_H/(beta_H-1)] * total_cost / A_eff
 
-        Maximizes h(K) = a(K)^beta / b(K)^(beta-1) where:
-        - a(K) = A * K^alpha * share(K, K_L)
-        - b(K) = delta*K/r + (1-leverage)*c*K^gamma + coupon/r
-        """
-        K_F = np.exp(log_K)
-        p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
-
-        share = self.contest_share(K_F, K_L)
-        a = A * K_F**p.alpha * share
-
-        c_D = self.coupon_payment(K_F)
-        equity_cost = (1.0 - self.leverage) * self.investment_cost(K_F)
-        b = p.delta * K_F / p.r + equity_cost + c_D / p.r
-
-        if a <= 0 or b <= 0:
-            return 1e20
-        return -(beta * np.log(a) - (beta - 1.0) * np.log(b))
-
-    def _follower_trigger(self, K_F: float, K_L: float, regime: str) -> float:
-        """Optimal trigger X_F*(K) for given follower capacity.
-
-        X_F* = [beta/(beta-1)] * [total cost] / [A * K^alpha * share]
+        Uses beta_H because the investment option value is driven by
+        H-regime expectations. A_eff includes both L and H revenues.
         """
         p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
+        beta = p.beta_H
 
-        share = self.contest_share(K_F, K_L)
-        markup = beta / (beta - 1.0)
-
-        c_D = self.coupon_payment(K_F)
-        equity_cost = (1.0 - self.leverage) * self.investment_cost(K_F)
-        total_cost = p.delta * K_F / p.r + equity_cost + c_D / p.r
-
-        revenue_coeff = A * K_F**p.alpha * share
-        if revenue_coeff <= 0:
+        a_eff = self._effective_revenue_coeff(phi_F, K_F, phi_L, K_L)
+        if a_eff <= 0:
             return np.inf
 
-        return markup * total_cost / revenue_coeff
+        markup = beta / (beta - 1.0)
+        c_D = self.coupon_payment(K_F, lev_F)
+        equity_cost = (1.0 - lev_F) * self.investment_cost(K_F)
+        total_cost = p.delta * K_F / p.r + equity_cost + c_D / p.r
 
-    def solve_follower(self, K_L: float, regime: str = "H") -> tuple[float, float]:
-        """Solve follower's optimal investment problem.
+        return markup * total_cost / a_eff
 
-        Given leader capacity K_L, find follower's optimal trigger and capacity.
+    def _follower_objective_3d(
+        self,
+        params_vec: np.ndarray,
+        K_L: float,
+        phi_L: float,
+    ) -> float:
+        """Negative of follower's option value factor for 3D optimization.
+
+        params_vec = [log_K, phi, leverage]
+        Maximizes h(K, phi, lev) = a_eff^beta_H / cost^(beta_H-1).
+        """
+        log_K, phi_F, lev_F = params_vec
+        K_F = np.exp(log_K)
+
+        # Bound checks
+        if phi_F <= 0.01 or phi_F >= 0.99 or lev_F < 0 or lev_F > 0.95:
+            return 1e20
+
+        p = self.params
+        beta = p.beta_H
+
+        a_eff = self._effective_revenue_coeff(phi_F, K_F, phi_L, K_L)
+
+        c_D = self.coupon_payment(K_F, lev_F)
+        equity_cost = (1.0 - lev_F) * self.investment_cost(K_F)
+        b = p.delta * K_F / p.r + equity_cost + c_D / p.r
+
+        if a_eff <= 0 or b <= 0:
+            return 1e20
+        return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
+
+    def solve_follower(
+        self,
+        K_L: float,
+        phi_L: float,
+        regime: str = "H",
+    ) -> tuple[float, float, float, float]:
+        """Solve follower's optimal investment problem (3D).
+
+        Given leader's (K_L, phi_L), find follower's optimal
+        trigger, capacity, training fraction, and leverage.
 
         Args:
             K_L: Leader's installed capacity.
-            regime: Demand regime.
+            phi_L: Leader's training fraction.
+            regime: Regime label (for cache key compatibility).
 
         Returns:
-            (X_F*, K_F*): Follower's optimal trigger and capacity.
+            (X_F*, K_F*, phi_F*, lev_F*): Follower's optimal choices.
         """
-        cache_key = ("follower", K_L, regime)
+        cache_key = ("follower_3d", K_L, phi_L, regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        result = optimize.minimize_scalar(
-            self._follower_objective,
-            bounds=(-15, 15),
-            method="bounded",
-            args=(K_L, regime),
-        )
-        if result.fun >= 1e19:
-            msg = f"Follower optimization failed for K_L={K_L:.4f}, regime={regime}"
-            raise RuntimeError(msg)
-        K_F = np.exp(result.x)
-        X_F = self._follower_trigger(K_F, K_L, regime)
+        # 3D optimization with multiple starting points
+        # When leverage=0 (all-equity), fix leverage at 0
+        max_lev = min(self.leverage * 1.5 + 0.1, 0.95) if self.leverage > 0 else 0.0
+        best_val = 1e20
+        best_params = None
 
-        self._cache[cache_key] = (X_F, K_F)
-        return X_F, K_F
+        lev_starts = [0.0] if max_lev == 0 else [0.0, self.leverage, max_lev * 0.7]
+
+        for log_K_init in [-2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50]:
+                for lev_init in lev_starts:
+                    x0 = np.array([log_K_init, phi_init, lev_init])
+                    try:
+                        result = optimize.minimize(
+                            self._follower_objective_3d,
+                            x0,
+                            args=(K_L, phi_L),
+                            method="Nelder-Mead",
+                            options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                        )
+                        if result.fun < best_val:
+                            best_val = result.fun
+                            best_params = result.x
+                    except (ValueError, RuntimeError):
+                        continue
+
+        if best_params is None or best_val >= 1e19:
+            msg = f"Follower optimization failed for K_L={K_L:.4f}, phi_L={phi_L:.3f}"
+            raise RuntimeError(msg)
+
+        K_F = np.exp(best_params[0])
+        phi_F = np.clip(best_params[1], 0.01, 0.99)
+        lev_F = np.clip(best_params[2], 0.0, max_lev)
+        X_F = self._follower_trigger(K_F, phi_F, K_L, phi_L, lev_F)
+
+        self._cache[cache_key] = (X_F, K_F, phi_F, lev_F)
+        return X_F, K_F, phi_F, lev_F
 
     # ------------------------------------------------------------------
     # Leader's problem
     # ------------------------------------------------------------------
 
-    def _leader_value_at(self, X: float, K_L: float, regime: str) -> float:
-        """Leader's equity value at demand X with capacity K_L.
+    def _leader_value_at(
+        self,
+        X: float,
+        K_L: float,
+        phi_L: float,
+        lev_L: float,
+    ) -> float:
+        """Leader's equity value at demand X.
 
-        Before follower enters: leader is monopolist.
-        After follower enters (X >= X_F*): duopoly revenue.
+        Three phases:
+        1. Pre-follower-entry, L-regime: monopoly revenues
+        2. Post-follower-entry, L-regime: duopoly revenues
+        3. H-regime (after switch): duopoly quality-based revenue
 
-        The leader's value accounts for the follower's future entry:
-        V_leader(X) = V_monopolist(X) - [V_monopolist(X_F) - V_duopoly(X_F)]
-                      * (X/X_F)^beta
-
-        This subtracts the expected present value of the revenue loss
-        when the follower enters.
+        Accounts for follower's entry changing lambda_tilde.
         """
         p = self.params
-        X_F, K_F = self.solve_follower(K_L, regime)
 
-        # Current value as monopolist
-        V_mono = self.monopolist_revenue_pv(X, K_L, regime)
+        # Follower's best response
+        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L)
+
+        # Leader's costs
+        c_D_L = self.coupon_payment(K_L, lev_L)
+        I_L = self.investment_cost(K_L)
+        equity_cost_L = (1.0 - lev_L) * I_L
 
         if X >= X_F:
-            # Follower has already entered — use duopoly revenue directly
-            V_duo = self.duopoly_revenue_pv(X, K_L, K_F, regime)
-            equity_cost = (1.0 - self.leverage) * self.investment_cost(K_L)
-            c_D = self.coupon_payment(K_L)
-            return max(V_duo - equity_cost - c_D / p.r, 0.0)
+            # Follower already entered — duopoly
+            V_duo = self.installed_value_L(X, phi_L, K_L, phi_F, K_F)
+            return max(V_duo - equity_cost_L - c_D_L / p.r, 0.0)
 
-        # Follower hasn't entered yet. Leader is monopolist but anticipates entry.
-        beta = p.beta_H if regime == "H" else p.beta_L
+        # Phase 1: Monopolist (before follower enters)
+        V_mono = self.monopolist_value_L(X, phi_L, K_L)
 
-        V_mono_at_XF = self.monopolist_revenue_pv(X_F, K_L, regime)
-        V_duo_at_XF = self.duopoly_revenue_pv(X_F, K_L, K_F, regime)
-
-        # Revenue drop when follower enters
+        # Phase 2: Revenue drop when follower enters
+        V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
+        V_duo_at_XF = self.installed_value_L(X_F, phi_L, K_L, phi_F, K_F)
         revenue_drop = V_mono_at_XF - V_duo_at_XF
 
-        # Expected PV of revenue loss (scaled by probability of reaching X_F)
-        entry_factor = (X / X_F) ** beta if X_F > 0 and X < X_F else 1.0
+        # Probability-weighted PV of revenue loss
+        beta = p.beta_H
+        entry_factor = (X / X_F) ** beta if X_F > 0 else 1.0
 
         V_leader = V_mono - revenue_drop * entry_factor
 
-        equity_cost = (1.0 - self.leverage) * self.investment_cost(K_L)
-        c_D = self.coupon_payment(K_L)
-        return max(V_leader - equity_cost - c_D / p.r, 0.0)
+        return max(V_leader - equity_cost_L - c_D_L / p.r, 0.0)
 
-    def _leader_objective(self, log_K: float, regime: str) -> float:
-        """Negative of leader's option value factor for K optimization.
+    def _leader_objective_3d(
+        self,
+        params_vec: np.ndarray,
+    ) -> float:
+        """Negative of leader's option value factor for 3D optimization.
 
-        The leader's problem: choose K_L to maximize the option value,
-        accounting for the follower's future entry.
-
-        Uses a modified approach: optimize over K, where the trigger
-        is computed from the leader's value function.
+        params_vec = [log_K, phi, leverage]
+        Uses beta_H and A_eff (combined L+H revenue coefficient).
         """
+        log_K, phi_L, lev_L = params_vec
         K_L = np.exp(log_K)
+
+        if phi_L <= 0.01 or phi_L >= 0.99 or lev_L < 0 or lev_L > 0.95:
+            return 1e20
+
         p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
+        beta = p.beta_H
 
         # Revenue coefficient as monopolist
-        a = A * K_L**p.alpha
+        a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
 
-        c_D = self.coupon_payment(K_L)
-        equity_cost = (1.0 - self.leverage) * self.investment_cost(K_L)
+        c_D = self.coupon_payment(K_L, lev_L)
+        equity_cost = (1.0 - lev_L) * self.investment_cost(K_L)
         b = p.delta * K_L / p.r + equity_cost + c_D / p.r
 
-        if a <= 0 or b <= 0:
+        if a_eff <= 0 or b <= 0:
             return 1e20
-        return -(beta * np.log(a) - (beta - 1.0) * np.log(b))
+        return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
 
-    def _leader_trigger_monopolist(self, K_L: float, regime: str) -> float:
-        """Leader's trigger assuming monopolist revenue (upper bound).
-
-        X_L* = [beta/(beta-1)] * total_cost / [A * K^alpha]
-        """
-        p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
-
-        markup = beta / (beta - 1.0)
-        c_D = self.coupon_payment(K_L)
-        equity_cost = (1.0 - self.leverage) * self.investment_cost(K_L)
-        total_cost = p.delta * K_L / p.r + equity_cost + c_D / p.r
-
-        revenue_coeff = A * K_L**p.alpha
-        if revenue_coeff <= 0:
-            return np.inf
-        return markup * total_cost / revenue_coeff
-
-    def solve_leader_monopolist(self, regime: str = "H") -> tuple[float, float]:
+    def solve_leader_monopolist(
+        self,
+        regime: str = "H",
+    ) -> tuple[float, float, float, float]:
         """Solve leader's problem ignoring preemption (monopolist trigger).
 
-        This gives the trigger the leader would choose if there were no
-        threat of preemption. The actual leader's trigger is lower due
-        to preemption pressure.
-
         Returns:
-            (X_L_mono*, K_L*): Leader's monopolist trigger and capacity.
+            (X_L_mono*, K_L*, phi_L*, lev_L*): Leader's monopolist solution.
         """
-        cache_key = ("leader_mono", regime)
+        cache_key = ("leader_mono_3d", regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        result = optimize.minimize_scalar(
-            self._leader_objective,
-            bounds=(-15, 15),
-            method="bounded",
-            args=(regime,),
-        )
-        if result.fun >= 1e19:
+        # When leverage=0 (all-equity), fix leverage at 0
+        max_lev = min(self.leverage * 1.5 + 0.1, 0.95) if self.leverage > 0 else 0.0
+        best_val = 1e20
+        best_params = None
+
+        lev_starts = [0.0] if max_lev == 0 else [0.0, self.leverage, max_lev * 0.7]
+
+        for log_K_init in [-2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50]:
+                for lev_init in lev_starts:
+                    x0 = np.array([log_K_init, phi_init, lev_init])
+                    try:
+                        result = optimize.minimize(
+                            self._leader_objective_3d,
+                            x0,
+                            method="Nelder-Mead",
+                            options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                        )
+                        if result.fun < best_val:
+                            best_val = result.fun
+                            best_params = result.x
+                    except (ValueError, RuntimeError):
+                        continue
+
+        if best_params is None or best_val >= 1e19:
             msg = f"Leader optimization failed for regime={regime}"
             raise RuntimeError(msg)
-        K_L = np.exp(result.x)
-        X_L = self._leader_trigger_monopolist(K_L, regime)
 
-        self._cache[cache_key] = (X_L, K_L)
-        return X_L, K_L
+        K_L = np.exp(best_params[0])
+        phi_L = np.clip(best_params[1], 0.01, 0.99)
+        lev_L = np.clip(best_params[2], 0.0, max_lev)
+
+        # Compute trigger using beta_H and A_eff
+        p = self.params
+        beta = p.beta_H
+        a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
+
+        markup = beta / (beta - 1.0)
+        c_D = self.coupon_payment(K_L, lev_L)
+        equity_cost = (1.0 - lev_L) * self.investment_cost(K_L)
+        total_cost = p.delta * K_L / p.r + equity_cost + c_D / p.r
+
+        X_L = markup * total_cost / a_eff if a_eff > 0 else np.inf
+
+        self._cache[cache_key] = (X_L, K_L, phi_L, lev_L)
+        return X_L, K_L, phi_L, lev_L
 
     # ------------------------------------------------------------------
     # Preemption equilibrium
     # ------------------------------------------------------------------
 
-    def follower_option_value(self, X: float, K_L: float, regime: str) -> float:
+    def follower_option_value(
+        self, X: float, K_L: float, phi_L: float, regime: str
+    ) -> float:
         """Value of the follower's option at demand X.
 
-        F_follower(X) = B_F * X^beta   for X < X_F*
-        F_follower(X) = NPV            for X >= X_F*
+        F_follower(X) = B_F * X^beta_H   for X < X_F*
+        F_follower(X) = NPV              for X >= X_F*
         """
+        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
         p = self.params
-        X_F, K_F = self.solve_follower(K_L, regime)
-        beta = p.beta_H if regime == "H" else p.beta_L
+        beta = p.beta_H
 
         if X >= X_F:
-            return self._follower_npv(K_F, K_L, X, regime)
+            return self._follower_value(X, K_F, phi_F, K_L, phi_L, lev_F)
 
-        # Compute B_F from value-matching at X_F
-        npv_at_trigger = self._follower_npv(K_F, K_L, X_F, regime)
-        if X_F <= 0:
+        npv_at_trigger = self._follower_value(X_F, K_F, phi_F, K_L, phi_L, lev_F)
+        if X_F <= 0 or npv_at_trigger <= 0:
             return 0.0
         B_F = npv_at_trigger / X_F**beta
         return B_F * X**beta
@@ -521,85 +770,71 @@ class DuopolyModel:
     def _preemption_gap(self, X: float, regime: str) -> float:
         """Gap between leader's value and follower's option value at X.
 
-        At the preemption trigger X_P, the value of leading = value of
-        waiting (follower's option). The leader invests at X_P where
-        this gap first becomes non-negative from below.
-
-        L(X) - F(X) where:
-        - L(X) = leader's equity value from investing at X with optimal K
-        - F(X) = follower's option value (waiting)
+        L(X) - F(X)
         """
-        _, K_L = self.solve_leader_monopolist(regime)
-        leader_val = self._leader_value_at(X, K_L, regime)
-        follower_opt = self.follower_option_value(X, K_L, regime)
+        _, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
+        leader_val = self._leader_value_at(X, K_L, phi_L, lev_L)
+        follower_opt = self.follower_option_value(X, K_L, phi_L, regime)
         return leader_val - follower_opt
 
-    def solve_preemption_equilibrium(self, regime: str = "H") -> dict[str, float]:
+    def solve_preemption_equilibrium(self, regime: str = "H") -> dict:
         """Solve for the preemption equilibrium.
 
-        Finds the leader's preemption trigger X_P where the value of
-        leading first equals the value of following.
+        Finds X_P where the value of leading first equals the value
+        of following.
 
-        Returns dict with:
-            X_leader: Leader's investment trigger
-            K_leader: Leader's capacity
-            X_follower: Follower's investment trigger
-            K_follower: Follower's capacity
-            X_default_leader: Leader's default boundary (0 if no debt)
-            X_default_follower: Follower's default boundary (0 if no debt)
+        Returns dict with equilibrium quantities for leader and follower.
         """
-        cache_key = ("preemption", regime)
+        cache_key = ("preemption_3d", regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        X_L_mono, K_L = self.solve_leader_monopolist(regime)
-        X_F, K_F = self.solve_follower(K_L, regime)
-
-        # The preemption trigger is where L(X) = F(X) for the first time.
-        # Search in [epsilon, X_L_mono] since preemption forces earlier entry.
-        # At very low X, L(X) < 0 < F(X). At X_L_mono, L(X) > 0.
+        X_L_mono, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
+        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
 
         # Find the preemption point by bisection
         X_low = X_L_mono * 0.001
         X_high = X_L_mono
 
-        # Check if preemption actually occurs
         gap_low = self._preemption_gap(X_low, regime)
         gap_high = self._preemption_gap(X_high, regime)
 
         if gap_low >= 0:
-            # Leader value exceeds follower even at very low X (edge case)
             X_P = X_low
         elif gap_high <= 0:
-            # No preemption — leader invests at monopolist trigger
             X_P = X_L_mono
         else:
-            # Find the crossing point
             try:
-                result = optimize.brentq(
+                X_P = optimize.brentq(
                     self._preemption_gap,
                     X_low,
                     X_high,
                     args=(regime,),
                     xtol=1e-10,
                 )
-                X_P = result
             except ValueError:
-                # If Brent's method fails, use monopolist trigger
                 X_P = X_L_mono
 
         # Compute default boundaries
-        X_D_L = self.default_boundary(K_L, 0.0, regime)  # Leader pre-follower
-        X_D_F = self.default_boundary(K_F, K_L, regime)
+        X_D_L = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
+        X_D_F = self.default_boundary(phi_F, K_F, phi_L, K_L, lev_F)
+
+        # Endogenous lambda with both firms invested
+        lam_tilde = self.endogenous_lambda(phi_L, K_L, phi_F, K_F)
 
         result = {
             "X_leader": X_P,
             "K_leader": K_L,
+            "phi_leader": phi_L,
+            "lev_leader": lev_L,
             "X_follower": X_F,
             "K_follower": K_F,
+            "phi_follower": phi_F,
+            "lev_follower": lev_F,
             "X_default_leader": X_D_L,
             "X_default_follower": X_D_F,
             "X_leader_monopolist": X_L_mono,
+            "lambda_tilde": lam_tilde,
         }
         self._cache[cache_key] = result
         return result
@@ -628,20 +863,21 @@ class DuopolyModel:
         values: np.ndarray,
         regime: str = "H",
     ) -> dict[str, np.ndarray]:
-        """Compute equilibrium outcomes over a range of parameter values.
-
-        Returns dict with arrays for leader/follower triggers, capacities,
-        and default boundaries.
-        """
+        """Compute equilibrium outcomes over a range of parameter values."""
         n = len(values)
         results = {
             "param_values": values,
             "X_leader": np.full(n, np.nan),
             "K_leader": np.full(n, np.nan),
+            "phi_leader": np.full(n, np.nan),
+            "lev_leader": np.full(n, np.nan),
             "X_follower": np.full(n, np.nan),
             "K_follower": np.full(n, np.nan),
+            "phi_follower": np.full(n, np.nan),
+            "lev_follower": np.full(n, np.nan),
             "X_default_leader": np.full(n, np.nan),
             "X_default_follower": np.full(n, np.nan),
+            "lambda_tilde": np.full(n, np.nan),
             "has_solution": np.zeros(n, dtype=bool),
         }
 
@@ -655,12 +891,20 @@ class DuopolyModel:
                     bankruptcy_cost=self.bankruptcy_cost,
                 )
                 eq = m.solve_preemption_equilibrium(regime)
-                results["X_leader"][i] = eq["X_leader"]
-                results["K_leader"][i] = eq["K_leader"]
-                results["X_follower"][i] = eq["X_follower"]
-                results["K_follower"][i] = eq["K_follower"]
-                results["X_default_leader"][i] = eq["X_default_leader"]
-                results["X_default_follower"][i] = eq["X_default_follower"]
+                for key in [
+                    "X_leader",
+                    "K_leader",
+                    "phi_leader",
+                    "lev_leader",
+                    "X_follower",
+                    "K_follower",
+                    "phi_follower",
+                    "lev_follower",
+                    "X_default_leader",
+                    "X_default_follower",
+                    "lambda_tilde",
+                ]:
+                    results[key][i] = eq[key]
                 results["has_solution"][i] = True
             except (ValueError, RuntimeError):
                 continue
@@ -678,8 +922,10 @@ class DuopolyModel:
             "leverage": leverage_values,
             "X_leader": np.full(n, np.nan),
             "K_leader": np.full(n, np.nan),
+            "phi_leader": np.full(n, np.nan),
             "X_follower": np.full(n, np.nan),
             "K_follower": np.full(n, np.nan),
+            "phi_follower": np.full(n, np.nan),
             "X_default_leader": np.full(n, np.nan),
             "X_default_follower": np.full(n, np.nan),
             "has_solution": np.zeros(n, dtype=bool),
@@ -694,12 +940,17 @@ class DuopolyModel:
                     bankruptcy_cost=self.bankruptcy_cost,
                 )
                 eq = m.solve_preemption_equilibrium(regime)
-                results["X_leader"][i] = eq["X_leader"]
-                results["K_leader"][i] = eq["K_leader"]
-                results["X_follower"][i] = eq["X_follower"]
-                results["K_follower"][i] = eq["K_follower"]
-                results["X_default_leader"][i] = eq["X_default_leader"]
-                results["X_default_follower"][i] = eq["X_default_follower"]
+                for key in [
+                    "X_leader",
+                    "K_leader",
+                    "phi_leader",
+                    "X_follower",
+                    "K_follower",
+                    "phi_follower",
+                    "X_default_leader",
+                    "X_default_follower",
+                ]:
+                    results[key][i] = eq[key]
                 results["has_solution"][i] = True
             except (ValueError, RuntimeError):
                 continue
@@ -718,25 +969,36 @@ class DuopolyModel:
             eq = self.solve_preemption_equilibrium(regime)
             result["equilibrium"] = eq
 
-            # Add NPV information
             result["leader_npv"] = self._leader_value_at(
-                eq["X_leader"], eq["K_leader"], regime
+                eq["X_leader"], eq["K_leader"], eq["phi_leader"], eq["lev_leader"]
             )
-            result["follower_npv"] = self._follower_npv(
-                eq["K_follower"], eq["K_leader"], eq["X_follower"], regime
+            result["follower_npv"] = self._follower_value(
+                eq["X_follower"],
+                eq["K_follower"],
+                eq["phi_follower"],
+                eq["K_leader"],
+                eq["phi_leader"],
+                eq["lev_follower"],
             )
 
-            # Add investment costs
             result["leader_investment_cost"] = self.investment_cost(eq["K_leader"])
             result["follower_investment_cost"] = self.investment_cost(eq["K_follower"])
 
-            # Market shares at follower entry
-            if eq["K_follower"] > 0 and eq["K_leader"] > 0:
-                result["leader_share_at_follower_entry"] = self.contest_share(
-                    eq["K_leader"], eq["K_follower"]
-                )
+            result["leader_share_L"] = self.contest_share_L(
+                eq["phi_leader"],
+                eq["K_leader"],
+                eq["phi_follower"],
+                eq["K_follower"],
+            )
+            result["leader_share_H"] = self.contest_share_H(
+                eq["phi_leader"],
+                eq["K_leader"],
+                eq["phi_follower"],
+                eq["K_follower"],
+            )
             result["leverage"] = self.leverage
             result["bankruptcy_cost"] = self.bankruptcy_cost
+            result["lambda_tilde"] = eq["lambda_tilde"]
         except (ValueError, RuntimeError) as e:
             result["error"] = str(e)
 
