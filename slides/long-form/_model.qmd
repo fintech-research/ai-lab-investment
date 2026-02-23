@@ -29,9 +29,9 @@ $$dX_t = \mu_s X_t \, dt + \sigma_s X_t \, dW_t, \quad s \in \{L, H\}$$
 - Diminishing returns to capacity in revenue generation
 
 **Competition** (Tullock contest):
-$$\pi_i = X \cdot \frac{K_i^\alpha}{K_i^\alpha + K_j^\alpha}$$
+$$\pi_i = X \cdot \frac{K_i^{2\alpha}}{K_i^\alpha + K_j^\alpha}$$
 
-- Winner-take-most: captures AI market concentration
+- Diminishing returns: governs division of revenue across firms
 
 ---
 

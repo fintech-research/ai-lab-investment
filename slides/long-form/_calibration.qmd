@@ -2,7 +2,7 @@
 
 | Parameter | Value | Source |
 |:----------|:------|:-------|
-| $r$ (discount) | 0.12 | AI firm WACC |
+| $r$ (risk-adjusted discount) | 0.12 | Representative WACC |
 | $\mu_L, \mu_H$ (growth) | 0.01, 0.06 | Cloud revenue data |
 | $\sigma_L, \sigma_H$ (vol) | 0.25, 0.30 | Revenue volatility |
 | $\alpha$ (revenue elasticity) | 0.40 | Scaling laws |

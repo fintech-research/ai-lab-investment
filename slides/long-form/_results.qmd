@@ -5,7 +5,7 @@
 ::: {.columns}
 ::: {.column width="50%"}
 - Firms enter sequentially
-- Revenue sharing: $\pi_i = X \frac{K_i^\alpha}{\sum K_j^\alpha}$
+- Revenue sharing: $\pi_i = X \frac{K_i^{2\alpha}}{\sum K_j^\alpha}$
 - Last entrant solved first, then work backward
 :::
 ::: {.column width="50%"}
@@ -33,6 +33,10 @@ $$\phi^* = \frac{\eta}{\alpha + \eta} \approx 15\%$$
 - Independent of $X$ and $K$
 - Consistent with industry practice (10--20% for training)
 - Scaling exponent $\eta \approx 0.07$ from @kaplan2020scaling
+:::
+
+::: {.fragment}
+**Separability**: $\phi^*$ is independent of demand and capacity $\Rightarrow$ training-inference allocation decouples from investment timing
 :::
 
 ---

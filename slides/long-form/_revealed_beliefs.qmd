@@ -37,13 +37,13 @@ Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$ (CoreWeave-like
 
 ---
 
-## The Dario Dilemma {.center}
+## The AI Investment Dilemma {.center}
 
 > What is the cost of investing with the wrong $\lambda$?
 
 ---
 
-## The Dario Dilemma: Setup
+## The AI Investment Dilemma: Setup
 
 **Firm has**: true belief $\lambda_{\text{true}}$, invests using $\lambda_{\text{invest}}$
 
@@ -69,7 +69,7 @@ Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$ (CoreWeave-like
 
 ---
 
-## The Dario Dilemma: Asymmetry
+## The AI Investment Dilemma: Asymmetry
 
 **Proposition 6**: Aggressive overinvestment is costlier than conservative underinvestment
 
