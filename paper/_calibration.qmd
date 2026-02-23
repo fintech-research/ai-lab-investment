@@ -1,7 +1,29 @@
-## Calibration {#sec-calibration}
+## Quantitative Calibration {#sec-calibration}
 
-I calibrate the model to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
+This section maps the model parameters to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
+The calibration is *stylized*: the goal is to discipline the model's quantitative magnitudes and illustrate cross-sectional heterogeneity, not to structurally estimate firm-level primitives or test the model empirically.
 The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
+
+@tbl-param-mapping summarizes the calibration status of each parameter.
+
+| Parameter | Baseline | Target / Source | Status |
+|:----------|:--------:|:----------------|:------:|
+| $\mu_L$ | 0.01 | Cloud computing baseline growth | Chosen for discipline |
+| $\mu_H$ | 0.06 | Upper-range AI revenue growth projections | Chosen for discipline |
+| $\sigma_L$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
+| $\sigma_H$ | 0.30 | Elevated uncertainty under transformative AI | Chosen for discipline |
+| $r$ | 0.12 | WACC, representative AI infrastructure firm | Inferred from Damodaran |
+| $\lambda_0$ | 0.05 | Rest-of-world AI progress | Chosen for discipline |
+| $\xi$ | 0 | Endogenous training contribution (baseline: exogenous) | Chosen |
+| $\eta$ | 0.07 | Kaplan et al. (2020), Hoffmann et al. (2022) scaling laws | Directly observed |
+| $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
+| $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
+| $c$ | 1.00 | Normalization | --- |
+| $\delta$ | 0.03 | Power, cooling, maintenance (flow cost only) | Inferred from industry |
+| $c_d$ | 0.05 | Cost of debt for AI infrastructure firms | Inferred |
+| $b$ | 0.30 | Bankruptcy cost fraction | Standard (Leland 1994) |
+
+: Parameter calibration status. "Directly observed" = taken from empirical estimates; "Inferred" = backed out from observable proxies; "Chosen for discipline" = selected to generate plausible magnitudes without a precise empirical target. {#tbl-param-mapping tbl-colwidths="[14,10,42,18]"}
 
 ### Demand Process
 
@@ -40,9 +62,10 @@ The baseline $\xi = 0$ corresponds to the exogenous-$\lambda$ model; for the end
 This 50\% split reflects the observation that frontier AI labs collectively conduct the majority of the world's largest training runs, but that academic research, open-source projects (e.g., Llama, Mistral), and international competitors (e.g., DeepSeek) contribute substantially to overall progress.
 The choice is inherently uncertain; varying the endogenous share from 25\% to 75\% shifts the quantitative importance of the training externality but preserves all qualitative results (see Appendix F on exogenous vs. endogenous $\lambda$ robustness). With $\eta = 0.07$, the endogenous channel is quantitatively modest: doubling a single firm's training compute raises its contribution to $\tilde{\lambda}$ by only $2^{0.07} - 1 \approx 5\%$, so the model effectively reduces to the exogenous-$\lambda$ case for most firm-level decisions.
 
-### Stylized Firms
+### Stylized Firm Archetypes
 
-I calibrate four stylized firms representing the major categories of AI infrastructure investors:
+I construct four stylized firm archetypes representing the major categories of AI infrastructure investors.
+These archetypes are designed to span the relevant cross-sectional variation in investment intensity, leverage, and training allocation; they are *illustrative composites*, not structural estimates of any specific company's parameters.
 
 | Parameter | Frontier Lab | Platform | Hyperscaler | Infra Provider |
 |:----------|:------------|:---------|:------------|:--------------|
@@ -95,6 +118,7 @@ The leader allocates more to training than the follower, consistent with Proposi
 
 ### Sensitivity Analysis
 
+The following comparative statics are robust across the calibration range; @tbl-elasticities in the Appendix reports elasticities at the baseline.
 The investment trigger, capacity, and training fraction are sensitive to several key parameters.
 Higher volatility $\sigma_H$ increases the option value of waiting, raising the investment trigger---the standard real options result that uncertainty raises the value of flexibility; for AI infrastructure, this means that higher uncertainty about future demand justifies more cautious investment timing, even as firms rush to build.
 A higher discount rate $r$ reduces the present value of future cash flows, raising the trigger and reducing optimal capacity; the wide variation in WACC across AI firms (10\%--18\% in our calibration) implies substantially different investment policies even for firms with identical beliefs about $\lambda$.

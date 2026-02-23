@@ -1,6 +1,7 @@
 ## Quantitative Implications {#sec-valuation}
 
-This section develops quantitative implications of the model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
+This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
+All results in this section are numerical, computed under the stylized calibration of @sec-calibration; they illustrate the model's economic mechanisms rather than delivering empirically testable point estimates.
 
 @fig-lambda-timeline provides intuition for the economic content of the arrival rate parameter $\lambda$.
 Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
