@@ -143,8 +143,8 @@ def fig_option_value():
     mask = X_vals < X_star
     ax.fill_between(X_vals[mask], NPV[mask], F_H[mask], alpha=0.12, color="steelblue")
     ax.text(
-        X_star * 0.4,
-        max(F_H) * 0.06,
+        X_star * 0.3,
+        max(F_H) * 0.12,
         "Value of\nwaiting",
         fontsize=8,
         color="steelblue",
