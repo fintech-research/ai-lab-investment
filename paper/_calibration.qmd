@@ -2,6 +2,10 @@
 
 This section maps the model parameters to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
 The calibration is *stylized*: the goal is to discipline the model's quantitative magnitudes and illustrate cross-sectional heterogeneity, not to structurally estimate firm-level primitives or test the model empirically.
+Three caveats should be noted at the outset.
+First, the Leland default framework is an analytically tractable approximation to financial distress risk; it fits public-debt issuers better than VC-backed labs, though the qualitative predictions apply across financing structures (see @sec-discussion).
+Second, the training fractions $\hat{\phi}$ are inferred from incomplete data and carry substantial uncertainty ($\pm 0.10$).
+Third, the scaling exponent $\eta$ is inferred from the neural scaling laws literature through a non-trivial mapping (see below).
 The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
 
 @tbl-param-mapping summarizes the calibration status of each parameter.
@@ -15,7 +19,7 @@ The calibration proceeds in four steps: I first set the demand process parameter
 | $r$ | 0.12 | WACC, representative AI infrastructure firm | Inferred from Damodaran |
 | $\lambda_0$ | 0.05 | Rest-of-world AI progress | Chosen for discipline |
 | $\xi$ | 0 | Endogenous training contribution (baseline: exogenous) | Chosen |
-| $\eta$ | 0.07 | Kaplan et al. (2020), Hoffmann et al. (2022) scaling laws | Directly observed |
+| $\eta$ | 0.07 | Inferred from Kaplan et al. (2020), Hoffmann et al. (2022) scaling laws | Inferred |
 | $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
 | $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
 | $c$ | 1.00 | Normalization | --- |
@@ -33,7 +37,9 @@ In the high regime ($H$), I set $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting
 
 The exogenous component of the arrival rate is $\lambda_0 = 0.05$ per year, reflecting rest-of-world AI progress (algorithmic advances, academic research, open-source contributions) that occurs independently of the modeled firms' investments.
 The total effective arrival rate $\tilde{\lambda}$ combines this baseline with the endogenous contribution from firms' training compute (@eq-endogenous-lambda).
-Under the baseline calibration with $\xi = 0$ (exogenous model), the total $\lambda = 0.10$ per year implies an expected time to regime switch of 10 years; the baseline value represents a moderate prior.
+Under the baseline calibration with $\xi = 0$ (exogenous model), the total effective rate $\tilde{\lambda} = 0.10$ per year implies an expected time to regime switch of 10 years.
+The baseline represents a moderate prior, intended to approximate the marginal investor's belief rather than any particular executive's view.
+It is significantly more conservative than the beliefs implied by @amodei2024machines ($\lambda \approx 0.30$--$0.50$) or @hassabis2025breakthroughs ($\lambda \approx 0.10$--$0.15$), and the dispersion across these views is precisely what generates the cross-sectional variation in investment behavior analyzed in @sec-valuation.
 
 I set the discount rate $r = 0.12$, the risk-adjusted WACC for a representative AI infrastructure firm.
 As discussed in @sec-model, $r$ is the WACC and $\mu_s$ is the risk-adjusted (certainty-equivalent) growth rate; all valuation uses this reduced-form framework throughout.
@@ -56,7 +62,13 @@ At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are u
 
 ### Endogenous Arrival Rate Parameters
 
-Following @kaplan2020scaling and @hoffmann2022training, the scaling exponent $\eta = 0.07$ governs diminishing returns in the contribution of training compute to AI progress: doubling training compute raises the arrival rate contribution by only $2^{0.07} - 1 \approx 5\%$.
+The scaling exponent $\eta = 0.07$ governs diminishing returns in the contribution of training compute to AI progress: doubling training compute raises the arrival rate contribution by only $2^{0.07} - 1 \approx 5\%$.
+This value is *inferred* from the neural scaling laws literature, not directly observed.
+@kaplan2020scaling and @hoffmann2022training report that model loss (cross-entropy) decreases as a power law of training compute, with exponents in the range 0.05--0.10 depending on the model family and data regime.
+The mapping from loss reduction to regime-switch arrival rate involves two non-trivial steps: (i) translating a decrease in loss into an improvement in model capability (which depends on the relationship between loss and economically relevant performance metrics), and (ii) translating capability improvement into a marginal increase in the probability of the economy transitioning to the high-demand regime (which depends on adoption thresholds, complementary investments, and institutional readiness).
+Neither step has a well-established empirical basis.
+I use $\eta = 0.07$ as a plausible central value from the scaling law range, interpreting it as the elasticity of AI progress with respect to training compute, but the mapping from loss-compute power laws to arrival-rate elasticities is inherently uncertain and represents one of the calibration's weakest links.
+The model is quantitatively robust to this parameter: with $\eta = 0.07$ and the baseline $\xi$, the endogenous channel is modest (doubling one firm's training raises $\tilde{\lambda}$ by approximately 5\%), so the exogenous baseline $\lambda_0$ dominates the arrival rate for most firm-level decisions.
 The firm contribution scaling parameter $\xi$ converts the modeled firms' training compute into arrival rate units.
 The baseline $\xi = 0$ corresponds to the exogenous-$\lambda$ model; for the endogenous analysis, I calibrate $\xi$ so that the industry's current training compute ($\sum \phi_i K_i$ across the four stylized firms) contributes approximately half of the total arrival rate, yielding $\tilde{\lambda} \approx 2\lambda_0$.
 This 50\% split reflects the observation that frontier AI labs collectively conduct the majority of the world's largest training runs, but that academic research, open-source projects (e.g., Llama, Mistral), and international competitors (e.g., DeepSeek) contribute substantially to overall progress.
@@ -67,46 +79,52 @@ The choice is inherently uncertain; varying the endogenous share from 25\% to 75
 I construct four stylized firm archetypes representing the major categories of AI infrastructure investors.
 These archetypes are designed to span the relevant cross-sectional variation in investment intensity, leverage, and training allocation; they are *illustrative composites*, not structural estimates of any specific company's parameters.
 
-| Parameter | Frontier Lab | Platform | Hyperscaler | Infra Provider |
+| Parameter | Frontier Lab | Platform | Hyperscaler | Compute Racer |
 |:----------|:------------|:---------|:------------|:--------------|
-| Archetype | Anthropic | OpenAI | Google | CoreWeave |
-| Revenue 2024 (\$B) | 0.9 | 4.0 | 40.0 | 2.0 |
-| Revenue 2025 (\$B) | 3.0 | 12.0 | 55.0 | 5.0 |
+| Archetype | Anthropic | OpenAI | Google | xAI |
+| Revenue 2024 (\$B) | 0.9 | 4.0 | 40.0 | 0.5 |
+| Revenue 2025 (\$B) | 3.0 | 12.0 | 55.0 | 2.0 |
 | CapEx 2025 (\$B) | 6.0 | 15.0 | 60.0 | 10.0 |
-| CapEx / Revenue | 2.00 | 1.25 | 1.09 | 2.00 |
-| Leverage | 0.20 | 0.30 | 0.10 | 0.70 |
+| CapEx / Revenue | 2.00 | 1.25 | 1.09 | 5.00 |
+| Leverage | 0.20 | 0.30 | 0.10 | 0.25 |
 | WACC | 0.15 | 0.14 | 0.10 | 0.18 |
-| Training fraction $\hat{\phi}$ | 0.60 | 0.55 | 0.40 | 0.20 |
+| Training fraction $\hat{\phi}$ | 0.60 | 0.55 | 0.40 | 0.80 |
 
 : Stylized firm parameters calibrated from public filings and analyst reports. Training fractions $\hat{\phi}$ are estimated from industry reports on compute allocation. {#tbl-firms tbl-colwidths="[24,15,15,15,15]"}
 
 The figures in @tbl-firms are approximate composites derived from public filings (10-K, 10-Q), earnings call guidance, and analyst estimates, rounded for expositional clarity.
+For privately held firms (the Anthropic-like and xAI-like archetypes), revenue figures are based on press reports and analyst estimates and are inherently less reliable than publicly disclosed figures; they should be treated as order-of-magnitude estimates.
 I cross-referenced multiple sources where available (e.g., Bloomberg, S\&P Capital IQ, Damodaran industry data; see @tbl-sources).
 The stylized firms are designed to capture salient features of each category rather than to replicate any single company's financials precisely.
 The qualitative results are robust to moderate perturbation of these inputs: @tbl-elasticities shows that the model's comparative statics are well-behaved across the calibration range.
 For the Google-like archetype, the relevant revenue concept is Google Cloud revenue (growing 25--35\% annually), not Alphabet's total revenue.
 The \$40--55B figures in @tbl-firms approximate Google Cloud's AI-related infrastructure spending and cloud revenue; using Alphabet-wide revenue (\$350B+) would dramatically reduce the CapEx/Revenue ratio and understate Google's AI investment intensity.
+For the xAI-like archetype, revenue reflects standalone AI-related revenue (Grok API and subscription revenue); xAI's March 2025 merger with the X social media platform complicates revenue attribution, but the AI-specific figures best match the model's scope.
 The same sector-specific revenue concept applies to all archetypes: revenue from AI-related activities, not diversified corporate totals.
 
 The training fraction $\hat{\phi}$ estimates reflect the approximate share of compute allocated to model training versus inference serving.
-The Anthropic-like frontier lab allocates the most to training ($\hat{\phi} = 0.60$), consistent with its mission-driven focus on developing the most capable models.
-The CoreWeave-like infrastructure provider allocates the least ($\hat{\phi} = 0.20$), reflecting its business model as primarily an inference-serving platform.
-These observed training fractions provide important cross-sectional variation for the quantitative analysis in @sec-valuation.
+These estimates are inherently uncertain, as firms do not publicly disclose precise training-inference breakdowns.
+The values in @tbl-firms are inferred from multiple sources: @amodei2025training describes the allocation constraint and suggests approximately 50\% for frontier labs as "a stylized fact"; analyst reports from Bernstein, Morgan Stanley, and Coatue estimate that inference currently accounts for 60--80\% of cloud GPU demand at hyperscalers; and GPU utilization data from cloud provider dashboards suggest that dedicated training clusters run near-continuously while inference capacity has more variable utilization.
+The xAI-like compute racer allocates the most to training ($\hat{\phi} = 0.80$), consistent with its strategy of dedicating all owned compute (the Colossus supercluster) to frontier model training while outsourcing inference to cloud providers [@musk2026colossus].
+The Google-like hyperscaler allocates the least ($\hat{\phi} = 0.40$), reflecting its need to serve a large existing inference workload.
+The Anthropic-like and OpenAI-like archetypes fall between these extremes.
+These estimates carry substantial uncertainty---plausibly $\pm 0.10$ for each archetype---and readers should treat them as order-of-magnitude discipline rather than precise moments for structural identification.
+The cross-sectional variation ($\hat{\phi}$ ranging from 0.40 to 0.80) is more informative than any individual point estimate, and the qualitative results are robust to moderate perturbation of these values (@tbl-elasticities).
 
 @fig-firm-comparison provides a visual summary of the calibration targets.
 Panel (a) shows the capital expenditure to revenue ratio for each stylized firm.
 All four firms have investment intensities well above the unity threshold (dotted line), confirming that each is investing far ahead of current demand.
-The CoreWeave-like and Anthropic-like firms have the highest ratios, suggesting the most aggressive investment postures.
-Panel (b) plots each firm in revenue-growth versus leverage space, revealing two distinct clusters: high-growth, low-leverage firms (Anthropic-like, Google/Alphabet-like) and high-leverage firms with more moderate growth (CoreWeave-like, OpenAI-like).
+The xAI-like compute racer has by far the highest ratio (5.0$\times$), reflecting its extreme invest-first strategy of building massive training clusters before monetization; the Anthropic-like frontier lab is the next most aggressive at 2.0$\times$.
+Panel (b) plots each firm in revenue-growth versus leverage space, revealing substantial dispersion: the xAI-like firm combines the highest revenue growth (4.0$\times$) with moderate leverage, while the Google-like hyperscaler combines modest growth with the lowest leverage.
 This dispersion in financial characteristics drives the heterogeneous investment behavior analyzed in @sec-valuation.
 
-![Stylized firm comparison. (a) Capital expenditure to revenue ratio (2025). All firms invest above the 1.0x threshold (dotted line), indicating investment ahead of current demand. (b) Revenue growth (2024--2025) versus leverage ratio. The four firm archetypes occupy distinct positions in this space, reflecting different investment strategies and financial structures.](figures/fig_firm_comparison.pdf){#fig-firm-comparison}
+![Stylized firm comparison. (a) Capital expenditure to revenue ratio (2025). All firms invest above the 1.0x threshold (dotted line), indicating investment ahead of current demand; the xAI-like compute racer is a pronounced outlier at 5.0$\times$. (b) Revenue growth (2024--2025) versus leverage ratio. The four firm archetypes occupy distinct positions in this space, reflecting different investment strategies and financial structures.](figures/fig_firm_comparison.pdf){#fig-firm-comparison}
 
 Several patterns emerge from @tbl-firms.
 First, all firms have capital expenditure exceeding revenue---investment intensities above 100\%---which is historically unusual and indicates that these firms are investing far ahead of current demand.
-Second, the frontier labs (Anthropic-like and CoreWeave-like firms) have the highest investment intensity, suggesting the most aggressive beliefs about future demand.
-Third, leverage varies substantially: the hyperscaler funds investment primarily from internal cash flows, while the infrastructure provider relies heavily on debt.
-Fourth, training fractions vary by a factor of three across firm types, reflecting fundamentally different business models and beliefs about where the returns to AI compute investment will be highest.
+Second, the xAI-like compute racer has the most extreme investment intensity (5.0$\times$), reflecting a strategy of scaling compute capacity before monetization; the Anthropic-like frontier lab is the next most aggressive.
+Third, leverage varies across archetypes: the hyperscaler funds investment primarily from internal cash flows ($\ell = 0.10$), while the OpenAI-like platform carries moderate debt from credit facilities ($\ell = 0.30$).
+Fourth, training fractions vary by a factor of two across firm types (0.40 to 0.80), reflecting fundamentally different business models and beliefs about where the returns to AI compute investment will be highest.
 
 ### Baseline Results
 

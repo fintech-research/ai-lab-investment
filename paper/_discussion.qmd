@@ -24,7 +24,12 @@ The model generates several cross-sectional predictions that are in principle te
 3. **Asymmetric response to AI news.** The convexity of equity value in $\lambda$ (@sec-valuation) implies that positive AI capability news should increase AI infrastructure valuations more than negative news decreases them, with the effect stronger for high-$\hat{\phi}$ firms.
 4. **Leader-follower training gap.** In markets with clear sequential entry, first movers should allocate more to training than later entrants (Proposition 3(ii)), because the monopoly phase reduces the opportunity cost of training.
 
-These predictions are directional and could be assessed as the cross-section of publicly traded AI infrastructure firms expands (e.g., post-CoreWeave IPO), though the small sample size currently limits formal statistical testing.
+These predictions are directional and could be assessed as the cross-section of publicly traded AI infrastructure firms expands, though the small sample size currently limits formal statistical testing.
+More broadly, the model provides a framework for interpreting empirical patterns in the emerging AI sector through the lens of existing corporate finance and industrial organization methods.
+Credit spread regressions could test the training-spread nexus using training fraction proxies (e.g., ratio of pre-training compute to total compute, disclosed in some filings).
+Event studies around AI capability announcements (model releases, benchmark results) could test the predicted asymmetric equity response.
+And cross-sectional investment regressions could test whether the model's comparative statics---investment intensity increasing in $\lambda$ proxies, training fraction increasing in leverage conditional on beliefs---hold in the data.
+These empirical exercises require data that is currently scarce but becoming available as AI firms go public and disclosure norms develop.
 
 ### Policy Implications
 
@@ -53,9 +58,12 @@ Several limitations should be noted.
 The model fixes the training fraction $\phi$ at investment time---a reasonable first approximation for large-scale capacity decisions with 18--24 month planning horizons, but limiting given the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation) that blurs the boundary between training and inference [@brown2024inference].
 A dynamic extension in which $\phi$ responds to realized demand would enrich the model; I leave this for future work.
 
+The model focuses on frontier AI laboratories as the primary economic agents: labs make the capacity investment, training allocation, and timing decisions that drive the model's mechanisms.
+Some labs build proprietary infrastructure (e.g., xAI's Colossus supercluster), while others rely on cloud hyperscaler partnerships (e.g., Anthropic--Amazon, OpenAI--Microsoft); in both cases, the investment decision ultimately resides at the lab level, even when the physical infrastructure is co-owned or leased from a third party.
 The Leland (1994) structural default framework assumes publicly traded equity and continuously tradeable debt.
 Several frontier AI labs (Anthropic, OpenAI) have complex capital structures involving SAFE notes, convertible debt, and multi-class equity---far from the Leland setting.
-The default mechanism is best interpreted as applying to *infrastructure providers* (CoreWeave, cloud hyperscalers) that issue publicly traded debt; for VC-backed labs, the relevant constraint is funding-round risk rather than Leland-style default.
+The Leland mechanism is best viewed as an analytically tractable approximation to the broader financial distress risk that all AI labs face: the model's default boundary $X_D$ captures the demand level at which the firm can no longer sustain operations, whether the binding constraint is a missed coupon (for a public debt issuer), a failed funding round (for a VC-backed lab), or a covenant violation (for a credit facility).
+The qualitative predictions---that higher training investment lowers the distress threshold through the continuation-value channel, that leverage amplifies overinvestment losses, and that the default boundary rises with rival capacity---apply across financing structures; the specific Leland closed forms are the vehicle for these insights, not the literal description of any single firm's capital structure.
 
 The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
 Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; a Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix F).

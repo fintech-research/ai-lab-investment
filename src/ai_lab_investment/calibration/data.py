@@ -164,18 +164,18 @@ def get_stylized_firms() -> list[FirmData]:
             ),
         ),
         FirmData(
-            name="Firm D (CoreWeave-like)",
-            revenue_2024=2.0,
-            revenue_2025=5.0,
-            capex_2024=8.0,
+            name="Firm D (xAI-like)",
+            revenue_2024=0.5,
+            revenue_2025=2.0,
+            capex_2024=3.0,
             capex_2025=10.0,
-            gpu_count=100,
-            leverage_ratio=0.70,
+            gpu_count=230,
+            leverage_ratio=0.25,
             wacc=0.18,
-            training_fraction=0.20,
+            training_fraction=0.80,
             description=(
-                "GPU cloud provider, very high leverage, "
-                "high cost of capital, high growth"
+                "Compute-first frontier lab, extreme CapEx/Revenue, "
+                "all owned compute dedicated to training"
             ),
         ),
     ]

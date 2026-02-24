@@ -19,7 +19,7 @@ $$
 \tilde{\lambda}(\phi_i, K_i, \phi_j, K_j) = \lambda_0 + \xi \cdot \bigl[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta\bigr],
 $$ {#eq-endogenous-lambda}
 where $\lambda_0 > 0$ is the exogenous baseline arrival rate (reflecting rest-of-world progress, algorithmic advances outside these firms), $\xi \geq 0$ scales the contribution of the modeled firms' training compute to the arrival rate, $\eta \in (0,1)$ is the scaling law exponent capturing diminishing returns to training compute [@kaplan2020scaling; @hoffmann2022training], and $\phi_i K_i$ is firm $i$'s training compute (defined below).^[The dispersion in executive timeline estimates maps directly to heterogeneity in $\lambda_0$. @amodei2024machines predicts AI "smarter than a Nobel Prize winner" as early as 2026, implying $\lambda_0 \approx 0.30$--$0.50$; @hassabis2025breakthroughs gives roughly 50% probability by the end of the decade ($\lambda_0 \approx 0.10$--$0.15$); and @nadella2025formula proposes an economic test---developed-world GDP growth of 10%---that implicitly pushes the threshold further out. These differences in $\lambda_0$ drive the heterogeneity in investment behavior analyzed in @sec-valuation.]
-When $\xi = 0$, the model reduces to the exogenous-$\lambda$ baseline.
+When $\xi = 0$, $\tilde{\lambda} = \lambda_0$ and the model reduces to the exogenous-arrival-rate baseline; in this case, the firm-level arguments in @eq-endogenous-lambda are irrelevant and $\tilde{\lambda}$ is a constant.
 When $\xi > 0$, firms' training investments collectively accelerate the arrival of transformative AI, creating a positive externality: each firm's training contributes to a common arrival rate that benefits all participants.
 
 The high regime $H$ is absorbing: once the economy transitions, it remains in $H$ permanently.
@@ -47,7 +47,7 @@ In practice, firms expand incrementally and can repurpose compute across workloa
 A frontier AI laboratory produces intelligence by combining two forms of compute.
 *Training compute* optimizes a neural network's parameters on massive datasets, yielding a model whose quality scales as a power law of compute invested.
 *Inference compute* runs the trained model to serve predictions and generate revenue.
-Both activities consume the same scarce hardware---purpose-built GPU clusters housed in multi-billion-dollar data centers---creating an allocation problem with no close parallel in traditional capital budgeting.
+Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction---creating an allocation problem with no close parallel in traditional capital budgeting.
 
 A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference.
 Training compute is $\phi K$ and inference compute is $(1-\phi) K$.
@@ -90,17 +90,17 @@ Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ pe
 | $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
 | $\alpha$ | Revenue elasticity to capacity | Exogenous |
 | $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
-| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived |
-| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived |
-| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived |
-| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived |
-| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived |
+| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
+| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
+| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
+| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived (primitives) |
+| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
 | $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
 | $c_d$ | Coupon rate on debt | Exogenous |
 | $X_D$ | Endogenous default boundary | Derived |
 | $X^*$ | Optimal investment trigger | Derived |
 
-: Key notation. "Derived" indicates quantities computed from primitives and choices. {#tbl-notation tbl-colwidths="[12,58,30]"}
+: Key notation. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
@@ -162,33 +162,31 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 
 *(A1) $r > \mu_H > \mu_L \geq 0$, $\sigma_L, \sigma_H > 0$, $\alpha \in (0,1)$, $\gamma > 1$, $c > 0$, $\delta \geq 0$, $\lambda_0 > 0$, $\xi \geq 0$, $\eta \in (0,1)$.*
 
-*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$.*
+*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$. Economically, the lower bound requires that cost convexity ($\gamma$) is strong enough relative to revenue concavity ($\alpha$) to limit optimal capacity; the upper bound requires that revenue concavity is not so severe that the marginal product of capacity is always below its marginal cost.*
 
-*(A3) The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. For the baseline calibration, $\beta_L^+ \approx 1.63$ and $(1-1/\beta_L^+)/\alpha \approx 2.42 > 1$; this condition is verified for all parameter values used in the paper.*
+*(A3) The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. For the baseline calibration, $\beta_L^+ \approx 3.01$ and $(1-1/\beta_L^+)/\alpha \approx 0.67/0.40 = 1.67 > 1$; this condition is verified for all parameter values used in the paper.*
 
 *(A4) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
 
-*Conditions (A1)--(A4) are satisfied at the baseline calibration and verified numerically at all parameter values used in the paper. When (A3) fails (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and additional boundary conditions enter the optimization.*
+*Conditions (A1)--(A4) are satisfied at the baseline calibration and verified numerically at all parameter values used in the core analytical results. When (A3) fails (e.g., $\alpha > 1 - 1/\beta_L^+ \approx 0.67$ at baseline parameters), the full two-term solution @eq-option-L-general applies and additional boundary conditions enter the optimization; see Appendix B for the treatment of the (A3) boundary in the sensitivity analysis. Condition (A2) holds at the baseline WACC $r = 0.12$ but may be violated at extreme archetype-specific WACCs; all archetype quantitative results are computed using full numerical optimization that does not require (A2).*
 
 **Proposition 1** (Optimal capacity and training fraction).
-*The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. In the H-regime, the optimal capacity for given $\phi$ is:*
+*The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. In the H-regime, the optimal capacity conditional on a given $\phi$ is:*
 $$
-K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}} \cdot \phi^{-\alpha/(\gamma - 1)},
+K^*(\phi) = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}} \cdot \phi^{-\alpha/(\gamma - 1)},
 $$
-*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$.*
+*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. Note that this is the optimal capacity for a given training fraction; the joint optimum $(K^*, \phi^*)$ solves the coupled system $K^*(\phi^*)$ and the first-order condition for $\phi^*$ simultaneously.*
 
-*When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (i.e., no interior L-regime trigger; see the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ discussed after @eq-option-L-general), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. For exogenous $\tilde{\lambda}$, the optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
+*When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (i.e., no interior L-regime trigger; see the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ discussed after @eq-option-L-general), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. For exogenous $\tilde{\lambda}$ ($\xi = 0$), the optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
 
 *(i) $\phi^*$ is increasing in $\lambda_0$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
-*(ii) $\phi^*$ is increasing in $\xi$: stronger scaling returns to training invest more in the arrival rate.*
-
-*(iii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
+*(ii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
 
 *Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 
 **Corollary 1** (Endogenous hazard).
-*When $\tilde{\lambda}$ is endogenous (@eq-endogenous-lambda with $\xi > 0$), the optimal $\phi^*$ additionally affects $\tilde{\lambda}$ through the firm's training compute, creating a feedback loop. Numerically, the interior solution and uniqueness results extend to this case: with $\eta = 0.07$, doubling training compute raises the firm's contribution to $\tilde{\lambda}$ by only 5%, so the fixed-point $\phi^*$ remains close to the exogenous-$\tilde{\lambda}$ solution. The comparative statics signs are preserved under the endogenous specification and are verified numerically across the calibration-relevant parameter region. The comparative static $\partial \phi^* / \partial \xi > 0$ is established numerically rather than analytically, because the implicit differentiation involves the endogenous feedback $\partial \tilde{\lambda} / \partial \phi$. All subsequent propositions are similarly stated for exogenous $\tilde{\lambda}$ and verified to extend to the endogenous case.*
+*When $\tilde{\lambda}$ is endogenous (@eq-endogenous-lambda with $\xi > 0$), the optimal $\phi^*$ additionally affects $\tilde{\lambda}$ through the firm's training compute, creating a feedback loop. Numerically, the interior solution and uniqueness results extend to this case: with $\eta = 0.07$, doubling training compute raises the firm's contribution to $\tilde{\lambda}$ by only 5%, so the fixed-point $\phi^*$ remains close to the exogenous-$\tilde{\lambda}$ solution. The comparative statics signs of Proposition 1 are preserved under the endogenous specification and are verified numerically across the calibration-relevant parameter region. Additionally, $\partial \phi^* / \partial \xi > 0$: stronger scaling returns to training invest more in the arrival rate. This comparative static is established numerically rather than analytically, because the implicit differentiation involves the endogenous feedback $\partial \tilde{\lambda} / \partial \phi$. All subsequent propositions are similarly stated for exogenous $\tilde{\lambda}$ and verified to extend to the endogenous case.*
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma_H$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -205,7 +203,7 @@ The option value satisfies the Hamilton-Jacobi-Bellman equation incorporating th
 $$
 \tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' + \tilde{\lambda}\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0,
 $$ {#eq-hjb-L}
-where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime option value (@eq-option-H).
+where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime *option* value (@eq-option-H)---the value of the investment option conditional on being in regime $H$ without having invested yet, not the installed value $V_H$.
 Substituting and rearranging, this becomes a second-order Euler ODE with non-homogeneous term $\tilde{\lambda} B_H X^{\beta_H}$:
 $$
 \tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' - (r + \tilde{\lambda})\, F_L + \tilde{\lambda} B_H X^{\beta_H} = 0.
@@ -225,13 +223,14 @@ $$ {#eq-option-L-general}
 **When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
 The homogeneous coefficient $A_1$ is determined by value-matching and smooth-pasting at the L-regime investment trigger.
 When no interior trigger exists in regime $L$---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that the option to wait is sufficiently valuable that the firm never invests in $L$ and instead waits for the regime switch---there are no boundary conditions to pin down $A_1$, and the option value reduces to $F_L(X) = C \cdot X^{\beta_H}$.
-For the baseline calibration ($\sigma_L = 0.25$, $\mu_L = 0.01$, $r = 0.12$, $\tilde{\lambda} = 0.10$), the option premium ratio exceeds unity, so this simplification is valid and the option value derives entirely from the expected regime switch.^[With these parameters, $\beta_L^+ \approx 1.63$ and $(1 - 1/\beta_L^+)/\alpha \approx 0.97/0.40 = 2.42 > 1$. The condition fails for sufficiently high $\alpha$ or low volatility, in which case the full two-term solution @eq-option-L-general must be used.]
+For the baseline calibration ($\sigma_L = 0.25$, $\mu_L = 0.01$, $r = 0.12$, $\tilde{\lambda} = 0.10$), the option premium ratio exceeds unity, so this simplification is valid and the option value derives entirely from the expected regime switch.^[With these parameters, $\beta_L^+ \approx 3.01$ and $(1 - 1/\beta_L^+)/\alpha \approx 0.67/0.40 = 1.67 > 1$. The condition fails for sufficiently high $\alpha$ or low volatility, in which case the full two-term solution @eq-option-L-general must be used.]
 
 When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
 $$ {#eq-trigger-phi}
 which generalizes @eq-trigger-H by replacing the H-regime revenue coefficient with the effective coefficient $A_{\text{eff}}$ that combines both regimes.
+Note that @eq-trigger-phi is an implicit equation: $A_{\text{eff}}(\phi^*, K^*)$ itself depends on the optimal policy, so the trigger is determined jointly with $(K^*, \phi^*)$ through the system of first-order conditions (Appendix A).
 The option premium $\beta_H / (\beta_H - 1) > 1$ still applies, reflecting the value of waiting, but the relevant revenue metric now accounts for both L-regime inference earnings and the expected H-regime training prize.
 
 **Remark 1** (Role of $\tilde{\lambda}$).
@@ -267,6 +266,9 @@ with H-regime contest share $s_i^H = (\phi_i K_i)^\alpha / \{(\phi_i K_i)^\alpha
 This regime-specific contest structure formalizes the arms-race logic that executives describe: in the current market, what matters is the capacity to *serve* demand (inference), while in a post-AGI world, what matters is the capability of your *models* (training).
 When $K_j = 0$, both contest shares reduce to $s_i = 1$ and revenue simplifies to the single-firm case (@eq-revenue-L, @eq-revenue-H).
 The parameter $\alpha$ controls the sensitivity of market share to the relevant capacity measure: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
+Note that the Tullock specification implies that total industry revenue in the symmetric case equals $X \cdot K^\alpha$ (i.e., the standard single-firm revenue), but under *asymmetric* capacities, total industry revenue $\sum_i \pi_i = X \cdot \sum_i [(1-\phi_i)K_i]^{2\alpha} / \sum_j [(1-\phi_j)K_j]^\alpha$ can exceed this benchmark: the larger firm captures a disproportionate share, and the sum of $2\alpha$-terms in the numerator exceeds the squared sum of $\alpha$-terms.
+This property---that asymmetry increases total industry revenue---is a feature of the Tullock contest form and may be appropriate for AI markets where the leading model captures a disproportionate share of demand (a "winner-take-more" dynamic), but it would be undesirable in markets with more elastic total demand.
+A Cournot specification would avoid this property at the cost of additional complexity; see Appendix F for a comparison.
 The training fraction $\phi$ introduces a new strategic dimension: a firm's choice of $\phi$ affects its competitive position *differently* in each regime, creating a trade-off between L-regime and H-regime market share.
 
 #### Installed value in the duopoly
@@ -307,7 +309,7 @@ The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of
 
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\tilde{\lambda}$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) and thereby raises $\tilde{\lambda}$ (through @eq-endogenous-lambda) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
-Optimism about transformative AI, backed by training investment, literally keeps the firm alive longer by raising the equity value at any demand level.
+Optimism about transformative AI, backed by training investment, extends the firm's solvency by raising the equity value at any demand level.
 Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives no H-regime upside, faces a higher default boundary, and is more vulnerable to demand downturns.
 
 **Proposition 2** (Endogenous default with faith-based survival).
@@ -315,9 +317,13 @@ Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives 
 
 *(i) $X_D$ is increasing in leverage $\ell$ and the coupon rate $c_d$.*
 
-*(ii) $X_D$ is decreasing in $\tilde{\lambda}$ provided the faith-based survival condition holds: $(r - \mu_L) \cdot (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H) > [(1-\phi_i)K_i]^\alpha \cdot s_i^L$. This requires that the H-regime continuation value contributes sufficiently to $A_{\text{eff},i}$, which holds when $\phi_i$ exceeds a threshold $\underline{\phi}$ that depends on model parameters. For the baseline calibration, $\underline{\phi} \approx 0.15$.*
+*(ii) $X_D$ is decreasing in $\tilde{\lambda}$ provided the faith-based survival condition holds: $(r - \mu_L) \cdot (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H) > [(1-\phi_i)K_i]^\alpha \cdot s_i^L$. This requires that the H-regime continuation value contributes sufficiently to $A_{\text{eff},i}$, which holds when $\phi_i$ exceeds a threshold $\underline{\phi}$ that depends on model parameters. In the symmetric duopoly ($s_i^L = s_i^H = 1/2$, equal $K$), the threshold has a closed-form expression:*
+$$
+\underline{\phi} = \frac{R}{1 + R}, \quad R \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+$$ {#eq-phi-underbar}
+*For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$), $R = (0.06/0.11)^{2.5} \approx 0.22$ and $\underline{\phi} \approx 0.18$. Note that $\underline{\phi}$ is decreasing in $\alpha$ (lower diminishing returns make training more effective), decreasing in $\mu_H - \mu_L$ (a larger regime-switch growth premium amplifies the H-regime term), and increasing in $r$ (higher discounting reduces the present value of the continuation opportunity).*
 
-*(iii) For a given capacity $K$, there exists a leverage-training substitution: a firm can maintain the same default boundary $X_D$ while increasing leverage (which raises the coupon obligation in the numerator) by simultaneously increasing the training fraction (which raises $A_{\text{eff},i}$ through the H-regime term in the denominator).*
+*(iii) For a given capacity $K$, there exists a leverage-training substitution along the iso-$X_D$ locus: a firm can maintain the same default boundary $X_D$ while increasing leverage (which raises the coupon obligation in the numerator) by simultaneously increasing the training fraction (which raises $A_{\text{eff},i}$ through the H-regime term in the denominator). This is a mechanical relationship describing the set of $(\ell, \phi)$ pairs consistent with a given default boundary, not a statement about optimality. It implies that, empirically, highly levered AI firms should exhibit higher training fractions than their less levered peers---not because leverage causes training, but because both are jointly determined by the firm's beliefs about $\lambda$ and its financing capacity.*
 
 *(iv) $X_D$ is increasing in rival capacity $K_j$, because higher rival capacity reduces the contest shares $s_i^L$ and $s_i^H$.*
 
@@ -387,9 +393,9 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 **Proposition 3** (Preemption equilibrium with training allocation and default risk).
 *In the symmetric duopoly with exogenous $\tilde{\lambda}$ and leverage $\ell$:*
 
-*(i) (Analytical) The preemption trigger $X_P < X_F$ exists and is unique under the standard conditions of @huisman2015strategic, extended to the enriched payoff functions. The existence argument (continuity, monotonicity, single crossing of leader and follower values) is given in Appendix A; single crossing is verified numerically across all parameterizations.*
+*(i) (Existence: Analytical; Uniqueness: Computational) A preemption trigger $X_P \in (0, X_F^*)$ exists such that $L(X_P) = F(X_P)$, where $L$ and $F$ are the leader and follower values respectively. Existence follows from continuity and the boundary conditions $L(0) < F(0)$ and $L(X_F^*) > F(X_F^*)$ (Appendix A). Uniqueness requires single crossing of $L$ and $F$ on $(0, X_F^*)$: the leader value is approximately affine (installed revenue minus debt service) while the follower option value is strictly convex with $F(0) = 0 > L(0)$. In the standard Huisman--Kort framework, single crossing follows from monotonicity and convexity arguments. In the enriched payoff environment of this paper (capacity choice, training allocation, leverage, and regime switching), the additional state variables modify the value function shapes, and single crossing is verified computationally across all parameterizations rather than established analytically. No case of multiple crossings was found (Appendix B).*
 
-*(ii) (Semi-analytical) The leader's training fraction exceeds the follower's: $\phi_L^* \geq \phi_F^*$. The leader invests more in training because the marginal cost of training (forgone L-regime inference revenue) is lower during the monopoly phase---the leader's contest share is 1 regardless of allocation---while the marginal benefit (H-regime positioning against the future follower) is higher due to the longer expected monopoly duration. The qualitative argument is analytical; the inequality is verified numerically across all calibration-relevant parameterizations.*
+*(ii) (Computational regularity) The leader's training fraction weakly exceeds the follower's: $\phi_L^* \geq \phi_F^*$. This regularity is verified numerically across all calibration-relevant parameterizations; no parameter configuration yielding $\phi_L^* < \phi_F^*$ was found. The economic mechanism is that the marginal cost of training (forgone L-regime inference revenue) is lower for the leader during the monopoly phase---the leader's contest share is 1 regardless of allocation---while the marginal benefit (H-regime positioning against the future follower) is higher due to the longer expected monopoly duration. The follower enters directly into duopoly competition and faces a dual penalty from increasing $\phi_F$: both a direct capacity reduction and a contest share loss.*
 
 *(iii) (Numerical finding) Higher $\lambda_0$ (more optimistic baseline beliefs) increases $\phi^*$ for both firms and lowers the preemption trigger $X_P$, amplifying the acceleration effect relative to the exogenous-$\lambda$ model because the training channel provides an additional mechanism for beliefs to affect investment.*
 
@@ -412,12 +418,14 @@ By contrast, the capacity ratio remains close to 1.0, confirming that competitio
 
 | Result | Economic statement | Method | Domain |
 |:-------|:-------------------|:-------|:-------|
-| Proposition 1 | Optimal $K^*, \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda_0$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; Assumption 1 |
+| Proposition 1 | Optimal $K^*(\phi), \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda_0$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; Assumption 1 |
 | Corollary 1 | Extension to endogenous $\tilde{\lambda}$; comparative static in $\xi$ | Numerical fixed-point | Calibration-relevant region |
-| Proposition 2 | Default boundary properties; faith-based survival | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; faith condition @eq-faith-condition |
-| Proposition 3(i) | Existence and uniqueness of $X_P$ | Analytical construction + numerical single-crossing verification | Exogenous $\tilde{\lambda}$ |
-| Proposition 3(ii) | $\phi_L^* \geq \phi_F^*$ | Semi-analytical argument + numerical verification | All calibration parameterizations |
+| Proposition 2(i)--(ii) | Default boundary properties; faith-based survival; closed-form $\underline{\phi}$ | Closed-form / implicit function | Exogenous $\tilde{\lambda}$; Assumption 1 |
+| Proposition 2(iii)--(iv) | Leverage-training substitution; rival capacity effect | Analytical (mechanical) | Exogenous $\tilde{\lambda}$ |
+| Proposition 3(i) | Existence of $X_P$ | Analytical (IVT) | Exogenous $\tilde{\lambda}$ |
+| Proposition 3(i) | Uniqueness of $X_P$ (single crossing) | Computational verification | All parameterizations tested |
+| Proposition 3(ii) | $\phi_L^* \geq \phi_F^*$ | Computational regularity with analytical motivation | All calibration parameterizations |
 | Proposition 3(iii)--(v) | Comparative statics of preemption equilibrium | Numerical | All calibration parameterizations |
 | Numerical Finding 2 | Asymmetric AI investment dilemma | Numerical | All parameterizations tested |
 
-: Analytical status of model results. "Closed-form" indicates an explicit expression; "implicit function" indicates an analytically characterized equation solved numerically; "numerical" indicates grid-based or optimization-based computation with no closed-form expression. {#tbl-result-taxonomy tbl-colwidths="[20,30,22,28]"}
+: Analytical status of model results. "Closed-form" indicates an explicit expression; "implicit function" indicates an analytically characterized equation solved numerically; "computational verification" indicates a property verified on a grid across all parameterizations; "numerical" indicates optimization-based computation with no closed-form expression. {#tbl-result-taxonomy tbl-colwidths="[20,30,22,28]"}
