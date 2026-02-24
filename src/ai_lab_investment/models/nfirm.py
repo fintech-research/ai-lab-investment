@@ -5,16 +5,16 @@ and finite-difference methods on a log-X grid.
 
 The sequential equilibrium (Bouis, Huisman & Kort 2009) is solved by:
 1. Start with the last firm (N-th entrant) facing N-1 competitors
-2. Solve its optimal trigger and capacity via 1D optimization
+2. Solve its optimal trigger and capacity via 2D optimization (K, phi)
 3. Work backward: the (k)-th entrant anticipates all future entry
 4. Each firm's value function accounts for future entrants' triggers
 
-Training/inference allocation:
-- Post-investment, each firm splits capacity K into K_I (inference)
-  and K_T (training): K = K_I + K_T
-- Inference generates current revenue
-- Training generates quality via power-law scaling: Q = (phi*K*t)^eta
-- Quality multiplies demand: effective demand = X * exp(q)
+Training/inference allocation uses the same specification as the
+single-firm and duopoly models:
+    L-regime: pi_i^L = X * [(1-phi_i)*K_i]^alpha * s_i^L
+    H-regime: pi_i^H = X * [phi_i*K_i]^alpha * s_i^H
+The combined A_eff revenue coefficient, incorporating regime-switching
+continuation value, drives the investment trigger.
 """
 
 import warnings
@@ -31,7 +31,8 @@ class NFirmModel:
     Solves for the sequential equilibrium where firms invest one at a time
     at distinct triggers X_1* < X_2* < ... < X_N*.
 
-    Uses the same contest function as the duopoly model for revenue sharing.
+    Uses the same regime-switching A_eff revenue coefficient as the duopoly
+    model, with N-firm Tullock contest shares for revenue allocation.
     """
 
     def __init__(
@@ -41,8 +42,6 @@ class NFirmModel:
         leverage: float = 0.0,
         coupon_rate: float = 0.05,
         bankruptcy_cost: float = 0.30,
-        training_fraction: float = 0.0,
-        eta: float = 0.07,
     ):
         """Initialize the N-firm model.
 
@@ -52,56 +51,131 @@ class NFirmModel:
             leverage: Debt-to-investment-cost ratio.
             coupon_rate: Coupon rate on debt.
             bankruptcy_cost: Fraction of value lost in default.
-            training_fraction: Fraction of capacity allocated to training.
-                0 = all inference (base case).
-            eta: Scaling law exponent for training quality.
-                Q = (phi*K*t)^eta per Kaplan et al. (2020).
         """
         self.params = params
         self.n_firms = n_firms
         self.leverage = leverage
         self.coupon_rate = coupon_rate
         self.bankruptcy_cost = bankruptcy_cost
-        self.training_fraction = training_fraction
-        self.eta = eta
         self._cache: dict = {}
 
     # ------------------------------------------------------------------
     # Revenue with N-firm competition
     # ------------------------------------------------------------------
 
-    def contest_share(self, K_i: float, competitor_capacities: list[float]) -> float:
-        """Contest function market share for firm i with N-1 competitors.
+    def contest_share_L(
+        self,
+        K_i: float,
+        phi_i: float,
+        competitor_capacities: list[float],
+        competitor_phis: list[float],
+    ) -> float:
+        """L-regime contest share: inference-based competition.
 
-        share_i = K_i^alpha / (K_i^alpha + sum_j K_j^alpha)
+        share_i^L = [(1-phi_i)*K_i]^alpha
+                    / {[(1-phi_i)*K_i]^alpha + sum_j [(1-phi_j)*K_j]^alpha}
         """
         alpha = self.params.alpha
-        K_i_inf = K_i * (1.0 - self.training_fraction)
-        num = K_i_inf**alpha
+        inf_i = (1.0 - phi_i) * K_i
+        num = inf_i**alpha
         denom = num + sum(
-            (K * (1.0 - self.training_fraction)) ** alpha for K in competitor_capacities
+            ((1.0 - phi_j) * K_j) ** alpha
+            for K_j, phi_j in zip(competitor_capacities, competitor_phis, strict=False)
         )
         if denom <= 0:
             return 1.0 / (1.0 + len(competitor_capacities))
         return num / denom
 
+    def contest_share_H(
+        self,
+        K_i: float,
+        phi_i: float,
+        competitor_capacities: list[float],
+        competitor_phis: list[float],
+    ) -> float:
+        """H-regime contest share: training/quality-based competition.
+
+        share_i^H = [phi_i*K_i]^alpha
+                    / {[phi_i*K_i]^alpha + sum_j [phi_j*K_j]^alpha}
+        """
+        alpha = self.params.alpha
+        tr_i = phi_i * K_i
+        if tr_i <= 0:
+            return 0.0
+        num = tr_i**alpha
+        denom = num + sum(
+            (phi_j * K_j) ** alpha
+            for K_j, phi_j in zip(competitor_capacities, competitor_phis, strict=False)
+            if phi_j * K_j > 0
+        )
+        if denom <= 0:
+            return 1.0 / (1.0 + len(competitor_capacities))
+        return num / denom
+
+    def contest_share(self, K_i: float, competitor_capacities: list[float]) -> float:
+        """Legacy contest share (backward-compatible, uses total capacity).
+
+        Equivalent to contest_share_L with phi=0 for all firms.
+        """
+        alpha = self.params.alpha
+        num = K_i**alpha
+        denom = num + sum(K**alpha for K in competitor_capacities)
+        if denom <= 0:
+            return 1.0 / (1.0 + len(competitor_capacities))
+        return num / denom
+
+    def _effective_revenue_coeff(
+        self,
+        K_i: float,
+        phi_i: float,
+        competitor_capacities: list[float],
+        competitor_phis: list[float],
+    ) -> float:
+        """Compute effective revenue coefficient per unit X (combined L + H).
+
+        A_eff = [(1-phi)*K]^alpha * s_L / (r - mu_L + lam)
+              + lam / (r - mu_L + lam) * [phi*K]^alpha * s_H * A_H
+
+        Mirrors the duopoly model's _effective_revenue_coeff, using
+        the exogenous lambda (params.lam) for the regime-switching rate.
+        """
+        p = self.params
+        lam = p.lam
+
+        s_L = self.contest_share_L(K_i, phi_i, competitor_capacities, competitor_phis)
+        s_H = self.contest_share_H(K_i, phi_i, competitor_capacities, competitor_phis)
+
+        inf_cap = (1.0 - phi_i) * K_i
+        tr_cap = phi_i * K_i
+
+        denom_L = p.r - p.mu_L + lam
+        if denom_L <= 0:
+            return 0.0
+
+        a_eff = inf_cap**p.alpha * s_L / denom_L
+
+        if tr_cap > 0 and lam > 0:
+            a_eff += lam / denom_L * tr_cap**p.alpha * s_H * p.A_H
+
+        return a_eff
+
     def revenue_pv(
         self,
         X: float,
         K_i: float,
+        phi_i: float,
         competitor_capacities: list[float],
-        regime: str,
-        quality: float = 0.0,
+        competitor_phis: list[float],
     ) -> float:
-        """Present value of revenue for firm i with N-1 competitors.
+        """Present value of revenue for firm i (combined L + H).
 
-        V_i = A * X * exp(q) * K_I^alpha * share - delta * K / r
+        V_i = A_eff * X - delta * K_i / r
         """
         p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        K_I = K_i * (1.0 - self.training_fraction)
-        share = self.contest_share(K_i, competitor_capacities)
-        return A * X * np.exp(quality) * K_I**p.alpha * share - p.delta * K_i / p.r
+        a_eff = self._effective_revenue_coeff(
+            K_i, phi_i, competitor_capacities, competitor_phis
+        )
+        return a_eff * X - p.delta * K_i / p.r
 
     def investment_cost(self, K: float) -> float:
         """Total investment cost I(K) = c * K^gamma."""
@@ -119,81 +193,111 @@ class NFirmModel:
 
     def _entrant_objective(
         self,
-        log_K: float,
+        params_vec: np.ndarray,
         competitor_capacities: list[float],
-        regime: str,
+        competitor_phis: list[float],
     ) -> float:
-        """Negative log of option value factor for capacity optimization.
+        """Negative log of option value factor for (K, phi) optimization.
 
-        Same approach as base model: maximize a(K)^beta / b(K)^(beta-1).
+        Maximizes h(K, phi) = A_eff^beta_H / cost^(beta_H-1).
+        Uses beta_H because the investment option is driven by H-regime
+        expectations (consistent with base_model and duopoly).
         """
+        log_K, phi = params_vec
         K = np.exp(log_K)
-        p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
 
-        K_I = K * (1.0 - self.training_fraction)
-        share = self.contest_share(K, competitor_capacities)
-        a = A * K_I**p.alpha * share
+        if phi <= 0.01 or phi >= 0.99:
+            return 1e20
+
+        p = self.params
+        beta = p.beta_H
+
+        a_eff = self._effective_revenue_coeff(
+            K, phi, competitor_capacities, competitor_phis
+        )
 
         c_D = self.coupon_payment(K)
         equity_cost = (1.0 - self.leverage) * self.investment_cost(K)
         b = p.delta * K / p.r + equity_cost + c_D / p.r
 
-        if a <= 0 or b <= 0:
+        if a_eff <= 0 or b <= 0:
             return 1e20
-        return -(beta * np.log(a) - (beta - 1.0) * np.log(b))
+        return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
 
     def _entrant_trigger(
         self,
         K: float,
+        phi: float,
         competitor_capacities: list[float],
-        regime: str,
+        competitor_phis: list[float],
     ) -> float:
-        """Optimal trigger X*(K) for an entrant with given competitors."""
+        """Optimal trigger X*(K, phi) for an entrant with given competitors."""
         p = self.params
-        A = p.A_H if regime == "H" else p.A_L
-        beta = p.beta_H if regime == "H" else p.beta_L
-
-        K_I = K * (1.0 - self.training_fraction)
-        share = self.contest_share(K, competitor_capacities)
+        beta = p.beta_H
         markup = beta / (beta - 1.0)
+
+        a_eff = self._effective_revenue_coeff(
+            K, phi, competitor_capacities, competitor_phis
+        )
 
         c_D = self.coupon_payment(K)
         equity_cost = (1.0 - self.leverage) * self.investment_cost(K)
         total_cost = p.delta * K / p.r + equity_cost + c_D / p.r
 
-        revenue_coeff = A * K_I**p.alpha * share
-        if revenue_coeff <= 0:
+        if a_eff <= 0:
             return np.inf
-        return markup * total_cost / revenue_coeff
+        return markup * total_cost / a_eff
 
     def solve_entrant(
         self,
         competitor_capacities: list[float],
+        competitor_phis: list[float] | None = None,
         regime: str = "H",
-    ) -> tuple[float, float]:
-        """Solve a single entrant's optimal trigger and capacity.
+    ) -> tuple[float, float, float]:
+        """Solve a single entrant's optimal trigger, capacity, and phi.
 
         Args:
-            competitor_capacities: List of competitors' inference capacities.
-            regime: Demand regime.
+            competitor_capacities: List of competitors' capacities.
+            competitor_phis: List of competitors' training fractions.
+                If None, defaults to 0.5 for each competitor.
+            regime: Demand regime (for cache key compatibility).
 
         Returns:
-            (X*, K*): Optimal trigger and capacity.
+            (X*, K*, phi*): Optimal trigger, capacity, and training fraction.
         """
-        result = optimize.minimize_scalar(
-            self._entrant_objective,
-            bounds=(-15, 15),
-            method="bounded",
-            args=(competitor_capacities, regime),
-        )
-        if result.fun >= 1e19:
-            msg = f"Entrant optimization failed for regime={regime}"
+        if competitor_phis is None:
+            competitor_phis = [0.5] * len(competitor_capacities)
+
+        best_val = 1e20
+        best_params = None
+
+        for log_K_init in [-2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50, 0.70]:
+                x0 = np.array([log_K_init, phi_init])
+                try:
+                    result = optimize.minimize(
+                        self._entrant_objective,
+                        x0,
+                        args=(competitor_capacities, competitor_phis),
+                        method="Nelder-Mead",
+                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                    )
+                    if result.fun < best_val:
+                        best_val = result.fun
+                        best_params = result.x
+                except (ValueError, RuntimeError):
+                    continue
+
+        if best_params is None or best_val >= 1e19:
+            msg = "Entrant optimization failed"
             raise RuntimeError(msg)
-        K_star = np.exp(result.x)
-        X_star = self._entrant_trigger(K_star, competitor_capacities, regime)
-        return X_star, K_star
+
+        K_star = np.exp(best_params[0])
+        phi_star = np.clip(best_params[1], 0.01, 0.99)
+        X_star = self._entrant_trigger(
+            K_star, phi_star, competitor_capacities, competitor_phis
+        )
+        return X_star, K_star, phi_star
 
     # ------------------------------------------------------------------
     # Sequential equilibrium (backward induction)
@@ -208,13 +312,13 @@ class NFirmModel:
         """Solve for the sequential equilibrium via iterative refinement.
 
         Firms invest one at a time: firm N (last) faces N-1 competitors,
-        firm N-1 faces N-2, etc. Each firm's trigger and capacity are
-        optimal given the anticipated future entry. The equilibrium is
-        found by fixed-point iteration until capacity changes fall below tol.
+        firm N-1 faces N-2, etc. Each firm's trigger, capacity, and
+        training fraction are optimal given anticipated future entry.
 
         Returns:
             List of dicts, one per firm (ordered by entry time):
-            [{'entry_order': 1, 'X_trigger': ..., 'K_capacity': ..., 'share': ...}, ...]
+            [{'entry_order': 1, 'X_trigger': ..., 'K_capacity': ...,
+              'phi_training': ..., 'share': ...}, ...]
         """
         cache_key = ("seq_eq", regime)
         if cache_key in self._cache:
@@ -224,37 +328,46 @@ class NFirmModel:
         entrant_solutions = []
         for k in range(self.n_firms):
             n_competitors = self.n_firms - 1 - k
-            # Approximate competitor capacities as copies of each other
-            # Use a dummy capacity for initial solve
-            dummy_competitors = [1.0] * n_competitors if n_competitors > 0 else []
-            X_star, K_star = self.solve_entrant(dummy_competitors, regime)
-            entrant_solutions.append((X_star, K_star))
+            dummy_K = [1.0] * n_competitors if n_competitors > 0 else []
+            dummy_phi = [0.5] * n_competitors if n_competitors > 0 else []
+            X_star, K_star, phi_star = self.solve_entrant(dummy_K, dummy_phi, regime)
+            entrant_solutions.append((X_star, K_star, phi_star))
 
-        # Iterative refinement using actual capacities
+        # Iterative refinement using actual capacities and phis
+        # Use dampening (alpha_damp) to stabilize convergence
+        alpha_damp = 0.5
         for _iteration in range(max_iterations):
             refined = []
             for k in range(self.n_firms):
                 n_competitors = self.n_firms - 1 - k
                 if n_competitors > 0:
-                    # Use capacities from previous iteration
-                    # Competitors who enter before this firm
                     competitor_Ks = [entrant_solutions[j][1] for j in range(k)]
-                    # Add remaining competitors (enter after but in market view)
-                    remaining = [
+                    competitor_phis = [entrant_solutions[j][2] for j in range(k)]
+                    remaining_Ks = [
                         entrant_solutions[j][1] for j in range(k + 1, self.n_firms)
                     ]
-                    all_competitors = competitor_Ks + remaining
-                    # For the k-th entrant, use k competitors already in market
-                    X_star, K_star = self.solve_entrant(
-                        all_competitors[:n_competitors], regime
-                    )
+                    remaining_phis = [
+                        entrant_solutions[j][2] for j in range(k + 1, self.n_firms)
+                    ]
+                    all_Ks = (competitor_Ks + remaining_Ks)[:n_competitors]
+                    all_phis = (competitor_phis + remaining_phis)[:n_competitors]
+                    X_new, K_new, phi_new = self.solve_entrant(all_Ks, all_phis, regime)
                 else:
-                    # Last entrant: monopolist-like (all others in market)
-                    all_others = [
+                    all_others_K = [
                         entrant_solutions[j][1] for j in range(self.n_firms) if j != k
                     ]
-                    X_star, K_star = self.solve_entrant(all_others, regime)
-                refined.append((X_star, K_star))
+                    all_others_phi = [
+                        entrant_solutions[j][2] for j in range(self.n_firms) if j != k
+                    ]
+                    X_new, K_new, phi_new = self.solve_entrant(
+                        all_others_K, all_others_phi, regime
+                    )
+                # Dampen updates to stabilize convergence
+                X_old, K_old, phi_old = entrant_solutions[k]
+                X_star = alpha_damp * X_new + (1 - alpha_damp) * X_old
+                K_star = alpha_damp * K_new + (1 - alpha_damp) * K_old
+                phi_star = alpha_damp * phi_new + (1 - alpha_damp) * phi_old
+                refined.append((X_star, K_star, phi_star))
 
             max_change = max(
                 abs(refined[k][1] - entrant_solutions[k][1])
@@ -272,17 +385,20 @@ class NFirmModel:
 
         # Sort by trigger (lowest = first entrant = leader)
         entries = []
-        indexed = [(X, K, i) for i, (X, K) in enumerate(entrant_solutions)]
+        indexed = [(X, K, phi, i) for i, (X, K, phi) in enumerate(entrant_solutions)]
         indexed.sort(key=lambda t: t[0])
 
-        all_Ks = [K for _, K, _ in indexed]
-        for order, (X_star, K_star, _orig_idx) in enumerate(indexed):
+        all_Ks = [K for _, K, _, _ in indexed]
+        all_phis = [phi for _, _, phi, _ in indexed]
+        for order, (X_star, K_star, phi_star, _orig_idx) in enumerate(indexed):
             other_Ks = [all_Ks[j] for j in range(len(all_Ks)) if j != order]
-            share = self.contest_share(K_star, other_Ks)
+            other_phis = [all_phis[j] for j in range(len(all_phis)) if j != order]
+            share = self.contest_share_L(K_star, phi_star, other_Ks, other_phis)
             entries.append({
                 "entry_order": order + 1,
                 "X_trigger": X_star,
                 "K_capacity": K_star,
+                "phi_training": phi_star,
                 "market_share": share,
                 "investment_cost": self.investment_cost(K_star),
             })
@@ -291,28 +407,31 @@ class NFirmModel:
         return entries
 
     # ------------------------------------------------------------------
-    # Training/inference allocation
+    # Training/inference allocation (alternative quality-dynamics model)
     # ------------------------------------------------------------------
 
-    def optimal_training_fraction(
+    def optimal_training_fraction_quality_model(
         self,
         K: float = 1.0,
         X: float = 1.0,
         competitor_capacities: list[float] | None = None,
         regime: str = "H",
     ) -> float:
-        """Optimal training fraction from Proposition 5.
+        """Optimal training fraction from the quality-dynamics model.
 
         phi* = eta / (alpha + eta)
 
-        This closed-form follows from the power-law quality model
-        Q(phi*K)^eta * ((1-phi)*K)^alpha. The FOC yields
-        eta*(1-phi) = alpha*phi, independent of X, K, and competition.
+        This closed-form follows from the alternative quality-dynamics
+        specification Q(phi*K)^eta * ((1-phi)*K)^alpha, NOT from the
+        regime-switching A_eff model used by the main solver.
 
-        Returns:
-            Optimal training fraction phi* in (0, 1).
+        Retained for comparison with the literature and as a
+        reference point.
         """
-        return self.eta / (self.params.alpha + self.eta)
+        return self.params.eta / (self.params.alpha + self.params.eta)
+
+    # Keep old name as alias for backward compatibility
+    optimal_training_fraction = optimal_training_fraction_quality_model
 
     def quality_dynamics(
         self,
@@ -325,6 +444,9 @@ class NFirmModel:
         Q(t) = (phi * K * t)^eta for t >= 1 (cumulative training compute).
         In log-space: q(t) = eta * ln(phi * K * t).
 
+        This is part of the alternative quality-dynamics model, not
+        the main regime-switching specification.
+
         Returns:
             Array of quality levels [q(0), q(1), ..., q(periods)].
         """
@@ -332,7 +454,7 @@ class NFirmModel:
         qualities = np.zeros(periods + 1)
         if K_T > 0:
             for t in range(1, periods + 1):
-                qualities[t] = self.eta * np.log(K_T * t)
+                qualities[t] = self.params.eta * np.log(K_T * t)
         return qualities
 
     # ------------------------------------------------------------------
@@ -355,9 +477,7 @@ class NFirmModel:
             List of dicts with each firm's equilibrium solution.
         """
         solutions = []
-        # Solve each firm's problem independently with heterogeneous params
         for i, fp in enumerate(firm_params):
-            # Create firm-specific parameters
             overrides = {
                 k: v
                 for k, v in fp.items()
@@ -380,7 +500,6 @@ class NFirmModel:
             lev = fp.get("leverage", self.leverage)
             init_K = fp.get("initial_K", 0.0)
 
-            # Other firms' capacities (use initial + solved capacities)
             other_Ks = []
             for j, fp_j in enumerate(firm_params):
                 if j != i:
@@ -392,21 +511,21 @@ class NFirmModel:
                 leverage=lev,
                 coupon_rate=self.coupon_rate,
                 bankruptcy_cost=self.bankruptcy_cost,
-                training_fraction=self.training_fraction,
-                eta=self.eta,
             )
-            X_star, K_star = model.solve_entrant(other_Ks, regime)
+            # Competitors' phis default to 0.5 for heterogeneous solve
+            other_phis = [0.5] * len(other_Ks)
+            X_star, K_star, phi_star = model.solve_entrant(other_Ks, other_phis, regime)
 
             solutions.append({
                 "firm_id": i,
                 "X_trigger": X_star,
                 "K_capacity": K_star,
+                "phi_training": phi_star,
                 "initial_K": init_K,
                 "leverage": lev,
                 "investment_cost": self.investment_cost(K_star),
             })
 
-        # Sort by trigger
         solutions.sort(key=lambda s: s["X_trigger"])
         for order, sol in enumerate(solutions):
             sol["entry_order"] = order + 1
@@ -425,13 +544,14 @@ class NFirmModel:
     ) -> dict[str, np.ndarray]:
         """Compute equilibrium over a range of parameter values.
 
-        Returns triggers and capacities for each firm at each parameter value.
+        Returns triggers, capacities, and phis for each firm at each value.
         """
         n_vals = len(values)
         results = {
             "param_values": values,
             "triggers": np.full((n_vals, self.n_firms), np.nan),
             "capacities": np.full((n_vals, self.n_firms), np.nan),
+            "phis": np.full((n_vals, self.n_firms), np.nan),
             "has_solution": np.zeros(n_vals, dtype=bool),
         }
 
@@ -444,13 +564,12 @@ class NFirmModel:
                     leverage=self.leverage,
                     coupon_rate=self.coupon_rate,
                     bankruptcy_cost=self.bankruptcy_cost,
-                    training_fraction=self.training_fraction,
-                    eta=self.eta,
                 )
                 eq = m.solve_sequential_equilibrium(regime)
                 for j, entry in enumerate(eq):
                     results["triggers"][i, j] = entry["X_trigger"]
                     results["capacities"][i, j] = entry["K_capacity"]
+                    results["phis"][i, j] = entry["phi_training"]
                 results["has_solution"][i] = True
             except (ValueError, RuntimeError):
                 continue
@@ -464,7 +583,7 @@ class NFirmModel:
     def verify_against_duopoly(self, regime: str = "H") -> dict:
         """Compare N=2 numerical solution with analytical duopoly.
 
-        Returns dict with trigger/capacity comparisons.
+        Returns dict with trigger/capacity/phi comparisons.
         """
         from .duopoly import DuopolyModel
 
@@ -490,12 +609,16 @@ class NFirmModel:
         return {
             "numerical_leader_X": numerical[0]["X_trigger"],
             "numerical_leader_K": numerical[0]["K_capacity"],
+            "numerical_leader_phi": numerical[0]["phi_training"],
             "numerical_follower_X": numerical[1]["X_trigger"],
             "numerical_follower_K": numerical[1]["K_capacity"],
+            "numerical_follower_phi": numerical[1]["phi_training"],
             "analytical_leader_X": analytical["X_leader"],
             "analytical_leader_K": analytical["K_leader"],
+            "analytical_leader_phi": analytical["phi_leader"],
             "analytical_follower_X": analytical["X_follower"],
             "analytical_follower_K": analytical["K_follower"],
+            "analytical_follower_phi": analytical["phi_follower"],
         }
 
     # ------------------------------------------------------------------
@@ -511,14 +634,6 @@ class NFirmModel:
             result["entries"] = eq
             result["total_capacity"] = sum(e["K_capacity"] for e in eq)
             result["total_investment"] = sum(e["investment_cost"] for e in eq)
-
-            if self.training_fraction > 0:
-                result["training_fraction"] = self.training_fraction
-                # Quality dynamics for the first entrant
-                K1 = eq[0]["K_capacity"]
-                qualities = self.quality_dynamics(K1, self.training_fraction)
-                result["leader_quality_trajectory"] = qualities.tolist()
-
         except (ValueError, RuntimeError) as e:
             result["error"] = str(e)
 

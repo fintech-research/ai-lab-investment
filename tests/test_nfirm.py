@@ -58,6 +58,58 @@ class TestContestFunction:
 
 
 # ------------------------------------------------------------------
+# Regime-specific contest functions
+# ------------------------------------------------------------------
+
+
+class TestRegimeContestFunctions:
+    def test_L_regime_uses_inference(self, model3):
+        """L-regime share depends on inference capacity (1-phi)*K."""
+        # Symmetric: equal share
+        s = model3.contest_share_L(1.0, 0.3, [1.0, 1.0], [0.3, 0.3])
+        assert abs(s - 1.0 / 3.0) < 1e-6
+
+        # More inference → higher L-share
+        s_more = model3.contest_share_L(1.0, 0.1, [1.0, 1.0], [0.3, 0.3])
+        assert s_more > 1.0 / 3.0
+
+    def test_H_regime_uses_training(self, model3):
+        """H-regime share depends on training capacity phi*K."""
+        s = model3.contest_share_H(1.0, 0.3, [1.0, 1.0], [0.3, 0.3])
+        assert abs(s - 1.0 / 3.0) < 1e-6
+
+        # More training → higher H-share
+        s_more = model3.contest_share_H(1.0, 0.5, [1.0, 1.0], [0.3, 0.3])
+        assert s_more > 1.0 / 3.0
+
+    def test_shares_sum_to_one(self, model3):
+        """Contest shares should sum to 1 for both regimes."""
+        K = [1.0, 2.0, 1.5]
+        phi = [0.3, 0.4, 0.2]
+        s_L = sum(
+            model3.contest_share_L(
+                K[i],
+                phi[i],
+                [K[j] for j in range(3) if j != i],
+                [phi[j] for j in range(3) if j != i],
+            )
+            for i in range(3)
+        )
+        assert abs(s_L - 1.0) < 1e-6
+
+        s_H = sum(
+            model3.contest_share_H(
+                K[i],
+                phi[i],
+                [K[j] for j in range(3) if j != i],
+                [phi[j] for j in range(3) if j != i],
+            )
+            for i in range(3)
+        )
+        assert abs(s_H - 1.0) < 1e-6
+
+
+# ------------------------------------------------------------------
 # Single entrant
 # ------------------------------------------------------------------
 
@@ -65,22 +117,52 @@ class TestContestFunction:
 class TestSingleEntrant:
     def test_entrant_trigger_positive(self, model3):
         """Entrant's trigger should be positive."""
-        X, K = model3.solve_entrant([1.0, 1.0], regime="H")
+        X, K, phi = model3.solve_entrant([1.0, 1.0], [0.5, 0.5])
         assert X > 0
         assert K > 0
+        assert 0 < phi < 1
 
     def test_more_competitors_higher_trigger(self, default_params):
         """More competitors raise the trigger."""
         m2 = NFirmModel(default_params, n_firms=2)
         m4 = NFirmModel(default_params, n_firms=4)
-        X2, _ = m2.solve_entrant([1.0], regime="H")
-        X4, _ = m4.solve_entrant([1.0, 1.0, 1.0], regime="H")
+        X2, _, _ = m2.solve_entrant([1.0], [0.5])
+        X4, _, _ = m4.solve_entrant([1.0, 1.0, 1.0], [0.5, 0.5, 0.5])
         assert X4 > X2
 
     def test_entrant_capacity_positive(self, model3):
         """Entrant should choose positive capacity."""
-        _, K = model3.solve_entrant([0.5, 0.5], regime="H")
+        _, K, _ = model3.solve_entrant([0.5, 0.5], [0.5, 0.5])
         assert K > 0
+
+    def test_entrant_phi_interior(self, model3):
+        """Entrant's optimal phi should be interior (0 < phi < 1)."""
+        _, _, phi = model3.solve_entrant([1.0, 1.0], [0.5, 0.5])
+        assert 0.01 < phi < 0.99
+
+
+# ------------------------------------------------------------------
+# Effective revenue coefficient
+# ------------------------------------------------------------------
+
+
+class TestEffectiveRevenueCoeff:
+    def test_a_eff_positive(self, model3):
+        """A_eff should be positive for reasonable inputs."""
+        a_eff = model3._effective_revenue_coeff(1.0, 0.5, [1.0], [0.5])
+        assert a_eff > 0
+
+    def test_a_eff_increases_with_K(self, model3):
+        """A_eff should increase with K (more capacity → more revenue)."""
+        a1 = model3._effective_revenue_coeff(0.5, 0.5, [1.0], [0.5])
+        a2 = model3._effective_revenue_coeff(2.0, 0.5, [1.0], [0.5])
+        assert a2 > a1
+
+    def test_monopolist_a_eff_higher(self, model3):
+        """Monopolist A_eff > duopoly A_eff (no share loss)."""
+        a_mono = model3._effective_revenue_coeff(1.0, 0.5, [], [])
+        a_duo = model3._effective_revenue_coeff(1.0, 0.5, [1.0], [0.5])
+        assert a_mono > a_duo
 
 
 # ------------------------------------------------------------------
@@ -101,11 +183,12 @@ class TestSequentialEquilibrium:
         assert triggers == sorted(triggers)
 
     def test_all_positive(self, model3):
-        """All triggers and capacities should be positive."""
+        """All triggers, capacities, and phis should be positive."""
         eq = model3.solve_sequential_equilibrium("H")
         for entry in eq:
             assert entry["X_trigger"] > 0
             assert entry["K_capacity"] > 0
+            assert 0 < entry["phi_training"] < 1
 
     def test_entry_orders(self, model3):
         """Entry orders should be 1, 2, 3."""
@@ -133,48 +216,53 @@ class TestSequentialEquilibrium:
             assert "investment_cost" in entry
             assert entry["investment_cost"] > 0
 
+    def test_has_phi_training(self, model3):
+        """Each entry should report training fraction."""
+        eq = model3.solve_sequential_equilibrium("H")
+        for entry in eq:
+            assert "phi_training" in entry
+            assert 0 < entry["phi_training"] < 1
+
 
 # ------------------------------------------------------------------
-# Training/inference allocation
+# Training/inference allocation (alternative quality-dynamics model)
 # ------------------------------------------------------------------
 
 
 class TestTrainingAllocation:
-    def test_zero_training_default(self, model3):
-        """Default model has zero training fraction."""
-        assert model3.training_fraction == 0.0
-
-    def test_optimal_training_closed_form(self, default_params):
-        """Optimal training fraction matches Proposition 5: phi* = eta/(alpha+eta)."""
-        eta = 0.07
-        m = NFirmModel(default_params, n_firms=3, eta=eta)
-        theta = m.optimal_training_fraction()
-        expected = eta / (default_params.alpha + eta)
+    def test_quality_model_closed_form(self, default_params):
+        """Quality-dynamics phi* = eta/(alpha+eta) (alternative model)."""
+        m = NFirmModel(default_params, n_firms=3)
+        theta = m.optimal_training_fraction_quality_model()
+        expected = default_params.eta / (default_params.alpha + default_params.eta)
         assert abs(theta - expected) < 1e-10
-        # ~0.1489 for alpha=0.40, eta=0.07
-        assert abs(theta - 0.07 / 0.47) < 1e-4
 
-    def test_optimal_training_independent_of_X_K(self, default_params):
-        """Closed-form is independent of demand, capacity, and competition."""
-        m = NFirmModel(default_params, n_firms=3, eta=0.07)
-        t1 = m.optimal_training_fraction(K=1.0, X=0.5)
-        t2 = m.optimal_training_fraction(K=10.0, X=5.0)
+    def test_quality_model_independent_of_X_K(self, default_params):
+        """Quality-dynamics closed-form is independent of demand/capacity."""
+        m = NFirmModel(default_params, n_firms=3)
+        t1 = m.optimal_training_fraction_quality_model(K=1.0, X=0.5)
+        t2 = m.optimal_training_fraction_quality_model(K=10.0, X=5.0)
         assert abs(t1 - t2) < 1e-10
+
+    def test_backward_compat_alias(self, default_params):
+        """optimal_training_fraction is an alias for the quality model."""
+        m = NFirmModel(default_params, n_firms=3)
+        assert (
+            m.optimal_training_fraction() == m.optimal_training_fraction_quality_model()
+        )
 
     def test_quality_dynamics_increasing(self, default_params):
         """Quality should increase with training (power-law model)."""
-        m = NFirmModel(default_params, n_firms=3, eta=0.07)
+        m = NFirmModel(default_params, n_firms=3)
         q = m.quality_dynamics(K=5.0, training_fraction=0.3, periods=10)
         assert len(q) == 11
         assert q[0] == 0.0
-        # K_T = 1.5, q(t) = 0.07 * ln(1.5*t) > 0 for t >= 1
         assert q[-1] > q[0]
-        # Quality should be monotonically increasing
         assert all(q[i + 1] >= q[i] for i in range(len(q) - 1))
 
     def test_zero_training_zero_quality(self, default_params):
         """Zero training gives zero quality change."""
-        m = NFirmModel(default_params, n_firms=3, eta=0.07)
+        m = NFirmModel(default_params, n_firms=3)
         q = m.quality_dynamics(K=2.0, training_fraction=0.0, periods=10)
         assert np.all(q == 0.0)
 
@@ -234,6 +322,8 @@ class TestVerification:
         assert "analytical_leader_X" in result
         assert "numerical_follower_X" in result
         assert "analytical_follower_X" in result
+        assert "numerical_leader_phi" in result
+        assert "analytical_leader_phi" in result
 
 
 # ------------------------------------------------------------------
@@ -249,6 +339,7 @@ class TestComparativeStatics:
         )
         assert stats["has_solution"].sum() >= 2
         assert stats["triggers"].shape == (5, 3)
+        assert stats["phis"].shape == (5, 3)
 
     def test_more_firms_higher_triggers(self, default_params):
         """With more firms, later entrants have higher triggers."""
@@ -281,15 +372,3 @@ class TestSummary:
         s = model3.summary()
         assert "total_investment" in s
         assert s["total_investment"] > 0
-
-    def test_summary_with_training(self, default_params):
-        """Summary with training should include quality trajectory."""
-        m = NFirmModel(
-            default_params,
-            n_firms=3,
-            training_fraction=0.2,
-            eta=0.07,
-        )
-        s = m.summary()
-        assert "training_fraction" in s
-        assert "leader_quality_trajectory" in s

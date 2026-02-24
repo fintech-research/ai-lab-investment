@@ -128,11 +128,11 @@ Fourth, training fractions vary by a factor of two across firm types (0.40 to 0.
 
 ### Baseline Results
 
-Under the baseline calibration, the single-firm model with training-inference allocation produces an investment trigger $X^* \approx 0.49$, capacity $K^* \approx 0.55$, and training fraction $\phi^* \approx 0.30$, where the effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) combines L-regime inference value and H-regime training value.
-The duopoly equilibrium with zero leverage produces a follower policy of $X_F \approx 0.66$, $K_F \approx 0.42$, and $\phi_F \approx 0.25$, with the leader preempting at $X_P < X_F$ and allocating more to training ($\phi_L > \phi_F$).
+Under the baseline calibration, the single-firm model with training-inference allocation produces an investment trigger $X^* \approx 0.027$, capacity $K^* \approx 0.055$, and training fraction $\phi^* \approx 0.70$, where the effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) combines L-regime inference value and H-regime training value.
+The duopoly equilibrium with zero leverage produces a follower policy of $X_F \approx 9.37$, $K_F \approx 17.63$, and $\phi_F \approx 0.70$, with the leader preempting at $X_P \approx 0.055$ and the monopolist trigger at $X_L^{\text{mono}} \approx 0.114$.
 
-Strategic interaction accelerates investment (the preemption trigger $X_P < X_H^*$) but reduces capacity per firm relative to the monopolist benchmark.
-The leader allocates more to training than the follower, consistent with Proposition 3(ii): the first mover has more to gain from building a strong position in the H-regime quality competition.
+Strategic interaction accelerates investment (the preemption trigger $X_P \approx 0.055 < X_H^* \approx 0.114$) but reduces capacity per firm relative to the monopolist benchmark.
+Both firms optimally allocate approximately 70\% to training ($\phi^* \approx 0.70$), reflecting the high value of the H-regime continuation payoff at the baseline arrival rate $\tilde{\lambda} = 0.10$; the optimal training fraction is determined by the balance between L-regime inference value and H-regime training value and is independent of the competitive position in the exogenous-$\lambda$ model.
 
 ### Sensitivity Analysis
 

@@ -356,6 +356,62 @@ class TestDefaultRisk:
         beta_neg = model._negative_root("H")
         assert beta_neg < 0
 
+    def test_negative_root_uses_lam_tilde(self, model):
+        """Negative root with lam_tilde differs from root without it."""
+        beta_no_lam = model._negative_root("L", lam_tilde=0.0)
+        beta_with_lam = model._negative_root("L", lam_tilde=0.10)
+        # Higher effective discount → more negative root
+        assert beta_with_lam < beta_no_lam
+
+    def test_negative_root_numerical_value(self):
+        """Verify negative root against direct quadratic formula computation."""
+        p = ModelParameters()
+        m = DuopolyModel(p)
+        lam_tilde = p.lam  # 0.10
+        # Direct computation: (σ²/2)β(β-1) + μβ - (r + λ̃) = 0
+        sigma, mu = p.sigma_L, p.mu_L
+        a = 0.5 * sigma**2
+        b = mu - 0.5 * sigma**2
+        c = -(p.r + lam_tilde)
+        discriminant = b**2 - 4 * a * c
+        expected = (-b - discriminant**0.5) / (2 * a)
+        actual = m._negative_root("L", lam_tilde)
+        assert abs(actual - expected) < 1e-12
+        # Regression: should be approximately -2.335, not -1.649
+        assert actual < -2.0
+
+    def test_smooth_pasting_at_default_boundary(self, default_params):
+        """Ongoing equity satisfies E(X_D)=0 and E'(X_D)=0 at default boundary.
+
+        The default boundary is derived from smooth-pasting on the ongoing
+        equity (excluding sunk investment cost), following Leland (1994).
+        """
+        m = DuopolyModel(
+            default_params, leverage=0.5, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi_i, K_i, phi_j, K_j = 0.3, 1.0, 0.3, 1.0
+        lev = 0.5
+
+        X_D = m.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        assert X_D > 0
+
+        p = default_params
+        V_XD = m.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
+        c_D = m.coupon_payment(K_i, lev)
+        A_eff = m._effective_revenue_coeff(phi_i, K_i, phi_j, K_j)
+        lam_tilde = m.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_neg = m._negative_root("L", lam_tilde)
+
+        default_claim = c_D / p.r - V_XD
+
+        # Value matching: E_ongoing(X_D) = V_XD - c_D/r + default_claim = 0
+        E_ongoing_XD = V_XD - c_D / p.r + default_claim
+        assert abs(E_ongoing_XD) < 1e-10
+
+        # Smooth pasting: E'_ongoing(X_D) = A_eff + beta_neg * claim / X_D = 0
+        E_prime_at_XD = A_eff + beta_neg * default_claim / X_D
+        assert abs(E_prime_at_XD) < 1e-10
+
     def test_default_boundary_below_trigger(self, levered_model):
         """Default boundary should be below investment trigger."""
         eq = levered_model.solve_preemption_equilibrium("H")

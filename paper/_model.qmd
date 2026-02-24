@@ -328,10 +328,11 @@ $$ {#eq-phi-underbar}
 *(iv) $X_D$ is increasing in rival capacity $K_j$, because higher rival capacity reduces the contest shares $s_i^L$ and $s_i^H$.*
 
 @fig-default-boundaries illustrates the interaction between leverage, investment triggers, and default risk.
-As leverage increases, the follower's investment trigger $X_F^*$ rises (firms require higher demand to justify investment given the debt burden), while the default boundary $X_D$ also rises as higher coupon payments increase the demand level at which equity becomes worthless.
+As leverage increases, the follower's investment trigger $X_F^*$ falls---the risk-shifting effect dominates: debt holders bear downside risk, making equity holders willing to invest at lower demand levels, consistent with @mauer2005real.
+Meanwhile, the default boundary $X_D$ rises as higher coupon payments increase the demand level at which equity becomes worthless.
 The shaded region between $X_D$ and $X_F^*$ represents the "operating region"---demand levels at which the firm has invested but has not defaulted.
-This region narrows as leverage increases, compressing the firm's margin of safety.
-The leader trigger $X_P$ lies below the follower trigger, reflecting the preemption incentive.
+This region narrows from both sides as leverage increases: the trigger falls (earlier investment) while the default boundary rises (higher break-even), compressing the firm's margin of safety.
+The leader trigger $X_P$ lies well below the follower trigger, reflecting the preemption incentive.
 At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered AI infrastructure firms. This narrow margin of safety is precisely the scenario Amodei describes: a firm that commits to trillion-dollar compute purchases faces bankruptcy if revenue falls even modestly short of projections, because "there's no hedge on Earth" that can bridge the gap [@amodei2026cone].
 
 ![Investment and default boundaries as a function of leverage in the duopoly equilibrium. The solid line shows the follower's trigger $X_F^*$; the dashed line shows the default boundary $X_D$; the gray line shows the leader's preemption trigger $X_P$. The shaded region is the "operating region" where the firm has invested but not defaulted. Parameters: baseline calibration with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_default_boundaries.pdf){#fig-default-boundaries}
