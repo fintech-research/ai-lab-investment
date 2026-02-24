@@ -30,6 +30,7 @@ format:
     include-in-header:
       text: |
         \setkomafont{disposition}{\rmfamily\bfseries}
+        \usepackage{url}
         \usepackage[noblocks]{authblk}
         \renewcommand*{\Authsep}{, }
         \renewcommand*{\Authand}{, }

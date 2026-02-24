@@ -119,6 +119,7 @@ ENTRY
     series
     title
     type
+    url
     volume
     year
   }
@@ -854,6 +855,14 @@ FUNCTION {mastersthesis}
   fin.entry
 }
 
+%%%KCB+VG: format URL for misc entries
+FUNCTION {format.url}
+{ url empty$
+    { "" }
+    { new.block "\url{" url * "}" * }
+  if$
+}
+
 FUNCTION {misc}
 { output.bibitem
   format.authors output
@@ -861,6 +870,7 @@ FUNCTION {misc}
   format.date "year" output.check
   format.title output
   howpublished output
+  format.url output
   note output
   fin.entry
 }
