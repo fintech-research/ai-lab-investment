@@ -33,7 +33,7 @@ Range of disagreement ($\lambda \in [0.05, 0.5]$): 2--20 years expected, 22--92%
 
 ![](figures/fig_credit_risk.png){width="90%"}
 
-Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$ (CoreWeave-like)
+Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$
 
 ---
 

@@ -13,13 +13,13 @@
 
 ## Calibration: Stylized Firms {.smaller}
 
-| | Frontier Lab | Platform | Hyperscaler | Infra Provider |
+| | Frontier Lab | Platform | Hyperscaler | Compute Racer |
 |:--|:------------|:---------|:------------|:--------------|
-| *Archetype* | Anthropic | OpenAI | Google | CoreWeave |
-| Revenue '25 (\$B) | 3.0 | 12.0 | 55.0 | 5.0 |
+| *Archetype* | Anthropic | OpenAI | Google | xAI |
+| Revenue '25 (\$B) | 3.0 | 12.0 | 55.0 | 2.0 |
 | CapEx '25 (\$B) | 6.0 | 15.0 | 60.0 | 10.0 |
-| **CapEx / Revenue** | **2.00** | **1.25** | **1.09** | **2.00** |
-| Leverage | 0.20 | 0.30 | 0.10 | 0.70 |
+| **CapEx / Revenue** | **2.00** | **1.25** | **1.09** | **5.00** |
+| Leverage | 0.20 | 0.30 | 0.10 | 0.25 |
 
 ::: {.fragment}
 **Key observation**: All firms have CapEx > Revenue (historically unusual)
