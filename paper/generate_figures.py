@@ -338,65 +338,41 @@ def fig_default_boundaries():
 # Figure 6 -Credit risk: spread and default probability
 # ==================================================================
 def fig_credit_risk():
-    """Credit risk vs leverage.
+    """Credit risk vs leverage using ValuationAnalysis.credit_spread_curve().
 
-    Evaluate at a fixed demand level chosen so that high-leverage firms
-    are close to their default boundary, producing meaningful spread
-    variation.  X_eval is set to 2x the default boundary of a firm
-    with moderate leverage (0.40), so low-leverage firms are far from
-    default and high-leverage firms are near it.
+    Delegates to the Phase 1 corrected implementation which evaluates
+    at X = 3*X_D (consistent with credit_spread method).
     """
-    from scipy.stats import norm
-
-    from ai_lab_investment.models import DuopolyModel, ModelParameters, SingleFirmModel
+    from ai_lab_investment.models import ModelParameters, ValuationAnalysis
 
     p = ModelParameters()
-    model = SingleFirmModel(p)
-    _, K_star = model.optimal_trigger_and_capacity("H")
-    phi_base = 0.30  # baseline training fraction
+    va = ValuationAnalysis(p)
 
-    # Pick X_eval: 2x the default boundary at moderate leverage
-    duo_ref = DuopolyModel(p, leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30)
-    X_D_ref = duo_ref.default_boundary(phi_base, K_star, 0.0, 0.0)
-    X_eval = X_D_ref * 2.0
-
-    leverages = np.linspace(0.05, 0.70, 50)
-    spreads = np.full_like(leverages, np.nan)
-    def_probs = np.full_like(leverages, np.nan)
-    xd_ratio = np.full_like(leverages, np.nan)
-    rf = 0.04  # risk-free rate (treasury yield, not WACC)
-
-    for i, lev in enumerate(leverages):
-        try:
-            duo = DuopolyModel(p, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30)
-            X_D = duo.default_boundary(phi_base, K_star, 0.0, 0.0)
-            if X_D <= 0 or X_eval <= X_D:
-                continue
-
-            xd_ratio[i] = X_D / X_eval
-
-            coupon = duo.coupon_payment(K_star)
-            D = duo.debt_value(X_eval, phi_base, K_star, 0.0, 0.0)
-            if D > 0 and coupon > 0:
-                spreads[i] = max(coupon / D - rf, 0.0)
-
-            d2 = (np.log(X_eval / X_D) + (p.mu_H - 0.5 * p.sigma_H**2) * 5) / (
-                p.sigma_H * np.sqrt(5)
-            )
-            def_probs[i] = float(norm.cdf(-d2))
-        except (ValueError, RuntimeError):
-            continue
+    leverages = np.linspace(0.05, 0.70, 30)
+    result = va.credit_spread_curve(leverages)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
-    valid_s = ~np.isnan(spreads)
-    ax1.plot(leverages[valid_s], spreads[valid_s] * 10_000, "k-", linewidth=1.5)
+    valid_s = ~np.isnan(result["credit_spread"])
+    if valid_s.sum() > 0:
+        ax1.plot(
+            result["leverage"][valid_s],
+            result["credit_spread"][valid_s] * 10_000,
+            "k-",
+            linewidth=1.5,
+        )
     ax1.set_xlabel("Leverage (D/I)")
     ax1.set_ylabel("Credit spread (bps)")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
-    valid_d = ~np.isnan(def_probs)
-    ax2.plot(leverages[valid_d], def_probs[valid_d] * 100, "k-", linewidth=1.5)
+    valid_d = ~np.isnan(result["default_probability"])
+    if valid_d.sum() > 0:
+        ax2.plot(
+            result["leverage"][valid_d],
+            result["default_probability"][valid_d] * 100,
+            "k-",
+            linewidth=1.5,
+        )
     ax2.set_xlabel("Leverage (D/I)")
     ax2.set_ylabel("5-year default probability (%)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
@@ -570,22 +546,32 @@ def fig_lambda_timeline():
 # Figure 10 -Growth option decomposition
 # ==================================================================
 def fig_growth_decomposition():
+    """Growth option decomposition using the phi-aware model.
+
+    Uses optimal_trigger_capacity_phi() and installed_value_with_phi()
+    to properly account for training allocation in firm value.
+    """
     from ai_lab_investment.models import ModelParameters, SingleFirmModel
 
     p = ModelParameters()
     model = SingleFirmModel(p)
-    _, K_star = model.optimal_trigger_and_capacity("H")
+    X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
 
-    # Use K_installed as fractions of optimal K
-    K_fracs = np.linspace(0.0, 2.0, 60)
-    K_installed_vals = K_fracs * K_star
-    X = model._trigger_for_K(K_star, "H") * 1.5  # above trigger
+    # Vary installed capacity from near 0 to 1.5 * K_star
+    K_fracs = np.linspace(0.01, 1.5, 40)
+    assets = np.full_like(K_fracs, np.nan)
+    counterfactual = np.full_like(K_fracs, np.nan)
 
-    assets = np.array([
-        model.installed_value(X, k, "H") if k > 0 else 0.0 for k in K_installed_vals
-    ])
-    option_val = model.option_value_H(X)  # total option value at X
-    expansion = np.maximum(option_val - assets, 0.0)
+    # Evaluate at demand above trigger
+    X_eval = 1.5 * X_star
+    V_optimal = model.installed_value_with_phi(X_eval, phi_star, K_star, "L")
+    I_optimal = model.investment_cost(K_star)
+    npv_optimal = V_optimal - I_optimal
+
+    for i, kr in enumerate(K_fracs):
+        K_inst = kr * K_star
+        assets[i] = model.installed_value_with_phi(X_eval, phi_star, K_inst, "L")
+        counterfactual[i] = max(npv_optimal - assets[i], 0)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
@@ -595,26 +581,19 @@ def fig_growth_decomposition():
     ax1.fill_between(
         K_fracs,
         assets,
-        assets + expansion,
+        assets + counterfactual,
         alpha=0.4,
         color="#ff7f0e",
-        label="Expansion option",
+        label="Counterfactual capacity value",
     )
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
-    ax1.annotate(
-        r"$K_H^*$",
-        xy=(1.0, 0),
-        xytext=(1.12, max(assets) * 0.5),
-        fontsize=9,
-        color="0.4",
-    )
     ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
     ax1.set_ylabel("Value")
     ax1.legend(fontsize=8, loc="upper left")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
-    total = assets + expansion
-    growth_frac = np.where(total > 0, expansion / total * 100, 0)
+    total = assets + counterfactual
+    growth_frac = np.where(total > 0, counterfactual / total * 100, 0)
     ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
     ax2.set_xlabel(r"Installed capacity ($K / K_H^*$)")
     ax2.set_ylabel("Growth option fraction (%)")
@@ -629,117 +608,74 @@ def fig_growth_decomposition():
 # Figure 11 -AI Investment Dilemma (belief mismatch asymmetry)
 # ==================================================================
 def fig_investment_dilemma():
-    """Value loss from belief mismatch: unleveraged vs leveraged.
+    """Value loss from belief mismatch using phi-aware dario_dilemma.
 
-    Cross-section at lambda_true = 0.10, varying lambda_invest.
-
-    The mechanism: firms with different lambda beliefs choose
-    different capacity levels.  Higher lambda -> more capacity
-    (expecting imminent H-regime demand).  The asymmetry arises
-    from convex costs (gamma > 1) and concave revenue (alpha < 1):
-    overcapacity incurs disproportionate costs while generating
-    diminishing revenue.  Leverage amplifies through default risk.
+    Delegates to ValuationAnalysis.dario_dilemma() which uses the
+    phi-aware model with timing discount, matching Phase 1 corrections.
     """
-    from ai_lab_investment.models import ModelParameters, SingleFirmModel
+    from ai_lab_investment.models import ModelParameters, ValuationAnalysis
 
     p = ModelParameters()
-    m = SingleFirmModel(p)
-    X_star, K_star = m.optimal_trigger_and_capacity("H")
+    va = ValuationAnalysis(p)
 
-    # Evaluate at a demand level above the trigger (firm has invested)
-    X_eval = X_star * 1.5
-
-    # NPV at optimal capacity
-    npv_opt = m.installed_value(X_eval, K_star, "H") - m.investment_cost(K_star)
-
-    # Capacity multiplier as a function of belief mismatch.
-    # Firms believing in higher lambda build more (expecting imminent
-    # H-regime demand); lower-lambda firms build less.
     fixed_true = 0.10
-    lam_range = np.linspace(0.02, 0.50, 80)
+    lam_range = np.linspace(0.02, 0.50, 30)
 
-    # Map lambda_invest to capacity ratio K/K*
-    # Higher lambda -> invest more aggressively
-    # Use a convex mapping: K(lambda) = K* * (lambda/lambda_true)^eta
-    # where eta > 1 captures the option-value amplification
-    eta_map = 1.3
-    K_ratios = (lam_range / fixed_true) ** eta_map
+    # Unleveraged curve
+    losses_unlev = []
+    for li in lam_range:
+        r = va.dario_dilemma(fixed_true, li)
+        losses_unlev.append(r.get("value_loss_pct", np.nan) * 100)
 
-    # Unleveraged loss
-    loss_unlev = np.full_like(lam_range, np.nan)
-    for i, kr in enumerate(K_ratios):
-        K_mis = K_star * kr
-        npv_mis = m.installed_value(X_eval, K_mis, "H") - m.investment_cost(K_mis)
-        if npv_opt > 0:
-            loss_unlev[i] = min(max((npv_opt - npv_mis) / npv_opt, 0.0), 1.0)
-
-    # Leveraged loss: default risk amplifies overinvestment
-    loss_lev = np.full_like(lam_range, np.nan)
-    lev = 0.40
-    for i, kr in enumerate(K_ratios):
-        K_mis = K_star * kr
-        npv_mis = m.installed_value(X_eval, K_mis, "H") - m.investment_cost(K_mis)
-        if npv_opt > 0:
-            base_loss = max((npv_opt - npv_mis) / npv_opt, 0.0)
-            if lam_range[i] > fixed_true:
-                # Overinvestment: leverage adds default risk on excess
-                # debt (convex amplification)
-                excess = kr - 1.0
-                debt_penalty = lev * excess * m.investment_cost(K_mis)
-                amp_loss = base_loss + debt_penalty / npv_opt
-                loss_lev[i] = min(amp_loss, 1.0)
-            else:
-                # Underinvestment: leverage mildly increases
-                # opportunity cost
-                loss_lev[i] = base_loss * (1.0 + 0.3 * lev)
+    # Leveraged curve (ell = 0.40)
+    losses_lev = []
+    for li in lam_range:
+        r = va.dario_dilemma_leveraged(fixed_true, li, leverage=0.40)
+        losses_lev.append(r.get("value_loss_pct", np.nan) * 100)
 
     fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
 
-    valid_u = ~np.isnan(loss_unlev)
-    valid_l = ~np.isnan(loss_lev)
+    losses_unlev_arr = np.array(losses_unlev)
+    losses_lev_arr = np.array(losses_lev)
 
-    ax.plot(
-        lam_range[valid_u],
-        loss_unlev[valid_u] * 100,
-        "k-",
-        linewidth=1.5,
-        label=r"Unleveraged ($\ell = 0$)",
-    )
-    ax.plot(
-        lam_range[valid_l],
-        loss_lev[valid_l] * 100,
-        "k--",
-        linewidth=1.5,
-        label=r"Leveraged ($\ell = 0.40$)",
-    )
-
-    # Shade danger zone (overinvestment side only, loss > 20%)
-    if valid_l.any():
-        danger_mask = valid_l & (loss_lev > 0.20) & (lam_range > fixed_true)
-        if danger_mask.any():
-            ax.fill_between(
-                lam_range[danger_mask],
-                0,
-                loss_lev[danger_mask] * 100,
-                alpha=0.12,
-                color="red",
-                label="Danger zone (loss > 20%)",
-            )
+    ax.plot(lam_range, losses_unlev_arr, "k-", linewidth=1.5, label=r"$\ell = 0$")
+    ax.plot(lam_range, losses_lev_arr, "k--", linewidth=1.5, label=r"$\ell = 0.40$")
 
     ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
-    # Place annotation after drawing to get correct y-axis limits
+    ax.axhline(0, color="0.6", alpha=0.3, linewidth=0.5)
+
+    # Shade the high-loss region (>10% threshold)
+    high_loss = losses_unlev_arr > 10
+    if high_loss.any():
+        ax.fill_between(
+            lam_range,
+            0,
+            losses_unlev_arr,
+            where=high_loss,
+            alpha=0.10,
+            color="red",
+            label="Loss > 10%",
+        )
+
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
-    ax.set_ylabel(r"Value loss $\Delta V$ (%)")
-    ax.legend(loc="lower right", fontsize=9, framealpha=0.9)
-    ax.set_xlim(lam_range[0], lam_range[-1])
-    ax.set_ylim(bottom=0)
-    y_top = ax.get_ylim()[1]
+    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
+    ax.legend(loc="upper left", fontsize=9, framealpha=0.9)
+    ax.set_ylim(bottom=-2)
+
+    # Annotate the asymmetry
     ax.annotate(
-        rf"$\lambda_{{\mathrm{{true}}}} = {fixed_true}$",
-        xy=(fixed_true, y_top * 0.5),
-        xytext=(fixed_true + 0.02, y_top * 0.5),
+        "Underinvestment\n(conservative)",
+        xy=(0.04, 15),
         fontsize=9,
-        color="0.4",
+        ha="center",
+        color="navy",
+    )
+    ax.annotate(
+        "Overinvestment\n(aggressive)",
+        xy=(0.35, 8),
+        fontsize=9,
+        ha="center",
+        color="darkred",
     )
 
     _save(fig, "fig_investment_dilemma")

@@ -52,7 +52,7 @@ I verify the implementation by checking that the $N=2$ solution matches the anal
 
 ### Heterogeneous Firms
 
-In practice, AI infrastructure firms differ along multiple dimensions: cost of capital, investment cost parameters, existing capacity, beliefs about $\lambda_0$, and training intensity.
+In practice, frontier AI labs differ along multiple dimensions: cost of capital, investment cost parameters, existing capacity, beliefs about $\lambda_0$, and training intensity.
 I allow for heterogeneity by assigning each firm $i$ its own parameter vector $\theta_i = (c_i, \gamma_i, \alpha_i, r_i, \lambda_{0,i})$.
 
 With heterogeneous firms, the sequential equilibrium no longer features symmetric entry.

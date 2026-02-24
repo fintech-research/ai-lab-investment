@@ -29,18 +29,18 @@ where $F(X)$ is the total option value including the possibility of future inves
 3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$, which now depends on both the arrival rate $\tilde{\lambda}$ and the training allocation $\phi$.
 
 The growth option fraction $V_{\text{growth}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
-For AI infrastructure firms, I find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
+For frontier AI labs, I find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
 
 @fig-growth-decomposition illustrates the growth option decomposition.
 Panel (a) decomposes total firm value into assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
 When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the potential to reach optimal capacity, and assets-in-place are small.
 As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the counterfactual capacity value shrinks because the firm is already near optimal scale.
 Panel (b) shows the growth option fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
-For the typical AI infrastructure firm with $K/K_H^* \approx 0.1$--$0.3$, the growth option fraction exceeds 60\%, confirming that these firms' valuations are driven primarily by future investment opportunities.
+For the typical frontier AI lab with $K/K_H^* \approx 0.1$--$0.3$, the growth option fraction exceeds 60\%, confirming that these firms' valuations are driven primarily by future investment opportunities.
 
 ![Growth option decomposition. (a) Stacked value decomposition: assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Growth option fraction---the share of total value attributable to the gap between current and optimal capacity. For firms with capacity well below $K_H^*$, growth options dominate firm value. This is a comparative statics exercise, not an exercisable option: it shows how much value the firm would gain by adjusting from $K_{\text{installed}}$ to $K^*$. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
 
-This high growth option fraction has important implications for asset pricing: AI infrastructure stocks should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
+This high growth option fraction has important implications for asset pricing: frontier AI lab equities should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
 
 ### Credit Risk Analysis
 
@@ -131,5 +131,5 @@ I compute option values across a range of $\tilde{\lambda}$ values, holding all 
 
 The results show that equity value is increasing and convex in $\tilde{\lambda}$: higher $\tilde{\lambda}$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\tilde{\lambda}$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
 The steepest part of the valuation curve lies around $\tilde{\lambda} \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
-This convexity implies that a portfolio of AI infrastructure firms should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.
+This convexity implies that a portfolio of frontier AI labs should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.
 The training allocation channel amplifies this convexity: at higher $\tilde{\lambda}$, firms not only invest more but allocate more to training, compounding the H-regime upside.

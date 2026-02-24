@@ -121,43 +121,41 @@ def get_stylized_firms() -> list[FirmData]:
         FirmData(
             name="Firm A (Anthropic-like)",
             revenue_2024=0.9,
-            revenue_2025=3.0,
+            revenue_2025=4.5,
             capex_2024=2.0,
-            capex_2025=6.0,
+            capex_2025=3.0,
             gpu_count=50,
-            leverage_ratio=0.20,
+            leverage_ratio=0.05,
             wacc=0.15,
-            training_fraction=0.60,
+            training_fraction=0.55,
             description=(
-                "Pure-play AI lab, rapid revenue growth, "
-                "moderate leverage via venture debt"
+                "Pure-play AI lab, rapid revenue growth, nearly all-equity funded"
             ),
         ),
         FirmData(
             name="Firm B (OpenAI-like)",
-            revenue_2024=4.0,
-            revenue_2025=12.0,
-            capex_2024=3.0,
-            capex_2025=15.0,
-            gpu_count=80,
-            leverage_ratio=0.30,
+            revenue_2024=3.7,
+            revenue_2025=12.5,
+            capex_2024=3.8,
+            capex_2025=12.0,
+            gpu_count=100,
+            leverage_ratio=0.05,
             wacc=0.14,
-            training_fraction=0.55,
+            training_fraction=0.60,
             description=(
-                "Largest pure-play AI lab, high revenue, "
-                "growing debt from credit facilities"
+                "Largest pure-play AI lab, high revenue, revolving credit facility"
             ),
         ),
         FirmData(
             name="Firm C (Google/Alphabet-like)",
-            revenue_2024=40.0,
-            revenue_2025=55.0,
-            capex_2024=30.0,
-            capex_2025=60.0,
-            gpu_count=200,
+            revenue_2024=43.0,
+            revenue_2025=60.0,
+            capex_2024=52.5,
+            capex_2025=91.0,
+            gpu_count=250,
             leverage_ratio=0.10,
             wacc=0.10,
-            training_fraction=0.40,
+            training_fraction=0.35,
             description=(
                 "Hyperscaler with massive existing infrastructure, "
                 "low leverage, low cost of capital"
@@ -165,17 +163,17 @@ def get_stylized_firms() -> list[FirmData]:
         ),
         FirmData(
             name="Firm D (xAI-like)",
-            revenue_2024=0.5,
-            revenue_2025=2.0,
-            capex_2024=3.0,
+            revenue_2024=0.2,
+            revenue_2025=0.5,
+            capex_2024=2.6,
             capex_2025=10.0,
-            gpu_count=230,
-            leverage_ratio=0.25,
+            gpu_count=200,
+            leverage_ratio=0.15,
             wacc=0.18,
-            training_fraction=0.80,
+            training_fraction=0.75,
             description=(
                 "Compute-first frontier lab, extreme CapEx/Revenue, "
-                "all owned compute dedicated to training"
+                "owned compute dedicated to training"
             ),
         ),
     ]
@@ -190,29 +188,42 @@ def get_baseline_calibration() -> CalibrationData:
     firms = get_stylized_firms()
     sources = {
         "revenue": (
-            "Public revenue estimates from press reports. "
-            "Anthropic: Dario Amodei interview (2024). "
-            "OpenAI: The Information, Bloomberg estimates."
+            "Anthropic: $0.9B collected 2024, $4-5B collected 2025 "
+            "(SaaStr, Sacra). OpenAI: $3.7B 2024, $12-13B 2025 "
+            "(CFO Sarah Friar, Jan 2026). Google Cloud: $43.2B "
+            "2024, $59-60B 2025 (Alphabet SEC 10-K). xAI: ~$200M+ "
+            "standalone 2025 (Bloomberg, Jan 2026)."
         ),
         "capex": (
-            "Hyperscaler CapEx from 10-K filings (Alphabet, Microsoft, Amazon). "
-            "Pure-play estimates from funding round disclosures."
+            "Alphabet CapEx from SEC 10-K: $52.5B 2024, $91.4B 2025. "
+            "Anthropic cloud spend: $2.66B through Sep 2025 (press). "
+            "OpenAI Azure spend: $8.65B through Q3 2025 (The Information). "
+            "xAI: ~$10B+ est. 2025 ($7.8B cash burn through Sep)."
         ),
         "gpu_pricing": (
-            "H100 ~$25-30K, B200 ~$30-40K (NVIDIA pricing, analyst reports). "
-            "Cost per GW-year ~$10-15B (Dario Amodei estimate)."
+            "H100 ~$25-40K, B200 ~$30-35K (NVIDIA pricing, analyst). "
+            "Cloud rates fell 64-75% since early 2024. "
+            "Cost per GW: $30-60B construction (Bernstein, AWS, McKinsey)."
         ),
         "scaling_laws": (
             "Kaplan et al. (2020), Hoffmann et al. (2022). "
-            "Revenue elasticity alpha=0.40 calibrated to translate "
-            "compute-to-loss scaling to revenue impact."
+            "Revenue elasticity alpha=0.40 calibrated from "
+            "compute-to-loss power law exponents."
+        ),
+        "training_fraction": (
+            "Amodei ~50/50 (Dwarkesh, Feb 2026). Epoch AI: OpenAI "
+            "2024 71% R&D / 26% inference. Deloitte TMT 2026: "
+            "industry shifting from 2/3 training to 2/3 inference. "
+            "Range: 0.35-0.75 across archetypes."
         ),
         "time_to_build": (
-            "18-36 months for large data center campuses (industry reports, CBRE, JLL)."
+            "12-24 months typical (hyperscaler); 2-4 years new builds. "
+            "xAI Colossus: 122 days for 100K GPUs (exceptional)."
         ),
         "wacc": (
-            "Tech sector WACC estimates. Pure-play AI firms: 14-18%. "
-            "Hyperscalers: 10-12%. GPU cloud (leveraged): 16-20%."
+            "Damodaran Jan 2025: software 7.2%, semis 10.8%. "
+            "Private AI labs: CAPM with beta 1.5-2.5 gives 10.5-15%. "
+            "Hyperscalers: 9-10% (Alphabet beta ~1.02)."
         ),
     }
 

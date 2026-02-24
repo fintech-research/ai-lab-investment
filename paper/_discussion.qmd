@@ -17,14 +17,14 @@ The net welfare effect depends on the relative magnitudes of these two distortio
 
 ### Testable Predictions
 
-The model generates several cross-sectional predictions that are in principle testable using the (admittedly small) cross-section of AI infrastructure firms:
+The model generates several cross-sectional predictions that are in principle testable using the (admittedly small) cross-section of frontier AI labs:
 
 1. **Training-credit spread nexus.** Firms with higher $\hat{\phi}$ should have *lower* credit spreads conditional on leverage (Proposition 2, faith-based survival): the H-regime option value provides a valuation floor that reduces default risk.
 2. **Training-beta relationship.** Firms with higher $\hat{\phi}$ should have higher equity betas, because a larger share of their value derives from the growth option (H-regime upside) rather than assets-in-place, making them more sensitive to systematic risk.
-3. **Asymmetric response to AI news.** The convexity of equity value in $\lambda$ (@sec-valuation) implies that positive AI capability news should increase AI infrastructure valuations more than negative news decreases them, with the effect stronger for high-$\hat{\phi}$ firms.
+3. **Asymmetric response to AI news.** The convexity of equity value in $\lambda$ (@sec-valuation) implies that positive AI capability news should increase AI lab valuations more than negative news decreases them, with the effect stronger for high-$\hat{\phi}$ firms.
 4. **Leader-follower training gap.** In markets with clear sequential entry, first movers should allocate more to training than later entrants (Proposition 3(ii)), because the monopoly phase reduces the opportunity cost of training.
 
-These predictions are directional and could be assessed as the cross-section of publicly traded AI infrastructure firms expands, though the small sample size currently limits formal statistical testing.
+These predictions are directional and could be assessed as the cross-section of publicly traded AI labs expands, though the small sample size currently limits formal statistical testing.
 More broadly, the model provides a framework for interpreting empirical patterns in the emerging AI sector through the lens of existing corporate finance and industrial organization methods.
 Credit spread regressions could test the training-spread nexus using training fraction proxies (e.g., ratio of pre-training compute to total compute, disclosed in some filings).
 Event studies around AI capability announcements (model releases, benchmark results) could test the predicted asymmetric equity response.
@@ -34,7 +34,7 @@ These empirical exercises require data that is currently scarce but becoming ava
 ### Policy Implications
 
 The model has implications for financial stability, competition policy, and disclosure.
-On financial stability, the combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk: if multiple highly levered AI infrastructure firms default simultaneously during a low-demand period, fire sales could depress asset values and trigger contagion.
+On financial stability, the combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk: if multiple highly levered AI labs default simultaneously during a low-demand period, fire sales could depress asset values and trigger contagion.
 The faith-based survival mechanism (Proposition 2) suggests that optimism about AI timelines may be propping up equity values, masking underlying credit risk.
 
 On competition policy, the preemption mechanism implies that capacity investment serves a dual purpose---generating revenue and deterring rivals---while the endogenous arrival rate adds a third dimension, as training investment accelerates the regime switch in ways that can be either pro- or anti-competitive depending on market structure.
@@ -66,7 +66,8 @@ The Leland mechanism is best viewed as an analytically tractable approximation t
 The qualitative predictions---that higher training investment lowers the distress threshold through the continuation-value channel, that leverage amplifies overinvestment losses, and that the default boundary rises with rival capacity---apply across financing structures; the specific Leland closed forms are the vehicle for these insights, not the literal description of any single firm's capital structure.
 
 The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
-Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; a Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix F).
+Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; in particular, the Tullock form assumes a fixed total market size, which understates the market expansion effect of AI adoption and biases the model toward stronger competition effects relative to a setting where investment expands the pie.
+A Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix F).
 
 All valuation uses a reduced-form risk-adjusted framework, abstracting from state-dependence of risk premia across regimes.
 The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal.

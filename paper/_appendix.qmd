@@ -242,19 +242,19 @@ The calibration uses data from the following sources:
 
 | Parameter | Source |
 |:----------|:-------|
-| Revenue (2024--2025) | Company 10-K filings, earnings calls, analyst estimates |
-| Capital expenditure | Company 10-K filings, earnings call guidance |
-| Training fraction ($\hat{\phi}$) | Industry reports, analyst estimates of training vs. inference compute allocation |
-| Leverage ratios | Bloomberg, S\&P Capital IQ |
-| WACC | Damodaran industry estimates, adjusted for firm-specific risk |
-| Demand growth ($\mu$) | Cloud revenue growth rates (AWS, Azure, GCP) |
+| Revenue (2024--2025) | Alphabet 10-K [@alphabet2025q4]; OpenAI CFO disclosure (Jan 2026); Anthropic ARR (SaaStr, Sacra); xAI (Bloomberg, Jan 2026) |
+| Capital expenditure | Alphabet 10-K (\$91.4B FY2025); OpenAI Azure spend (The Information); Anthropic cloud (AWS, GCP commitments); xAI (cash burn reports) |
+| Training fraction ($\hat{\phi}$) | @amodei2026dwarkesh ($\sim$50/50); @epoch2025openai (OpenAI 2024 breakdown); @deloitte2026tmt (industry trajectory) |
+| Leverage ratios | Anthropic: effectively all-equity; OpenAI: \$4B revolving credit facility [@openai2024credit]; Google: 10-K; xAI: \$5B+ secured debt (press) |
+| WACC | Damodaran Jan 2025 industry estimates; CAPM with $\beta = 1.5$--$2.5$ for private labs |
+| Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\%, AWS +24\%, Azure +39\% (Q4 2025) |
 | Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
-| Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training |
-| Operating cost rate ($\delta$) | Industry estimates of power, cooling, and maintenance costs; GAAP useful life used as cross-check |
+| Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training (loss $\propto$ Compute$^{-0.05}$ to $^{-0.10}$) |
+| Operating cost rate ($\delta$) | Industry estimates: annual operating cost $\approx$30--40\% of hardware CapEx; hyperscaler PPA rates \$0.03--0.06/kWh |
 
 : Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
 
-All firm-level data reflects publicly available information as of Q4 2025.
+All firm-level data reflects publicly available information as of Q4 2025 and Q1 2026.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
 
 ### E. Parameter Sensitivity {.unnumbered}
