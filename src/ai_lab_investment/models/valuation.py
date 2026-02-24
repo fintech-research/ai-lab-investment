@@ -208,7 +208,12 @@ class ValuationAnalysis:
         leverage_values: np.ndarray,
         regime: str = "H",
     ) -> dict[str, np.ndarray]:
-        """Compute credit spreads across leverage levels."""
+        """Compute credit spreads across leverage levels.
+
+        Default probability is evaluated at the same demand level used
+        for credit spread computation (3x the default boundary at each
+        leverage level). This produces leverage-varying default risk.
+        """
         n = len(leverage_values)
         spreads = np.full(n, np.nan)
         default_probs = np.full(n, np.nan)
@@ -216,8 +221,17 @@ class ValuationAnalysis:
         for i, lev in enumerate(leverage_values):
             try:
                 spreads[i] = self.credit_spread(lev, regime=regime)
+                # Use the same X evaluation as credit_spread (3x X_D)
+                duo = DuopolyModel(
+                    self.params,
+                    leverage=lev,
+                    coupon_rate=0.05,
+                    bankruptcy_cost=0.30,
+                )
+                X_D = duo.default_boundary(0.5, 1.0, 0.0, 0.0)
+                X_current = max(X_D * 3, 0.1)
                 default_probs[i] = self.default_probability(
-                    X_current=1.0, K=1.0, leverage=lev, regime=regime
+                    X_current=X_current, K=1.0, leverage=lev, regime=regime
                 )
             except (ValueError, RuntimeError):
                 continue
@@ -236,9 +250,11 @@ class ValuationAnalysis:
         self,
         lambda_true: float,
         lambda_invest: float,
-        regime: str = "H",
     ) -> dict[str, float]:
         """Quantify the cost of belief mismatches.
+
+        Uses the phi-aware model where lambda enters through A_eff,
+        so the optimal (X*, K*, phi*) all depend on lambda.
 
         If a firm's true lambda (private belief) differs from the lambda
         it uses for investment decisions, what is the cost?
@@ -251,7 +267,6 @@ class ValuationAnalysis:
         Args:
             lambda_true: True arrival rate (private belief).
             lambda_invest: Arrival rate used for investment decisions.
-            regime: Demand regime.
 
         Returns:
             Dict with value under each scenario.
@@ -260,8 +275,10 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         try:
-            X_true, K_true = model_true.optimal_trigger_and_capacity(regime)
-            V_optimal = model_true.installed_value(X_true, K_true, regime)
+            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            V_optimal = model_true.installed_value_with_phi(
+                X_true, phi_true, K_true, "L"
+            )
             I_optimal = model_true.investment_cost(K_true)
             npv_optimal = V_optimal - I_optimal
         except (ValueError, RuntimeError):
@@ -271,30 +288,111 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_invest, K_invest = model_invest.optimal_trigger_and_capacity(regime)
+            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
             # Evaluate this investment under the TRUE demand process
-            V_mismatch = model_true.installed_value(X_invest, K_invest, regime)
+            # (true A_eff) but with the mismatched (K, phi) policy.
+            V_mismatch = model_true.installed_value_with_phi(
+                X_invest, phi_invest, K_invest, "L"
+            )
             I_mismatch = model_true.investment_cost(K_invest)
             npv_mismatch = V_mismatch - I_mismatch
         except (ValueError, RuntimeError):
             return {"error": "No solution at invest lambda"}
 
-        # Note: we compare conditional-on-investing NPVs (values at the
-        # respective triggers). A full comparison would include the timing
-        # discount (X_0/X*)^beta, but since the triggers are close for
-        # moderate mismatches, this approximation is tight.
-        value_loss = npv_optimal - npv_mismatch
-        value_loss_pct = value_loss / abs(npv_optimal) if npv_optimal != 0 else 0
+        # Include timing discount: the option value at a common reference
+        # demand X_0 is NPV(X*) * (X_0 / X*)^beta_H. This accounts for
+        # the different waiting times (higher trigger = longer wait).
+        beta = p_true.beta_H
+        # Use a reference X_0 below both triggers
+        X_0 = min(X_true, X_invest) * 0.5
+        if X_0 <= 0:
+            X_0 = 1e-6
+
+        ev_optimal = npv_optimal * (X_0 / X_true) ** beta if npv_optimal > 0 else 0
+        ev_mismatch = npv_mismatch * (X_0 / X_invest) ** beta if npv_mismatch > 0 else 0
+        value_loss = ev_optimal - ev_mismatch
+        value_loss_pct = value_loss / abs(ev_optimal) if ev_optimal != 0 else 0
 
         return {
             "lambda_true": lambda_true,
             "lambda_invest": lambda_invest,
             "X_optimal": X_true,
             "K_optimal": K_true,
+            "phi_optimal": phi_true,
             "npv_optimal": npv_optimal,
             "X_mismatch": X_invest,
             "K_mismatch": K_invest,
+            "phi_mismatch": phi_invest,
             "npv_mismatch": npv_mismatch,
+            "ev_optimal": ev_optimal,
+            "ev_mismatch": ev_mismatch,
+            "value_loss": value_loss,
+            "value_loss_pct": value_loss_pct,
+            "is_conservative": lambda_invest < lambda_true,
+        }
+
+    def dario_dilemma_leveraged(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        leverage: float = 0.40,
+    ) -> dict[str, float]:
+        """Quantify belief-mismatch cost with leverage (default risk).
+
+        Uses total firm value (E + D) from the Leland structural model,
+        so deadweight bankruptcy costs (b * V(X_D)) are captured. This
+        shows how leverage amplifies the cost of overinvestment through
+        endogenous default risk.
+        """
+        # Optimal policy under true lambda
+        p_true = self.params.with_param(lam=lambda_true)
+        model_true = SingleFirmModel(p_true)
+        duo_true = DuopolyModel(
+            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        try:
+            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            eq_opt = duo_true.equity_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
+            debt_opt = duo_true.debt_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
+            I_opt = duo_true.investment_cost(K_true)
+            # Total NPV = E + D - lev*I = (V - (1-lev)*I - BC) + D - lev*I
+            npv_optimal = eq_opt + debt_opt - leverage * I_opt
+        except (ValueError, RuntimeError):
+            return {"error": "No solution at true lambda"}
+
+        # Investment under mismatched lambda
+        p_invest = self.params.with_param(lam=lambda_invest)
+        model_invest = SingleFirmModel(p_invest)
+        try:
+            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
+            eq_mis = duo_true.equity_value(
+                X_invest, phi_invest, K_invest, 0.0, 0.0, leverage
+            )
+            debt_mis = duo_true.debt_value(
+                X_invest, phi_invest, K_invest, 0.0, 0.0, leverage
+            )
+            I_mis = duo_true.investment_cost(K_invest)
+            npv_mismatch = eq_mis + debt_mis - leverage * I_mis
+        except (ValueError, RuntimeError):
+            return {"error": "No solution at invest lambda"}
+
+        # Timing discount
+        beta = p_true.beta_H
+        X_0 = min(X_true, X_invest) * 0.5
+        if X_0 <= 0:
+            X_0 = 1e-6
+
+        ev_optimal = npv_optimal * (X_0 / X_true) ** beta if npv_optimal > 0 else 0
+        ev_mismatch = npv_mismatch * (X_0 / X_invest) ** beta if npv_mismatch > 0 else 0
+        value_loss = ev_optimal - ev_mismatch
+        value_loss_pct = value_loss / abs(ev_optimal) if ev_optimal != 0 else 0
+
+        return {
+            "lambda_true": lambda_true,
+            "lambda_invest": lambda_invest,
+            "leverage": leverage,
+            "ev_optimal": ev_optimal,
+            "ev_mismatch": ev_mismatch,
             "value_loss": value_loss,
             "value_loss_pct": value_loss_pct,
             "is_conservative": lambda_invest < lambda_true,
@@ -304,7 +402,6 @@ class ValuationAnalysis:
         self,
         lambda_true_range: np.ndarray,
         lambda_invest_range: np.ndarray,
-        regime: str = "H",
     ) -> dict[str, np.ndarray]:
         """Compute value loss for a grid of (true, invest) lambda pairs."""
         n_t = len(lambda_true_range)
@@ -313,7 +410,7 @@ class ValuationAnalysis:
 
         for i, lt in enumerate(lambda_true_range):
             for j, li in enumerate(lambda_invest_range):
-                result = self.dario_dilemma(lt, li, regime)
+                result = self.dario_dilemma(lt, li)
                 if "value_loss_pct" in result:
                     value_loss[i, j] = result["value_loss_pct"]
 
@@ -473,8 +570,6 @@ class ValuationAnalysis:
             }
 
         # Dario dilemma example
-        result["dario_dilemma"] = self.dario_dilemma(
-            lambda_true=0.3, lambda_invest=0.1, regime=regime
-        )
+        result["dario_dilemma"] = self.dario_dilemma(lambda_true=0.3, lambda_invest=0.1)
 
         return result

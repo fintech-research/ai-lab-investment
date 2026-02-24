@@ -314,7 +314,11 @@ class DuopolyModel:
         Higher phi reduces inference revenue but increases H-regime continuation
         (the "faith-based survival" mechanism).
 
-        X_D = [beta_neg / (beta_neg - 1)] * [c_D/r + delta*K_i/r] / A_eff
+        X_D = [beta_neg / (beta_neg - 1)] * [c_D/r + delta*K/r] / A_eff
+
+        Derived from smooth-pasting on the ongoing equity value (excluding
+        the sunk equity contribution, which is irrelevant for the default
+        decision).
 
         Returns 0 if no debt (leverage = 0).
         """
@@ -336,7 +340,8 @@ class DuopolyModel:
             return np.inf
 
         # Negative root of the characteristic equation in L-regime
-        beta_neg = self._negative_root("L")
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_neg = self._negative_root("L", lam_tilde)
 
         X_D = (
             (beta_neg / (beta_neg - 1.0))
@@ -345,18 +350,22 @@ class DuopolyModel:
         )
         return max(X_D, 0.0)
 
-    def _negative_root(self, regime: str) -> float:
+    def _negative_root(self, regime: str, lam_tilde: float = 0.0) -> float:
         """Negative root of the characteristic equation.
 
-        Solves: (sigma^2/2) * beta * (beta - 1) + mu * beta - r = 0
+        Solves: (sigma^2/2) * beta * (beta - 1) + mu * beta - (r + lam_tilde) = 0
         Returns the negative root (beta < 0).
+
+        For the L-regime default boundary, the effective discount rate is
+        r + lam_tilde, incorporating the regime-switching term. This parallels
+        the positive root computation in parameters.py which uses discount = r + lam.
         """
         p = self.params
         sigma = p.sigma_H if regime == "H" else p.sigma_L
         mu = p.mu_H if regime == "H" else p.mu_L
         a = 0.5 * sigma**2
         b = mu - 0.5 * sigma**2
-        c = -p.r
+        c = -(p.r + lam_tilde)
         discriminant = b**2 - 4 * a * c
         return (-b - discriminant**0.5) / (2 * a)
 
@@ -376,9 +385,11 @@ class DuopolyModel:
         """Equity value of firm i after investment, accounting for default.
 
         E(X) = V(X) - equity_contribution - coupon/r
-               + [coupon/r + delta*K/r - V(X_D)] * (X/X_D)^beta_neg
+               + [coupon/r - V(X_D)] * (X/X_D)^beta_neg
 
-        For X >= X_D. At X = X_D, equity = 0 by construction.
+        The ongoing equity (excluding sunk cost) satisfies E_ongoing(X_D) = 0.
+        The net equity at X_D equals -equity_contribution, clamped to 0 by
+        limited liability.
         Without debt, equity = V(X) - I(K).
         """
         p = self.params
@@ -401,7 +412,8 @@ class DuopolyModel:
         if X_D <= 0 or X <= X_D:
             return max(V_X - equity_contribution - c_D / p.r, 0.0)
 
-        beta_neg = self._negative_root("L")
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_neg = self._negative_root("L", lam_tilde)
 
         if K_j > 0:
             V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
@@ -409,7 +421,9 @@ class DuopolyModel:
             V_XD = self.monopolist_value_L(X_D, phi_i, K_i)
 
         # Default option value (put-like: value of walking away)
-        default_claim = c_D / p.r + p.delta * K_i / p.r - V_XD
+        # Ongoing equity at X_D: V(X_D) - c_D/r + default_claim = 0
+        # Since V_XD = A_eff*X_D - delta*K/r already includes operating costs:
+        default_claim = c_D / p.r - V_XD
         default_option = default_claim * (X / X_D) ** beta_neg
 
         equity = V_X - equity_contribution - c_D / p.r + default_option
@@ -439,7 +453,8 @@ class DuopolyModel:
         if X_D <= 0:
             return c_D / p.r
 
-        beta_neg = self._negative_root("L")
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_neg = self._negative_root("L", lam_tilde)
 
         if K_j > 0:
             V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
