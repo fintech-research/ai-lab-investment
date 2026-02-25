@@ -2,7 +2,7 @@
 
 This paper develops a model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, duopoly preemption, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
 At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the optimal split driven by beliefs about the regime-switch arrival rate $\lambda$.
-The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on the AI investment dilemma and $N$-firm robustness.
+The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on Dario's dilemma and $N$-firm robustness.
 
 Three core tensions drive the results.
 
@@ -13,7 +13,7 @@ Second, *growth-option upside versus leverage and default risk*: the interaction
 Higher training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, which lowers the default boundary---but only in parameter regions where the continuation-value channel dominates current cash-flow weakness (Proposition 2).
 This creates a knife-edge for levered firms: they must invest early enough to capture market share and maintain enough training to sustain the H-regime option value, but not so aggressively that they risk default if the regime switch fails to materialize.
 
-Third, *waiting value versus preemption pressure*: the AI investment dilemma reveals an asymmetric cost of belief mismatches.
+Third, *waiting value versus preemption pressure*: Dario's dilemma reveals an asymmetric cost of belief mismatches.
 The downside of overinvestment (excess leverage, misallocated training, default risk) exceeds the opportunity cost of underinvestment (delayed entry, missed revenue) for the same magnitude of belief error.
 The training channel amplifies this asymmetry: an overly optimistic firm not only builds too much capacity but over-allocates to training, sacrificing the inference revenue it needs to survive the pre-switch period.
 Within the model, this asymmetry implies that the extreme capital commitments observed in practice are consistent with genuinely optimistic beliefs: the cost of overinvesting under moderate beliefs is too high for strategic posturing or agency problems alone to explain the observed behavior, though this conclusion rests on the model's stylized calibration and should be treated as illustrative rather than a formal identification result.

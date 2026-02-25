@@ -20,13 +20,6 @@ This asymmetric regime structure captures the *irreversibility of AI progress*: 
 I assume $\mu_H > \mu_L$ (higher growth in the high regime).
 For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the discount rate and $\mu_s$ is the risk-adjusted growth rate.^[Following @dixit1994investment [Chapter 4], all valuation is conducted under a single *risk-adjusted* (certainty-equivalent) framework. The discount rate $r$ is the firm's weighted average cost of capital (WACC), which embeds the equity risk premium and the cost of debt. The growth rates $\mu_L$ and $\mu_H$ are the physical-measure expected growth rates of demand *minus* an appropriate risk premium, so that discounting the expected cash flow at rate $r$ yields the correct present value. The volatility $\sigma$ is the same under the physical and risk-adjusted measures (by Girsanov's theorem). This reduced-form approach avoids specifying a complete asset pricing model while remaining consistent with no-arbitrage valuation. All parameters ($r$, $\mu_s$, $\sigma$) are therefore risk-adjusted throughout the paper.]
 
-@fig-sample-paths illustrates the demand environment by simulating five sample paths of the demand process under regime switching.
-In each realization, demand begins in the low regime $L$ and may jump to the high regime $H$ at a random Poisson time.
-The dashed line marks the optimal investment trigger $X_H^*$: paths that cross this threshold in the high regime trigger investment.
-The figure highlights both the uncertainty about the timing of the regime switch and the substantial variation in demand trajectories conditional on switching, which together generate the option value of waiting that is central to the analysis.
-
-![Simulated demand paths under regime switching. Each path begins in the low regime ($L$, thin lines) and may transition to the high regime ($H$, thick lines) at a random Poisson time (marked by dots). The dashed line indicates the optimal H-regime investment trigger $X_H^*$. Note: the log scale on the $y$-axis compresses the visual magnitude of the regime switch; the jump in drift from $\mu_L = 0.01$ to $\mu_H = 0.06$ produces trajectories that diverge by an order of magnitude or more over the horizon shown. Parameters: $\mu_L = 0.01$, $\mu_H = 0.06$, $\sigma = 0.25$, $\lambda = 0.10$, $r = 0.12$.](figures/fig_sample_paths.pdf){#fig-sample-paths}
-
 ### Technology
 
 A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures diminishing returns (equivalently, convex investment costs).
@@ -39,58 +32,30 @@ In practice, firms expand incrementally and can repurpose compute across workloa
 A frontier AI laboratory produces intelligence by combining two forms of compute.
 *Training compute* optimizes a neural network's parameters on massive datasets, yielding a model whose quality scales as a power law of compute invested.
 *Inference compute* runs the trained model to serve predictions and generate revenue.
-Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction---creating an allocation problem with no close parallel in traditional capital budgeting.
+Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction and their associated power production---creating an allocation problem with no close parallel in traditional capital budgeting.
 
-A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference.
-Training compute is $\phi K$ and inference compute is $(1-\phi) K$.
+A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference, such that training compute is $\phi K$ and inference compute is $(1-\phi) K$.
 Revenue depends on the demand regime:
 
-- **Low regime** ($L$, pre-adoption): revenue derives from *inference*---serving current demand for AI predictions and services.
+- **Low regime** ($L$, pre-AGI): revenue derives from *inference*---serving current demand for AI predictions and services.
   Firm $i$'s flow revenue is:
   $$
   \pi_i^L(X) = X \cdot [(1-\phi_i)K_i]^\alpha,
   $$ {#eq-revenue-L}
   where $\alpha \in (0,1)$ captures diminishing returns to inference capacity.
 
-- **High regime** ($H$, post-adoption): revenue derives from *training quality*---the capability of the firm's models determines its competitive position in a world of sustained high demand.
+- **High regime** ($H$, post-AGI): revenue derives from *training quality*---the capability of the firm's models determines its competitive position in a world of sustained high demand.
   Firm $i$'s flow revenue is:
   $$
   \pi_i^H(X) = X \cdot (\phi_i K_i)^\alpha.
   $$ {#eq-revenue-H}
 
 This regime-dependent revenue structure captures a fundamental asymmetry in AI infrastructure: today, inference capacity determines revenue (you must serve demand), but in a world of transformative AI, training quality determines competitive position (the best models capture the market).
-Amodei describes the current allocation constraint: "Why doesn't everyone spend 100\% of their compute on training? It's because if they didn't get any revenue, they couldn't raise money... As a stylized fact, it's 50\%" [@amodei2025training].
 The training fraction $\phi$ is chosen at investment time and fixed thereafter.^[Dynamic reallocation of $\phi$ post-investment would require modeling $\phi$ as a continuous state variable in the HJB equation, substantially increasing computational complexity. The static choice is already rich enough to generate the key economic trade-offs. I note this as a limitation in @sec-discussion.]
 
 Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
 
-@tbl-parameters in the Appendix summarizes all model parameters, their baseline values, and economic interpretations; the calibration rationale for each value is discussed in @sec-calibration.
-
-#### Notation
-
-@tbl-notation collects the key symbols used throughout the paper.
-
-| Symbol | Meaning | Exogenous / Endogenous |
-|:------:|:--------|:----------------------:|
-| $X_t$ | Demand process | Exogenous (GBM) |
-| $\mu_s$ | Regime-$s$ drift | Exogenous |
-| $\sigma$ | Common volatility | Exogenous |
-| $\lambda$ | Regime-switch arrival rate | Exogenous |
-| $K$ | Installed capacity | Endogenous (choice) |
-| $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
-| $\alpha$ | Revenue elasticity to capacity | Exogenous |
-| $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
-| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
-| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
-| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
-| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\lambda$) | Derived (primitives) |
-| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
-| $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
-| $c_d$ | Coupon rate on debt | Exogenous |
-| $X_D$ | Endogenous default boundary | Derived |
-| $X^*$ | Optimal investment trigger | Derived |
-
-: Key notation. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
+@tbl-parameters and @tbl-notation in the Appendix summarize all model parameters and key notation; the calibration rationale for each value is discussed in @sec-calibration.
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
@@ -403,19 +368,4 @@ By contrast, the capacity ratio remains close to 1.0, confirming that competitio
 
 ![Competition effect: monopolist versus duopoly leader. (a) Absolute investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption. (b) Ratios of duopoly leader to monopolist trigger and capacity. Competition primarily affects timing (trigger ratio declines sharply) rather than scale (capacity ratio is stable near unity). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
-#### Summary of analytical scope
-
-@tbl-result-taxonomy summarizes the analytical status of each result.
-
-| Result | Economic statement | Method | Domain |
-|:-------|:-------------------|:-------|:-------|
-| Proposition 1 | Optimal $K^*(\phi), \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Assumption 1 |
-| Proposition 2(i)--(ii) | Default boundary properties; faith-based survival; closed-form $\underline{\phi}$ | Closed-form / implicit function | Assumption 1 |
-| Proposition 2(iii)--(iv) | Leverage-training substitution; rival capacity effect | Analytical (mechanical) | Assumption 1 |
-| Proposition 3(i) | Existence of $X_P$ | Analytical (IVT) | Assumption 1 |
-| Proposition 3(i) | Uniqueness of $X_P$ (single crossing) | Computational verification | All parameterizations tested |
-| Proposition 3(ii) | $\phi_L^* \geq \phi_F^*$ | Computational regularity with analytical motivation | All calibration parameterizations |
-| Proposition 3(iii)--(v) | Comparative statics of preemption equilibrium | Numerical | All calibration parameterizations |
-| Numerical Finding 2 | Asymmetric AI investment dilemma | Numerical | All parameterizations tested |
-
-: Analytical status of model results. "Closed-form" indicates an explicit expression; "implicit function" indicates an analytically characterized equation solved numerically; "computational verification" indicates a property verified on a grid across all parameterizations; "numerical" indicates optimization-based computation with no closed-form expression. {#tbl-result-taxonomy tbl-colwidths="[20,30,22,28]"}
+@tbl-result-taxonomy in the Appendix summarizes the analytical status of each result.

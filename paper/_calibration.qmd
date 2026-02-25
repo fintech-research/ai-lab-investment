@@ -8,23 +8,7 @@ Second, the training fractions $\hat{\phi}$ are inferred from incomplete data an
 Third, the scaling exponent $\eta$ is inferred from the neural scaling laws literature through a non-trivial mapping (see below).
 The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
 
-@tbl-param-mapping summarizes the calibration status of each parameter.
-
-| Parameter | Baseline | Target / Source | Status |
-|:----------|:--------:|:----------------|:------:|
-| $\mu_L$ | 0.01 | Cloud computing baseline growth | Chosen for discipline |
-| $\mu_H$ | 0.06 | Upper-range AI revenue growth projections | Chosen for discipline |
-| $\sigma$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
-| $r$ | 0.12 | WACC, representative frontier AI lab | Inferred from Damodaran |
-| $\lambda$ | 0.10 | Regime-switch arrival rate (exogenous belief) | Chosen for discipline |
-| $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
-| $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
-| $c$ | 1.00 | Normalization | --- |
-| $\delta$ | 0.03 | Power, cooling, maintenance (flow cost only) | Inferred from industry |
-| $c_d$ | 0.05 | Cost of debt for frontier AI labs | Inferred |
-| $b$ | 0.30 | Bankruptcy cost fraction | Standard (Leland 1994) |
-
-: Parameter calibration status. "Directly observed" = taken from empirical estimates; "Inferred" = backed out from observable proxies; "Chosen for discipline" = selected to generate plausible magnitudes without a precise empirical target. {#tbl-param-mapping tbl-colwidths="[14,10,42,18]"}
+@tbl-parameters in the Appendix summarizes the calibration status of each parameter.
 
 ### Demand Process
 
@@ -54,7 +38,7 @@ Accounting depreciation for data center equipment typically implies a 3--5 year 
 In the model, the *capital* cost of hardware is captured in $cK^\gamma$; $\delta$ captures only the *operating* flow cost.
 Economic depreciation through technological obsolescence (e.g., H100$\to$B200 transitions) would justify a higher effective $\delta$, making the baseline conservative.
 The model is relatively insensitive to this parameter: @tbl-elasticities reports elasticities of $+2.2$ for the trigger and $+2.0$ for capacity, among the smallest of all parameters.
-At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged; a higher $\delta$ strengthens the paper's conclusions by making the AI investment dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
+At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged; a higher $\delta$ strengthens the paper's conclusions by making Dario's dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
 
 The arrival rate $\lambda$ is treated as exogenous throughout the main text.
 Appendix C extends the model to endogenous $\tilde{\lambda} = \lambda + \xi[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta]$, where training investments collectively accelerate the regime switch; with the calibrated scaling exponent $\eta = 0.07$ (inferred from @kaplan2020scaling and @hoffmann2022training), the endogenous channel is quantitatively modest (doubling one firm's training raises the arrival rate contribution by approximately 5\%), so the main results are robust to this extension.

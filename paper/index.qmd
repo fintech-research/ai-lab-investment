@@ -16,11 +16,11 @@ affiliations:
   - id: 1
     name: HEC Montréal
 abstract: |
-  Frontier AI laboratories face uncertain timing of transformative demand and must allocate scarce compute between current monetization (inference) and future capability-building (training).
+  Frontier AI laboratories racing to develop Artificial General Intelligence (AGI) face uncertain timing of transformative demand and must decide how much to invest in compute infrastructure and how to allocate it between current monetization (inference) and future capability-building (training).
   I develop a real-options model of irreversible capacity investment with regime switching, duopoly competition via Tullock contests, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
   The model delivers analytical investment triggers and capacity for a single firm, and semi-analytical characterization of a duopoly preemption equilibrium in which the leader trains more and invests earlier than the follower.
-  A "faith-based survival" mechanism emerges: training investment raises the effective revenue coefficient through the expected post-switch continuation value, lowering the default boundary---the hope of transformative AI keeps the firm alive.
-  An asymmetric "AI investment dilemma" arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
+  A "faith-based survival" mechanism emerges: training investment raises the effective revenue coefficient through the expected post-AGI continuation value, lowering the default boundary---the hope of transformative AI keeps the firm alive.
+  An asymmetric dilemma arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
   A stylized calibration to four AI firm archetypes illustrates the magnitudes and highlights how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
 keywords:
   - real options
@@ -29,7 +29,7 @@ keywords:
   - training-inference allocation
   - duopoly preemption
   - default risk
-thanks: "I thank Charles Martineau for helpful comments. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
+thanks: "I thank Tolga Cenesizogly and Charles Martineau for helpful comments. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
 
 

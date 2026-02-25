@@ -1,6 +1,6 @@
 ## Quantitative Implications {#sec-valuation}
 
-This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
+This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, Dario's dilemma, and equity valuation sensitivity to beliefs.
 All results in this section are numerical, computed under the stylized calibration of @sec-calibration; they illustrate the model's economic mechanisms rather than delivering empirically testable point estimates.
 
 @fig-lambda-timeline provides intuition for the economic content of the effective arrival rate $\lambda$.
@@ -74,9 +74,9 @@ The modest default probabilities reflect the substantial distance to default at 
 
 ![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Spreads are concave in leverage, rising steeply at low leverage and flattening at high leverage. Default probability is increasing and convex. Evaluated at a demand level three times the default boundary, using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
 
-### The AI Investment Dilemma
+### Dario's Dilemma
 
-I now formalize the cost of belief mismatches---what I call the *AI investment dilemma*, the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
+I now formalize the cost of belief mismatches---what I call *Dario's dilemma*, the fundamental tension between building aggressively for an AI future and managing the financial risk of overinvestment.
 
 #### Setup
 
@@ -98,7 +98,7 @@ where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according 
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes.
 
-**Numerical Finding 2** (Asymmetric AI investment dilemma).
+**Numerical Finding 2** (Dario's dilemma).
 *Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\lambda_{\text{true}} = 0.10$, a conservative firm investing as if $\lambda = 0.02$ loses approximately 25\% of value, while an aggressive firm investing as if $\lambda = 0.20$ loses only about 5\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
 
 The intuition is that the optimal training fraction $\phi^* \approx 0.70$ at baseline reflects the high value of H-regime positioning.
@@ -113,11 +113,11 @@ A firm investing as if $\lambda = 0.02$ (deep pessimism) loses approximately 25\
 With leverage ($\ell = 0.40$, dashed line), the two curves are nearly identical, reflecting the negligible role of default risk at the model's scale; at much larger absolute investments, leverage-amplified losses would widen the gap on the aggressive side.
 The shaded region marks the "danger zone" where value losses from overinvestment exceed 10\%.
 
-![The AI investment dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The left branch (underinvestment) rises more steeply than the right (overinvestment), driven by the cost of under-allocating to training. The shaded region marks losses exceeding 10\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
+![Dario's dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The left branch (underinvestment) rises more steeply than the right (overinvestment), driven by the cost of under-allocating to training. The shaded region marks losses exceeding 10\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
 
 #### Implications
 
-The AI investment dilemma has several implications.
+Dario's dilemma has several implications.
 Within the model, the observed aggressive investment patterns of frontier AI labs are *rational*: the cost of being too conservative ($\Delta V \approx 25\%$ at $\lambda_{\text{invest}} = 0.02$) far exceeds the cost of being too aggressive ($\Delta V \approx 5\%$ at $\lambda_{\text{invest}} = 0.20$), so a risk-neutral firm should err on the side of higher training allocation even when uncertain about $\lambda$.
 This illustrative comparison should be distinguished from a formal revealed-beliefs methodology, which would require a richer model (dynamic $\phi$, heterogeneous information), proper identification, and estimation; such an exercise is left for future work.
 The asymmetry means that *underinvestment* is more informative than overinvestment---a conservative firm allocating little to training ($\phi \ll \phi^*$) must hold genuinely pessimistic beliefs about $\lambda$, since the cost of under-training is so high.

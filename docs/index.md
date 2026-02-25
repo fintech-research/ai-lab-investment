@@ -24,7 +24,7 @@ src/ai_lab_investment/
 │   ├── phase2.py            # Duopoly equilibrium and default
 │   ├── phase3.py            # N-firm crowding effects
 │   ├── phase4.py            # Calibration and revealed beliefs
-│   ├── phase5.py            # Valuation and AI investment dilemma
+│   ├── phase5.py            # Valuation and Dario's dilemma
 │   └── phi_allocation.py    # Training-inference allocation plots
 ├── tables/                  # Table generation
 ├── data/                    # Data loading utilities
@@ -43,7 +43,7 @@ The analysis runs as a Hydra-managed pipeline. Each phase can be toggled indepen
 | 2 | `tasks.phase2_duopoly` | Duopoly preemption with default risk |
 | 3 | `tasks.phase3_nfirm` | N-firm sequential entry (numerical) |
 | 4 | `tasks.phase4_calibration` | Calibration to AI firm archetypes, revealed beliefs |
-| 5 | `tasks.phase5_valuation` | Growth option decomposition, credit risk, AI investment dilemma |
+| 5 | `tasks.phase5_valuation` | Growth option decomposition, credit risk, Dario's dilemma |
 
 Run the full pipeline:
 

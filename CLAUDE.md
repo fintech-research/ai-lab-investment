@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Investing in Artificial General Intelligence"
 
-A unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default, and diminishing returns calibrated to AI scaling laws. The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, (ii) numerical solutions for N firms with dynamic training/inference allocation, and (iii) an asymmetric "AI investment dilemma" showing that overinvestment carries greater downside risk than underinvestment. Target: JF, RFS, or Econometrica.
+A unified model of irreversible capacity investment under demand uncertainty with regime switching, oligopoly competition, endogenous default, and diminishing returns calibrated to AI scaling laws. The model delivers: (i) analytical characterization of optimal investment triggers and capacity in a duopoly with default risk, (ii) numerical solutions for N firms with dynamic training/inference allocation, and (iii) an asymmetric "Dario's dilemma" showing that overinvestment carries greater downside risk than underinvestment. Target: JF, RFS, or Econometrica.
 
 The research plan is detailed in `plan.md`.
 

@@ -189,9 +189,7 @@ def plot_dario_dilemma(
 
     ax.set_xlabel(r"Investment $\tilde{\lambda}$")
     ax.set_ylabel(r"Value loss $\Delta V / V^*$ (\%)")
-    ax.set_title(
-        rf"The AI Investment Dilemma ($\tilde{{\lambda}}_{{true}} = {fixed_true}$)"
-    )
+    ax.set_title(rf"Dario's Dilemma ($\tilde{{\lambda}}_{{true}} = {fixed_true}$)")
     ax.legend(loc="upper left")
     ax.set_ylim(bottom=-2)
 

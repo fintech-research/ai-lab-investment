@@ -44,7 +44,7 @@
 :::
 
 ::: {.fragment}
-Plus: the *AI investment dilemma* --- asymmetric cost of belief mismatches
+Plus: *Dario's dilemma* --- asymmetric cost of belief mismatches
 :::
 
 ---
@@ -65,7 +65,7 @@ Five simulated demand paths under regime switching ($\lambda = 0.10$, dashed = t
 1. **Model**: Environment, single-firm benchmark, duopoly
 2. **Extensions**: N-firm game, training-inference
 3. **Calibration**: Data, baseline results
-4. **Revealed beliefs**: Methodology, firm comparison, AI investment dilemma
+4. **Revealed beliefs**: Methodology, firm comparison, Dario's dilemma
 5. **Implications**
 
 ---
