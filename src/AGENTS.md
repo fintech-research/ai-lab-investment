@@ -4,7 +4,7 @@ Rules for working in `src/ai_lab_investment/`. Global rules are in `@../AGENTS.m
 
 ## Model Architecture
 
-**Hierarchy:** `models/parameters.py` → `base_model.py` → `duopoly.py` → `nfirm.py` → `valuation.py`
+**Hierarchy:** `models/parameters.py` → `base_model.py` → `duopoly.py` → `valuation.py`
 
 **Two model modes** — do not confuse them:
 - *Simple* (no φ): `installed_value()`, `optimal_trigger_and_capacity()` — for H-regime analysis using combined `A_L`/`A_H`.
@@ -22,7 +22,7 @@ At baseline: β_L⁺ ≈ 3.01 (positive root of L-regime ODE with discount r+λ)
 
 ## Testing
 
-Tests are in `tests/` (8 files, one per module). Run with `just test`. `assert` statements allowed in tests.
+Tests are in `tests/` (7 files, one per module). Run with `just test`. `assert` statements allowed in tests.
 
 ## Code Style
 

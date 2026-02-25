@@ -23,13 +23,6 @@
       show_source: false
       members_order: source
 
-### N-Firm Model
-
-::: ai_lab_investment.models.nfirm
-    options:
-      show_source: false
-      members_order: source
-
 ### Valuation Analysis
 
 ::: ai_lab_investment.models.valuation

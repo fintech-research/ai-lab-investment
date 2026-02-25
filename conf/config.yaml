@@ -18,7 +18,6 @@ tasks:
   main_regressions: false
   phase1_base_model: false
   phase2_duopoly: false
-  phase3_nfirm: false
   phase4_calibration: false
   phase5_valuation: false
 params: {}

@@ -35,7 +35,7 @@ Frontier AI training competition is highly concentrated: as of 2025, the vast ma
 The dominant strategic margin is not atomistic competition but rivalry among a few labs, each making multi-billion-dollar capacity commitments.
 Duopoly is the minimal model that captures the key forces: strategic preemption, race-like training allocation incentives, and continuation-value effects under leverage.
 Broader oligopoly crowding, coalition effects, entry and exit of smaller labs, and endogenous financing interactions across many firms are important but second-order relative to the mechanisms studied here.
-I verify numerically that the qualitative patterns survive with $N > 2$ firms in Appendix C.
+Extending the model to $N>2$ firms following @bouis2009multistage is a natural direction; the duopoly captures the key strategic margins with analytical tractability.
 
 {{< include _literature.qmd >}}
 

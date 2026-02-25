@@ -36,9 +36,7 @@
 
 1. **Closed-form model** of capacity investment with regime switching, strategic competition, and default risk
 
-2. **N-firm numerical solution** with training-inference allocation calibrated to scaling laws
-
-3. **Revealed beliefs methodology** to infer AI timeline beliefs from investment decisions
+2. **Revealed beliefs methodology** to infer AI timeline beliefs from investment decisions
 
 ::: {style="height: 1em;"}
 :::
@@ -63,8 +61,7 @@ Five simulated demand paths under regime switching ($\lambda = 0.10$, dashed = t
 :::
 
 1. **Model**: Environment, single-firm benchmark, duopoly
-2. **Extensions**: N-firm game, training-inference
-3. **Calibration**: Data, baseline results
+2. **Calibration**: Data, baseline results
 4. **Revealed beliefs**: Methodology, firm comparison, Dario's dilemma
 5. **Implications**
 

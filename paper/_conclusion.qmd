@@ -2,7 +2,7 @@
 
 This paper develops a model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, duopoly preemption, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
 At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the optimal split driven by beliefs about the regime-switch arrival rate $\lambda$.
-The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on Dario's dilemma and $N$-firm robustness.
+The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on Dario's dilemma.
 
 Three core tensions drive the results.
 
