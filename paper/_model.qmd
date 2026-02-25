@@ -360,13 +360,11 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 *(v) (Numerical finding) The credit spread at the preemption trigger is increasing in $\lambda$: firms that invest earlier due to more optimistic beliefs face higher credit risk.*
 
-@fig-competition-effect quantifies the preemption effect.
-Panel (a) plots the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of volatility $\sigma$.
+@fig-competition-effect quantifies the preemption effect, plotting the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of volatility $\sigma$.
 The leader invests strictly earlier than the monopolist for all volatility levels, and the gap widens with $\sigma$: as uncertainty increases, the option value of waiting rises for both, but the preemption incentive compresses the leader's delay disproportionately.
-Panel (b) shows the ratios of leader-to-monopolist trigger and capacity.
-The trigger ratio declines from near 1.0 at low volatility to approximately 0.5 at $\sigma = 0.25$, indicating that preemption cuts the leader's waiting time roughly in half.
-By contrast, the capacity ratio remains close to 1.0, confirming that competition primarily affects *timing* rather than *scale*.
+At baseline ($\sigma = 0.25$), preemption cuts the leader's trigger roughly in half relative to the monopolist.
+Competition primarily affects *timing* rather than *scale*: the leader's optimal capacity is identical to the monopolist's across all volatility levels.
 
-![Competition effect: monopolist versus duopoly leader. (a) Absolute investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption. (b) Ratios of duopoly leader to monopolist trigger and capacity. Competition primarily affects timing (trigger ratio declines sharply) rather than scale (capacity ratio is stable near unity). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
+![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
 @tbl-result-taxonomy in the Appendix summarizes the analytical status of each result.

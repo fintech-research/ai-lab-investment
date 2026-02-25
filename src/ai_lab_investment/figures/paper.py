@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 FULL_W = 6.5  # full-column width (inches)
+HALF_W = 3.25  # half-column width (inches)
 
 
 # ── Figure 1: Sample demand paths with regime switching ──────────
@@ -364,15 +365,13 @@ def create_credit_risk() -> plt.Figure:
 
 
 def create_competition_effect() -> plt.Figure:
-    """Two-panel: monopolist vs duopoly leader triggers and ratios."""
+    """Single-panel: monopolist vs duopoly leader triggers over sigma."""
     from ..models.duopoly import DuopolyModel
     from ..models.parameters import ModelParameters
 
     p = ModelParameters()
     sigmas = np.linspace(0.18, 0.30, 30)
 
-    trig_ratio = np.full_like(sigmas, np.nan)
-    cap_ratio = np.full_like(sigmas, np.nan)
     mono_trig = np.full_like(sigmas, np.nan)
     leader_trig = np.full_like(sigmas, np.nan)
 
@@ -381,25 +380,17 @@ def create_competition_effect() -> plt.Figure:
             ps = p.with_param(sigma=s)
             duo = DuopolyModel(ps, leverage=0.0)
             eq = duo.solve_preemption_equilibrium("H")
-            X_mono = eq["X_leader_monopolist"]
-            # same K as monopolist: preemption uses monopolist's optimal K
-            K_mono = eq["K_leader"]
-            mono_trig[i] = X_mono
+            mono_trig[i] = eq["X_leader_monopolist"]
             leader_trig[i] = eq["X_leader"]
-
-            if X_mono > 0:
-                trig_ratio[i] = eq["X_leader"] / X_mono
-            if K_mono > 0:
-                cap_ratio[i] = eq["K_leader"] / K_mono
         except (ValueError, RuntimeError):
             pass
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
+    fig, ax = plt.subplots(1, 1, figsize=(HALF_W, 3.2))
 
     v_m = ~np.isnan(mono_trig)
     v_l = ~np.isnan(leader_trig)
-    ax1.plot(sigmas[v_m], mono_trig[v_m], "k-", linewidth=1.5, label="Monopolist")
-    ax1.plot(
+    ax.plot(sigmas[v_m], mono_trig[v_m], "k-", linewidth=1.5, label="Monopolist")
+    ax.plot(
         sigmas[v_l],
         leader_trig[v_l],
         "--",
@@ -407,33 +398,9 @@ def create_competition_effect() -> plt.Figure:
         linewidth=1.3,
         label="Duopoly leader",
     )
-    ax1.set_xlabel(r"Volatility $\sigma$")
-    ax1.set_ylabel(r"Investment trigger $X^*$")
-    ax1.legend()
-    ax1.set_title("(a)", loc="left", fontweight="bold")
-
-    v_t = ~np.isnan(trig_ratio)
-    v_c = ~np.isnan(cap_ratio)
-    ax2.plot(
-        sigmas[v_t],
-        trig_ratio[v_t],
-        "k-",
-        linewidth=1.5,
-        label=r"Trigger: $X_P / X^*_{\mathrm{mono}}$",
-    )
-    ax2.plot(
-        sigmas[v_c],
-        cap_ratio[v_c],
-        "--",
-        color="0.35",
-        linewidth=1.3,
-        label=r"Capacity: $K_L / K^*_{\mathrm{mono}}$",
-    )
-    ax2.axhline(1.0, color="0.7", linestyle=":", linewidth=0.7)
-    ax2.set_xlabel(r"Volatility $\sigma$")
-    ax2.set_ylabel("Ratio (duopoly leader / monopolist)")
-    ax2.legend()
-    ax2.set_title("(b)", loc="left", fontweight="bold")
+    ax.set_xlabel(r"Volatility $\sigma$")
+    ax.set_ylabel(r"Investment trigger $X^*$")
+    ax.legend()
 
     fig.tight_layout()
     return fig
@@ -443,7 +410,7 @@ def create_competition_effect() -> plt.Figure:
 
 
 def create_firm_comparison() -> plt.Figure:
-    """Two-panel: CapEx intensity bar chart and growth-vs-leverage scatter."""
+    """Two-panel: CapEx intensity (broken y-axis) and growth-vs-leverage scatter."""
     from ..calibration.data import get_baseline_calibration
 
     calib = get_baseline_calibration()
@@ -454,18 +421,50 @@ def create_firm_comparison() -> plt.Figure:
     rev_growth = [f.revenue_2025 / f.revenue_2024 for f in firms]
     leverages = [f.leverage_ratio for f in firms]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
-
     colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
     x = np.arange(len(names))
 
-    ax1.bar(x, capex_int, color=colors, edgecolor="0.3", width=0.55)
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(names, rotation=15, ha="right", fontsize="small")
-    ax1.set_ylabel("CapEx / Revenue (2025)")
-    ax1.axhline(1.0, color="0.6", linestyle=":", linewidth=0.7)
-    ax1.set_title("(a)", loc="left", fontweight="bold")
+    # Panel (a): broken y-axis bar chart for CapEx/Revenue
+    # Upper segment shows the xAI outlier; lower segment shows the cluster
+    fig = plt.figure(figsize=(FULL_W, 3.2))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1, 2.5], hspace=0.08, wspace=0.35)
+    ax_top = fig.add_subplot(gs[0, 0])
+    ax_bot = fig.add_subplot(gs[1, 0])
+    ax2 = fig.add_subplot(gs[:, 1])
 
+    for ax in (ax_top, ax_bot):
+        ax.bar(x, capex_int, color=colors, edgecolor="0.3", width=0.55)
+        ax.set_xticks(x)
+
+    # Upper axis: show the outlier region
+    ax_top.set_ylim(18, 22)
+    ax_top.set_xticklabels([])
+    ax_top.tick_params(bottom=False)
+    ax_top.set_title("(a)", loc="left", fontweight="bold")
+
+    # Lower axis: show the cluster
+    ax_bot.set_ylim(0, 3)
+    ax_bot.set_xticklabels(names, rotation=15, ha="right", fontsize="small")
+    ax_bot.axhline(1.0, color="0.6", linestyle=":", linewidth=0.7)
+
+    # Hide spines at the break
+    ax_top.spines["bottom"].set_visible(False)
+    ax_bot.spines["top"].set_visible(False)
+    ax_top.tick_params(bottom=False)
+
+    # Draw break marks
+    d = 0.012
+    kw = {"transform": ax_top.transAxes, "color": "k", "clip_on": False, "lw": 0.8}
+    ax_top.plot((-d, +d), (-d, +d), **kw)
+    ax_top.plot((1 - d, 1 + d), (-d, +d), **kw)
+    kw = {"transform": ax_bot.transAxes, "color": "k", "clip_on": False, "lw": 0.8}
+    ax_bot.plot((-d, +d), (1 - d, 1 + d), **kw)
+    ax_bot.plot((1 - d, 1 + d), (1 - d, 1 + d), **kw)
+
+    # Shared y-label
+    fig.text(0.01, 0.5, "CapEx / Revenue (2025)", va="center", rotation="vertical")
+
+    # Panel (b): scatter plot (unchanged)
     for i, name in enumerate(names):
         ax2.scatter(
             rev_growth[i],
@@ -486,7 +485,6 @@ def create_firm_comparison() -> plt.Figure:
     ax2.set_ylabel("Leverage ratio")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
-    fig.tight_layout()
     return fig
 
 
