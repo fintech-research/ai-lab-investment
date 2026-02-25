@@ -1,6 +1,6 @@
 ## Quantitative Implications {#sec-valuation}
 
-This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, Dario's dilemma, and equity valuation sensitivity to beliefs.
+This section develops quantitative implications of the duopoly model: value decomposition, credit risk analysis, Dario's dilemma, and equity valuation sensitivity to beliefs.
 All results in this section are numerical, computed under the stylized calibration of @sec-calibration; they illustrate the model's economic mechanisms rather than delivering empirically testable point estimates.
 
 @fig-lambda-timeline provides intuition for the economic content of the effective arrival rate $\lambda$.
@@ -11,36 +11,37 @@ The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, whic
 
 ![Interpretation of the effective arrival rate $\lambda$. (a) Expected time to regime switch $E[T] = 1/\lambda$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\lambda \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
 
-### Growth Option Decomposition
+### Value Decomposition
 
-Following @berk1999optimal, I decompose firm value into three components:
+Motivated by @berk1999optimal, I decompose firm value into three components.
+Unlike the standard growth-option decomposition---which measures the present value of *future* investment opportunities---the exercise here is a comparative statics analysis: it quantifies the capacity gap between a firm's current installed base and the model's optimal scale.
 
-1. **Assets-in-place**: the value of existing installed capacity at current demand, now incorporating both L-regime inference revenue and H-regime continuation value through $A_{\text{eff}}$.
+1. **Assets-in-place**: the value of existing installed capacity at current demand, incorporating both L-regime inference revenue and H-regime continuation value through $A_{\text{eff}}$.
 $$
 V_{\text{AIP}} = A_{\text{eff}}(\phi, K_{\text{installed}}) \cdot X - \frac{\delta K_{\text{installed}}}{r}.
 $$
 
-2. **Counterfactual capacity value**: the incremental value from optimally choosing $(K^*, \phi^*)$ relative to the current installed level and allocation.
+2. **Capacity gap value**: the incremental value from optimally choosing $(K^*, \phi^*)$ relative to the current installed level and allocation.
 $$
-V_{\text{growth}} = F(X) - V_{\text{AIP}},
+V_{\text{gap}} = \text{NPV}(K^*, \phi^*) - V_{\text{AIP}},
 $$
-where $F(X)$ is the total option value including the possibility of future investment at the optimal $(K^*, \phi^*)$. This measures how much additional value the firm could realize by adjusting from $(K_{\text{installed}}, \phi_{\text{installed}})$ to the optimal $(K^*, \phi^*)$.
+where $\text{NPV}(K^*, \phi^*)$ is the net present value at the optimal capacity and training fraction. This measures how much additional value the firm could realize by adjusting from $(K_{\text{installed}}, \phi_{\text{installed}})$ to the optimal $(K^*, \phi^*)$---a rebalancing gain, not a forward-looking option value.
 
-3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$, which now depends on both the arrival rate $\lambda$ and the training allocation $\phi$.
+3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$, which depends on both the arrival rate $\lambda$ and the training allocation $\phi$.
 
-The growth option fraction $V_{\text{growth}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
-For frontier AI labs, I find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
+The capacity gap fraction $V_{\text{gap}} / V_{\text{total}}$ measures how far a firm is from optimal scale.
+For frontier AI labs, the capacity gap accounts for the majority of firm value---typically 60--80\%---reflecting the fact that current installed capacity is small relative to what the model prescribes.
 
-@fig-growth-decomposition illustrates the growth option decomposition.
-Panel (a) decomposes total firm value into assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
+@fig-growth-decomposition illustrates the value decomposition.
+Panel (a) decomposes total firm value into assets-in-place (blue) and capacity gap value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
 When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the potential to reach optimal capacity, and assets-in-place are small.
-As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the counterfactual capacity value shrinks because the firm is already near optimal scale.
-Panel (b) shows the growth option fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
-For the typical frontier AI lab with $K/K_H^* \approx 0.1$--$0.3$, the growth option fraction exceeds 60\%, confirming that these firms' valuations are driven primarily by future investment opportunities.
+As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the capacity gap value shrinks because the firm is already near optimal scale.
+Panel (b) shows the capacity gap fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
+For the typical frontier AI lab with $K/K_H^* \approx 0.1$--$0.3$, the capacity gap fraction exceeds 60\%, confirming that these firms are far from the model's optimal capacity.
 
-![Growth option decomposition. (a) Stacked value decomposition: assets-in-place (blue) and counterfactual capacity value (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Growth option fraction---the share of total value attributable to the gap between current and optimal capacity. For firms with capacity well below $K_H^*$, growth options dominate firm value. This is a comparative statics exercise, not an exercisable option: it shows how much value the firm would gain by adjusting from $K_{\text{installed}}$ to $K^*$. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
+![Value decomposition. (a) Stacked decomposition: assets-in-place (blue) and capacity gap value (orange) as a function of installed capacity relative to optimal $K_H^*$. The dotted line marks $K/K_H^* = 1$. (b) Capacity gap fraction---the share of total value attributable to the gap between current and optimal capacity. For firms with capacity well below $K_H^*$, the capacity gap dominates firm value. This is a comparative statics exercise: it shows how much value the firm would gain by adjusting from $K_{\text{installed}}$ to $K^*$, not the present value of future investment opportunities. Parameters: regime $H$, demand at $1.5 X_H^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
 
-This high growth option fraction has important implications for asset pricing: frontier AI lab equities should behave like growth options (high beta, high volatility, high sensitivity to discount rates) rather than like mature businesses.
+The large capacity gap fraction has implications for asset pricing: frontier AI lab equities should behave more like growth stocks (high beta, high volatility, high sensitivity to discount rates) than like mature businesses, because the bulk of their value reflects the distance to optimal scale rather than current operations.
 
 ### Credit Risk Analysis
 

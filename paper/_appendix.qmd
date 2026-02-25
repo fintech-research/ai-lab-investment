@@ -277,7 +277,7 @@ I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
-The qualitative findings are robust: the asymmetry of Dario's dilemma, the high growth option fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
+The qualitative findings are robust: the asymmetry of Dario's dilemma, the large capacity gap fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.

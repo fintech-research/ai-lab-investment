@@ -539,7 +539,9 @@ class DuopolyModel:
         log_K, phi_F, lev_F = params_vec
         K_F = np.exp(log_K)
 
-        # Bound checks
+        # Bound checks (log_K bounds match base_model's (-15, 15))
+        if log_K < -15 or log_K > 15:
+            return 1e20
         if phi_F <= 0.01 or phi_F >= 0.99 or lev_F < 0 or lev_F > 0.95:
             return 1e20
 
@@ -680,6 +682,9 @@ class DuopolyModel:
         log_K, phi_L, lev_L = params_vec
         K_L = np.exp(log_K)
 
+        # Bound checks (log_K bounds match base_model's (-15, 15))
+        if log_K < -15 or log_K > 15:
+            return 1e20
         if phi_L <= 0.01 or phi_L >= 0.99 or lev_L < 0 or lev_L > 0.95:
             return 1e20
 
