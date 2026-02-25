@@ -2,11 +2,10 @@
 
 This section maps the model parameters to the AI infrastructure sector using publicly available data from company filings, industry reports, and the scaling laws literature.
 The calibration is *stylized*: the goal is to discipline the model's quantitative magnitudes and illustrate cross-sectional heterogeneity, not to structurally estimate firm-level primitives or test the model empirically.
-Three caveats should be noted at the outset.
+Two caveats should be noted at the outset.
 First, the Leland default framework is an analytically tractable approximation to financial distress risk; it fits public-debt issuers better than VC-backed labs, though the qualitative predictions apply across financing structures (see @sec-discussion). As AI labs mature, the Leland setting is becoming more literal: OpenAI secured a \$4B revolving credit facility in October 2024 [@openai2024credit], xAI arranged \$5B+ in secured notes and term loans, and hyperscalers issued \$121B in bonds in 2025 alone.
 Second, the training fractions $\hat{\phi}$ are inferred from incomplete data and carry substantial uncertainty ($\pm 0.10$).
-Third, the scaling exponent $\eta$ is inferred from the neural scaling laws literature through a non-trivial mapping (see below).
-The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
+The calibration proceeds in three steps: I first set the demand process parameters, then the technology and cost parameters, and finally the financial parameters.
 
 @tbl-parameters in the Appendix summarizes the calibration status of each parameter.
 
@@ -39,9 +38,6 @@ In the model, the *capital* cost of hardware is captured in $cK^\gamma$; $\delta
 Economic depreciation through technological obsolescence (e.g., H100$\to$B200 transitions) would justify a higher effective $\delta$, making the baseline conservative.
 The model is relatively insensitive to this parameter: @tbl-elasticities reports elasticities of $+2.2$ for the trigger and $+2.0$ for capacity, among the smallest of all parameters.
 At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged; a higher $\delta$ strengthens the paper's conclusions by making Dario's dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
-
-The arrival rate $\lambda$ is treated as exogenous throughout the main text.
-Appendix C extends the model to endogenous $\tilde{\lambda} = \lambda + \xi[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta]$, where training investments collectively accelerate the regime switch; with the calibrated scaling exponent $\eta = 0.07$ (inferred from @kaplan2020scaling and @hoffmann2022training), the endogenous channel is quantitatively modest (doubling one firm's training raises the arrival rate contribution by approximately 5\%), so the main results are robust to this extension.
 
 ### Stylized Firm Archetypes
 

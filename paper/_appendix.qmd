@@ -232,34 +232,7 @@ Equilibrium uniqueness for the duopoly is assessed by running the optimization f
 
 **Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds. At extreme archetype WACCs, (A2) may fail: the hyperscaler ($r = 0.10$) violates the lower bound; the compute racer ($r = 0.18$) violates the upper bound. All archetype-specific results use full numerical optimization that does not require (A2).
 
-### C. N-Firm Numerical Extension {.unnumbered}
-
-I extend the duopoly to $N \geq 2$ symmetric firms following the sequential entry framework of @bouis2009multistage.
-This extension is presented as supplementary robustness material; the core analytical contributions of the paper are contained in the duopoly model of @sec-model.
-Firms enter sequentially, and the $k$-th entrant takes into account the capacity and training allocation of all $k-1$ incumbents and the option values of all $N - k$ firms yet to enter.
-
-With $N$ firms, the regime-specific contest functions extend naturally from the duopoly.
-In the L-regime: $\pi_i^L = X \cdot [(1-\phi_i)K_i]^{2\alpha} / \sum_{j=1}^{N} [(1-\phi_j)K_j]^\alpha$; in the H-regime: $\pi_i^H = X \cdot (\phi_i K_i)^{2\alpha} / \sum_{j=1}^{N} (\phi_j K_j)^\alpha$.
-The arrival rate $\lambda$ remains exogenous.
-
-**Numerical Finding 1** ($N$-firm equilibrium properties).
-*The following properties are established computationally across all parameterizations tested:*
-
-*(i) Entry triggers are ordered: $X_1 \leq X_2 \leq \cdots \leq X_N$, with the first entrant investing at the lowest trigger.*
-
-*(ii) Individual capacity is decreasing in $N$: each firm builds less as competition intensifies.*
-
-*(iii) Training fractions are decreasing in entry order: $\phi_1 \geq \phi_2 \geq \cdots \geq \phi_N$.*
-
-*(iv) The equilibrium reduces to the analytical duopoly solution when $N = 2$.*
-
-*Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate.*
-
-The equilibrium is computed using iterative best-response with tolerance $10^{-6}$, verified by checking no profitable unilateral deviation at the fixed point.
-The $N=2$ case reproduces the analytical duopoly solution.
-For $N = 4$, the full solution completes in under 2 seconds.
-
-### D. Calibration Details and Data Sources {.unnumbered}
+### C. Calibration Details and Data Sources {.unnumbered}
 
 The calibration uses data from the following sources:
 
@@ -272,7 +245,6 @@ The calibration uses data from the following sources:
 | WACC | Damodaran Jan 2025 industry estimates; CAPM with $\beta = 1.5$--$2.5$ for private labs |
 | Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\%, AWS +24\%, Azure +39\% (Q4 2025) |
 | Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
-| Scaling exponents ($\eta$) | @kaplan2020scaling, @hoffmann2022training (loss $\propto$ Compute$^{-0.05}$ to $^{-0.10}$) |
 | Operating cost rate ($\delta$) | Industry estimates: annual operating cost $\approx$30--40\% of hardware CapEx; hyperscaler PPA rates \$0.03--0.06/kWh |
 
 : Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
@@ -280,7 +252,7 @@ The calibration uses data from the following sources:
 All firm-level data reflects publicly available information as of Q4 2025 and Q1 2026.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
 
-### E. Parameter Sensitivity {.unnumbered}
+### D. Parameter Sensitivity {.unnumbered}
 
 @tbl-elasticities reports the elasticities of the optimal trigger $X^*$, capacity $K^*$, and training fraction $\phi^*$ with respect to each model parameter, computed numerically at the baseline calibration.
 
@@ -299,9 +271,9 @@ The stylized firms are composites designed to capture the key features of each f
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
 The training fraction $\phi^*$ is most sensitive to the arrival rate $\lambda$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
 
-### F. Robustness {.unnumbered}
+### E. Robustness {.unnumbered}
 
-I assess robustness along four dimensions:
+I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
@@ -313,6 +285,3 @@ Replacing the Tullock contest with a Cournot competition model (where firms choo
 **Alternative regime structure.**
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.
 The two-regime model captures the essential feature: binary uncertainty about whether AI will be transformative.
-
-**Endogenous arrival rate.**
-The main text treats $\lambda$ as exogenous. Appendix C extends the model to $\tilde{\lambda} = \lambda + \xi \sum_j (\phi_j K_j)^\eta$ where firms' training investments collectively raise the arrival rate. With $\eta = 0.07$ (calibrated from scaling laws), the endogenous channel is quantitatively modest: doubling one firm's training raises its contribution to $\tilde{\lambda}$ by approximately 5\%. All qualitative results are preserved; the endogenous channel amplifies but does not create the investment incentives.

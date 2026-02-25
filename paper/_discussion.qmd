@@ -9,9 +9,10 @@ The strategic preemption mechanism generates potential overinvestment relative t
 In the duopoly equilibrium, the leader invests earlier than the socially optimal timing to capture first-mover advantage, and the follower invests to preserve market share.
 Total industry capacity may exceed the cooperative (cartel) level, dissipating rents.
 
-With endogenous arrival rates (Appendix C), training investment creates a positive externality: each firm's training contributes to the common arrival rate, benefiting all participants.
-In the decentralized equilibrium, firms underweight this externality, implying that the socially optimal level of training investment may exceed the competitive equilibrium level.
-This creates a tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality generates *under-investment* in training.
+A natural extension would endogenize the arrival rate as a function of aggregate training compute, so that firms' training investments collectively accelerate the regime switch.
+Such an extension would generate a positive externality: each firm's training contributes to the common arrival rate, benefiting all participants.
+In the decentralized equilibrium, firms would underweight this externality, implying that the socially optimal level of training investment may exceed the competitive equilibrium level.
+This creates a potential tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality may generate *under-investment* in training.
 
 ### Testable Predictions
 
@@ -65,7 +66,7 @@ The qualitative predictions---that higher training investment lowers the distres
 
 The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
 Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; in particular, the Tullock form assumes a fixed total market size, which understates the market expansion effect of AI adoption and biases the model toward stronger competition effects relative to a setting where investment expands the pie.
-A Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix F).
+A Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix E).
 
 All valuation uses a reduced-form risk-adjusted framework, abstracting from state-dependence of risk premia across regimes.
 The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal.

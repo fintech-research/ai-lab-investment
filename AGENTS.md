@@ -1,6 +1,6 @@
 # AGENTS.md — Investing in Artificial General Intelligence
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers, numerical N-firm equilibria, and Dario's dilemma (overinvestment asymmetry). Target: JF, RFS, or Econometrica.
+A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). Target: JF, RFS, or Econometrica.
 
 ## Commands
 
@@ -18,7 +18,7 @@ Use the Context7 MCP tool to look up library documentation before writing code.
 **Pipeline entry point:** `src/ai_lab_investment/__main__.py` → `pipeline.py` (Hydra, `conf/config.yaml`). Toggle steps via config flags; override via CLI (e.g., `data.download=true`).
 
 **Core model hierarchy:**
-`models/parameters.py` → `base_model.py` (single firm) → `duopoly.py` (2 firms) → `nfirm.py` (N firms) → `valuation.py` (credit risk, dilemma)
+`models/parameters.py` → `base_model.py` (single firm) → `duopoly.py` (2 firms) → `valuation.py` (credit risk, dilemma)
 
 **Two model modes** — important distinction:
 - *Simple mode* (no training fraction): `SingleFirmModel.installed_value()`, `optimal_trigger_and_capacity()` — uses combined `A_L`/`A_H` from `parameters.py`. Used for basic H-regime analysis and comparative statics.

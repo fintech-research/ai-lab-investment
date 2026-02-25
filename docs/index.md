@@ -13,7 +13,6 @@ src/ai_lab_investment/
 │   ├── parameters.py        # ModelParameters dataclass
 │   ├── base_model.py        # SingleFirmModel (regime-switching real options)
 │   ├── duopoly.py           # DuopolyModel (preemption equilibrium)
-│   ├── nfirm.py             # NFirmModel (N-firm sequential entry)
 │   ├── valuation.py         # ValuationAnalysis (decomposition, credit risk)
 │   └── symbolic_duopoly.py  # SymPy symbolic derivation and verification
 ├── calibration/             # Calibration to AI firm archetypes
@@ -22,7 +21,6 @@ src/ai_lab_investment/
 ├── figures/                 # Publication-quality figure generation
 │   ├── phase1.py            # Single-firm comparative statics
 │   ├── phase2.py            # Duopoly equilibrium and default
-│   ├── phase3.py            # N-firm crowding effects
 │   ├── phase4.py            # Calibration and revealed beliefs
 │   ├── phase5.py            # Valuation and Dario's dilemma
 │   └── phi_allocation.py    # Training-inference allocation plots
@@ -41,7 +39,6 @@ The analysis runs as a Hydra-managed pipeline. Each phase can be toggled indepen
 |-------|-------------|-------------|
 | 1 | `tasks.phase1_base_model` | Single-firm investment triggers and comparative statics |
 | 2 | `tasks.phase2_duopoly` | Duopoly preemption with default risk |
-| 3 | `tasks.phase3_nfirm` | N-firm sequential entry (numerical) |
 | 4 | `tasks.phase4_calibration` | Calibration to AI firm archetypes, revealed beliefs |
 | 5 | `tasks.phase5_valuation` | Growth option decomposition, credit risk, Dario's dilemma |
 
