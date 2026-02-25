@@ -173,12 +173,16 @@ class TestEquityValueVsLambda:
         assert len(result["capacities"]) == 4
 
     def test_positive_values(self, va):
-        """Option values should be positive where solutions exist."""
+        """Option values should be non-negative where solutions exist.
+
+        Under F_H = 0, option_value_H = 0 always. At baseline alpha=0.40,
+        option_value_L = 0 too (no interior capacity). Values are 0 or NaN.
+        """
         lam_vals = np.array([0.10, 0.20, 0.50])
         result = va.equity_value_vs_lambda(lam_vals)
         valid = ~np.isnan(result["option_values"])
         if valid.sum() > 0:
-            assert np.all(result["option_values"][valid] > 0)
+            assert np.all(result["option_values"][valid] >= 0)
 
 
 # ------------------------------------------------------------------
@@ -214,24 +218,30 @@ class TestSummary:
 
 
 class TestPhiAwareValuation:
-    def test_decomposition_with_phi_pre_investment(self, va):
+    @pytest.fixture
+    def va_interior(self):
+        """ValuationAnalysis with alpha=0.70 for interior L-regime solution."""
+        p = ModelParameters(alpha=0.70)
+        return ValuationAnalysis(p)
+
+    def test_decomposition_with_phi_pre_investment(self, va_interior):
         """Pre-investment decomposition should have zero assets."""
-        result = va.growth_option_decomposition_with_phi(X=1.0)
+        result = va_interior.growth_option_decomposition_with_phi(X=0.001)
         assert result["assets_in_place"] == 0.0
         assert result["expansion_option"] >= 0.0
         assert result["phi_optimal"] > 0.0
 
-    def test_decomposition_with_phi_installed(self, va):
+    def test_decomposition_with_phi_installed(self, va_interior):
         """With installed capacity, assets should be positive."""
-        result = va.growth_option_decomposition_with_phi(
+        result = va_interior.growth_option_decomposition_with_phi(
             X=2.0, K_installed=1.0, phi=0.4
         )
         assert result["assets_in_place"] > 0.0
         assert result["phi_installed"] == 0.4
 
-    def test_decomposition_fractions_valid(self, va):
+    def test_decomposition_fractions_valid(self, va_interior):
         """Asset and growth fractions should be in [0, 1]."""
-        result = va.growth_option_decomposition_with_phi(X=1.0)
+        result = va_interior.growth_option_decomposition_with_phi(X=0.001)
         assert 0.0 <= result["assets_fraction"] <= 1.0
         assert 0.0 <= result["growth_fraction"] <= 1.0
 

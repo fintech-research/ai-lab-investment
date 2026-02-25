@@ -1,12 +1,11 @@
 """Tests for symbolic derivation and verification of the duopoly model.
 
-These tests verify:
-1. The symbolic characteristic equations match numerical computations
-2. The particular solution coefficient C matches base_model.py
-3. The option value structure (one-term vs two-term) is correct
-4. Smooth-pasting conditions hold
-5. The paper's simplified form is valid only under specific conditions
-6. Key comparative statics have correct signs
+Under the F_H = 0 assumption:
+1. The L-regime ODE is homogeneous (no particular solution C).
+2. F_L(X) = A_1 * X^{beta_L^+} (single-term solution).
+3. Smooth-pasting gives dF_L/dX = A_eff (not A_L) at the trigger.
+4. The baseline simplification check reflects the new constraint
+   alpha > 1 - 1/beta_L for interior K*.
 """
 
 import pytest
@@ -24,7 +23,6 @@ from ai_lab_investment.models.symbolic_duopoly import (
     optimal_phi_conditions,
     verify_baseline_simplification,
     verify_option_value_structure,
-    verify_particular_solution_coefficient,
     verify_smooth_pasting_L,
 )
 
@@ -40,9 +38,9 @@ def default_params():
 
 
 @pytest.fixture
-def high_alpha_params():
-    """Parameters where L-regime has an interior trigger."""
-    return ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma_H=0.10, sigma_L=0.15)
+def interior_L_params():
+    """Parameters where L-regime has an interior trigger under F_H = 0."""
+    return ModelParameters(alpha=0.70)
 
 
 # =====================================================================
@@ -60,11 +58,8 @@ class TestCharacteristicEquations:
         assert len(result["roots"]) == 2
 
     def test_H_regime_positive_root_matches_numerical(self, syms, default_params):
-        """Symbolic positive root matches ModelParameters.beta_H."""
         result = characteristic_equation_H(syms)
         p = default_params
-
-        # Evaluate symbolic root at numerical parameter values
         subs = {
             syms["sigma_H"]: p.sigma_H,
             syms["mu_H"]: p.mu_H,
@@ -74,10 +69,8 @@ class TestCharacteristicEquations:
         assert abs(beta_H_symbolic - p.beta_H) < 1e-10
 
     def test_L_regime_positive_root_matches_numerical(self, syms, default_params):
-        """Symbolic positive root matches ModelParameters.beta_L."""
         result = characteristic_equation_L(syms)
         p = default_params
-
         subs = {
             syms["sigma_L"]: p.sigma_L,
             syms["mu_L"]: p.mu_L,
@@ -88,14 +81,10 @@ class TestCharacteristicEquations:
         assert abs(beta_L_symbolic - p.beta_L) < 1e-10
 
     def test_L_regime_uses_r_plus_lambda(self, syms):
-        """L-regime characteristic equation uses (r + lambda) as discount."""
         result = characteristic_equation_L(syms)
         eq = result["equation"]
-        # The equation should contain (r + lambda) as the discount term
-        # Verify by checking that setting lambda=0 gives the standard equation
         eq_no_lambda = eq.subs(syms["lam"], 0)
         eq_H = characteristic_equation_H(syms)["equation"]
-        # Same structure but with sigma_L, mu_L
         eq_H_with_L_params = eq_H.subs({
             syms["sigma_H"]: syms["sigma_L"],
             syms["mu_H"]: syms["mu_L"],
@@ -104,16 +93,14 @@ class TestCharacteristicEquations:
 
 
 # =====================================================================
-# H-regime option value
+# H-regime option value (retained for reference)
 # =====================================================================
 
 
 class TestHRegimeOptionValue:
     def test_trigger_formula(self, syms):
-        """H-regime trigger has the standard real options form."""
         result = h_regime_option_value(syms)
         trigger = result["trigger"]
-        # Should be beta_H/(beta_H-1) * cost / revenue_coeff
         beta_H = syms["beta_H"]
         expected_markup = beta_H / (beta_H - 1)
         ratio = sp.simplify(trigger * result["revenue_coeff"] / result["total_cost"])
@@ -121,39 +108,29 @@ class TestHRegimeOptionValue:
 
 
 # =====================================================================
-# L-regime ODE (the critical derivation)
+# L-regime ODE (homogeneous under F_H = 0)
 # =====================================================================
 
 
 class TestLRegimeODE:
-    def test_particular_solution_coefficient_formula(self, syms):
-        """C = -lambda * B_H / Q_L(beta_H)."""
+    def test_ode_is_homogeneous(self, syms):
+        """Under F_H = 0, the L-regime ODE has no forcing term."""
         result = l_regime_ode(syms)
-        C = result["C"]
-        # Verify structure
-        assert C.has(syms["lam"])
-        assert C.has(syms["B_H"])
+        # The note should describe the homogeneous ODE
+        assert "homogeneous" in result.get("note", "").lower()
 
-    def test_Q_L_at_beta_H_is_nonzero_numerically(self, default_params):
-        """Q_L(beta_H) should be nonzero for default parameters."""
+    def test_Q_L_positive_root(self, syms, default_params):
+        """Q_L has a positive root (beta_L^+)."""
+        result = characteristic_equation_L(syms)
         p = default_params
-        Q_L = (
-            0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
-            + p.mu_L * p.beta_H
-            - (p.r + p.lam)
-        )
-        assert abs(Q_L) > 1e-10
-
-    def test_C_positive_for_default_params(self, default_params):
-        """C should be positive (switching adds option value)."""
-        result = verify_particular_solution_coefficient(default_params)
-        assert result["C_from_code"] > 0
-        assert result["C_from_formula"] > 0
-
-    def test_C_matches_code(self, default_params):
-        """Symbolic C formula matches base_model.py computation."""
-        result = verify_particular_solution_coefficient(default_params)
-        assert result["match"]
+        subs = {
+            syms["sigma_L"]: p.sigma_L,
+            syms["mu_L"]: p.mu_L,
+            syms["r"]: p.r,
+            syms["lam"]: p.lam,
+        }
+        beta_L = float(result["positive_root_expr"].subs(subs))
+        assert beta_L > 1.0
 
 
 # =====================================================================
@@ -163,35 +140,20 @@ class TestLRegimeODE:
 
 class TestOptionValueStructure:
     def test_baseline_has_no_L_trigger(self, default_params):
-        """At baseline, no interior L-trigger exists."""
+        """At baseline alpha=0.40, no interior L-trigger under F_H = 0."""
         result = verify_option_value_structure(default_params)
         assert not result["has_L_trigger"]
-        assert result["paper_simplified_form_valid"]
 
-    def test_baseline_single_term_matches(self, default_params):
-        """At baseline, F_L = C * X^{beta_H} matches the code."""
-        result = verify_option_value_structure(default_params)
+    def test_high_alpha_has_L_trigger(self, interior_L_params):
+        """With alpha=0.70, an interior L-trigger should exist."""
+        result = verify_option_value_structure(interior_L_params)
+        assert result["has_L_trigger"]
         assert result["match"]
 
-    def test_high_alpha_has_L_trigger(self, high_alpha_params):
-        """With high alpha, an interior L-trigger should exist."""
-        from ai_lab_investment.models.base_model import SingleFirmModel
-
-        model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger for these params")
-        result = verify_option_value_structure(high_alpha_params)
-        assert result["has_L_trigger"]
-        assert not result["paper_simplified_form_valid"]
-
-    def test_high_alpha_two_term_matches(self, high_alpha_params):
-        """With interior L-trigger, two-term formula matches code."""
-        from ai_lab_investment.models.base_model import SingleFirmModel
-
-        model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger for these params")
-        result = verify_option_value_structure(high_alpha_params)
+    def test_high_alpha_single_term_matches(self, interior_L_params):
+        """F_L = A_1 * X^{beta_L^+} matches the code."""
+        result = verify_option_value_structure(interior_L_params)
+        assert result["form"] == "F_L(X) = A_1 * X^{beta_L^+} (homogeneous solution)"
         assert result["match"]
 
 
@@ -201,15 +163,21 @@ class TestOptionValueStructure:
 
 
 class TestBaselineSimplification:
-    def test_baseline_simplified_form_valid(self):
-        """Paper's F_L = C*X^{beta_H} is valid at baseline."""
+    def test_no_interior_L_trigger_at_baseline(self):
+        """At baseline alpha=0.40, no interior K* under F_H = 0."""
         result = verify_baseline_simplification()
-        assert result["simplified_form_valid"]
+        assert not result["has_interior_L_trigger"]
 
-    def test_option_premium_ratio_exceeds_one(self):
-        """phi_L >= 1 at baseline (so no interior trigger in L)."""
+    def test_alpha_min_correct(self):
+        """alpha_min should be approximately 1 - 1/beta_L."""
         result = verify_baseline_simplification()
-        assert result["option_premium_ratio_L"] >= 1.0
+        expected = 1.0 - 1.0 / result["beta_L_plus"]
+        assert abs(result["alpha_min_for_interior_K"] - expected) < 1e-10
+
+    def test_k_optimization_exponent_negative_at_baseline(self):
+        """At baseline, beta_L*(alpha-1)+1 < 0."""
+        result = verify_baseline_simplification()
+        assert result["k_optimization_exponent"] < 0
 
 
 # =====================================================================
@@ -218,9 +186,9 @@ class TestBaselineSimplification:
 
 
 class TestSmoothPasting:
-    def test_smooth_pasting_L_regime(self, high_alpha_params):
-        """Smooth-pasting holds at L-regime trigger (when it exists)."""
-        result = verify_smooth_pasting_L(high_alpha_params)
+    def test_smooth_pasting_L_regime(self, interior_L_params):
+        """Smooth-pasting holds at L-regime trigger."""
+        result = verify_smooth_pasting_L(interior_L_params)
         if result.get("skip"):
             pytest.skip("No interior L-trigger")
         assert result["match"]
@@ -233,7 +201,6 @@ class TestSmoothPasting:
 
 class TestEffectiveRevenueCoeff:
     def test_A_eff_positive_numerically(self, default_params):
-        """A_eff is positive for reasonable parameters."""
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         model = SingleFirmModel(default_params)
@@ -241,17 +208,13 @@ class TestEffectiveRevenueCoeff:
         assert a_eff > 0
 
     def test_dA_eff_dphi_is_zero_at_interior(self, syms):
-        """dA_eff/dphi has interior zero (Proposition 1)."""
         result = optimal_phi_conditions(syms)
         foc = result["foc"]
-        # The FOC should be a non-trivial expression in phi
-        assert foc != 0  # Not identically zero
+        assert foc != 0
 
     def test_dA_eff_dlam_positive(self, syms):
-        """dA_eff/dlambda is positive when H-revenue exceeds L-revenue."""
         result = effective_revenue_coefficient(syms)
         dA_dlam = result["dA_dlam"]
-        # Substitute typical values where H-regime dominates
         subs = {
             syms["r"]: sp.Rational(12, 100),
             syms["mu_L"]: sp.Rational(1, 100),
@@ -272,12 +235,8 @@ class TestEffectiveRevenueCoeff:
 
 class TestDefaultBoundary:
     def test_dXD_dA_eff_negative(self, syms):
-        """Higher A_eff lowers default boundary."""
         result = default_boundary_derivation(syms)
-        # dX_D/dA_eff should be negative (symbolically)
         A_eff = sp.Symbol("A_eff", positive=True)
-        expr = result["dXD_dA_eff"]
-        # Substitute positive values to check sign
         subs = {
             sp.Symbol("beta_neg", negative=True): sp.Rational(-3, 1),
             sp.Symbol("c_D", positive=True): sp.Rational(1, 10),
@@ -286,11 +245,10 @@ class TestDefaultBoundary:
             syms["r"]: sp.Rational(12, 100),
             A_eff: 1,
         }
-        val = float(expr.subs(subs))
+        val = float(result["dXD_dA_eff"].subs(subs))
         assert val < 0
 
     def test_dXD_dcD_positive(self, syms):
-        """Higher coupon raises default boundary."""
         result = default_boundary_derivation(syms)
         c_D = sp.Symbol("c_D", positive=True)
         A_eff = sp.Symbol("A_eff", positive=True)
@@ -313,44 +271,26 @@ class TestDefaultBoundary:
 
 class TestFullPipeline:
     def test_verify_all_baseline(self, default_params):
-        """Run all verification checks at baseline parameters."""
-        # C coefficient
-        c_result = verify_particular_solution_coefficient(default_params)
-        assert c_result["match"]
-
-        # Option value structure
+        """Run verification checks at baseline (no interior L-trigger)."""
         ov_result = verify_option_value_structure(default_params)
-        assert ov_result["match"]
-        assert ov_result["paper_simplified_form_valid"]
+        assert not ov_result["has_L_trigger"]
 
-        # Baseline check
         bl_result = verify_baseline_simplification()
-        assert bl_result["simplified_form_valid"]
+        assert not bl_result["has_interior_L_trigger"]
 
-    def test_verify_all_high_alpha(self, high_alpha_params):
+    def test_verify_all_high_alpha(self, interior_L_params):
         """Run verification for params with interior L-trigger."""
-        from ai_lab_investment.models.base_model import SingleFirmModel
-
-        model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger")
-
-        c_result = verify_particular_solution_coefficient(high_alpha_params)
-        assert c_result["match"]
-
-        ov_result = verify_option_value_structure(high_alpha_params)
+        ov_result = verify_option_value_structure(interior_L_params)
+        assert ov_result["has_L_trigger"]
         assert ov_result["match"]
-        assert not ov_result["paper_simplified_form_valid"]
 
-        sp_result = verify_smooth_pasting_L(high_alpha_params)
+        sp_result = verify_smooth_pasting_L(interior_L_params)
         assert sp_result["match"]
 
     def test_multiple_lambda_values(self):
-        """Verify C and option value across a range of lambda values."""
+        """Verify option value across a range of lambda values."""
         for lam_val in [0.01, 0.05, 0.10, 0.20, 0.50, 1.0]:
-            p = ModelParameters(lam=lam_val, lam_0=lam_val)
-            result = verify_particular_solution_coefficient(p)
-            assert result["match"], f"C mismatch at lambda={lam_val}"
-
+            p = ModelParameters(lam=lam_val, lam_0=lam_val, alpha=0.70)
             ov = verify_option_value_structure(p)
-            assert ov["match"], f"Option value mismatch at lambda={lam_val}"
+            if ov["has_L_trigger"]:
+                assert ov["match"], f"Option value mismatch at lambda={lam_val}"

@@ -1,4 +1,12 @@
-"""Tests for the single-firm base model."""
+"""Tests for the single-firm base model.
+
+Under the F_H = 0 assumption:
+- option_value_H() returns 0 for all X.
+- The L-regime option value uses homogeneous solution F_L = A_1 * X^{beta_L^+}.
+- The joint (K, phi) optimization uses beta_L in the option premium.
+- Interior capacity requires alpha > 1 - 1/beta_L (~ 0.668 at baseline).
+- At baseline alpha=0.40, no interior L-regime solution exists.
+"""
 
 import numpy as np
 import pytest
@@ -15,6 +23,17 @@ def default_params():
 @pytest.fixture
 def model(default_params):
     return SingleFirmModel(default_params)
+
+
+@pytest.fixture
+def interior_L_params():
+    """Parameters where L-regime has an interior trigger under F_H = 0."""
+    return ModelParameters(alpha=0.70)
+
+
+@pytest.fixture
+def interior_L_model(interior_L_params):
+    return SingleFirmModel(interior_L_params)
 
 
 class TestInstalledValue:
@@ -50,11 +69,17 @@ class TestPhiAndExistence:
         assert model.has_interior_trigger("H")
 
     def test_no_interior_trigger_L_default(self, model):
-        # With default params, phi_L > 1 so no interior trigger in L
+        """With default alpha=0.40, alpha < 1-1/beta_L ~ 0.668."""
         assert not model.has_interior_trigger("L")
+
+    def test_has_interior_trigger_L_high_alpha(self, interior_L_model):
+        """With alpha=0.70 > 0.668, L-regime has interior trigger."""
+        assert interior_L_model.has_interior_trigger("L")
 
 
 class TestRegimeH:
+    """H-regime standalone problem (retained for reference)."""
+
     def test_trigger_positive(self, model):
         X_star, K_star = model.optimal_trigger_and_capacity("H")
         assert X_star > 0
@@ -64,10 +89,8 @@ class TestRegimeH:
         """Verify smooth-pasting: dF/dX = dV/dX at X*."""
         p = model.params
         X_star, K_star, B_H = model._solve_regime_H()
-
         dF = p.beta_H * B_H * X_star ** (p.beta_H - 1)
         dV = p.A_H * K_star**p.alpha
-
         assert abs(dF - dV) / max(abs(dF), 1e-10) < 1e-6
 
     def test_value_matching(self, model):
@@ -77,60 +100,63 @@ class TestRegimeH:
         npv = model.installed_value(X_star, K_star, "H") - model.investment_cost(K_star)
         assert abs(option_val - npv) / max(abs(npv), 1e-10) < 1e-5
 
-    def test_option_value_positive(self, model):
-        X_star, _ = model.optimal_trigger_and_capacity("H")
-        assert model.option_value_H(X_star * 0.5) > 0
-
-    def test_option_value_increasing(self, model):
-        X_star, _ = model.optimal_trigger_and_capacity("H")
-        X1 = X_star * 0.3
-        X2 = X_star * 0.6
-        assert model.option_value_H(X2) > model.option_value_H(X1)
-
-    def test_option_exceeds_npv_before_trigger(self, model):
-        X_star, K_star = model.optimal_trigger_and_capacity("H")
-        X = X_star * 0.8
-        option = model.option_value_H(X)
-        npv = model.installed_value(X, K_star, "H") - model.investment_cost(K_star)
-        assert option >= npv - 1e-10
+    def test_option_value_H_is_zero(self, model):
+        """Under F_H = 0, option value in H is 0 for all X."""
+        assert model.option_value_H(0.5) == 0.0
+        assert model.option_value_H(1.0) == 0.0
+        assert model.option_value_H(100.0) == 0.0
 
 
 class TestRegimeL:
-    def test_no_trigger_raises(self, model):
-        """When phi_L >= 1, optimal_trigger_and_capacity raises."""
-        with pytest.raises(RuntimeError, match="No interior trigger"):
+    """L-regime tests under F_H = 0."""
+
+    def test_no_trigger_at_baseline_raises(self, model):
+        """At baseline alpha=0.40, optimal_trigger_and_capacity raises."""
+        with pytest.raises(RuntimeError, match="No interior capacity"):
             model.optimal_trigger_and_capacity("L")
 
-    def test_option_value_L_positive(self, model):
-        """Even without trigger, option value is positive (from switching)."""
-        assert model.option_value_L(0.01) > 0
+    def test_option_value_L_zero_at_baseline(self, model):
+        """Under F_H = 0 with alpha=0.40, option value is 0."""
+        assert model.option_value_L(0.01) == 0.0
+        assert model.option_value_L(1.0) == 0.0
 
-    def test_option_value_L_from_C_only(self, model):
-        """Without interior trigger, F_L(X) = C * X^beta_H."""
-        p = model.params
-        C = model._particular_solution_coeff()
-        X = 0.05
-        expected = C * X**p.beta_H
-        actual = model.option_value_L(X)
-        assert abs(actual - expected) / max(abs(expected), 1e-10) < 1e-10
+    def test_option_value_L_positive_high_alpha(self, interior_L_model):
+        """With alpha=0.70, L-regime option value is positive."""
+        assert interior_L_model.option_value_L(0.001) > 0
 
-    def test_C_positive(self, model):
-        """C should be positive (switching adds value)."""
-        assert model._particular_solution_coeff() > 0
+    def test_option_value_L_increasing_high_alpha(self, interior_L_model):
+        """L-regime option value increases with demand."""
+        assert interior_L_model.option_value_L(0.002) > interior_L_model.option_value_L(
+            0.001
+        )
 
-    def test_option_value_L_increasing(self, model):
-        assert model.option_value_L(0.1) > model.option_value_L(0.05)
+    def test_trigger_and_capacity_high_alpha(self, interior_L_model):
+        """With alpha=0.70, trigger and capacity are well-defined."""
+        X_star, K_star = interior_L_model.optimal_trigger_and_capacity("L")
+        assert X_star > 0
+        assert K_star > 0
 
-    def test_with_high_alpha_has_L_trigger(self):
-        """With sufficiently high alpha, regime L has an interior trigger."""
-        # Both regimes need phi in (1/gamma, 1). High alpha + low vol works.
-        p = ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma_H=0.10, sigma_L=0.15)
-        m = SingleFirmModel(p)
-        if not m.has_interior_trigger("L"):
-            pytest.skip("No interior trigger in L for these parameters")
-        X_L, K_L = m.optimal_trigger_and_capacity("L")
-        assert X_L > 0
-        assert K_L > 0
+    def test_smooth_pasting_high_alpha(self, interior_L_model):
+        """Smooth-pasting at L-regime trigger: dF/dX = A_eff."""
+        p = interior_L_model.params
+        X_star, K_star, A_1 = interior_L_model._solve_regime_L()
+        _, _, phi_star = interior_L_model.optimal_trigger_capacity_phi()
+
+        dF = A_1 * p.beta_L * X_star ** (p.beta_L - 1)
+        dV = interior_L_model._effective_revenue_coeff_single(phi_star, K_star)
+        assert abs(dF - dV) / max(abs(dV), 1e-10) < 1e-4
+
+    def test_value_matching_high_alpha(self, interior_L_model):
+        """Value-matching at L-regime trigger: F(X*) = V(X*) - I(K*)."""
+        p = interior_L_model.params
+        X_star, K_star, A_1 = interior_L_model._solve_regime_L()
+        _, _, phi_star = interior_L_model.optimal_trigger_capacity_phi()
+
+        option_val = A_1 * X_star**p.beta_L
+        npv = interior_L_model.installed_value_with_phi(
+            X_star, phi_star, K_star, "L"
+        ) - interior_L_model.investment_cost(K_star)
+        assert abs(option_val - npv) / max(abs(npv), 1e-10) < 1e-4
 
 
 class TestComparativeStatics:
@@ -147,9 +173,7 @@ class TestComparativeStatics:
             "alpha", np.linspace(0.35, 0.45, 5), regime="H"
         )
         valid = stats["has_trigger"]
-        # At least some points should have valid triggers
         assert valid.sum() >= 2
-        # Triggers should all be positive
         assert np.all(stats["triggers"][valid] > 0)
 
     def test_returns_correct_shape(self, model):
@@ -192,10 +216,16 @@ class TestSummary:
         assert "X_star" in s["H"]
         assert "K_star" in s["H"]
 
-    def test_L_reports_no_trigger(self, model):
+    def test_L_reports_error_at_baseline(self, model):
+        """At baseline alpha=0.40, L-regime reports error."""
         s = model.summary()
-        assert s["L"]["trigger_exists"] is False
-        assert s["L"]["C"] > 0
+        assert "error" in s["L"]
+
+    def test_L_has_trigger_high_alpha(self, interior_L_model):
+        s = interior_L_model.summary()
+        assert "X_star" in s["L"]
+        assert "K_star" in s["L"]
+        assert "phi_star" in s["L"]
 
 
 # ------------------------------------------------------------------
@@ -205,30 +235,24 @@ class TestSummary:
 
 class TestEffectiveRevenueCoeff:
     def test_positive(self, model):
-        """A_eff should be positive for reasonable phi and K."""
         a_eff = model._effective_revenue_coeff_single(0.5, 1.0)
         assert a_eff > 0
 
     def test_phi_zero_only_inference(self, model):
-        """phi=0.01 should give mostly inference revenue."""
         a_eff_low = model._effective_revenue_coeff_single(0.01, 1.0)
         a_eff_high = model._effective_revenue_coeff_single(0.99, 1.0)
-        # Both should be positive
         assert a_eff_low > 0
         assert a_eff_high > 0
 
     def test_no_switching_only_inference(self):
-        """With lam=0, A_eff reduces to inference-only L-regime value."""
         p = ModelParameters(lam=1e-10, lam_0=0.0)
         m = SingleFirmModel(p)
         K, phi = 1.0, 0.3
         a_eff = m._effective_revenue_coeff_single(phi, K)
-        # Should be approximately [(1-phi)*K]^alpha / (r - mu_L)
         expected = ((1.0 - phi) * K) ** p.alpha / (p.r - p.mu_L)
         assert abs(a_eff - expected) / expected < 0.01
 
     def test_increases_with_K(self, model):
-        """A_eff should increase with capacity."""
         a1 = model._effective_revenue_coeff_single(0.5, 0.5)
         a2 = model._effective_revenue_coeff_single(0.5, 2.0)
         assert a2 > a1
@@ -236,7 +260,6 @@ class TestEffectiveRevenueCoeff:
 
 class TestInstalledValueWithPhi:
     def test_H_regime_training_only(self, model):
-        """H-regime value depends on training capacity (phi*K)^alpha."""
         p = model.params
         X, phi, K = 1.0, 0.5, 2.0
         V = model.installed_value_with_phi(X, phi, K, "H")
@@ -244,76 +267,101 @@ class TestInstalledValueWithPhi:
         assert abs(V - expected) < 1e-12
 
     def test_H_regime_higher_phi_higher_value(self, model):
-        """In H-regime, higher phi means more training → higher value."""
         V1 = model.installed_value_with_phi(1.0, 0.3, 1.0, "H")
         V2 = model.installed_value_with_phi(1.0, 0.7, 1.0, "H")
         assert V2 > V1
 
     def test_L_regime_positive(self, model):
-        """L-regime installed value should be positive for moderate X."""
         V = model.installed_value_with_phi(2.0, 0.5, 1.0, "L")
         assert V > 0
 
     def test_L_regime_increases_with_X(self, model):
-        """Higher demand should increase L-regime value."""
         V1 = model.installed_value_with_phi(0.5, 0.5, 1.0, "L")
         V2 = model.installed_value_with_phi(2.0, 0.5, 1.0, "L")
         assert V2 > V1
 
 
 class TestOptimalTriggerCapacityPhi:
-    def test_solution_exists(self, model):
-        """Joint (K, phi) optimization should find a solution."""
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+    """Joint (K, phi) optimization tests.
+
+    Under F_H = 0, these require alpha > 1 - 1/beta_L for interior K*.
+    """
+
+    def test_no_solution_at_baseline(self, model):
+        """At baseline alpha=0.40, optimization fails."""
+        with pytest.raises(RuntimeError, match="No interior capacity"):
+            model.optimal_trigger_capacity_phi()
+
+    def test_solution_exists_high_alpha(self, interior_L_model):
+        X_star, K_star, phi_star = interior_L_model.optimal_trigger_capacity_phi()
         assert X_star > 0
         assert K_star > 0
         assert 0.01 <= phi_star <= 0.99
 
-    def test_trigger_positive(self, model):
-        X_star, _, _ = model.optimal_trigger_capacity_phi()
+    def test_trigger_positive_high_alpha(self, interior_L_model):
+        X_star, _, _ = interior_L_model.optimal_trigger_capacity_phi()
         assert X_star > 0
 
-    def test_phi_interior(self, model):
-        """Optimal phi should be interior (not at boundary)."""
-        _, _, phi_star = model.optimal_trigger_capacity_phi()
+    def test_phi_interior_high_alpha(self, interior_L_model):
+        _, _, phi_star = interior_L_model.optimal_trigger_capacity_phi()
         assert 0.05 < phi_star < 0.95
 
     def test_phi_depends_on_lambda(self):
-        """Higher lambda should shift phi toward training."""
-        p_low = ModelParameters(lam=0.05)
-        p_high = ModelParameters(lam=0.50)
+        """Higher lambda should shift phi toward training.
+
+        Use moderate lambda values to stay within the interior condition
+        alpha > 1 - 1/beta_L (higher lambda raises beta_L, tightening
+        the constraint).
+        """
+        p_low = ModelParameters(lam=0.05, alpha=0.70)
+        p_high = ModelParameters(lam=0.12, alpha=0.70)
         m_low = SingleFirmModel(p_low)
         m_high = SingleFirmModel(p_high)
         _, _, phi_low = m_low.optimal_trigger_capacity_phi()
         _, _, phi_high = m_high.optimal_trigger_capacity_phi()
-        # Higher switching rate → more valuable to have training capacity
         assert phi_high > phi_low
 
-    def test_npv_positive_at_trigger(self, model):
-        """NPV at the optimal trigger should be positive."""
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
-        V = model.installed_value_with_phi(X_star, phi_star, K_star, "L")
-        cost = model.investment_cost(K_star)
+    def test_npv_positive_at_trigger_high_alpha(self, interior_L_model):
+        X_star, K_star, phi_star = interior_L_model.optimal_trigger_capacity_phi()
+        V = interior_L_model.installed_value_with_phi(X_star, phi_star, K_star, "L")
+        cost = interior_L_model.investment_cost(K_star)
         assert V - cost > 0
+
+    def test_trigger_formula_consistency(self, interior_L_model):
+        """Verify trigger = markup * cost / A_eff."""
+        p = interior_L_model.params
+        X_star, K_star, phi_star = interior_L_model.optimal_trigger_capacity_phi()
+        a_eff = interior_L_model._effective_revenue_coeff_single(phi_star, K_star)
+        markup = p.beta_L / (p.beta_L - 1.0)
+        total_cost = p.delta * K_star / p.r + p.c * K_star**p.gamma
+        X_formula = markup * total_cost / a_eff
+        assert abs(X_star - X_formula) / X_star < 1e-4
 
 
 class TestOptionValueWithPhi:
-    def test_positive(self, model):
-        """Option value should be positive."""
-        assert model.option_value_with_phi(0.5) > 0
+    """Option value with phi optimization.
 
-    def test_increasing_in_X(self, model):
-        """Option value should increase with demand."""
-        V1 = model.option_value_with_phi(0.3)
-        V2 = model.option_value_with_phi(0.8)
+    Under F_H = 0, requires alpha > 1 - 1/beta_L.
+    """
+
+    def test_zero_at_baseline(self, model):
+        """At baseline, option value is 0 (no interior solution)."""
+        with pytest.raises(RuntimeError, match="No interior capacity"):
+            model.option_value_with_phi(0.5)
+
+    def test_positive_high_alpha(self, interior_L_model):
+        assert interior_L_model.option_value_with_phi(0.001) > 0
+
+    def test_increasing_in_X_high_alpha(self, interior_L_model):
+        V1 = interior_L_model.option_value_with_phi(0.001)
+        V2 = interior_L_model.option_value_with_phi(0.003)
         assert V2 > V1
 
-    def test_exceeds_npv_before_trigger(self, model):
-        """Option value should exceed immediate NPV before the trigger."""
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+    def test_exceeds_npv_before_trigger_high_alpha(self, interior_L_model):
+        X_star, K_star, phi_star = interior_L_model.optimal_trigger_capacity_phi()
         X = X_star * 0.5
-        option = model.option_value_with_phi(X)
-        npv = model.installed_value_with_phi(
+        option = interior_L_model.option_value_with_phi(X)
+        npv = interior_L_model.installed_value_with_phi(
             X, phi_star, K_star, "L"
-        ) - model.investment_cost(K_star)
+        ) - interior_L_model.investment_cost(K_star)
         assert option >= npv - 1e-10
