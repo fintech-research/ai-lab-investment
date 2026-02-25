@@ -106,7 +106,7 @@ From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\
 #### Proof of Proposition 2 {.unnumbered}
 
 *Maintained assumptions.* Assumption 1(A1). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
-In the L-regime, the equity value $E(X)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting).
+In the L-regime, the going-concern equity $\hat{E}(X) \equiv E(X) + (1-\ell)I(K)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $\hat{E}(X_D) = 0$ and $\hat{E}'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
 $$
 X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}},

@@ -300,11 +300,12 @@ The going-concern equity value (market value of the equity claim after the inves
 
 Above the default boundary:
 $$
-E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} + (1 - \ell)I(K) - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
+E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
 where $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duopoly and $\beta_s^- < 0$ is the negative characteristic root.
 The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
-At $X = X_D$, $E(X_D) = 0$ by the smooth-pasting condition: equity holders are indifferent between continuing to service debt and defaulting.^[Since $(1 - \ell)I(K)$ is a constant (sunk at the time of investment), it cancels in the smooth-pasting derivative condition $E'(X_D) = 0$ and does not affect the default boundary $X_D$ in @eq-default-boundary. The default boundary depends only on the flow terms (revenue through $A_{\text{eff},i}$, operating cost, coupon) and the option-value discount $\beta_s^-$.]
+The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the smooth-pasting conditions on the going-concern equity $E(X) + (1-\ell)I(K)$ pin the default boundary $X_D$ in @eq-default-boundary and are independent of the sunk equity contribution.
+At $X = X_D$, $E(X_D) = -(1-\ell)I(K) \leq 0$: the equity holders' sunk contribution is lost, but limited liability prevents negative payoffs, so equity is worth $\max\{E(X),\, 0\}$.
 Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$.
 
 Debt value is:
