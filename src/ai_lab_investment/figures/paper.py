@@ -144,7 +144,7 @@ def create_comparative_statics() -> plt.Figure:
     p = ModelParameters()
 
     panels = [
-        ("sigma_H", np.linspace(0.20, 0.34, 40), r"Volatility $\sigma_H$"),
+        ("sigma", np.linspace(0.18, 0.32, 40), r"Volatility $\sigma$"),
         ("alpha", np.linspace(0.30, 0.45, 40), r"Revenue elasticity $\alpha$"),
         ("gamma", np.linspace(1.2, 2.0, 40), r"Cost convexity $\gamma$"),
         ("delta", np.linspace(0.01, 0.08, 40), r"Depreciation $\delta$"),
@@ -370,7 +370,7 @@ def create_competition_effect() -> plt.Figure:
     from ..models.parameters import ModelParameters
 
     p = ModelParameters()
-    sigmas = np.linspace(0.20, 0.30, 30)
+    sigmas = np.linspace(0.18, 0.30, 30)
 
     trig_ratio = np.full_like(sigmas, np.nan)
     cap_ratio = np.full_like(sigmas, np.nan)
@@ -379,7 +379,7 @@ def create_competition_effect() -> plt.Figure:
 
     for i, s in enumerate(sigmas):
         try:
-            ps = p.with_param(sigma_H=s)
+            ps = p.with_param(sigma=s)
             m = SingleFirmModel(ps)
             X_m, K_m = m.optimal_trigger_and_capacity("H")
             mono_trig[i] = X_m
@@ -408,7 +408,7 @@ def create_competition_effect() -> plt.Figure:
         linewidth=1.3,
         label="Duopoly leader",
     )
-    ax1.set_xlabel(r"Volatility $\sigma_H$")
+    ax1.set_xlabel(r"Volatility $\sigma$")
     ax1.set_ylabel(r"Investment trigger $X^*$")
     ax1.legend()
     ax1.set_title("(a)", loc="left", fontweight="bold")
@@ -431,7 +431,7 @@ def create_competition_effect() -> plt.Figure:
         label=r"Capacity: $K_L / K^*_{\mathrm{mono}}$",
     )
     ax2.axhline(1.0, color="0.7", linestyle=":", linewidth=0.7)
-    ax2.set_xlabel(r"Volatility $\sigma_H$")
+    ax2.set_xlabel(r"Volatility $\sigma$")
     ax2.set_ylabel("Ratio (duopoly leader / monopolist)")
     ax2.legend()
     ax2.set_title("(b)", loc="left", fontweight="bold")

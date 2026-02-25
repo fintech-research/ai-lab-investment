@@ -27,7 +27,7 @@ def plot_leader_follower_triggers(
 
     sigma_vals = np.linspace(0.20, 0.50, 25)
     model = DuopolyModel(params, leverage=0.0)
-    stats = model.comparative_statics("sigma_H", sigma_vals, regime="H")
+    stats = model.comparative_statics("sigma", sigma_vals, regime="H")
     valid = stats["has_solution"]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
@@ -47,7 +47,7 @@ def plot_leader_follower_triggers(
         linewidth=2,
         label="Follower $X_F^*$",
     )
-    ax1.set_xlabel(r"Volatility $\sigma_H$")
+    ax1.set_xlabel(r"Volatility $\sigma$")
     ax1.set_ylabel("Investment trigger")
     ax1.set_title("(A) Investment Triggers")
     ax1.legend()
@@ -67,7 +67,7 @@ def plot_leader_follower_triggers(
         linewidth=2,
         label="Follower $K_F^*$",
     )
-    ax2.set_xlabel(r"Volatility $\sigma_H$")
+    ax2.set_xlabel(r"Volatility $\sigma$")
     ax2.set_ylabel("Optimal capacity")
     ax2.set_title("(B) Capacities")
     ax2.legend()
@@ -215,7 +215,7 @@ def plot_competition_vs_monopoly(
 
     for i, sig in enumerate(sigma_vals):
         try:
-            p = params.with_param(sigma_H=sig)
+            p = params.with_param(sigma=sig)
             sm = SingleFirmModel(p)
             X_m, _ = sm.optimal_trigger_and_capacity("H")
             X_mono[i] = X_m
@@ -251,7 +251,7 @@ def plot_competition_vs_monopoly(
         linewidth=2,
         label="Duopoly follower $X_F^*$",
     )
-    ax.set_xlabel(r"Volatility $\sigma_H$")
+    ax.set_xlabel(r"Volatility $\sigma$")
     ax.set_ylabel("Investment trigger")
     ax.set_title("Preemption Effect: Competition Lowers the Leader's Trigger")
     ax.legend()

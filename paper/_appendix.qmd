@@ -4,12 +4,9 @@
 |:--------:|:----------|:--------:|:---------------|
 | $\mu_L$ | L-regime drift | 0.01 | Risk-adjusted demand growth, pre-adoption |
 | $\mu_H$ | H-regime drift | 0.06 | Risk-adjusted demand growth, post-adoption |
-| $\sigma_L$ | L-regime volatility | 0.25 | Demand uncertainty, pre-adoption |
-| $\sigma_H$ | H-regime volatility | 0.30 | Demand uncertainty, post-adoption |
+| $\sigma$ | Volatility | 0.25 | Demand uncertainty (common across regimes) |
 | $r$ | Discount rate (WACC) | 0.12 | Risk-adjusted cost of capital |
-| $\lambda_0$ | Exogenous arrival rate | 0.05 | Rest-of-world AI progress |
-| $\xi$ | Endogenous scaling | 0 | Firms' training contribution to $\tilde{\lambda}$ |
-| $\eta$ | Scaling law exponent | 0.07 | Diminishing returns to training compute |
+| $\lambda$ | Arrival rate | 0.10 | Regime-switch arrival rate (exogenous) |
 | $\alpha$ | Revenue elasticity | 0.40 | Diminishing returns to capacity in revenue |
 | $\gamma$ | Cost convexity | 1.50 | Increasing marginal cost of capacity |
 | $c$ | Unit cost (normalization) | 1.00 | Investment cost scale |
@@ -27,7 +24,7 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
-*Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A4). It applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (condition A3)---i.e., where no interior L-regime trigger exists, so the firm waits for the regime switch rather than investing in the low regime (see @eq-option-L-general and the discussion following it).^[For parameters outside this region (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and the optimization involves additional boundary conditions. All figures and tables in the paper verify that condition (A3) holds at the specific parameter values used.] *Scope.* The proof is stated for exogenous $\tilde{\lambda}$ ($\xi = 0$); the extension to endogenous $\tilde{\lambda}$ is discussed in Corollary 1.
+*Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A4). It applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (condition A3).
 The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
 
 *Step 1: Optimal trigger given $(K, \phi)$.*
@@ -35,7 +32,7 @@ The value-matching and smooth-pasting conditions yield:
 $$
 X^*(K, \phi) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K/r + cK^\gamma}{A_{\text{eff}}(\phi, K)},
 $$
-where $A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \tilde{\lambda}) + \tilde{\lambda} / (r - \mu_L + \tilde{\lambda}) \cdot (\phi K)^\alpha \cdot A_H$ is the effective revenue coefficient.
+where $A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \lambda) + \lambda / (r - \mu_L + \lambda) \cdot (\phi K)^\alpha \cdot A_H$ is the effective revenue coefficient.
 
 *Step 2: NPV at the trigger.*
 Define $b(K) = cK^\gamma + \delta K / r$ (total cost). The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
@@ -59,7 +56,7 @@ which for the pure H-regime case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simpli
 
 *Step 5: Existence of interior $\phi^*$ (Lemma).*
 
-Write $A_{\text{eff}}(\phi) = w_L \cdot [(1-\phi)K]^\alpha + w_H \cdot (\phi K)^\alpha$, where $w_L = 1/(r - \mu_L + \tilde{\lambda}) > 0$ and $w_H = \tilde{\lambda} A_H / (r - \mu_L + \tilde{\lambda}) > 0$.
+Write $A_{\text{eff}}(\phi) = w_L \cdot [(1-\phi)K]^\alpha + w_H \cdot (\phi K)^\alpha$, where $w_L = 1/(r - \mu_L + \lambda) > 0$ and $w_H = \lambda A_H / (r - \mu_L + \lambda) > 0$.
 Since $b(K)$ is independent of $\phi$, maximizing $h$ over $\phi$ is equivalent to maximizing $A_{\text{eff}}(\phi)^{\beta_H}$, or equivalently $A_{\text{eff}}(\phi)$.
 
 The first derivative with respect to $\phi$ is:
@@ -86,17 +83,15 @@ $$
 $$
 which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\square$
 
-*Step 6: Comparative statics (exogenous $\tilde{\lambda}$, i.e., $\xi = 0$).*
+*Step 6: Comparative statics.*
 From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
 
-(i) $\partial \phi^* / \partial \lambda_0 > 0$: Higher $\lambda_0$ raises $\tilde{\lambda}$, which increases $w_H / w_L = \tilde{\lambda} A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
+(i) $\partial \phi^* / \partial \lambda > 0$: Higher $\lambda$ increases $w_H / w_L = \lambda A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
 (ii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
-
-*Corollary 1 extension.* When $\xi > 0$, higher $\xi$ amplifies the contribution of training compute to $\tilde{\lambda}$, increasing $w_H / w_L$ through the same channel as $\lambda_0$. However, the endogenous feedback $\partial \tilde{\lambda}/\partial \phi$ complicates the implicit differentiation, so the comparative static $\partial \phi^* / \partial \xi > 0$ is established numerically across the calibration-relevant parameter region rather than analytically.
 
 #### Proof of Proposition 2 {.unnumbered}
 
-*Maintained assumptions.* Assumption 1(A1), exogenous $\tilde{\lambda}$ ($\xi = 0$). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
+*Maintained assumptions.* Assumption 1(A1). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
 In the L-regime, the equity value $E(X)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
 $$
@@ -107,14 +102,14 @@ where $\beta_s^-$ is the negative characteristic root, $c_D = c_d \cdot \ell \cd
 *(i) Default boundary increasing in leverage.*
 $X_D$ depends on $\ell$ only through the numerator via $c_D = c_d \cdot \ell \cdot I(K)$, which is strictly increasing in $\ell$. Since $A_{\text{eff},i}$ is independent of $\ell$ (holding capacity and training fixed), $\partial X_D / \partial \ell > 0$.
 
-*(ii) Default boundary decreasing in $\tilde{\lambda}$ (faith-based survival).*
+*(ii) Default boundary decreasing in $\lambda$ (faith-based survival).*
 Holding $(K_i, \phi_i, K_j, \phi_j)$ fixed, define the L-regime revenue flow $a \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L$ and the H-regime revenue present value $b \equiv (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H)$, both positive. The effective revenue coefficient is:
 $$
-A_{\text{eff},i} = \frac{a + \tilde{\lambda} \cdot b}{r - \mu_L + \tilde{\lambda}}.
+A_{\text{eff},i} = \frac{a + \lambda \cdot b}{r - \mu_L + \lambda}.
 $$
-Differentiating with respect to $\tilde{\lambda}$:
+Differentiating with respect to $\lambda$:
 $$
-\frac{\partial A_{\text{eff},i}}{\partial \tilde{\lambda}} = \frac{b(r - \mu_L) - a}{(r - \mu_L + \tilde{\lambda})^2}.
+\frac{\partial A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(r - \mu_L + \lambda)^2}.
 $$
 This is positive whenever $b(r - \mu_L) > a$, i.e., when the H-regime revenue present value scaled by the L-regime effective discount rate exceeds the L-regime revenue flow:
 $$
@@ -127,7 +122,7 @@ $$
 \phi > \underline{\phi} = \frac{R}{1 + R}, \quad R = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 $$
 For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$): $R = (0.06/0.11)^{2.5} \approx 0.22$, giving $\underline{\phi} \approx 0.18$.
-Since $X_D \propto 1/A_{\text{eff},i}$ (holding the numerator fixed), $\partial A_{\text{eff},i}/\partial \tilde{\lambda} > 0$ implies $\partial X_D / \partial \tilde{\lambda} < 0$: higher arrival rate lowers the default boundary.
+Since $X_D \propto 1/A_{\text{eff},i}$ (holding the numerator fixed), $\partial A_{\text{eff},i}/\partial \lambda > 0$ implies $\partial X_D / \partial \lambda < 0$: higher arrival rate lowers the default boundary.
 
 *(iii) Leverage-training substitution.*
 Write the default boundary as $X_D = N(\ell) / A_{\text{eff},i}(\phi_i)$, where $N(\ell) = [\beta_s^- / (\beta_s^- - 1)] \cdot (c_d \ell I(K) / r + \delta K/r)$ is strictly increasing in leverage, and $A_{\text{eff},i}(\phi_i)$ is increasing in $\phi_i$ when the faith-based survival condition (@eq-faith-condition) holds (from part ii). A firm can therefore maintain a given default boundary $X_D$ while increasing leverage $\ell$ (raising the numerator) by simultaneously increasing training allocation $\phi_i$ (raising $A_{\text{eff},i}$ in the denominator through the H-regime term). Note that this is a *mechanical* relationship describing the iso-$X_D$ locus, not a statement about optimality: higher $\phi$ sacrifices L-regime revenue, and the net effect on equity value is ambiguous. Leverage affects the firm through the coupon obligation (numerator), while training allocation affects the firm through the expected revenue (denominator); the two channels are distinct.
@@ -137,7 +132,7 @@ Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\al
 
 #### Proof of Proposition 3 {.unnumbered}
 
-*Maintained assumptions.* Assumption 1(A1)--(A2), exogenous $\tilde{\lambda}$ ($\xi = 0$). Part (i) separates existence (analytical) from uniqueness (computational). Parts (ii)--(v) combine analytical motivation with numerical verification as indicated in the proposition statement.
+*Maintained assumptions.* Assumption 1(A1)--(A2). Part (i) separates existence (analytical) from uniqueness (computational). Parts (ii)--(v) combine analytical motivation with numerical verification as indicated in the proposition statement.
 
 *Part (i): Existence of $X_P$ (Analytical).*
 The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation and default risk. I verify that continuity and the required boundary conditions hold for the enriched model.
@@ -153,7 +148,7 @@ In the standard @huisman2015strategic framework, uniqueness follows from single 
 
 The enriched payoff environment of this paper introduces additional features---capacity choice, training allocation, leverage with default, and regime switching---that modify the value function shapes beyond the standard framework. In particular: (a) the default kink at $X_D$ introduces a non-smooth point in $L(X)$; (b) the training allocation creates an additional channel through which the leader value depends on $X$; and (c) the regime-switching option adds a convex component to both $L(X)$ and $F(X)$. Providing analytical sufficient conditions for single crossing in this enriched environment---while possible in principle through restrictions on parameter ranges---would require establishing shape properties (concavity/convexity) of the leader value function that depend on the interaction of all model features simultaneously.
 
-Instead, uniqueness is verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_F^*)$ and exactly one sign change is confirmed (see Appendix B for details). No case of multiple crossings was found across all parameterizations tested, including those with leverage, training allocation, and endogenous $\tilde{\lambda}$.
+Instead, uniqueness is verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_F^*)$ and exactly one sign change is confirmed (see Appendix B for details). No case of multiple crossings was found across all parameterizations tested, including those with leverage and training allocation.
 
 *Part (ii): $\phi_L^* \geq \phi_F^*$ (Computational regularity with analytical motivation).*
 The following argument identifies the economic mechanism; the inequality itself is verified computationally.
@@ -170,9 +165,9 @@ The follower, by contrast, enters directly into the duopoly phase and always fac
 
 The monopoly-phase effect dominates because: (a) the monopoly phase occurs first, so its cash flows are discounted less; (b) the duration of the monopoly phase $[X_P, X_F]$ is endogenous and substantial (typically $X_F / X_P \approx 1.3$--$1.8$ in the baseline calibration); and (c) the H-regime benefit of training is independent of the competitive phase, so the leader's higher marginal benefit from uncontested H-regime positioning applies equally in both phases.
 
-A formal proof would require showing that the leader's FOC for $\phi$ evaluated at $\phi_F^*$ is strictly positive, accounting for the endogenous follower response $\partial(K_F, \phi_F)/\partial(K_L, \phi_L)$ and the regime-switching arrival rate channel. The interaction of these effects makes an analytical monotone comparative-static argument intractable in the current model. Instead, the inequality $\phi_L^* \geq \phi_F^*$ is verified computationally across the full parameter space used in the calibration: in all parameterizations tested (varying $\sigma_H$, $\mu_H$, $\alpha$, $\gamma$, $\lambda_0$, and $\ell$ over their calibration ranges), $\phi_L^* \geq \phi_F^*$ holds; no parameter configuration yielding the reverse inequality was found. $\square$
+A formal proof would require showing that the leader's FOC for $\phi$ evaluated at $\phi_F^*$ is strictly positive, accounting for the endogenous follower response $\partial(K_F, \phi_F)/\partial(K_L, \phi_L)$ and the regime-switching arrival rate channel. The interaction of these effects makes an analytical monotone comparative-static argument intractable in the current model. Instead, the inequality $\phi_L^* \geq \phi_F^*$ is verified computationally across the full parameter space used in the calibration: in all parameterizations tested (varying $\sigma$, $\mu_H$, $\alpha$, $\gamma$, $\lambda$, and $\ell$ over their calibration ranges), $\phi_L^* \geq \phi_F^*$ holds; no parameter configuration yielding the reverse inequality was found. $\square$
 
-*Part (v): Credit spread increasing in $\lambda_0$ (computational result).* Higher $\lambda_0$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda_0$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ with $\lambda_0$ because the preemption incentive is amplified by the training channel. The spread therefore increases. An analytical proof would require showing the elasticity inequality $\varepsilon_{X_P, \lambda_0} < \varepsilon_{X_D, \lambda_0} < 0$; this is verified numerically across the full parameter space used in the calibration rather than derived in closed form. $\square$
+*Part (v): Credit spread increasing in $\lambda$ (computational result).* Higher $\lambda$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ because the preemption incentive is amplified by the training channel. The spread therefore increases. This is verified numerically across the full parameter space. $\square$
 
 #### Numerical Finding 2 (Asymmetric AI investment dilemma) {.unnumbered}
 
@@ -201,12 +196,12 @@ The single-firm and duopoly optimizations use bounded Nelder-Mead over $(K, \phi
 Convergence tolerance is $10^{-8}$ on function values.
 For the preemption trigger $X_P$, I use Brent's root-finding method on $L(X) - F(X) = 0$ over $(X_D, X_F^*)$.
 Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a grid of 500 points and confirming exactly one sign change.
-No case of multiple crossings was found across all parameterizations tested (varying $\sigma_H \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda_0 \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
+No case of multiple crossings was found across all parameterizations tested (varying $\sigma \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
 Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
 
-**Assumption (A3) boundary.** The no-investment-in-$L$ condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 3.01$), this yields the constraint $\alpha \leq 1 - 1/\beta_L^+ \approx 0.67$. The baseline $\alpha = 0.40$ satisfies (A3) comfortably, and the condition holds throughout the sensitivity range $\alpha \in [0.20, 0.60]$ used in @tbl-elasticities. For $\alpha > 0.67$, the simplified option value $F_L = C \cdot X^{\beta_H}$ no longer applies and the full two-term solution @eq-option-L-general must be used. I have verified that the qualitative patterns (interior $\phi^*$, preemption, faith-based survival) are preserved when using the full two-term solution in the (A3)-violating region, but the numerical magnitudes differ.
+**Assumption (A3) boundary.** The no-investment-in-$L$ condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 3.01$), this yields $\alpha \leq 1 - 1/\beta_L^+ \approx 0.67$. The baseline $\alpha = 0.40$ satisfies (A3) comfortably, and the condition holds throughout the sensitivity range $\alpha \in [0.20, 0.60]$. For $\alpha > 0.67$, the full two-term solution @eq-option-L-general must be used; qualitative patterns are preserved.
 
-**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds comfortably. At the extreme archetype WACCs: the hyperscaler ($r = 0.10$) yields $\beta_H \approx 1.33$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 0.63 < 1/\gamma = 0.67$, violating the lower bound; the compute racer ($r = 0.18$) yields $\beta_H \approx 1.84$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 1.14 > 1$, violating the upper bound. The analytical Proposition 1 capacity formula therefore applies at the baseline and intermediate WACCs ($r = 0.12$, $0.14$, $0.15$) but not at the extremes. All archetype-specific quantitative results in @sec-calibration and @sec-valuation are computed using the full numerical optimization, which does not require (A2); the archetype results are therefore valid regardless of whether (A2) holds analytically.
+**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds. At extreme archetype WACCs, (A2) may fail: the hyperscaler ($r = 0.10$) violates the lower bound; the compute racer ($r = 0.18$) violates the upper bound. All archetype-specific results use full numerical optimization that does not require (A2).
 
 ### C. N-Firm Numerical Extension {.unnumbered}
 
@@ -216,7 +211,7 @@ Firms enter sequentially, and the $k$-th entrant takes into account the capacity
 
 With $N$ firms, the regime-specific contest functions extend naturally from the duopoly.
 In the L-regime: $\pi_i^L = X \cdot [(1-\phi_i)K_i]^{2\alpha} / \sum_{j=1}^{N} [(1-\phi_j)K_j]^\alpha$; in the H-regime: $\pi_i^H = X \cdot (\phi_i K_i)^{2\alpha} / \sum_{j=1}^{N} (\phi_j K_j)^\alpha$.
-The endogenous arrival rate generalizes to $\tilde{\lambda} = \lambda_0 + \xi \sum_{j=1}^{N} (\phi_j K_j)^\eta$.
+The arrival rate $\lambda$ remains exogenous.
 
 **Numerical Finding 1** ($N$-firm equilibrium properties).
 *The following properties are established computationally across all parameterizations tested:*
@@ -229,7 +224,7 @@ The endogenous arrival rate generalizes to $\tilde{\lambda} = \lambda_0 + \xi \s
 
 *(iv) The equilibrium reduces to the analytical duopoly solution when $N = 2$.*
 
-*Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate. Total training compute $\sum \phi_i K_i$ also increases with $N$, accelerating the endogenous arrival rate $\tilde{\lambda}$.*
+*Total industry capacity $\sum K_i$ is increasing in $N$ but at a decreasing rate.*
 
 The equilibrium is computed using iterative best-response with tolerance $10^{-6}$, verified by checking no profitable unilateral deviation at the fixed point.
 The $N=2$ case reproduces the analytical duopoly solution.
@@ -266,15 +261,15 @@ The stylized firms are composites designed to capture the key features of each f
 | Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ | $-3.2$ |
 | Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ | $-5.1$ |
 | H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ | $+8.3$ |
-| H-regime volatility | $\sigma_H$ | 0.30 | $+10.8$ | $+12.1$ | $+2.1$ |
+| Volatility | $\sigma$ | 0.25 | $+10.8$ | $+12.1$ | $+2.1$ |
 | Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ | $+0.8$ |
 | Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $-0.3$ |
-| Arrival rate | $\tilde{\lambda}$ | 0.10 | $-6.5$ | $+4.8$ | $+12.7$ |
+| Arrival rate | $\lambda$ | 0.10 | $-6.5$ | $+4.8$ | $+12.7$ |
 
-: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. The training fraction $\phi^*$ is most sensitive to the arrival rate $\tilde{\lambda}$ and the H-regime drift $\mu_H$, confirming that beliefs about the regime switch are the primary driver of training allocation. {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
+: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
 
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
-The training fraction $\phi^*$ is most sensitive to the arrival rate $\tilde{\lambda}$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
+The training fraction $\phi^*$ is most sensitive to the arrival rate $\lambda$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
 
 ### F. Robustness {.unnumbered}
 
@@ -291,5 +286,5 @@ Replacing the Tullock contest with a Cournot competition model (where firms choo
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.
 The two-regime model captures the essential feature: binary uncertainty about whether AI will be transformative.
 
-**Exogenous vs. endogenous $\lambda$.**
-Setting $\xi = 0$ recovers the exogenous-$\lambda$ model. All qualitative results are preserved: the endogenous channel amplifies but does not create the investment incentives. The training fraction $\phi^*$ remains interior and increasing in $\lambda$ even with exogenous arrival rates, because the trade-off between L-regime inference and H-regime training value persists. The endogenous channel adds a quantitative amplification: with $\xi > 0$, more optimistic firms invest more in training, which raises $\tilde{\lambda}$, which further increases the value of training---a self-reinforcing mechanism that steepens the relationship between beliefs and investment behavior.
+**Endogenous arrival rate.**
+The main text treats $\lambda$ as exogenous. Appendix C extends the model to $\tilde{\lambda} = \lambda + \xi \sum_j (\phi_j K_j)^\eta$ where firms' training investments collectively raise the arrival rate. With $\eta = 0.07$ (calibrated from scaling laws), the endogenous channel is quantitatively modest: doubling one firm's training raises its contribution to $\tilde{\lambda}$ by approximately 5\%. All qualitative results are preserved; the endogenous channel amplifies but does not create the investment incentives.

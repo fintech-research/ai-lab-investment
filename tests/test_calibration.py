@@ -82,7 +82,7 @@ class TestRevealedBeliefs:
         """Lambda inversion from H-regime trigger.
 
         Note: H-regime trigger X_H* doesn't depend on lambda (H is
-        absorbing, beta_H = f(sigma_H, mu_H, r)). So the inversion
+        absorbing, beta_H = f(sigma, mu_H, r)). So the inversion
         may return the boundary value or None. This is correct behavior.
         The real revealed-beliefs methodology uses investment intensity
         (capex/revenue) which does depend on lambda through the option
@@ -107,7 +107,7 @@ class TestRevealedBeliefs:
     def test_sensitivity_analysis_shape(self, rb):
         """Sensitivity analysis should return correct shape."""
         firm = rb.calibration.firms[0]
-        result = rb.sensitivity_analysis(firm, "sigma_H", np.linspace(0.20, 0.45, 5))
+        result = rb.sensitivity_analysis(firm, "sigma", np.linspace(0.20, 0.45, 5))
         assert len(result["param_values"]) == 5
         assert len(result["implied_lambda"]) == 5
 

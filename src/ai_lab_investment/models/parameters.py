@@ -8,30 +8,26 @@ class ModelParameters:
     """Parameters for the investment model with regime switching.
 
     The demand shifter X_t follows a GBM with regime-dependent drift and
-    volatility. The firm invests irreversibly in capacity K at convex cost
-    I(K) = c * K^gamma, allocating a fraction phi to training and (1-phi)
-    to inference. Revenue depends on regime:
+    common volatility. The firm invests irreversibly in capacity K at convex
+    cost I(K) = c * K^gamma, allocating a fraction phi to training and
+    (1-phi) to inference. Revenue depends on regime:
       L-regime: pi_i^L = X * [(1-phi_i)*K_i]^alpha * s_i^L
       H-regime: pi_i^H = X * [phi_i*K_i]^alpha * s_i^H
 
-    The regime switch arrival rate lambda_tilde is endogenous:
+    The regime switch arrival rate lambda is exogenous in the main model
+    (the firm's belief about the arrival rate of transformative AI).
+    An endogenous extension (xi > 0) is available for robustness:
       lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
-
-    When xi = 0, the model reduces to the exogenous-lambda baseline.
 
     Attributes:
         r: Risk-adjusted discount rate (WACC).
         mu_L: Risk-neutral demand drift in regime L (pre-adoption).
         mu_H: Risk-neutral demand drift in regime H (post-adoption).
-        sigma_L: Volatility of demand in regime L.
-        sigma_H: Volatility of demand in regime H.
-        lam: Total effective arrival rate of regime switch L -> H.
-            In the exogenous-lambda model, this is the primitive parameter.
-            In the endogenous model, set this to lam_0 for base derived
-            quantities; the actual lambda_tilde is computed dynamically.
+        sigma: Volatility of demand (common across regimes).
+        lam: Arrival rate of regime switch L -> H (firm belief).
         lam_0: Exogenous baseline arrival rate (rest-of-world progress).
         xi: Scaling of firms' training contribution to arrival rate.
-            Set to 0 for the exogenous-lambda model.
+            Set to 0 for the exogenous-lambda model (default).
         eta: Scaling law exponent for training compute contribution to
             arrival rate (Kaplan et al. 2020). eta < 1 implies
             diminishing returns.
@@ -48,9 +44,8 @@ class ModelParameters:
     mu_L: float = 0.01
     # Risk-neutral demand drift in high regime (post-adoption)
     mu_H: float = 0.06
-    sigma_L: float = 0.25
-    sigma_H: float = 0.30
-    # Poisson arrival rate of regime switch L -> H (effective total)
+    sigma: float = 0.25
+    # Poisson arrival rate of regime switch L -> H (firm belief)
     lam: float = 0.10
     # Exogenous baseline arrival rate (rest-of-world AI progress)
     lam_0: float = 0.05
@@ -59,8 +54,8 @@ class ModelParameters:
     # Scaling law exponent for training compute
     eta: float = 0.07
     # Revenue elasticity to capacity; must satisfy alpha > 1 - 1/beta_H
-    # for an interior solution. With sigma_H=0.30, beta_H ~ 1.47,
-    # so alpha > 0.32 is needed. We use 0.40.
+    # for an interior solution. With sigma=0.25, beta_H ~ 1.55,
+    # so alpha > 0.36 is needed. We use 0.40.
     alpha: float = 0.40
     # Cost convexity (must be > 1)
     gamma: float = 1.5
@@ -110,8 +105,8 @@ class ModelParameters:
         if self.c <= 0:
             msg = f"Cost scale c must be positive, got {self.c}"
             raise ValueError(msg)
-        if self.sigma_L <= 0 or self.sigma_H <= 0:
-            msg = "Volatilities must be positive"
+        if self.sigma <= 0:
+            msg = "Volatility must be positive"
             raise ValueError(msg)
         if self.lam < 0:
             msg = f"Arrival rate lambda must be non-negative, got {self.lam}"
@@ -133,8 +128,8 @@ class ModelParameters:
 
     def _compute_derived(self):
         """Compute derived quantities from primitive parameters."""
-        self._beta_H = _positive_root(self.sigma_H, self.mu_H, self.r)
-        self._beta_L = _positive_root(self.sigma_L, self.mu_L, self.r + self.lam)
+        self._beta_H = _positive_root(self.sigma, self.mu_H, self.r)
+        self._beta_L = _positive_root(self.sigma, self.mu_L, self.r + self.lam)
         self._A_H = 1.0 / (self.r - self.mu_H)
         if self.lam > 0:
             self._A_L = (self.r - self.mu_H + self.lam) / (
@@ -215,9 +210,9 @@ class ModelParameters:
     def beta_L_at_lambda(self, lam_eff: float) -> float:
         """Compute beta_L at a specific effective lambda.
 
-        beta_L solves: (sigma_L^2/2)*b*(b-1) + mu_L*b - (r + lambda) = 0
+        beta_L solves: (sigma^2/2)*b*(b-1) + mu_L*b - (r + lambda) = 0
         """
-        return _positive_root(self.sigma_L, self.mu_L, self.r + lam_eff)
+        return _positive_root(self.sigma, self.mu_L, self.r + lam_eff)
 
     def with_param(self, **kwargs) -> "ModelParameters":
         """Return a new ModelParameters with specified parameters changed."""
@@ -225,8 +220,7 @@ class ModelParameters:
             "r": self.r,
             "mu_L": self.mu_L,
             "mu_H": self.mu_H,
-            "sigma_L": self.sigma_L,
-            "sigma_H": self.sigma_H,
+            "sigma": self.sigma,
             "lam": self.lam,
             "lam_0": self.lam_0,
             "xi": self.xi,

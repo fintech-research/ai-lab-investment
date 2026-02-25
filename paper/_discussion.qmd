@@ -9,11 +9,9 @@ The strategic preemption mechanism generates potential overinvestment relative t
 In the duopoly equilibrium, the leader invests earlier than the socially optimal timing to capture first-mover advantage, and the follower invests to preserve market share.
 Total industry capacity may exceed the cooperative (cartel) level, dissipating rents.
 
-The endogenous arrival rate introduces an additional welfare consideration: the positive externality from training investment.
-When $\xi > 0$, each firm's training contributes to the common arrival rate $\tilde{\lambda}$, benefiting all participants.
-In the decentralized equilibrium, firms underweight this externality relative to the social optimum, implying that the socially optimal level of training investment may exceed the competitive equilibrium level.
+With endogenous arrival rates (Appendix C), training investment creates a positive externality: each firm's training contributes to the common arrival rate, benefiting all participants.
+In the decentralized equilibrium, firms underweight this externality, implying that the socially optimal level of training investment may exceed the competitive equilibrium level.
 This creates a tension: the preemption mechanism generates *over-investment* in total capacity, but the training externality generates *under-investment* in training.
-The net welfare effect depends on the relative magnitudes of these two distortions.
 
 ### Testable Predictions
 
@@ -37,7 +35,7 @@ The model has implications for financial stability, competition policy, and disc
 On financial stability, the combination of irreversible investment, high leverage, and regime-dependent demand creates potential for systemic risk: if multiple highly levered AI labs default simultaneously during a low-demand period, fire sales could depress asset values and trigger contagion.
 The faith-based survival mechanism (Proposition 2) suggests that optimism about AI timelines may be propping up equity values, masking underlying credit risk.
 
-On competition policy, the preemption mechanism implies that capacity investment serves a dual purpose---generating revenue and deterring rivals---while the endogenous arrival rate adds a third dimension, as training investment accelerates the regime switch in ways that can be either pro- or anti-competitive depending on market structure.
+On competition policy, the preemption mechanism implies that capacity investment serves a dual purpose---generating revenue and deterring rivals.
 
 On disclosure, requiring AI labs to disclose compute expenditure *and training allocation* in standardized formats would improve market efficiency and enable better risk assessment.
 The training fraction $\hat{\phi}$ is particularly informative because it reveals the firm's intertemporal trade-off between current revenue and future capability.

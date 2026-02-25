@@ -1,13 +1,13 @@
 ## Conclusion {#sec-conclusion}
 
 This paper develops a model of irreversible capacity investment that captures the distinctive features of AI infrastructure competition: demand uncertainty with regime switching, duopoly preemption, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
-At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the allocation interacting with an endogenous regime switch mechanism in which aggregate training compute accelerates the arrival of transformative AI.
+At the center of the model is the training-inference allocation: firms choose how to split capacity between model training (building capabilities for the future) and inference serving (generating revenue today), with the optimal split driven by beliefs about the regime-switch arrival rate $\lambda$.
 The model produces analytical investment triggers for the single firm and semi-analytical characterization of the duopoly preemption equilibrium with training allocation and default risk (Propositions 1--3), supplemented by numerical findings on the AI investment dilemma and $N$-firm robustness.
 
 Three core tensions drive the results.
 
 First, *current cash flow versus future capability*: firms must balance L-regime inference revenue (needed to survive and service debt) against H-regime training quality (needed to compete in a post-adoption world).
-The optimal training fraction $\phi^*$ is increasing in the arrival rate $\tilde{\lambda}$, meaning that more optimistic firms allocate more to training---a prediction that aligns with the cross-sectional variation in observed training intensity across AI labs.
+The optimal training fraction $\phi^*$ is increasing in the arrival rate $\lambda$, meaning that more optimistic firms allocate more to training---a prediction that aligns with the cross-sectional variation in observed training intensity across AI labs.
 
 Second, *growth-option upside versus leverage and default risk*: the interaction between training allocation and leverage produces a *faith-based survival* mechanism.
 Higher training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, which lowers the default boundary---but only in parameter regions where the continuation-value channel dominates current cash-flow weakness (Proposition 2).
@@ -25,5 +25,5 @@ Dynamic learning models in which firms update their beliefs about $\lambda$ in r
 Dynamic training-inference reallocation, allowing $\phi$ to respond to realized demand and capability milestones, would enrich the model's predictions about the time path of compute allocation.
 Incorporating financial frictions---credit constraints, dynamic leverage adjustment, and debt renegotiation---would enrich the default mechanism.
 A *formal* revealed beliefs methodology that inverts the structural model to extract implied AI timeline beliefs from observable investment decisions would be a natural empirical companion.
-The illustrative belief inversions in @sec-valuation demonstrate the concept---they show that observed investment patterns are consistent with high-$\tilde{\lambda}$ beliefs---but fall short of a structural estimation exercise: formal identification requires additional instruments, proper treatment of the estimation uncertainty in calibration parameters (particularly $\sigma_H$ and $\alpha$), and a richer model (dynamic $\phi$, heterogeneous information).
+The illustrative belief inversions in @sec-valuation demonstrate the concept---they show that observed investment patterns are consistent with high-$\lambda$ beliefs---but fall short of a structural estimation exercise: formal identification requires additional instruments, proper treatment of the estimation uncertainty in calibration parameters (particularly $\sigma$ and $\alpha$), and a richer model (dynamic $\phi$, heterogeneous information).
 The fragility of such an inversion to calibration assumptions suggests that careful econometric treatment is needed beyond the scope of this paper.

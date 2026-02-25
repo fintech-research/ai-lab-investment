@@ -320,8 +320,7 @@ class RevealedBeliefs:
             calib = CalibrationData(
                 mu_L=self.calibration.mu_L,
                 mu_H=self.calibration.mu_H,
-                sigma_L=self.calibration.sigma_L,
-                sigma_H=self.calibration.sigma_H,
+                sigma=self.calibration.sigma,
                 alpha=self.calibration.alpha,
                 gamma=self.calibration.gamma,
                 c=self.calibration.c,

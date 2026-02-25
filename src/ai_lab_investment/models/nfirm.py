@@ -490,8 +490,7 @@ class NFirmModel:
                     "delta",
                     "mu_L",
                     "mu_H",
-                    "sigma_L",
-                    "sigma_H",
+                    "sigma",
                     "lam",
                 )
             }

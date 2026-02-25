@@ -335,7 +335,7 @@ class TestComparativeStatics:
     def test_sigma_statics(self, model3):
         """Comparative statics over sigma should produce results."""
         stats = model3.comparative_statics(
-            "sigma_H", np.linspace(0.25, 0.45, 5), regime="H"
+            "sigma", np.linspace(0.25, 0.45, 5), regime="H"
         )
         assert stats["has_solution"].sum() >= 2
         assert stats["triggers"].shape == (5, 3)

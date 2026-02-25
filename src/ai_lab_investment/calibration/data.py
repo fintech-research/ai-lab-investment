@@ -56,8 +56,7 @@ class CalibrationData:
     # Demand process parameters
     mu_L: float = 0.01  # Pre-adoption drift (~1% growth, matches ModelParameters)
     mu_H: float = 0.06  # Post-adoption drift (~6% growth, conservative)
-    sigma_L: float = 0.25  # Pre-adoption volatility
-    sigma_H: float = 0.30  # Post-adoption volatility (higher uncertainty)
+    sigma: float = 0.25  # Demand volatility (common across regimes)
 
     # Technology parameters
     alpha: float = 0.40  # Revenue elasticity (calibrated from scaling laws)
@@ -96,8 +95,7 @@ class CalibrationData:
             r=self.r,
             mu_L=self.mu_L,
             mu_H=self.mu_H,
-            sigma_L=self.sigma_L,
-            sigma_H=self.sigma_H,
+            sigma=self.sigma,
             lam=lam if lam is not None else self.lam,
             lam_0=self.lam_0,
             xi=xi if xi is not None else self.xi,
