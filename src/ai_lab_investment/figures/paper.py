@@ -578,7 +578,7 @@ def create_growth_decomposition() -> plt.Figure:
     return fig
 
 
-# ── Figure 11: AI Investment Dilemma ─────────────────────────────
+# ── Figure 11: Dario's Dilemma ───────────────────────────────────
 
 
 def create_investment_dilemma() -> plt.Figure:

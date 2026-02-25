@@ -18,6 +18,44 @@
 
 : Model parameters with baseline values and interpretations. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. {#tbl-parameters tbl-colwidths="[10,25,12,53]"}
 
+| Symbol | Meaning | Exogenous / Endogenous |
+|:------:|:--------|:----------------------:|
+| $X_t$ | Demand process | Exogenous (GBM) |
+| $\mu_s$ | Regime-$s$ drift | Exogenous |
+| $\sigma$ | Common volatility | Exogenous |
+| $\lambda$ | Regime-switch arrival rate | Exogenous |
+| $K$ | Installed capacity | Endogenous (choice) |
+| $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
+| $\alpha$ | Revenue elasticity to capacity | Exogenous |
+| $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
+| $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
+| $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
+| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
+| $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\lambda$) | Derived (primitives) |
+| $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
+| $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
+| $c_d$ | Coupon rate on debt | Exogenous |
+| $X_D$ | Endogenous default boundary | Derived |
+| $X^*$ | Optimal investment trigger | Derived |
+
+: Key notation. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
+
+| Parameter | Baseline | Target / Source | Status |
+|:----------|:--------:|:----------------|:------:|
+| $\mu_L$ | 0.01 | Cloud computing baseline growth | Chosen for discipline |
+| $\mu_H$ | 0.06 | Upper-range AI revenue growth projections | Chosen for discipline |
+| $\sigma$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
+| $r$ | 0.12 | WACC, representative frontier AI lab | Inferred from Damodaran |
+| $\lambda$ | 0.10 | Regime-switch arrival rate (exogenous belief) | Chosen for discipline |
+| $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
+| $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
+| $c$ | 1.00 | Normalization | --- |
+| $\delta$ | 0.03 | Power, cooling, maintenance (flow cost only) | Inferred from industry |
+| $c_d$ | 0.05 | Cost of debt for frontier AI labs | Inferred |
+| $b$ | 0.30 | Bankruptcy cost fraction | Standard (Leland 1994) |
+
+: Parameter calibration status. "Directly observed" = taken from empirical estimates; "Inferred" = backed out from observable proxies; "Chosen for discipline" = selected to generate plausible magnitudes without a precise empirical target. {#tbl-param-mapping tbl-colwidths="[14,10,42,18]"}
+
 \newpage
 
 ### A. Proofs {.unnumbered}
@@ -169,7 +207,7 @@ A formal proof would require showing that the leader's FOC for $\phi$ evaluated 
 
 *Part (v): Credit spread increasing in $\lambda$ (computational result).* Higher $\lambda$ lowers the preemption trigger $X_P$ (from part iii). The Leland credit spread is monotonically decreasing in the ratio $X_P / X_D$. Although higher $\lambda$ also raises $A_{\text{eff}}$ and lowers $X_D$ (faith-based survival, Proposition 2(ii)), the trigger effect dominates: $X_P$ decreases faster than $X_D$ because the preemption incentive is amplified by the training channel. The spread therefore increases. This is verified numerically across the full parameter space. $\square$
 
-#### Numerical Finding 2 (Asymmetric AI investment dilemma) {.unnumbered}
+#### Numerical Finding 2 (Dario's dilemma) {.unnumbered}
 
 Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$: the present value when the firm invests at trigger $X^*(\lambda_{\text{invest}})$ with capacity $K^*(\lambda_{\text{invest}})$, training fraction $\phi^*(\lambda_{\text{invest}})$, and (if leveraged) leverage $\ell^*(\lambda_{\text{invest}})$, but demand outcomes are realized under the true process governed by $\lambda_{\text{true}}$.
 
@@ -188,6 +226,21 @@ Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\tex
 Since all three channels contribute weakly negative third derivatives, $W'''(\lambda_{\text{true}}) < 0$, and overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) produces a larger loss than underinvestment of equal magnitude.
 
 *Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and over-training raises $\phi^*$, which together push the default boundary closer to the operating region (higher coupon from larger investment, lower L-regime revenue from excessive training). This introduces an additional convex loss absent in the underinvestment case. The amplification is verified numerically. $\square$
+
+@tbl-result-taxonomy summarizes the analytical status of each result.
+
+| Result | Economic statement | Method | Domain |
+|:-------|:-------------------|:-------|:-------|
+| Proposition 1 | Optimal $K^*(\phi), \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Assumption 1 |
+| Proposition 2(i)--(ii) | Default boundary properties; faith-based survival; closed-form $\underline{\phi}$ | Closed-form / implicit function | Assumption 1 |
+| Proposition 2(iii)--(iv) | Leverage-training substitution; rival capacity effect | Analytical (mechanical) | Assumption 1 |
+| Proposition 3(i) | Existence of $X_P$ | Analytical (IVT) | Assumption 1 |
+| Proposition 3(i) | Uniqueness of $X_P$ (single crossing) | Computational verification | All parameterizations tested |
+| Proposition 3(ii) | $\phi_L^* \geq \phi_F^*$ | Computational regularity with analytical motivation | All calibration parameterizations |
+| Proposition 3(iii)--(v) | Comparative statics of preemption equilibrium | Numerical | All calibration parameterizations |
+| Numerical Finding 2 | Dario's dilemma | Numerical | All parameterizations tested |
+
+: Analytical status of model results. "Closed-form" indicates an explicit expression; "implicit function" indicates an analytically characterized equation solved numerically; "computational verification" indicates a property verified on a grid across all parameterizations; "numerical" indicates optimization-based computation with no closed-form expression. {#tbl-result-taxonomy tbl-colwidths="[20,30,22,28]"}
 
 ### B. Numerical Verification Methods {.unnumbered}
 
@@ -232,7 +285,6 @@ For $N = 4$, the full solution completes in under 2 seconds.
 
 ### D. Calibration Details and Data Sources {.unnumbered}
 
-See @tbl-param-mapping in @sec-calibration for the calibration status of each model parameter (directly observed, inferred, or chosen for discipline).
 The calibration uses data from the following sources:
 
 | Parameter | Source |
@@ -277,7 +329,7 @@ I assess robustness along four dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute all results.
-The qualitative findings are robust: the asymmetry of the AI investment dilemma, the high growth option fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
+The qualitative findings are robust: the asymmetry of Dario's dilemma, the high growth option fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.

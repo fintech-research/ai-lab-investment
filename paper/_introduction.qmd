@@ -24,7 +24,7 @@ Duopoly preemption changes both timing and training incentives: the leader alloc
 Second, the interaction of training allocation with leverage and default risk produces a *faith-based survival* mechanism: training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, lowering the default boundary (Proposition 2).
 Within the model, training investment sustains solvency by raising the expected post-switch continuation value, but only in parameter regions where this channel dominates current cash-flow weakness---a condition I characterize in closed form for the symmetric duopoly (@eq-phi-underbar).
 
-Third, I introduce the *AI investment dilemma*: the cost to a firm of investing according to a $\lambda$ that differs from its true belief. The asymmetry of this trade-off is captured by Anthropic CEO Dario Amodei's observation: "I could buy \$1 trillion of compute that starts at the end of 2027. If my revenue is not \$1 trillion dollars, if it's even \$800 billion, there's no force on Earth, there's no hedge on Earth that could stop me from going bankrupt" [@amodei2026cone].
+Third, I introduce *Dario's dilemma*: the cost to a firm of investing according to a $\lambda$ that differs from its true belief. The asymmetry of this trade-off is captured by Anthropic CEO Dario Amodei's observation: "I could buy \$1 trillion of compute that starts at the end of 2027. If my revenue is not \$1 trillion dollars, if it's even \$800 billion, there's no force on Earth, there's no hedge on Earth that could stop me from going bankrupt" [@amodei2026cone].
 If a firm is conservative (investing with $\lambda_{\text{invest}} < \lambda_{\text{true}}$), it invests too late and loses first-mover advantage; if aggressive ($\lambda_{\text{invest}} > \lambda_{\text{true}}$), it overbuilds and risks default.
 The training channel amplifies this asymmetry: an overly optimistic firm over-allocates to training, sacrificing the inference revenue it needs to survive.
 A stylized calibration to four AI lab archetypes illustrates that the asymmetry is substantial: aggressive overinvestment carries higher downside risk than conservative underinvestment, and the observed capital commitments are consistent with genuinely optimistic beliefs about AI timelines.
@@ -43,7 +43,7 @@ I verify numerically that the qualitative patterns survive with $N > 2$ firms in
 The paper proceeds as follows.
 @sec-model presents the model environment with training-inference allocation, regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
 @sec-calibration describes the stylized calibration to frontier AI lab archetypes and presents baseline numerical results.
-@sec-valuation develops quantitative implications: growth option decomposition, credit risk, the AI investment dilemma, and equity valuation sensitivity.
+@sec-valuation develops quantitative implications: growth option decomposition, credit risk, Dario's dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.
 @sec-conclusion concludes.
 Supplementary material on the $N$-firm numerical extension appears in Appendix C.
