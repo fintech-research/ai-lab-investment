@@ -42,6 +42,6 @@ Extending the model to $N>2$ firms following @bouis2009multistage is a natural d
 The paper proceeds as follows.
 @sec-model presents the model environment with training-inference allocation, regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
 @sec-calibration describes the stylized calibration to frontier AI lab archetypes and presents baseline numerical results.
-@sec-valuation develops quantitative implications: growth option decomposition, credit risk, Dario's dilemma, and equity valuation sensitivity.
+@sec-valuation develops quantitative implications: value decomposition, credit risk, Dario's dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.
 @sec-conclusion concludes.

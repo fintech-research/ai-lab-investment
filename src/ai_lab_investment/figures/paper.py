@@ -516,11 +516,11 @@ def create_lambda_timeline() -> plt.Figure:
     return fig
 
 
-# ── Figure 10: Growth option decomposition ───────────────────────
+# ── Figure 10: Value decomposition ────────────────────────────────
 
 
 def create_growth_decomposition() -> plt.Figure:
-    """Two-panel: value decomposition and growth-option fraction.
+    """Two-panel: value decomposition and capacity gap fraction.
 
     Uses the phi-aware model (optimal_trigger_capacity_phi,
     installed_value_with_phi) matching Phase 1 corrections.
@@ -557,7 +557,7 @@ def create_growth_decomposition() -> plt.Figure:
         assets + counterfactual,
         alpha=0.4,
         color="#ff7f0e",
-        label="Counterfactual capacity value",
+        label="Capacity gap value",
     )
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
     ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
@@ -569,7 +569,7 @@ def create_growth_decomposition() -> plt.Figure:
     growth_frac = np.where(total > 0, counterfactual / total * 100, 0)
     ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
     ax2.set_xlabel(r"Installed capacity ($K / K_H^*$)")
-    ax2.set_ylabel("Growth option fraction (%)")
+    ax2.set_ylabel("Capacity gap fraction (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
