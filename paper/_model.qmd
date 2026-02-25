@@ -92,7 +92,6 @@ Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ pe
 | $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
 | $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
 | $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
-| $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
 | $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\tilde{\lambda}$) | Derived (primitives) |
 | $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
 | $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
@@ -133,51 +132,37 @@ The second term is the present value of the H-regime training revenue that the f
 When $\phi = 0$ (all inference), $A_{\text{eff}}$ reduces to $K^\alpha / (r - \mu_L + \tilde{\lambda})$---the standard L-regime present value with no H-regime upside.
 When $\tilde{\lambda} = 0$ (no regime switching), $A_{\text{eff}} = [(1-\phi)K]^\alpha / (r - \mu_L)$---only inference revenue matters.*
 
-#### Option value in regime $H$
+#### Option value in regime $H$: the winner-take-all assumption
 
-In the absorbing high regime, the option to invest at trigger $X_H^*$ with capacity $K_H^*$ and training fraction $\phi_H^*$ has the standard real options form [@dixit1994investment]:
+A central modeling assumption is that a firm which has not invested before the regime switch is locked out of the post-AGI market:
 $$
-F_H(X) = \left(V_H(X_H^*, K_H^*, \phi_H^*) - I(K_H^*)\right) \left(\frac{X}{X_H^*}\right)^{\beta_H}, \quad X < X_H^*,
+F_H(X) = 0 \quad \text{for all } X.
 $$ {#eq-option-H}
-where $\beta_H > 1$ is the positive root of the characteristic equation:
-$$
-\frac{1}{2}\sigma_H^2 \beta(\beta - 1) + \mu_H \beta - r = 0.
-$$ {#eq-beta-H}
+This *winner-take-all* assumption reflects the view that transformative AI capabilities, once achieved, create an infrastructure moat that cannot be replicated from scratch.
+In a post-AGI world, competition is among firms that invested in training infrastructure *before* the capability threshold was crossed; a firm entering from zero faces prohibitive disadvantages in model quality, data, and deployment relationships.
+The assumption is consistent with industry discourse: the window to build meaningful AI infrastructure closes rapidly once a capability threshold is reached, because leading models compound their advantage through deployment feedback and data accumulation [@amodei2026cone].
 
-The optimal trigger satisfies the smooth-pasting condition:
-$$
-X_H^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{(\phi K)^{\alpha}} \left(c K^\gamma + \frac{\delta K}{r}\right),
-$$ {#eq-trigger-H}
-which shows the standard result that the trigger exceeds the Marshallian (NPV = 0) level by the factor $\beta_H / (\beta_H - 1) > 1$---the *option premium* that reflects the value of waiting.
-
-@fig-option-value depicts the option value $F_H(X)$ alongside the net present value of immediate investment for the baseline calibration.
-The option value lies everywhere above the NPV curve, with the gap---the shaded "value of waiting" region---largest at low demand levels.
-At $X = X_H^*$, the two curves meet tangentially (smooth pasting), and for $X > X_H^*$ the firm invests immediately so the option value equals the NPV.
-The figure illustrates the core real options result: for $X < X_H^*$, the firm strictly prefers to wait, and the magnitude of the value of waiting is substantial---exceeding the NPV by a factor of two or more at demand levels well below the trigger.
-
-![Option value versus NPV of immediate investment in regime $H$. The solid curve shows the option value $F_H(X)$; the dashed curve shows the NPV of investing immediately at the optimal scale $K_H^*$. The shaded region represents the "value of waiting"---the excess of the option value over the NPV. The vertical dotted line marks the optimal trigger $X_H^*$ where smooth pasting holds. Parameters: baseline calibration ($\sigma_H = 0.30$, $\mu_H = 0.06$, $r = 0.12$, $\alpha = 0.40$, $\gamma = 1.50$).](figures/fig_option_value.pdf){#fig-option-value}
+Setting $F_H = 0$ simplifies the L-regime option value structure by eliminating the continuation value of the post-switch investment option.
+A firm that has not invested and finds itself in regime $H$ receives nothing.
+This creates a powerful incentive to invest *before* the switch, and fundamentally changes the option value problem: the relevant option premium is determined by L-regime parameters (including the effective discount rate $r + \tilde{\lambda}$) rather than H-regime parameters alone.
 
 **Assumption 1** (Parameter admissibility).
 *The following conditions are maintained throughout:*
 
 *(A1) $r > \mu_H > \mu_L \geq 0$, $\sigma_L, \sigma_H > 0$, $\alpha \in (0,1)$, $\gamma > 1$, $c > 0$, $\delta \geq 0$, $\lambda_0 > 0$, $\xi \geq 0$, $\eta \in (0,1)$.*
 
-*(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$. Economically, the lower bound requires that cost convexity ($\gamma$) is strong enough relative to revenue concavity ($\alpha$) to limit optimal capacity; the upper bound requires that revenue concavity is not so severe that the marginal product of capacity is always below its marginal cost.*
+*(A2) The interiority condition $\alpha > 1 - 1/\beta_L^+$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$. This ensures an interior capacity solution in the L-regime option value optimization. When $\alpha \leq 1 - 1/\beta_L^+$, the K-optimization exponent $\beta_L^+(\alpha - 1) + 1 \leq 0$ and no interior capacity maximizes the option value---the firm's option value is zero. For the baseline single-firm benchmark ($\beta_L^+ \approx 3.01$), the threshold is $\alpha > 0.67$; however, in the duopoly with Tullock contest functions (@sec-duopoly), the effective revenue elasticity is $2\alpha$ (due to the contest share structure), relaxing the threshold to $\alpha > (1 - 1/\beta_L^+)/2 \approx 0.33$, which the baseline $\alpha = 0.40$ satisfies.*
 
-*(A3) The no-investment-in-$L$ condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of $\frac{1}{2}\sigma_L^2 \beta(\beta-1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. For the baseline calibration, $\beta_L^+ \approx 3.01$ and $(1-1/\beta_L^+)/\alpha \approx 0.67/0.40 = 1.67 > 1$; this condition is verified for all parameter values used in the paper.*
+*(A3) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
 
-*(A4) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
-
-*Conditions (A1)--(A4) are satisfied at the baseline calibration and verified numerically at all parameter values used in the core analytical results. When (A3) fails (e.g., $\alpha > 1 - 1/\beta_L^+ \approx 0.67$ at baseline parameters), the full two-term solution @eq-option-L-general applies and additional boundary conditions enter the optimization; see Appendix B for the treatment of the (A3) boundary in the sensitivity analysis. Condition (A2) holds at the baseline WACC $r = 0.12$ but may be violated at extreme archetype-specific WACCs; all archetype quantitative results are computed using full numerical optimization that does not require (A2).*
+*Conditions (A1)--(A3) are satisfied at the baseline calibration. For the single-firm benchmark, (A2) requires $\alpha > 0.67$; the comparative statics and figures in @sec-single-firm therefore use $\alpha = 0.70$ when illustrating L-regime option values. The duopoly and calibration results use the baseline $\alpha = 0.40$, which satisfies (A2) in the duopoly context. All archetype quantitative results are computed using full numerical optimization.*
 
 **Proposition 1** (Optimal capacity and training fraction).
-*The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. In the H-regime, the optimal capacity conditional on a given $\phi$ is:*
+*Under $F_H = 0$ (@eq-option-H), the firm's option value in regime $L$ is $F_L(X) = A_1 X^{\beta_L^+}$ (see @eq-option-L below). The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize $F_L(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_L^+} / [\delta K/r + cK^\gamma]^{\beta_L^+ - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal capacity conditional on a given $\phi$ is:*
 $$
-K^*(\phi) = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}} \cdot \phi^{-\alpha/(\gamma - 1)},
+K^*(\phi) = \left[\frac{\delta\,(\alpha \beta_L^+ - \beta_L^+ + 1)}{r\,c\,(\gamma(\beta_L^+ - 1) - \alpha \beta_L^+)}\right]^{\frac{1}{\gamma - 1}} \cdot \phi^{-\alpha/(\gamma - 1)},
 $$
-*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. Note that this is the optimal capacity for a given training fraction; the joint optimum $(K^*, \phi^*)$ solves the coupled system $K^*(\phi^*)$ and the first-order condition for $\phi^*$ simultaneously.*
-
-*When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (i.e., no interior L-regime trigger; see the condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ discussed after @eq-option-L-general), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. For exogenous $\tilde{\lambda}$ ($\xi = 0$), the optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
+*provided $\alpha > 1 - 1/\beta_L^+$ (Assumption 1, condition A2). For exogenous $\tilde{\lambda}$ ($\xi = 0$), the optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
 
 *(i) $\phi^*$ is increasing in $\lambda_0$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
@@ -198,50 +183,39 @@ Panel (d) demonstrates that higher operating cost $\delta$ raises both the trigg
 
 #### Option value in regime $L$
 
-In the low regime, the firm's investment option reflects both the possibility of investing in regime $L$ and the potential for a regime switch to $H$.
-The option value satisfies the Hamilton-Jacobi-Bellman equation incorporating the regime-switching term:
+In the low regime, the firm's investment option satisfies the Hamilton-Jacobi-Bellman equation incorporating the regime-switching term:
 $$
-\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' + \tilde{\lambda}\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0,
+\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' + \tilde{\lambda}\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0.
 $$ {#eq-hjb-L}
-where $F_H(X) = B_H X^{\beta_H}$ is the known H-regime *option* value (@eq-option-H)---the value of the investment option conditional on being in regime $H$ without having invested yet, not the installed value $V_H$.
-Substituting and rearranging, this becomes a second-order Euler ODE with non-homogeneous term $\tilde{\lambda} B_H X^{\beta_H}$:
+Under the winner-take-all assumption $F_H(X) = 0$ (@eq-option-H), the regime-switching term reduces to $-\tilde{\lambda} F_L$, and the HJB becomes a *homogeneous* second-order Euler ODE:
 $$
-\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' - (r + \tilde{\lambda})\, F_L + \tilde{\lambda} B_H X^{\beta_H} = 0.
+\tfrac{1}{2}\sigma_L^2 X^2 F_L'' + \mu_L X F_L' - (r + \tilde{\lambda})\, F_L = 0.
 $$
+The arrival rate $\tilde{\lambda}$ enters through the effective discount rate $r + \tilde{\lambda}$: the possibility of being locked out if the regime switches before investment acts as an additional cost of delay.
 
-The general solution has two components.
-The *homogeneous* solution has characteristic equation $\tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$, with positive root $\beta_L^+$ that depends on L-regime parameters $(\sigma_L, \mu_L)$ and the effective discount rate $r + \tilde{\lambda}$.
-The *particular* solution, of the form $C \cdot X^{\beta_H}$, arises from the regime-switching term, with coefficient:
+The characteristic equation $\tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}) = 0$ has positive root $\beta_L^+$ that depends on L-regime parameters $(\sigma_L, \mu_L)$ and the effective discount rate $r + \tilde{\lambda}$.
+Applying the boundary condition $F_L(0) = 0$ (which eliminates the negative root), the option value is:
 $$
-C = \frac{-\tilde{\lambda}\, B_H}{Q_L(\beta_H)}, \quad Q_L(\beta) \equiv \tfrac{1}{2}\sigma_L^2 \beta(\beta - 1) + \mu_L \beta - (r + \tilde{\lambda}).
-$$ {#eq-particular-C}
-Applying the boundary condition $F_L(0) = 0$ (which eliminates the negative root) yields:
-$$
-F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
-$$ {#eq-option-L-general}
+F_L(X) = A_1 X^{\beta_L^+}, \quad X < X^*,
+$$ {#eq-option-L}
+where the coefficient $A_1$ is determined by value-matching and smooth-pasting at the investment trigger $X^*$.
+The single-term structure is a direct consequence of $F_H = 0$: with no continuation value from the regime switch for an uninvested firm, the option value has a standard power-law form with exponent $\beta_L^+$ determined entirely by L-regime parameters and $\tilde{\lambda}$.
 
-**When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
-The homogeneous coefficient $A_1$ is determined by value-matching and smooth-pasting at the L-regime investment trigger.
-When no interior trigger exists in regime $L$---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that the option to wait is sufficiently valuable that the firm never invests in $L$ and instead waits for the regime switch---there are no boundary conditions to pin down $A_1$, and the option value reduces to $F_L(X) = C \cdot X^{\beta_H}$.
-For the baseline calibration ($\sigma_L = 0.25$, $\mu_L = 0.01$, $r = 0.12$, $\tilde{\lambda} = 0.10$), the option premium ratio exceeds unity, so this simplification is valid and the option value derives entirely from the expected regime switch.^[With these parameters, $\beta_L^+ \approx 3.01$ and $(1 - 1/\beta_L^+)/\alpha \approx 0.67/0.40 = 1.67 > 1$. The condition fails for sufficiently high $\alpha$ or low volatility, in which case the full two-term solution @eq-option-L-general must be used.]
-
-When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
+The investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
-X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
+X^* = \frac{\beta_L^+}{\beta_L^+ - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
 $$ {#eq-trigger-phi}
-which generalizes @eq-trigger-H by replacing the H-regime revenue coefficient with the effective coefficient $A_{\text{eff}}$ that combines both regimes.
+where $A_{\text{eff}}$ is defined in @eq-a-eff and the option premium $\beta_L^+ / (\beta_L^+ - 1) > 1$ reflects the value of waiting.
 Note that @eq-trigger-phi is an implicit equation: $A_{\text{eff}}(\phi^*, K^*)$ itself depends on the optimal policy, so the trigger is determined jointly with $(K^*, \phi^*)$ through the system of first-order conditions (Appendix A).
-The option premium $\beta_H / (\beta_H - 1) > 1$ still applies, reflecting the value of waiting, but the relevant revenue metric now accounts for both L-regime inference earnings and the expected H-regime training prize.
 
-**Remark 1** (Role of $\tilde{\lambda}$).
-*The endogenous arrival rate $\tilde{\lambda}$ has two effects on investment timing and allocation. First, higher $\tilde{\lambda}$ increases the weight on the H-regime term in $A_{\text{eff}}$ (@eq-a-eff), raising the effective revenue coefficient and lowering the investment trigger---the firm invests sooner because the expected payoff from the regime switch is higher. Second, higher $\tilde{\lambda}$ shifts the optimal training fraction $\phi^*$ upward, because the marginal value of training compute (which determines H-regime revenue) increases relative to the marginal value of inference compute (which determines L-regime revenue). For the baseline calibration ($\mu_H - \mu_L = 0.05$, $\sigma_H = 0.30$), higher $\tilde{\lambda}$ raises the option value monotonically and encourages earlier, larger, and more training-intensive investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively and allocate more compute to training.*
+**Remark 1** (Dual role of $\tilde{\lambda}$).
+*Under $F_H = 0$, the arrival rate $\tilde{\lambda}$ affects investment through two distinct channels. First, the* revenue channel: *higher $\tilde{\lambda}$ increases the weight on the H-regime term in $A_{\text{eff}}$ (@eq-a-eff), raising the effective revenue coefficient and lowering the trigger. Second, the* option premium channel: *higher $\tilde{\lambda}$ raises the effective discount rate $r + \tilde{\lambda}$, which increases $\beta_L^+$ and pushes the option premium $\beta_L^+ / (\beta_L^+ - 1)$ toward unity---the value of waiting shrinks because the risk of being locked out grows. Both channels reinforce each other: higher $\tilde{\lambda}$ simultaneously raises the expected payoff and reduces the benefit of delay. Additionally, higher $\tilde{\lambda}$ shifts the optimal training fraction $\phi^*$ upward, because the marginal value of training compute (which determines H-regime revenue) increases relative to inference compute. The dual-channel mechanism encourages earlier, larger, and more training-intensive investment---consistent with the observation that AI labs with more optimistic timeline beliefs invest more aggressively.*
 
 @fig-lambda-option-value quantifies the effect of $\tilde{\lambda}$ on the low-regime option value.
-Panel (a) shows that $F_L(X)$ increases concavely in $\tilde{\lambda}$: firms with higher arrival-rate beliefs value the investment option more because they expect the high-demand regime sooner.
-The dashed line shows the post-adoption option value $F_H(X)$, which is independent of $\tilde{\lambda}$; for sufficiently high $\tilde{\lambda}$, the pre-adoption value $F_L$ approaches $F_H$ as the expected switch time shrinks to zero.
-Panel (b) plots the particular-solution coefficient $C$, which captures the additional value from regime switching; it increases monotonically in $\tilde{\lambda}$, confirming that the mechanism operates through the continuation value channel.
+Panel (a) shows that $F_L(X)$ increases in $\tilde{\lambda}$: firms with higher arrival-rate beliefs value the investment option more because the expected H-regime payoff is larger.
+Panel (b) plots the option premium $\beta_L^+ / (\beta_L^+ - 1)$, which declines toward unity as $\tilde{\lambda}$ increases: higher arrival rates compress the value of waiting, reflecting the growing urgency of investing before the window closes.
 
-![Effect of regime-switch arrival rate $\tilde{\lambda}$ on pre-adoption option value. (a) Option value $F_L(X)$ in regime $L$ (solid) and $F_H(X)$ in regime $H$ (dashed, independent of $\tilde{\lambda}$), evaluated at $X = 0.01$. (b) Particular-solution coefficient $C$ capturing the value of the regime-switch option. Higher $\tilde{\lambda}$ raises $F_L$ toward $F_H$ by increasing the expected value of the switching opportunity.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
+![Effect of regime-switch arrival rate $\tilde{\lambda}$ on pre-adoption investment. (a) Option value $F_L(X)$ in regime $L$ at $X = 0.003$, computed with $\alpha = 0.70$ (Assumption 1, A2). (b) Option premium $\beta_L^+ / (\beta_L^+ - 1)$, which declines toward unity as $\tilde{\lambda}$ rises---reflecting the dual channel through which higher arrival rates reduce the value of waiting.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
 
 ### Duopoly with Default Risk {#sec-duopoly}
 

@@ -27,40 +27,40 @@
 
 #### Proof of Proposition 1 {.unnumbered}
 
-*Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A4). It applies in the parameter region where the simplified option value $F_L(X) = C \cdot X^{\beta_H}$ is valid (condition A3)---i.e., where no interior L-regime trigger exists, so the firm waits for the regime switch rather than investing in the low regime (see @eq-option-L-general and the discussion following it).^[For parameters outside this region (e.g., sufficiently high $\alpha$ or low $\sigma_L$), the full two-term solution @eq-option-L-general applies and the optimization involves additional boundary conditions. All figures and tables in the paper verify that condition (A3) holds at the specific parameter values used.] *Scope.* The proof is stated for exogenous $\tilde{\lambda}$ ($\xi = 0$); the extension to endogenous $\tilde{\lambda}$ is discussed in Corollary 1.
-The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}$ by choosing $X^*$, $K$, and $\phi$ jointly.
+*Maintained assumptions.* The proof requires Assumption 1, in particular conditions (A2)--(A3). Under $F_H = 0$ (@eq-option-H), the option value is $F_L(X) = A_1 X^{\beta_L^+}$ (@eq-option-L). *Scope.* The proof is stated for exogenous $\tilde{\lambda}$ ($\xi = 0$); the extension to endogenous $\tilde{\lambda}$ is discussed in Corollary 1.
+The firm maximizes the option value $F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_L^+}$ by choosing $X^*$, $K$, and $\phi$ jointly.
 
 *Step 1: Optimal trigger given $(K, \phi)$.*
 The value-matching and smooth-pasting conditions yield:
 $$
-X^*(K, \phi) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K/r + cK^\gamma}{A_{\text{eff}}(\phi, K)},
+X^*(K, \phi) = \frac{\beta_L^+}{\beta_L^+ - 1} \cdot \frac{\delta K/r + cK^\gamma}{A_{\text{eff}}(\phi, K)},
 $$
 where $A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \tilde{\lambda}) + \tilde{\lambda} / (r - \mu_L + \tilde{\lambda}) \cdot (\phi K)^\alpha \cdot A_H$ is the effective revenue coefficient.
 
 *Step 2: NPV at the trigger.*
-Define $b(K) = cK^\gamma + \delta K / r$ (total cost). The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
+Define $b(K) = cK^\gamma + \delta K / r$ (total cost). The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_L^+}{\beta_L^+ - 1} b(K)$, so the NPV at the trigger is:
 $$
-V - I = \frac{1}{\beta_H - 1}\, b(K).
+V - I = \frac{1}{\beta_L^+ - 1}\, b(K).
 $$
 
 *Step 3: Joint optimization over $(K, \phi)$.*
 Substituting the trigger and NPV into $F(X_0)$:
 $$
-F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
+F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_L^+}}{b(K)^{\beta_L^+ - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
 $$
-where $\mathcal{C} = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H} > 0$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}$.
+where $\mathcal{C} = \frac{1}{\beta_L^+ - 1}\left(\frac{(\beta_L^+ - 1) X_0}{\beta_L^+}\right)^{\beta_L^+} > 0$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_L^+} / b^{\beta_L^+ - 1}$.
 
 *Step 4: First-order condition for $K$.*
 Setting $(\partial \ln h / \partial K) = 0$:
 $$
-\frac{\beta_H}{A_{\text{eff}}} \frac{\partial A_{\text{eff}}}{\partial K} = \frac{(\beta_H - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
+\frac{\beta_L^+}{A_{\text{eff}}} \frac{\partial A_{\text{eff}}}{\partial K} = \frac{(\beta_L^+ - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
 $$ {#eq-foc-K}
-which for the pure H-regime case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simplifies to the closed-form expression in Proposition 1.
+which for the pure-training case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simplifies to the closed-form expression in Proposition 1.
 
 *Step 5: Existence of interior $\phi^*$ (Lemma).*
 
 Write $A_{\text{eff}}(\phi) = w_L \cdot [(1-\phi)K]^\alpha + w_H \cdot (\phi K)^\alpha$, where $w_L = 1/(r - \mu_L + \tilde{\lambda}) > 0$ and $w_H = \tilde{\lambda} A_H / (r - \mu_L + \tilde{\lambda}) > 0$.
-Since $b(K)$ is independent of $\phi$, maximizing $h$ over $\phi$ is equivalent to maximizing $A_{\text{eff}}(\phi)^{\beta_H}$, or equivalently $A_{\text{eff}}(\phi)$.
+Since $b(K)$ is independent of $\phi$, maximizing $h$ over $\phi$ is equivalent to maximizing $A_{\text{eff}}(\phi)^{\beta_L^+}$, or equivalently $A_{\text{eff}}(\phi)$.
 
 The first derivative with respect to $\phi$ is:
 $$
@@ -142,14 +142,14 @@ Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\al
 *Part (i): Existence of $X_P$ (Analytical).*
 The argument follows @huisman2015strategic, Theorem 1, applied to the enriched payoff functions incorporating training allocation and default risk. I verify that continuity and the required boundary conditions hold for the enriched model.
 
-**Continuity and monotonicity.** The leader value $L(X)$ is continuous and increasing in $X$ for $X > X_D$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. Default risk implies $L(X_D) = 0$; for $X > X_D$ the value is smooth and increasing. The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
+**Continuity and monotonicity.** The leader value $L(X)$ is continuous and increasing in $X$ for $X > X_D$, since L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. Default risk implies $L(X_D) = 0$; for $X > X_D$ the value is smooth and increasing. The follower option value $F(X) \propto X^{\beta_L^+}$ is continuous, increasing, and convex, with $\beta_L^+ > 1$.
 
 **Boundary conditions.** At $X = 0$: $L(0) < 0$ (the leader has incurred sunk cost $I(K_L)$) while $F(0) = 0$, so $F > L$. At $X = X_F^*$: the leader has accumulated monopoly rents over the interval since entry while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$. This holds because the leader's cumulative monopoly-phase profits (earned with contest share $s_L = 1$) exceed the follower's option value at the point of indifference. Formally, the leader's installed value at $X_F^*$ includes the present value of monopoly revenue over $[X_P, X_F^*]$ plus the duopoly continuation value, which exceeds the follower's option value $F(X_F^*)$ because the follower at $X_F^*$ is indifferent between investing and waiting (its NPV is zero at the trigger), while the leader strictly benefits from having entered earlier.
 
 By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$.
 
 *Uniqueness of $X_P$ (Computational).*
-In the standard @huisman2015strategic framework, uniqueness follows from single crossing: the leader value $L(X)$ crosses the follower value $F(X)$ exactly once on $(0, X_F^*)$. In their model, $L(X)$ is approximately affine in $X$ (installed revenue minus costs) while $F(X) \propto X^{\beta_H}$ is strictly convex with $F(0) = 0 > L(0)$, yielding at most one crossing.
+In the standard @huisman2015strategic framework, uniqueness follows from single crossing: the leader value $L(X)$ crosses the follower value $F(X)$ exactly once on $(0, X_F^*)$. In their model, $L(X)$ is approximately affine in $X$ (installed revenue minus costs) while $F(X) \propto X^{\beta_L^+}$ is strictly convex with $F(0) = 0 > L(0)$, yielding at most one crossing.
 
 The enriched payoff environment of this paper introduces additional features---capacity choice, training allocation, leverage with default, and regime switching---that modify the value function shapes beyond the standard framework. In particular: (a) the default kink at $X_D$ introduces a non-smooth point in $L(X)$; (b) the training allocation creates an additional channel through which the leader value depends on $X$; and (c) the regime-switching option adds a convex component to both $L(X)$ and $F(X)$. Providing analytical sufficient conditions for single crossing in this enriched environment---while possible in principle through restrictions on parameter ranges---would require establishing shape properties (concavity/convexity) of the leader value function that depend on the interaction of all model features simultaneously.
 
@@ -204,9 +204,7 @@ Single crossing of leader and follower values is verified at each parameterizati
 No case of multiple crossings was found across all parameterizations tested (varying $\sigma_H \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda_0 \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
 Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
 
-**Assumption (A3) boundary.** The no-investment-in-$L$ condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 3.01$), this yields the constraint $\alpha \leq 1 - 1/\beta_L^+ \approx 0.67$. The baseline $\alpha = 0.40$ satisfies (A3) comfortably, and the condition holds throughout the sensitivity range $\alpha \in [0.20, 0.60]$ used in @tbl-elasticities. For $\alpha > 0.67$, the simplified option value $F_L = C \cdot X^{\beta_H}$ no longer applies and the full two-term solution @eq-option-L-general must be used. I have verified that the qualitative patterns (interior $\phi^*$, preemption, faith-based survival) are preserved when using the full two-term solution in the (A3)-violating region, but the numerical magnitudes differ.
-
-**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds comfortably. At the extreme archetype WACCs: the hyperscaler ($r = 0.10$) yields $\beta_H \approx 1.33$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 0.63 < 1/\gamma = 0.67$, violating the lower bound; the compute racer ($r = 0.18$) yields $\beta_H \approx 1.84$ and $(\beta_H - 1)/(\alpha\beta_H) \approx 1.14 > 1$, violating the upper bound. The analytical Proposition 1 capacity formula therefore applies at the baseline and intermediate WACCs ($r = 0.12$, $0.14$, $0.15$) but not at the extremes. All archetype-specific quantitative results in @sec-calibration and @sec-valuation are computed using the full numerical optimization, which does not require (A2); the archetype results are therefore valid regardless of whether (A2) holds analytically.
+**Assumption (A2) interiority condition.** The interiority condition (A2) requires $\alpha > 1 - 1/\beta_L^+$, where $\beta_L^+$ is the positive root of the L-regime characteristic equation with effective discount rate $r + \tilde{\lambda}$. At the baseline ($\beta_L^+ \approx 3.01$), this yields $\alpha > 0.67$. For the *single-firm benchmark*, the baseline $\alpha = 0.40$ violates (A2) and no interior capacity solution exists---the standalone firm's option value is zero. However, in the *duopoly* with Tullock contest functions, the effective revenue elasticity is $2\alpha$ (because a small firm's revenue scales as $K^{2\alpha}$ through the contest share), relaxing the threshold to $\alpha > (1 - 1/\beta_L^+)/2 \approx 0.33$, which the baseline satisfies. Consequently, the single-firm comparative statics use $\alpha = 0.70$ when illustrating L-regime option values, while all duopoly and calibration results use the baseline $\alpha = 0.40$. All archetype-specific quantitative results in @sec-calibration and @sec-valuation are computed using full numerical optimization.
 
 ### C. N-Firm Numerical Extension {.unnumbered}
 
