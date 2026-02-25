@@ -192,7 +192,7 @@ class RevealedBeliefs:
         try:
             params = self.calibration.to_model_params(lam=lam)
             model = SingleFirmModel(params)
-            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+            _X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
             I_K = model.investment_cost(K_star)
             F = model.option_value_with_phi(X_ref)
             if I_K <= 0:

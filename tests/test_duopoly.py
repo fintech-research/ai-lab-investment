@@ -243,7 +243,7 @@ class TestFollower:
 class TestLeader:
     def test_leader_monopolist_trigger_positive(self, model):
         """Leader's monopolist trigger should be positive."""
-        X_L, K_L, phi_L, lev_L = model.solve_leader_monopolist(regime="H")
+        X_L, K_L, phi_L, _lev_L = model.solve_leader_monopolist(regime="H")
         assert X_L > 0
         assert K_L > 0
         assert 0 < phi_L < 1
