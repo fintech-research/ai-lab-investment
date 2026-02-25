@@ -36,25 +36,29 @@ ai-lab-investment/
 │   │   ├── duopoly.py           # Duopoly with default risk
 │   │   ├── nfirm.py             # N-firm sequential equilibrium
 │   │   ├── parameters.py        # Parameter definitions and calibration
+│   │   ├── symbolic_duopoly.py  # SymPy symbolic verification of duopoly
 │   │   └── valuation.py         # Revealed beliefs and growth decomposition
 │   ├── calibration/             # Phase 4
 │   │   ├── data.py              # Data loading and preprocessing
 │   │   └── revealed_beliefs.py  # Revealed beliefs inference algorithm
-│   ├── figures/                 # Figure generation by phase
-│   │   ├── phase1.py            # Base model figures
-│   │   ├── phase2.py            # Duopoly figures
-│   │   ├── phase3.py            # N-firm figures
-│   │   ├── phase4.py            # Calibration figures
-│   │   └── phase5.py            # Valuation/revealed beliefs figures
+│   ├── figures/                 # Figure generation
+│   │   ├── paper.py             # All 11 paper figures (primary source of truth)
+│   │   ├── phi_allocation.py    # Training/inference allocation figures
+│   │   ├── phase1.py            # Exploratory base model figures
+│   │   ├── phase2.py            # Exploratory duopoly figures
+│   │   ├── phase3.py            # Exploratory N-firm figures
+│   │   ├── phase4.py            # Exploratory calibration figures
+│   │   └── phase5.py            # Exploratory valuation figures
 │   └── utils/
 │       ├── directories.py       # Directory path resolution
 │       └── files.py             # Timestamped file naming
-├── tests/                       # 145 tests across 6 test files
+├── tests/                       # 227 tests across 7 test files
 │   ├── test_base_model.py
 │   ├── test_calibration.py
 │   ├── test_duopoly.py
 │   ├── test_nfirm.py
 │   ├── test_parameters.py
+│   ├── test_symbolic_duopoly.py
 │   └── test_valuation.py
 ├── paper/                       # Research paper (Quarto -> PDF)
 │   ├── index.qmd                # Main file; includes all sections
@@ -65,18 +69,11 @@ ai-lab-investment/
 │   ├── _valuation.qmd           # Revealed beliefs methodology, growth decomposition
 │   ├── _discussion.qmd          # Discussion and policy implications
 │   ├── _conclusion.qmd
+│   ├── _literature.qmd          # Literature review
 │   ├── _appendix.qmd            # Proofs (Propositions 1, 5)
-│   ├── generate_figures.py      # Publication-quality figure generation (11 figures)
+│   ├── generate_figures.py      # Thin wrapper: applies styles and saves output
 │   ├── references.bib           # BibTeX references
-│   └── *.pdf / *.png            # Generated figures
-├── slides/long-form/            # Conference slides (Quarto -> RevealJS)
-│   ├── index.qmd
-│   ├── _introduction.qmd
-│   ├── _model.qmd
-│   ├── _results.qmd
-│   ├── _calibration.qmd
-│   ├── _revealed_beliefs.qmd
-│   └── _conclusion.qmd
+│   └── figures/                 # Generated figures (*.pdf, *.png)
 ├── conf/config.yaml             # Hydra pipeline configuration
 ├── plan.md                      # Detailed 5-phase research plan
 ├── CLAUDE.md                    # Project instructions and conventions
@@ -94,9 +91,9 @@ Your review covers two areas, weighted roughly equally.
 
 Verify that the implementation is correct, the tests are meaningful, and the code faithfully implements the mathematics described in the paper.
 
-### Part 2: Paper and Presentation Review
+### Part 2: Paper Review
 
-Evaluate the paper as a referee would for a top finance or economics journal (AER, Econometrica, JF, RFS). Assess the slides for clarity and conference readiness.
+Evaluate the paper as a referee would for a top finance or economics journal (AER, Econometrica, JF, RFS).
 
 ---
 
@@ -115,7 +112,7 @@ Work through every section below. For each item, state whether it **passes**, **
 ### 2. Code Quality and Testing
 
 - [ ] **Test coverage**: Run `just test` (or `uv run pytest --cov`) and report coverage. Identify any untested functions or branches in the models.
-- [ ] **Test meaningfulness**: Read through the 6 test files. Are the tests checking economically meaningful properties (e.g., option values are positive, triggers decrease with volatility, default boundary lies below investment trigger)? Or are they trivial/tautological?
+- [ ] **Test meaningfulness**: Read through the 7 test files. Are the tests checking economically meaningful properties (e.g., option values are positive, triggers decrease with volatility, default boundary lies below investment trigger)? Or are they trivial/tautological?
 - [ ] **Edge cases**: Are boundary conditions tested? (e.g., zero volatility, single firm in N-firm model, lambda = 0 or very large lambda)
 - [ ] **Numerical stability**: Check for potential numerical issues: division by zero guards, overflow in exponentials, ill-conditioned matrices, convergence failures.
 - [ ] **Code organization**: Is the code well-structured? Are responsibilities cleanly separated between modules? Any code smells or unnecessary complexity?
@@ -149,9 +146,8 @@ Review the paper as a referee for a top journal. Address each sub-item.
 
 ### 4. Figures
 
-- [ ] **Paper figures**: Review all 10 figures generated by `paper/generate_figures.py`. For each figure, verify: (a) it accurately represents the underlying model output, (b) axes labels and legends are correct, (c) it is publication-quality (fonts, resolution, layout). List any issues.
-- [ ] **Code-figure consistency**: Spot-check at least 3 figures by tracing the data from model code through the figure generation code to the final plot. Verify the pipeline is correct.
-- [ ] **Slide figures**: Check that figures in `slides/long-form/figures/` are consistent with the paper figures.
+- [ ] **Paper figures**: Review all 11 figures in `paper/figures/`, generated by `paper/generate_figures.py` (which delegates all computation to `src/ai_lab_investment/figures/paper.py`). For each figure, verify: (a) it accurately represents the underlying model output, (b) axes labels and legends are correct, (c) it is publication-quality (fonts, resolution, layout). List any issues.
+- [ ] **Code-figure consistency**: Spot-check at least 3 figures by tracing the data from model code through `figures/paper.py` to the final plot. Verify the pipeline is correct.
 
 ### 5. Calibration and Results
 
@@ -160,12 +156,6 @@ Review the paper as a referee for a top journal. Address each sub-item.
 - [ ] **Comparative statics**: Verify that reported comparative statics (how triggers/values change with parameters) are consistent with economic intuition and the model's predictions.
 - [ ] **Revealed beliefs results**: Are the implied belief estimates for stylized firms plausible? Do they pass a basic sanity check?
 - [ ] **Growth decomposition**: Is the decomposition of firm value into installed capacity value and growth option value correctly computed and reported?
-
-### 6. Slides Review
-
-- [ ] **Completeness**: Do the slides cover the key contributions, model, results, and policy implications?
-- [ ] **Clarity**: Are the slides readable and self-contained for a conference audience? Is math appropriately simplified for presentation?
-- [ ] **Consistency with paper**: Do results, figures, and claims in the slides match the paper exactly?
 
 ---
 
@@ -191,7 +181,7 @@ Write your review as a single Markdown file with the following structure:
 ### 2. Code Quality and Testing
 [Findings for each checklist item]
 
-## Part 2: Paper and Presentation Review
+## Part 2: Paper Review
 ### 3. Paper Content Review
 [Findings for each sub-section]
 
@@ -199,9 +189,6 @@ Write your review as a single Markdown file with the following structure:
 [Findings for each checklist item]
 
 ### 5. Calibration and Results
-[Findings for each checklist item]
-
-### 6. Slides Review
 [Findings for each checklist item]
 
 ## Summary of Issues
