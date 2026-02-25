@@ -66,6 +66,7 @@ P(\text{default within } T) \approx \Phi\left(-\frac{\ln(X/X_D) + (\mu_s - \frac
 $$
 where $\Phi$ is the standard normal CDF.
 This is the structural default probability from @merton1974pricing, adapted to our setting with regime-dependent parameters.
+Since $\mu_s$ is the risk-adjusted (certainty-equivalent) drift, this yields a risk-neutral default probability consistent with the spread calculation; the physical-measure default probability (using the unadjusted drift) would be lower.
 
 @fig-credit-risk presents the credit risk implications.
 Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level three times the default boundary.
@@ -113,6 +114,11 @@ The loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ (correct b
 A firm investing as if $\lambda = 0.02$ (deep pessimism) loses approximately 25\% of value, while a firm investing as if $\lambda = 0.50$ (extreme optimism) loses approximately 20\%---a substantial asymmetry driven by the training allocation channel.
 With leverage ($\ell = 0.40$, dashed line), the two curves are nearly identical, reflecting the negligible role of default risk at the model's scale; at much larger absolute investments, leverage-amplified losses would widen the gap on the aggressive side.
 The shaded region marks the "danger zone" where value losses from overinvestment exceed 10\%.
+
+The expected-value metric $\Delta V$ tells only half the story.
+The 5-year default probability under the true demand process reveals a complementary asymmetry: at $\ell = 0.40$, a conservative firm ($\lambda_{\text{invest}} = 0.02$) faces a default probability of 0.42\%---barely above the 0.34\% baseline---because it enters at a higher trigger with less capacity and lower coupon.
+An aggressively overinvesting firm ($\lambda_{\text{invest}} = 0.50$) faces a default probability of 2.69\%, nearly eight times the baseline, because it enters at a lower trigger with larger capacity and higher coupon obligations.
+The dilemma is thus genuinely two-sided: underinvestment is costlier in expected value, but overinvestment carries substantially higher tail risk.
 
 ![Dario's dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The left branch (underinvestment) rises more steeply than the right (overinvestment), driven by the cost of under-allocating to training. The shaded region marks losses exceeding 10\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
 

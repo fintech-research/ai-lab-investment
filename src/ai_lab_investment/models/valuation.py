@@ -387,6 +387,21 @@ class ValuationAnalysis:
         value_loss = ev_optimal - ev_mismatch
         value_loss_pct = value_loss / abs(ev_optimal) if ev_optimal != 0 else 0
 
+        # Conditional default probabilities under true dynamics
+        from scipy.stats import norm as _norm
+
+        def _default_prob(X_entry, K, phi, horizon=5.0):
+            X_D = duo_true.default_boundary(phi, K, 0.0, 0.0)
+            if X_D <= 0 or X_entry <= X_D:
+                return 1.0 if X_D > 0 else 0.0
+            d2 = (
+                np.log(X_entry / X_D) + (p_true.mu_L - 0.5 * p_true.sigma**2) * horizon
+            ) / (p_true.sigma * np.sqrt(horizon))
+            return float(_norm.cdf(-d2))
+
+        dp_optimal = _default_prob(X_true, K_true, phi_true)
+        dp_mismatch = _default_prob(X_invest, K_invest, phi_invest)
+
         return {
             "lambda_true": lambda_true,
             "lambda_invest": lambda_invest,
@@ -395,6 +410,8 @@ class ValuationAnalysis:
             "ev_mismatch": ev_mismatch,
             "value_loss": value_loss,
             "value_loss_pct": value_loss_pct,
+            "default_prob_optimal": dp_optimal,
+            "default_prob_mismatch": dp_mismatch,
             "is_conservative": lambda_invest < lambda_true,
         }
 

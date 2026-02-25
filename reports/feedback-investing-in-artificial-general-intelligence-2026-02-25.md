@@ -35,7 +35,7 @@ The derivation of the default boundary and the quantitative support for "Dario's
 
 Finally, while the introduction frames the dilemma as an asymmetry in downside/bankruptcy risk, the quantitative metric $\Delta V$ in Section 4.3.2 measures expected value loss (NPV). Numerical Finding 2 indicates that the value loss from conservative underinvestment exceeds that of aggressive overinvestment, which seems to conceptually flip the "bankruptcy risk" framing of the Amodei quote. To support the "downside risk" narrative, it would be helpful to present the asymmetry conditional on an explicit tail-risk or default probability metric rather than expected enterprise value.
 
-**Status**: [Pending]
+**Status**: [Addressed]
 
 ---
 
@@ -43,7 +43,7 @@ Finally, while the introduction frames the dilemma as an asymmetry in downside/b
 
 ### 1. Conflation of training value slope with survival condition
 
-**Status**: [Pending]
+**Status**: [Addressed]
 
 **Quote**:
 > Write the default boundary as $X_{D}=N(\ell) / A_{\text {eff }, i}\left(\phi_{i}\right)$, where $N(\ell)=\left[\beta_{s}^{-} /\left(\beta_{s}^{-}-1\right)\right] \cdot\left(c_{d} \ell I(K) / r+\delta K / r\right)$ is strictly increasing in leverage, and $A_{\text {eff }, i}\left(\phi_{i}\right)$ is increasing in $\phi_{i}$ when the faith-based survival condition (Equation 21) holds (from part ii). A firm can therefore maintain a given default boundary $X_{D}$ while increasing leverage $\ell$ (raising the numerator) by simultaneously increasing training allocation $\phi_{i}$ (raising $A_{\text {eff }, i}$ in the denominator through the H -regime term).
@@ -59,7 +59,7 @@ As a result, the statement that “$A_{\text{eff},i}(\phi_i)$ is increasing in $
 
 ### 2. Logical error in boundary condition at X_F*
 
-**Status**: [Pending]
+**Status**: [Addressed]
 
 **Quote**:
 > At $X=X_{F}^{*}$ : the leader has accumulated monopoly rents over the interval since entry while the follower has just triggered, so $L\left(X_{F}^{*}\right)>F\left(X_{F}^{*}\right)$. This holds because the leader's cumulative monopoly-phase profits (earned with contest share $s_{L}=1$ ) exceed the follower's option value at the point of indifference.
@@ -73,7 +73,7 @@ Because you then use $L(X)-F(X)$ on $(0,X_F^*)$ in an intermediate‑value‑the
 
 ### 3. Contradictory definitions of Leader Value L(X)
 
-**Status**: [Pending]
+**Status**: [Addressed]
 
 **Quote**:
 > Default risk implies $L\left(X_{D}\right)=0$; for $X>X_{D}$ the value is smooth and increasing. ... At $X=0: L(0)<0$ (the leader has incurred sunk cost $I\left(K_{L}\right)$ )
@@ -87,7 +87,7 @@ In the proof of Proposition 3, $L(X)$ appears to stand for the limited‑liabili
 
 ### 4. Incorrect NPV condition
 
-**Status**: [Pending]
+**Status**: [Addressed]
 
 **Quote**:
 > the follower at $X_{F}^{*}$ is indifferent between investing and waiting (its NPV is zero at the trigger)

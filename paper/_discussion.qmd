@@ -68,7 +68,9 @@ The Tullock contest function is a reduced-form representation that abstracts fro
 Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; in particular, the Tullock form assumes a fixed total market size, which understates the market expansion effect of AI adoption and biases the model toward stronger competition effects relative to a setting where investment expands the pie.
 A Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix E).
 
-All valuation uses a reduced-form risk-adjusted framework, abstracting from state-dependence of risk premia across regimes.
+All valuation uses a reduced-form risk-adjusted framework (see the footnote in @sec-model defining $r$ and $\mu_s$), abstracting from state-dependence of risk premia across regimes.
+In the credit risk analysis, the structural default probability uses the risk-adjusted drift, yielding a risk-neutral default probability consistent with the Leland spread calculation; physical default probabilities would be lower.
+A richer treatment would allow the risk premium to differ across regimes---plausibly higher in $L$ (where AI capabilities are uncertain) than in $H$ (where transformation is realized)---but this would require a complete equilibrium asset pricing model and is left for future work.
 The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal.
 In practice, an "AI winter" scenario is a material risk that the model abstracts from.
 Finally, the model treats competition among a fixed set of domestic firms, omitting international dynamics, export controls, and sovereign AI initiatives.
