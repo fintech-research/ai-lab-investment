@@ -42,7 +42,7 @@ I verify numerically that the qualitative patterns survive with $N > 2$ firms in
 
 The paper proceeds as follows.
 @sec-model presents the model environment with training-inference allocation, endogenous regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
-@sec-calibration describes the stylized calibration to AI infrastructure firm archetypes and presents baseline numerical results.
+@sec-calibration describes the stylized calibration to frontier AI lab archetypes and presents baseline numerical results.
 @sec-valuation develops quantitative implications: growth option decomposition, credit risk, the AI investment dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.
 @sec-conclusion concludes.

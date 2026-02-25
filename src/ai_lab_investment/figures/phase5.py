@@ -11,20 +11,6 @@ import numpy as np
 
 from ..models import ModelParameters, ValuationAnalysis
 
-# Publication style
-plt.rcParams.update({
-    "font.family": "serif",
-    "font.size": 11,
-    "axes.labelsize": 12,
-    "axes.titlesize": 13,
-    "legend.fontsize": 10,
-    "xtick.labelsize": 10,
-    "ytick.labelsize": 10,
-    "figure.dpi": 300,
-    "savefig.dpi": 300,
-    "text.usetex": True,
-})
-
 
 def plot_growth_option_decomposition(
     output_dir: Path | None = None,

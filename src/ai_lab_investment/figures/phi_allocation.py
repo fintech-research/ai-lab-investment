@@ -13,20 +13,6 @@ from ..models.base_model import SingleFirmModel
 from ..models.duopoly import DuopolyModel
 from ..models.parameters import ModelParameters
 
-# Publication style
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.size": 11,
-    "axes.labelsize": 12,
-    "axes.titlesize": 13,
-    "legend.fontsize": 10,
-    "xtick.labelsize": 10,
-    "ytick.labelsize": 10,
-    "figure.dpi": 300,
-    "savefig.dpi": 300,
-})
-
 
 def plot_phi_vs_lambda(
     params: ModelParameters | None = None,

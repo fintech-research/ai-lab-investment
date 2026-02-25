@@ -5,7 +5,7 @@ Unless otherwise stated, analytical propositions are proved under the exogenous-
 
 ### Environment
 
-Time is continuous. A stochastic demand process $X_t$ governs the revenue available to AI infrastructure firms.
+Time is continuous. A stochastic demand process $X_t$ governs the revenue available to frontier AI labs.
 Demand follows a geometric Brownian motion (GBM) with regime-dependent drift and volatility:
 $$
 dX_t = \mu_s X_t \, dt + \sigma_s X_t \, dW_t, \quad s \in \{L, H\},
@@ -266,9 +266,12 @@ with H-regime contest share $s_i^H = (\phi_i K_i)^\alpha / \{(\phi_i K_i)^\alpha
 This regime-specific contest structure formalizes the arms-race logic that executives describe: in the current market, what matters is the capacity to *serve* demand (inference), while in a post-AGI world, what matters is the capability of your *models* (training).
 When $K_j = 0$, both contest shares reduce to $s_i = 1$ and revenue simplifies to the single-firm case (@eq-revenue-L, @eq-revenue-H).
 The parameter $\alpha$ controls the sensitivity of market share to the relevant capacity measure: as $\alpha \to 0$, shares approach 50-50 regardless of capacity; as $\alpha \to \infty$, the larger firm captures all demand.
-Note that the Tullock specification implies that total industry revenue in the symmetric case equals $X \cdot K^\alpha$ (i.e., the standard single-firm revenue), but under *asymmetric* capacities, total industry revenue $\sum_i \pi_i = X \cdot \sum_i [(1-\phi_i)K_i]^{2\alpha} / \sum_j [(1-\phi_j)K_j]^\alpha$ can exceed this benchmark: the larger firm captures a disproportionate share, and the sum of $2\alpha$-terms in the numerator exceeds the squared sum of $\alpha$-terms.
-This property---that asymmetry increases total industry revenue---is a feature of the Tullock contest form and may be appropriate for AI markets where the leading model captures a disproportionate share of demand (a "winner-take-more" dynamic), but it would be undesirable in markets with more elastic total demand.
-A Cournot specification would avoid this property at the cost of additional complexity; see Appendix F for a comparison.
+Three properties of the Tullock specification under asymmetry merit discussion.
+First, under symmetric capacities ($K_i = K_j$, $\phi_i = \phi_j$), each firm's contest share is $s_i = 1/2$ and total industry revenue equals $X \cdot K^\alpha$, the standard single-firm benchmark.
+Second, under *asymmetric* capacities, the share function is convex in relative capacity: the larger firm's share exceeds its capacity ratio, producing a "winner-take-more" dynamic consistent with AI markets where the leading model captures a disproportionate share of API revenue and enterprise contracts.
+Total industry revenue $\sum_i \pi_i = X \cdot \sum_i [(1-\phi_i)K_i]^{2\alpha} / \sum_j [(1-\phi_j)K_j]^\alpha$ can exceed the symmetric benchmark because the sum of $2\alpha$-terms in the numerator exceeds the squared sum of $\alpha$-terms.
+Third, with $\alpha < 1$ the contest is "regular" in the sense of @skaperdas1996contest: equilibrium is unique, there is no over-dissipation of rents, and comparative statics are well-behaved---larger capacity always increases the contest share, but with diminishing marginal returns.
+The revenue-inflating property of asymmetry would be undesirable in markets with elastic total demand where entry expands the pie; a Cournot specification would avoid this at the cost of additional complexity (see Appendix F for a comparison).
 The training fraction $\phi$ introduces a new strategic dimension: a firm's choice of $\phi$ affects its competitive position *differently* in each regime, creating a trade-off between L-regime and H-regime market share.
 
 #### Installed value in the duopoly
@@ -333,7 +336,7 @@ Meanwhile, the default boundary $X_D$ rises as higher coupon payments increase t
 The shaded region between $X_D$ and $X_F^*$ represents the "operating region"---demand levels at which the firm has invested but has not defaulted.
 This region narrows from both sides as leverage increases: the trigger falls (earlier investment) while the default boundary rises (higher break-even), compressing the firm's margin of safety.
 The leader trigger $X_P$ lies well below the follower trigger, reflecting the preemption incentive.
-At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered AI infrastructure firms. This narrow margin of safety is precisely the scenario Amodei describes: a firm that commits to trillion-dollar compute purchases faces bankruptcy if revenue falls even modestly short of projections, because "there's no hedge on Earth" that can bridge the gap [@amodei2026cone].
+At high leverage ($\ell > 0.60$), the operating region becomes dangerously thin, consistent with the elevated credit risk observed for highly levered frontier AI labs. This narrow margin of safety is precisely the scenario Amodei describes: a firm that commits to trillion-dollar compute purchases faces bankruptcy if revenue falls even modestly short of projections, because "there's no hedge on Earth" that can bridge the gap [@amodei2026cone].
 
 ![Investment and default boundaries as a function of leverage in the duopoly equilibrium. The solid line shows the follower's trigger $X_F^*$; the dashed line shows the default boundary $X_D$; the gray line shows the leader's preemption trigger $X_P$. The shaded region is the "operating region" where the firm has invested but not defaulted. Parameters: baseline calibration with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_default_boundaries.pdf){#fig-default-boundaries}
 

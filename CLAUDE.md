@@ -53,6 +53,14 @@ All commands use `just` (task runner) and `uv` (Python package manager). Run `ju
 - **No bold paragraph headings.** Never use `**Bold text.**` as a pseudo-heading to start a paragraph in the paper. If a section needs subdivision, use proper Quarto/markdown headings (`###`, `####`). Otherwise, just start the paragraph with its content — no label.
 - Target style: top finance journals (JF, RFS, Econometrica). Concise, formal, no filler.
 
+## Figure Generation
+
+**Single source of truth.** All figure logic lives in `src/ai_lab_investment/figures/` (phase1–5 modules + phi_allocation). The paper script `paper/generate_figures.py` must import and call these functions — never duplicate model logic or plotting code. When updating a figure, edit only the pipeline module; `generate_figures.py` is a thin wrapper that applies paper styling and saves to `paper/figures/`.
+
+- Never copy-paste model computations (triggers, valuations, spreads) into `generate_figures.py`
+- If a figure needs a new computation, add it to the appropriate module in `src/ai_lab_investment/figures/` and import it
+- After modifying any figure function, always regenerate via `uv run python paper/generate_figures.py` and visually inspect the output
+
 ## Code Style
 
 - Ruff for linting and formatting (line length 88, target Python 3.13)

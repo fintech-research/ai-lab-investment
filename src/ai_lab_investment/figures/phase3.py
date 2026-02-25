@@ -13,20 +13,6 @@ import numpy as np
 from ..models.nfirm import NFirmModel
 from ..models.parameters import ModelParameters
 
-# Publication style
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.size": 11,
-    "axes.labelsize": 12,
-    "axes.titlesize": 13,
-    "legend.fontsize": 10,
-    "xtick.labelsize": 10,
-    "ytick.labelsize": 10,
-    "figure.dpi": 300,
-    "savefig.dpi": 300,
-})
-
 
 def plot_sequential_equilibrium(
     params: ModelParameters | None = None,
