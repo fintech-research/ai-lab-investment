@@ -1,7 +1,7 @@
 ## Model: Environment {.smaller}
 
 **Demand** follows regime-switching GBM:
-$$dX_t = \mu_s X_t \, dt + \sigma_s X_t \, dW_t, \quad s \in \{L, H\}$$
+$$dX_t = \mu_s X_t \, dt + \sigma X_t \, dW_t, \quad s \in \{L, H\}$$
 
 ::: {.columns}
 ::: {.column width="50%"}
@@ -24,14 +24,14 @@ $$dX_t = \mu_s X_t \, dt + \sigma_s X_t \, dW_t, \quad s \in \{L, H\}$$
 
 - Convex costs: diminishing returns to scale (consistent with scaling laws)
 
-**Revenue** (monopolist): $\pi = X K^\alpha$, $\alpha \in (0,1)$
+**Revenue**: regime-dependent training-inference allocation ($\phi \in (0,1)$, fixed at investment)
 
-- Diminishing returns to capacity in revenue generation
+- **Low regime** (inference): $\pi^L = X [(1-\phi)K]^\alpha$
+- **High regime** (training): $\pi^H = X (\phi K)^\alpha$
 
-**Competition** (Tullock contest):
-$$\pi_i = X \cdot \frac{K_i^{2\alpha}}{K_i^\alpha + K_j^\alpha}$$
+**Competition** (Tullock contest): revenue shared by capacity in each regime
 
-- Diminishing returns: governs division of revenue across firms
+- Firm $i$'s share: $s_i^s = K_i^\alpha / \sum_j K_j^\alpha$
 
 ---
 
@@ -56,7 +56,7 @@ Shaded region = value of waiting; vertical line = optimal trigger $X_H^*$
 
 ![](figures/fig_comparative_statics.png){width="90%"}
 
-Higher $\sigma_H$, $\alpha$, $\gamma$ raise the trigger; effects on capacity vary
+Higher $\sigma$, $\alpha$, $\gamma$ raise the trigger; effects on capacity vary
 
 ---
 
@@ -85,7 +85,7 @@ Higher $\sigma_H$, $\alpha$, $\gamma$ raise the trigger; effects on capacity var
 
 **Endogenous default** [@leland1994corporate]: equity holders default when $E(X) = 0$
 
-$$X_D = \frac{(\delta K + d)(r - \mu_s)(K_i^\alpha + K_j^\alpha)}{r K_i^\alpha}$$
+$$X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}}$$
 
 **Proposition**: Higher leverage *and* stronger competition both raise $X_D$
 

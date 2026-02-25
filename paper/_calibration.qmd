@@ -105,10 +105,10 @@ Third, training fractions vary by approximately a factor of two across firm type
 
 ### Baseline Results
 
-Under the baseline calibration, the single-firm model with training-inference allocation produces an investment trigger $X^* \approx 0.027$, capacity $K^* \approx 0.055$, and training fraction $\phi^* \approx 0.70$, where the effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) combines L-regime inference value and H-regime training value.
-The duopoly equilibrium with zero leverage produces a follower policy of $X_F \approx 9.37$, $K_F \approx 17.63$, and $\phi_F \approx 0.70$, with the leader preempting at $X_P \approx 0.055$ and the monopolist trigger at $X_L^{\text{mono}} \approx 0.114$.
+Under the baseline calibration, the single-firm model with training-inference allocation produces an investment trigger $X^* \approx 0.0047$, capacity $K^* \approx 0.0067$, and training fraction $\phi^* \approx 0.70$, where the effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) combines L-regime inference value and H-regime training value.
+The duopoly equilibrium with zero leverage produces a follower policy of $X_F \approx 0.57$, $K_F \approx 1.30$, and $\phi_F \approx 0.70$, with the leader preempting at $X_P \approx 0.0082$ and the monopolist trigger at $X_H^{\text{mono}} \approx 0.0163$.
 
-Strategic interaction accelerates investment (the preemption trigger $X_P \approx 0.055 < X_H^* \approx 0.114$) but reduces capacity per firm relative to the monopolist benchmark.
+Strategic interaction accelerates investment (the preemption trigger $X_P \approx 0.0082 < X_H^* \approx 0.0163$) but reduces capacity per firm relative to the monopolist benchmark.
 Both firms optimally allocate approximately 70\% to training ($\phi^* \approx 0.70$), reflecting the high value of the H-regime continuation payoff at the baseline arrival rate $\lambda = 0.10$; the optimal training fraction is determined by the balance between L-regime inference value and H-regime training value.
 
 ### Sensitivity Analysis

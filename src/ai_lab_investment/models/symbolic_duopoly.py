@@ -10,7 +10,7 @@ This module serves two purposes:
 2. **Documentation**: Provides a permanent, executable record of the
    mathematical derivations that can generate LaTeX for the paper.
 
-Key finding: The L-regime option value has TWO terms, not one:
+The L-regime option value has TWO terms in general:
 
     F_L(X) = A1 * X^{beta_L_plus} + C * X^{beta_H}
 
@@ -20,8 +20,12 @@ where:
 - C * X^{beta_H} is the particular solution from the regime-switching
   term lambda * F_H(X)
 
-The paper's text claimed F_L(X) = B * X^{beta_H}, which drops the
-homogeneous term. The code (base_model.py) correctly includes both terms.
+The simplified form F_L = C * X^{beta_H} (A1 = 0) applies when no
+interior trigger exists in regime L, i.e., when the option premium ratio
+(1 - 1/beta_L_plus)/alpha >= 1 (Assumption A3 in the paper). At the
+baseline calibration, beta_L_plus ≈ 3.01 gives a ratio ≈ 1.67 > 1,
+so the simplified form is valid. The paper derives and states this
+condition explicitly (see eq-option-L-general and Assumption 1(A3)).
 
 References:
 - Guo, Miao & Morellec (2005): "Irreversible Investment with Regime Shifts"
@@ -245,10 +249,10 @@ def l_regime_ode(syms):
         "C": C_expr,
         "general_solution": "F_L(X) = A1 * X^{beta_L_plus} + C * X^{beta_H}",
         "note": (
-            "The paper's F_L = B * X^{beta_H} drops the A1 term. "
-            "This is only valid when A1 = 0, i.e., when no interior "
-            "trigger exists in L and the option value derives entirely "
-            "from the regime-switching possibility."
+            "The simplified F_L = C * X^{beta_H} sets A1 = 0, which applies "
+            "when no interior trigger exists in L (option premium ratio >= 1). "
+            "The paper derives this as Assumption A3 and uses the simplified "
+            "form throughout the baseline analysis (see eq-option-L-general)."
         ),
     }
 
@@ -365,12 +369,10 @@ def when_is_A1_zero(syms):
         "A1_zero_when": sp.Or(phi_L >= 1, phi_L <= 1 / gamma_),
         "note": (
             "For the paper's baseline parameters (sigma=0.25, mu_L=0.01, "
-            "r=0.12, lambda=0.10), beta_L_plus solves the L-regime "
-            "characteristic equation with discount r+lambda=0.22. "
-            "The resulting phi_L typically exceeds 1, so A1=0 and the "
-            "simplified F_L = C * X^{beta_H} IS valid for the baseline. "
-            "However, the paper should STATE this condition explicitly "
-            "rather than asserting it without justification."
+            "r=0.12, lambda=0.10), beta_L_plus ≈ 3.01 gives phi_L ≈ 1.67 > 1. "
+            "So A1=0 and the simplified F_L = C * X^{beta_H} IS valid. "
+            "The paper states this as Assumption 1(A3) and derives the "
+            "boundary explicitly (see Appendix B for sensitivity analysis)."
         ),
     }
 
@@ -644,12 +646,11 @@ def verify_baseline_simplification():
             + (
                 "phi_L >= 1, so no interior trigger in L. "
                 "The simplified F_L = C * X^{beta_H} IS valid for "
-                "the baseline parameters. The paper should state this "
-                "condition explicitly."
+                "the baseline parameters (Assumption A3 satisfied)."
                 if phi_L >= 1.0
                 else "phi_L < 1, so an interior trigger exists in L. "
                 "The full two-term solution F_L = A1*X^{beta_L_plus} + C*X^{beta_H} "
-                "must be used."
+                "must be used (Assumption A3 violated at these parameters)."
             )
         ),
     }
