@@ -6,14 +6,21 @@ Solves for the optimal investment trigger X* and capacity K* under:
 - Convex investment costs
 - Training-inference allocation (phi) as a strategic variable
 
-Key economic results:
-- In regime H (post-adoption): well-defined interior trigger and capacity.
-  The firm invests when demand reaches X_H* with capacity K_H*.
-- In regime L (pre-adoption): the trigger may or may not exist.
-  When phi_L = (1-1/beta_L)/alpha >= 1, the option to wait is so
-  valuable that the firm never exercises in L — it waits for the
-  regime switch to H. The option value in L derives entirely from
-  the probability of switching regimes.
+No-post-AGI-entry assumption (F_H = 0):
+  If the firm has not invested when the regime switch occurs, it is
+  permanently locked out. This "winner-take-all" assumption captures
+  the adoption race: a firm must have trained a model in place before
+  transformative AI arrives, or it is years behind and excluded.
+
+  Consequence: the L-regime option value satisfies a *homogeneous*
+  Euler ODE with effective discount r + lambda_tilde, yielding the
+  single-term solution F_L(X) = A_1 * X^{beta_L^+}.
+
+  The arrival rate lambda_tilde enters the trigger through TWO channels:
+    1. A_eff channel: higher lambda_tilde raises A_eff, lowering the trigger.
+    2. Option premium channel: higher lambda_tilde raises beta_L^+,
+       pushing beta_L^+/(beta_L^+ - 1) toward 1 --- the value of waiting
+       shrinks because delay risks permanent exclusion.
 
 Training-inference allocation:
   The firm allocates fraction phi to training and (1-phi) to inference.
@@ -38,6 +45,8 @@ class SingleFirmModel:
     revenue pi(K, X) = X * K^alpha with operating cost delta * K.
 
     Demand X follows a regime-switching GBM. Regime H is absorbing.
+    Under the no-post-AGI-entry assumption, F_H(X) = 0: a firm that has
+    not invested when the regime switch occurs is permanently excluded.
     """
 
     def __init__(self, params: ModelParameters):
@@ -73,12 +82,23 @@ class SingleFirmModel:
     def has_interior_trigger(self, regime: str) -> bool:
         """Check whether an interior investment trigger exists.
 
-        The trigger exists when 1/gamma < Phi < 1, where
-        Phi = (1-1/beta)/alpha. When Phi >= 1, the option to wait
-        is too valuable and the firm never invests in this regime.
+        For regime H (standalone): exists when 1/gamma < Phi < 1, where
+        Phi = (1-1/beta_H)/alpha.
+
+        For regime L (under F_H = 0): exists when the K-optimization has
+        an interior solution, requiring alpha > 1 - 1/beta_L. This replaces
+        condition (A3) from the old model. When this fails, the option
+        premium beta_L/(beta_L-1) is too low relative to the revenue
+        elasticity alpha to support an interior capacity level.
         """
+        p = self.params
+        if regime == "L":
+            # Under F_H = 0, the capacity optimization exponent is
+            # beta_L*(alpha-1) + 1. Interior K* requires this > 0,
+            # equivalently alpha > 1 - 1/beta_L.
+            return p.alpha > 1.0 - 1.0 / p.beta_L
         Phi = self._option_premium_ratio(regime)
-        return 1.0 / self.params.gamma < Phi < 1.0
+        return 1.0 / p.gamma < Phi < 1.0
 
     def _trigger_for_K(self, K: float, regime: str) -> float:
         """Optimal trigger X*(K) for a given capacity K.
@@ -108,8 +128,68 @@ class SingleFirmModel:
             return 1e20
         return -(beta * np.log(a) - (beta - 1.0) * np.log(b))
 
+    def _solve_regime_L(self) -> tuple[float, float, float]:
+        """Solve for the L-regime investment option via joint (K, phi) optimization.
+
+        Under F_H = 0, the L-regime HJB is homogeneous:
+            (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' - (r + lam) F_L = 0
+
+        Solution: F_L(X) = A_1 * X^{beta_L^+}, where beta_L^+ is the
+        positive root of the characteristic equation with discount r + lam.
+
+        The firm jointly optimizes capacity K and training fraction phi,
+        using A_eff(phi, K) as the revenue coefficient:
+            X* = [beta_L^+/(beta_L^+ - 1)] * cost(K*) / A_eff(phi*, K*)
+
+        Returns:
+            (X_L*, K_L*, A_1): Trigger, capacity, and option value coefficient.
+
+        Raises:
+            RuntimeError: If optimization fails.
+        """
+        if "L" in self._cache:
+            return self._cache["L"]
+
+        X_star, K_star, phi_star = self.optimal_trigger_capacity_phi()
+
+        # A_1 from value-matching: A_1 * X*^{beta_L} = V(X*, phi*, K*) - I(K*)
+        p = self.params
+        npv = self.installed_value_with_phi(
+            X_star, phi_star, K_star, "L"
+        ) - self.investment_cost(K_star)
+        A_1 = npv / X_star**p.beta_L if X_star > 0 and npv > 0 else 0.0
+
+        self._cache["L"] = (X_star, K_star, A_1)
+        return X_star, K_star, A_1
+
+    def optimal_trigger_and_capacity(self, regime: str) -> tuple[float, float]:
+        """Solve for optimal trigger X* and capacity K*.
+
+        Args:
+            regime: 'L' or 'H'. Note: under F_H = 0, the H-regime
+                standalone problem is still well-defined but is not
+                used by the main model.
+
+        Returns:
+            Tuple (X*, K*).
+
+        Raises:
+            RuntimeError: If no interior solution exists for this regime.
+        """
+        if regime == "H":
+            X_star, K_star, _ = self._solve_regime_H()
+            return X_star, K_star
+        else:
+            X_star, K_star, _ = self._solve_regime_L()
+            return X_star, K_star
+
     def _solve_regime_H(self) -> tuple[float, float, float]:
         """Solve for X_H*, K_H*, B_H in the absorbing high regime.
+
+        This computes the standalone H-regime investment problem.
+        Under the no-post-AGI-entry assumption (F_H = 0), this solution
+        is NOT used by the L-regime option value. It is retained for
+        comparative statics and pedagogical figures.
 
         Returns:
             (X_H*, K_H*, B_H)
@@ -148,126 +228,38 @@ class SingleFirmModel:
         self._cache["H"] = (X_star, K_star, B_H)
         return X_star, K_star, B_H
 
-    def _particular_solution_coeff(self) -> float:
-        """Compute C, the particular solution coefficient for regime L.
-
-        C = -lambda * B_H / Q_L(beta_H)
-        """
-        p = self.params
-        if p.lam == 0:
-            return 0.0
-
-        _, _, B_H = self._solve_regime_H()
-        Q_L = (
-            0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
-            + p.mu_L * p.beta_H
-            - (p.r + p.lam)
-        )
-        if abs(Q_L) < 1e-15:
-            return 0.0
-        return -p.lam * B_H / Q_L
-
-    def _solve_regime_L(self) -> tuple[float | None, float | None, float]:
-        """Solve for the regime L option.
-
-        When an interior trigger exists (phi_L < 1), returns (X_L*, K_L*, D_L).
-        When no interior trigger exists (phi_L >= 1), the firm never invests
-        in regime L. Returns (None, None, 0.0) and the option value is
-        F_L(X) = C * X^beta_H (value from potential regime switch only).
-
-        Returns:
-            (X_L* or None, K_L* or None, D_L)
-        """
-        if "L" in self._cache:
-            return self._cache["L"]
-
-        p = self.params
-        C = self._particular_solution_coeff()
-
-        if self.has_interior_trigger("L"):
-            # Interior solution exists in pure L
-            result = optimize.minimize_scalar(
-                self._objective_K,
-                bounds=(-15, 15),
-                method="bounded",
-                args=("L",),
-            )
-            if result.fun >= 1e19:
-                msg = "Regime L optimization failed: no valid interior solution found"
-                raise RuntimeError(msg)
-            K_star = np.exp(result.x)
-            X_star = self._trigger_for_K(K_star, "L")
-
-            # D_L from smooth-pasting
-            D_L = (
-                (p.A_L * K_star**p.alpha - p.beta_H * C * X_star ** (p.beta_H - 1))
-                * X_star ** (1 - p.beta_L)
-                / p.beta_L
-            )
-            self._cache["L"] = (X_star, K_star, D_L)
-        else:
-            # No interior trigger in regime L.
-            # Option value comes entirely from regime-switching possibility:
-            # F_L(X) = C * X^beta_H
-            self._cache["L"] = (None, None, 0.0)
-
-        return self._cache["L"]
-
-    def optimal_trigger_and_capacity(self, regime: str) -> tuple[float, float]:
-        """Solve for optimal trigger X* and capacity K*.
-
-        Args:
-            regime: 'L' or 'H'.
-
-        Returns:
-            Tuple (X*, K*).
-
-        Raises:
-            RuntimeError: If no interior solution exists for this regime.
-        """
-        if regime == "H":
-            X_star, K_star, _ = self._solve_regime_H()
-            return X_star, K_star
-        else:
-            X_star, K_star, _ = self._solve_regime_L()
-            if X_star is None:
-                msg = (
-                    "No interior trigger in regime L. The firm waits for "
-                    "the regime switch to H before investing. "
-                    f"phi_L = {self._phi('L'):.3f} >= 1."
-                )
-                raise RuntimeError(msg)
-            return X_star, K_star
-
     def option_value_H(self, X: float) -> float:
         """Option value in regime H (absorbing).
 
-        F_H(X) = B_H * X^beta_H      for X < X_H*
-        F_H(X) = V_H(X, K_H*) - I(K_H*)  for X >= X_H*
+        Under the no-post-AGI-entry assumption, F_H(X) = 0: a firm
+        that has not invested when the regime switch occurs is permanently
+        excluded. This method returns 0 for all X.
         """
-        X_star, K_star, B_H = self._solve_regime_H()
-        if X_star <= X:
-            return self.installed_value(X, K_star, "H") - self.investment_cost(K_star)
-        return B_H * X**self.params.beta_H
+        return 0.0
 
     def option_value_L(self, X: float) -> float:
-        """Option value in regime L.
+        """Option value in regime L with optimal (K, phi) allocation.
 
-        If interior trigger exists:
-          F_L(X) = D_L * X^beta_L + C * X^beta_H    for X < X_L*
-          F_L(X) = V_L(X, K_L*) - I(K_L*)           for X >= X_L*
+        Under F_H = 0, the L-regime option value is the single-term
+        homogeneous solution with joint (K, phi) optimization:
+            F_L(X) = A_1 * X^{beta_L^+}            for X < X*
+            F_L(X) = V(X, phi*, K*) - I(K*)         for X >= X*
 
-        If no trigger (phi_L >= 1):
-          F_L(X) = C * X^beta_H     for all X
-          (value from regime switching only)
+        Returns 0 if no interior capacity solution exists (alpha too low
+        relative to beta_L).
         """
-        X_star, K_star, D_L = self._solve_regime_L()
-        p = self.params
-        C = self._particular_solution_coeff()
+        if not self.has_interior_trigger("L"):
+            return 0.0
 
-        if X_star is not None and X_star <= X:
-            return self.installed_value(X, K_star, "L") - self.investment_cost(K_star)
-        return D_L * X**p.beta_L + C * X**p.beta_H
+        X_star, K_star, A_1 = self._solve_regime_L()
+        _, _, phi_star = self.optimal_trigger_capacity_phi()
+        p = self.params
+
+        if X_star <= X:
+            return self.installed_value_with_phi(
+                X, phi_star, K_star, "L"
+            ) - self.investment_cost(K_star)
+        return A_1 * X**p.beta_L
 
     def option_value(self, X: float, regime: str) -> float:
         """Option value in the specified regime."""
@@ -277,6 +269,11 @@ class SingleFirmModel:
 
     def npv_at_trigger(self, regime: str) -> float:
         """NPV of investment at the optimal trigger."""
+        if regime == "L":
+            X_star, K_star, phi_star = self.optimal_trigger_capacity_phi()
+            return self.installed_value_with_phi(
+                X_star, phi_star, K_star, "L"
+            ) - self.investment_cost(K_star)
         X_star, K_star = self.optimal_trigger_and_capacity(regime)
         return self.installed_value(X_star, K_star, regime) - self.investment_cost(
             K_star
@@ -383,7 +380,7 @@ class SingleFirmModel:
         """Return a summary of model solutions for both regimes."""
         results = {}
 
-        # Regime H
+        # Regime H (standalone, for reference)
         try:
             X_H, K_H, _B_H = self._solve_regime_H()
             results["H"] = {
@@ -397,30 +394,23 @@ class SingleFirmModel:
         except RuntimeError as e:
             results["H"] = {"error": str(e)}
 
-        # Regime L
-        X_L, K_L, D_L = self._solve_regime_L()
-        C = self._particular_solution_coeff()
-        if X_L is not None:
+        # Regime L (main model under F_H = 0, joint K and phi optimization)
+        try:
+            X_L, K_L, A_1 = self._solve_regime_L()
+            _, _, phi_star = self.optimal_trigger_capacity_phi()
             results["L"] = {
                 "X_star": X_L,
                 "K_star": K_L,
+                "phi_star": phi_star,
                 "investment_cost": self.investment_cost(K_L),
-                "npv_at_trigger": self.installed_value(X_L, K_L, "L")
+                "npv_at_trigger": self.installed_value_with_phi(X_L, phi_star, K_L, "L")
                 - self.investment_cost(K_L),
-                "phi": self._phi("L"),
-                "D_L": D_L,
-                "C": C,
+                "option_premium_ratio": self._option_premium_ratio("L"),
+                "A_1": A_1,
+                "option_value_formula": "F_L(X) = A_1 * X^beta_L",
             }
-        else:
-            results["L"] = {
-                "trigger_exists": False,
-                "description": (
-                    "No interior trigger. Firm waits for regime switch to H."
-                ),
-                "phi": self._phi("L"),
-                "C": C,
-                "option_value_formula": "F_L(X) = C * X^beta_H",
-            }
+        except RuntimeError as e:
+            results["L"] = {"error": str(e)}
 
         return results
 
@@ -474,9 +464,11 @@ class SingleFirmModel:
     def _objective_K_phi(self, params_vec: np.ndarray) -> float:
         """Negative of option value factor for joint (K, phi) optimization.
 
-        Maximizes h(K, phi) = A_eff^beta_H / cost^(beta_H-1).
-        Uses beta_H because investment option value is driven by
-        H-regime expectations (same as duopoly model).
+        Maximizes h(K, phi) = A_eff^{beta_L} / cost^{beta_L - 1}.
+        Uses beta_L (the L-regime characteristic root with discount r + lam)
+        because under F_H = 0, the investment option value is governed by
+        L-regime dynamics with the regime-switch hazard acting as
+        additional discount.
         """
         log_K, phi = params_vec
         K = np.exp(log_K)
@@ -485,7 +477,7 @@ class SingleFirmModel:
             return 1e20
 
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         a_eff = self._effective_revenue_coeff_single(phi, K)
         b = p.delta * K / p.r + p.c * K**p.gamma
@@ -498,17 +490,31 @@ class SingleFirmModel:
         """Solve for optimal (X*, K*, phi*) with training-inference allocation.
 
         The firm jointly optimizes capacity K and training fraction phi.
-        The investment trigger uses beta_H and the combined A_eff coefficient.
+        The investment trigger uses beta_L^+ and the combined A_eff coefficient.
 
         Returns:
             (X*, K*, phi*): Optimal trigger, capacity, and training fraction.
+
+        Raises:
+            RuntimeError: If no interior capacity solution exists.
+                Under F_H = 0, requires alpha > 1 - 1/beta_L.
         """
         cache_key = "phi_opt"
         if cache_key in self._cache:
             return self._cache[cache_key]
 
         p = self.params
-        beta = p.beta_H
+        if not self.has_interior_trigger("L"):
+            threshold = 1.0 - 1.0 / p.beta_L
+            msg = (
+                f"No interior capacity solution under F_H = 0. "
+                f"Need alpha > {threshold:.4f} (got alpha = {p.alpha:.2f}). "
+                f"The K-optimization exponent beta_L*(alpha-1)+1 = "
+                f"{p.beta_L * (p.alpha - 1) + 1:.4f} must be positive."
+            )
+            raise RuntimeError(msg)
+
+        beta = p.beta_L
         best_val = 1e20
         best_params = None
 
@@ -546,12 +552,12 @@ class SingleFirmModel:
     def option_value_with_phi(self, X: float) -> float:
         """Option value when the firm optimizes over (K, phi).
 
-        F(X) = B * X^beta_H      for X < X*
+        F(X) = B * X^{beta_L}      for X < X*
         F(X) = V(X, phi*, K*) - I(K*)  for X >= X*
         """
         X_star, K_star, phi_star = self.optimal_trigger_capacity_phi()
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         if X_star <= X:
             return self.installed_value_with_phi(

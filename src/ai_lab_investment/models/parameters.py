@@ -58,9 +58,13 @@ class ModelParameters:
     xi: float = 0.0
     # Scaling law exponent for training compute
     eta: float = 0.07
-    # Revenue elasticity to capacity; must satisfy alpha > 1 - 1/beta_H
-    # for an interior solution. With sigma_H=0.30, beta_H ~ 1.47,
-    # so alpha > 0.32 is needed. We use 0.40.
+    # Revenue elasticity to capacity. Interior solution conditions:
+    # H-regime (standalone): 1/gamma < (1-1/beta_H)/alpha < 1
+    #   With beta_H ~ 1.47, gamma=1.5: need 0.32 < alpha < 0.48.
+    # L-regime (under F_H = 0): alpha > 1 - 1/beta_L
+    #   With beta_L ~ 3.01: need alpha > 0.668.
+    # Note: at alpha=0.40, the H-regime standalone condition holds
+    # but the L-regime condition under F_H = 0 does NOT.
     alpha: float = 0.40
     # Cost convexity (must be > 1)
     gamma: float = 1.5

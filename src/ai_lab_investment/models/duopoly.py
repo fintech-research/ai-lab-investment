@@ -20,11 +20,12 @@ not in the speed of arrival.
 When xi = 0, the model reduces to the exogenous-lambda baseline.
 
 Investment trigger methodology:
-    The investment trigger uses beta_H (the H-regime characteristic root)
-    because the investment option value is driven by H-regime expectations.
-    The installed value includes both L-regime inference revenue and
-    H-regime training revenue (via regime-switch continuation value),
-    providing a combined effective revenue coefficient A_eff for the trigger.
+    Under the no-post-AGI-entry assumption (F_H = 0), the investment
+    trigger uses beta_L (the L-regime characteristic root with effective
+    discount r + lambda_tilde). The installed value includes both L-regime
+    inference revenue and H-regime training revenue (via regime-switch
+    continuation value), providing a combined effective revenue coefficient
+    A_eff for the trigger.
 """
 
 import numpy as np
@@ -506,13 +507,13 @@ class DuopolyModel:
     ) -> float:
         """Follower's optimal trigger X_F* for given (K_F, phi_F, lev_F).
 
-        X_F* = [beta_H/(beta_H-1)] * total_cost / A_eff
+        X_F* = [beta_L/(beta_L-1)] * total_cost / A_eff
 
-        Uses beta_H because the investment option value is driven by
-        H-regime expectations. A_eff includes both L and H revenues.
+        Uses beta_L (L-regime root with discount r + lam) because under
+        F_H = 0 the option value is governed by L-regime dynamics.
         """
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         a_eff = self._effective_revenue_coeff(phi_F, K_F, phi_L, K_L)
         if a_eff <= 0:
@@ -534,7 +535,7 @@ class DuopolyModel:
         """Negative of follower's option value factor for 3D optimization.
 
         params_vec = [log_K, phi, leverage]
-        Maximizes h(K, phi, lev) = a_eff^beta_H / cost^(beta_H-1).
+        Maximizes h(K, phi, lev) = a_eff^beta_L / cost^(beta_L-1).
         """
         log_K, phi_F, lev_F = params_vec
         K_F = np.exp(log_K)
@@ -544,7 +545,7 @@ class DuopolyModel:
             return 1e20
 
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         a_eff = self._effective_revenue_coeff(phi_F, K_F, phi_L, K_L)
 
@@ -640,7 +641,7 @@ class DuopolyModel:
         p = self.params
 
         # Follower's best response
-        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L)
+        X_F, K_F, phi_F, _lev_F = self.solve_follower(K_L, phi_L)
 
         # Leader's costs
         c_D_L = self.coupon_payment(K_L, lev_L)
@@ -661,7 +662,7 @@ class DuopolyModel:
         revenue_drop = V_mono_at_XF - V_duo_at_XF
 
         # Probability-weighted PV of revenue loss
-        beta = p.beta_H
+        beta = p.beta_L
         entry_factor = (X / X_F) ** beta if X_F > 0 else 1.0
 
         V_leader = V_mono - revenue_drop * entry_factor
@@ -675,7 +676,7 @@ class DuopolyModel:
         """Negative of leader's option value factor for 3D optimization.
 
         params_vec = [log_K, phi, leverage]
-        Uses beta_H and A_eff (combined L+H revenue coefficient).
+        Uses beta_L and A_eff (combined L+H revenue coefficient).
         """
         log_K, phi_L, lev_L = params_vec
         K_L = np.exp(log_K)
@@ -684,7 +685,7 @@ class DuopolyModel:
             return 1e20
 
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         # Revenue coefficient as monopolist
         a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
@@ -742,9 +743,9 @@ class DuopolyModel:
         phi_L = np.clip(best_params[1], 0.01, 0.99)
         lev_L = np.clip(best_params[2], 0.0, max_lev)
 
-        # Compute trigger using beta_H and A_eff
+        # Compute trigger using beta_L and A_eff
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
         a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
 
         markup = beta / (beta - 1.0)
@@ -766,12 +767,12 @@ class DuopolyModel:
     ) -> float:
         """Value of the follower's option at demand X.
 
-        F_follower(X) = B_F * X^beta_H   for X < X_F*
+        F_follower(X) = B_F * X^beta_L   for X < X_F*
         F_follower(X) = NPV              for X >= X_F*
         """
         X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         if X >= X_F:
             return self._follower_value(X, K_F, phi_F, K_L, phi_L, lev_F)

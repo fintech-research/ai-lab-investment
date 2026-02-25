@@ -1,8 +1,8 @@
 """Symbolic derivation and verification of the regime-switching option value.
 
-Uses sympy to derive the coupled ODE system for F_L(X) and F_H(X),
-solve for the general solution, apply boundary conditions, and verify
-the investment trigger formulas used in the paper and numerical code.
+Uses sympy to derive the L-regime option value under the no-post-AGI-entry
+assumption (F_H = 0) and verify the investment trigger formulas used in
+the paper and numerical code.
 
 This module serves two purposes:
 1. **Verification**: Confirms that base_model.py and duopoly.py implement
@@ -10,18 +10,16 @@ This module serves two purposes:
 2. **Documentation**: Provides a permanent, executable record of the
    mathematical derivations that can generate LaTeX for the paper.
 
-Key finding: The L-regime option value has TWO terms, not one:
+Under F_H = 0, the L-regime HJB is a *homogeneous* Euler ODE:
 
-    F_L(X) = A1 * X^{beta_L_plus} + C * X^{beta_H}
+    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' - (r + lambda) F_L = 0
 
-where:
-- A1 * X^{beta_L_plus} is the homogeneous solution (L-regime dynamics
-  with effective discount r + lambda)
-- C * X^{beta_H} is the particular solution from the regime-switching
-  term lambda * F_H(X)
+The solution is a single-term power function:
 
-The paper's text claimed F_L(X) = B * X^{beta_H}, which drops the
-homogeneous term. The code (base_model.py) correctly includes both terms.
+    F_L(X) = A_1 * X^{beta_L^+}
+
+where beta_L^+ is the positive root of the L-regime characteristic equation
+with effective discount r + lambda.
 
 References:
 - Guo, Miao & Morellec (2005): "Irreversible Investment with Regime Shifts"
@@ -108,12 +106,13 @@ def characteristic_equation_H(syms):
 def characteristic_equation_L(syms):
     """Characteristic equation for the L-regime with regime switching.
 
-    The homogeneous part of the L-regime ODE uses effective discount (r + lambda):
+    The L-regime ODE (homogeneous under F_H = 0) uses effective
+    discount (r + lambda):
 
     (sigma_L^2 / 2) * beta * (beta - 1) + mu_L * beta - (r + lambda) = 0
 
-    This is because the regime-switching term lambda * [F_H - F_L] acts
-    as an additional "discount" on F_L.
+    The regime-switching term lambda * [F_H - F_L] with F_H = 0
+    reduces to -lambda * F_L, adding lambda to the effective discount.
     """
     beta = syms["beta"]
     sigma_L = syms["sigma_L"]
@@ -133,19 +132,18 @@ def characteristic_equation_L(syms):
 
 
 # =====================================================================
-# 2. H-regime option value (standard, absorbing)
+# 2. H-regime option value (set to zero under F_H = 0)
 # =====================================================================
 
 
 def h_regime_option_value(syms):
     """Derive the H-regime option value (standard real options).
 
+    Under the no-post-AGI-entry assumption, F_H(X) = 0. This function
+    retains the standard derivation for reference and verification of
+    the standalone H-regime problem.
+
     F_H(X) = B_H * X^{beta_H}  for X < X_H*
-
-    The installed value in H is:
-    V_H(X) = A_H * X * (phi*K)^alpha - delta*K/r
-
-    where A_H = 1 / (r - mu_H).
 
     Value-matching: B_H * (X*)^{beta_H} = V_H(X*) - I(K)
     Smooth-pasting: beta_H * B_H * (X*)^{beta_H - 1} = A_H * (phi*K)^alpha
@@ -172,10 +170,6 @@ def h_regime_option_value(syms):
     B_H_expr = revenue_coeff * X_star ** (1 - beta_H) / beta_H
 
     # Value-matching gives the trigger
-    # B_H * X*^{beta_H} = A_H * X* * (phi*K)^alpha - delta*K/r - c*K^gamma
-    # Substituting B_H from smooth-pasting:
-    # revenue_coeff * X* / beta_H = revenue_coeff * X* - total_cost
-    # revenue_coeff * X* * (1 - 1/beta_H) = total_cost
     trigger = (beta_H / (beta_H - 1)) * total_cost / revenue_coeff
 
     return {
@@ -190,68 +184,46 @@ def h_regime_option_value(syms):
 
 
 # =====================================================================
-# 3. L-regime option value (coupled ODE — the critical derivation)
+# 3. L-regime option value (homogeneous under F_H = 0)
 # =====================================================================
 
 
 def l_regime_ode(syms):
-    """Derive the L-regime option value from the coupled ODE system.
+    """Derive the L-regime option value from the homogeneous ODE.
 
-    The L-regime option value satisfies the HJB equation:
+    Under F_H = 0, the L-regime option value satisfies:
 
-    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' + lambda[F_H(X) - F_L(X)] - r F_L = 0
+    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' - (r + lambda) F_L = 0
 
-    Rearranging:
-    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' - (r + lambda) F_L + lambda F_H(X) = 0
+    This is a homogeneous Euler ODE. The characteristic equation is:
+    Q_L(beta) = (1/2) sigma_L^2 beta(beta-1) + mu_L beta - (r + lambda) = 0
 
-    Since F_H(X) = B_H * X^{beta_H}, this is a second-order Euler ODE with
-    a non-homogeneous term lambda * B_H * X^{beta_H}.
+    with positive root beta_L^+.
 
-    GENERAL SOLUTION:
-    F_L(X) = A1 * X^{beta_L_plus} + A2 * X^{beta_L_minus} + C * X^{beta_H}
+    Solution: F_L(X) = A_1 * X^{beta_L^+}
 
-    where:
-    - beta_L_plus, beta_L_minus are roots of the L-regime characteristic
-      equation with discount (r + lambda)
-    - C is the particular solution coefficient
-    - A2 = 0 (boundary condition: F_L(0) = 0 requires dropping the
-      negative-exponent term since beta_L_minus < 0)
-    - A1 is determined by value-matching/smooth-pasting at the trigger
-
-    PARTICULAR SOLUTION COEFFICIENT:
-    Substituting C * X^{beta_H} into the homogeneous operator:
-    C * Q_L(beta_H) * X^{beta_H} + lambda * B_H * X^{beta_H} = 0
-
-    where Q_L(beta) = (1/2) sigma_L^2 beta(beta-1) + mu_L beta - (r + lambda)
-
-    So: C = -lambda * B_H / Q_L(beta_H)
+    A_1 is determined by value-matching and smooth-pasting at the trigger.
     """
     sigma_L = syms["sigma_L"]
     mu_L = syms["mu_L"]
     r = syms["r"]
     lam = syms["lam"]
-    beta_H = syms["beta_H"]
-    B_H = syms["B_H"]
+    beta_L_plus = syms["beta_L_plus"]
 
-    # Q_L evaluated at beta_H
-    Q_L_at_beta_H = (
-        sp.Rational(1, 2) * sigma_L**2 * beta_H * (beta_H - 1)
-        + mu_L * beta_H
+    # Characteristic equation
+    Q_L = (
+        sp.Rational(1, 2) * sigma_L**2 * beta_L_plus * (beta_L_plus - 1)
+        + mu_L * beta_L_plus
         - (r + lam)
     )
 
-    # Particular solution coefficient
-    C_expr = -lam * B_H / Q_L_at_beta_H
-
     return {
-        "Q_L_at_beta_H": Q_L_at_beta_H,
-        "C": C_expr,
-        "general_solution": "F_L(X) = A1 * X^{beta_L_plus} + C * X^{beta_H}",
+        "Q_L": Q_L,
+        "solution": "F_L(X) = A_1 * X^{beta_L^+}",
         "note": (
-            "The paper's F_L = B * X^{beta_H} drops the A1 term. "
-            "This is only valid when A1 = 0, i.e., when no interior "
-            "trigger exists in L and the option value derives entirely "
-            "from the regime-switching possibility."
+            "Under F_H = 0, the L-regime HJB is homogeneous. "
+            "The solution is a single power function with exponent "
+            "beta_L^+ from the characteristic equation with discount r + lambda."
         ),
     }
 
@@ -262,23 +234,22 @@ def l_regime_option_value_full(syms):
     For a firm with installed value V_L(X) = A_eff * X - delta*K/r,
     the option value is:
 
-    F_L(X) = A1 * X^{beta_L_plus} + C * X^{beta_H},  X < X*
+    F_L(X) = A_1 * X^{beta_L^+},  X < X*
 
     Boundary conditions at the trigger X*:
 
     VALUE-MATCHING:
-    A1 * (X*)^{beta_L_plus} + C * (X*)^{beta_H} = A_eff * X* - delta*K/r - I(K)
+    A_1 * (X*)^{beta_L^+} = A_eff * X* - delta*K/r - I(K)
 
     SMOOTH-PASTING:
-    A1 * beta_L_plus * (X*)^{beta_L_plus - 1} + C * beta_H * (X*)^{beta_H - 1} = A_eff
+    A_1 * beta_L^+ * (X*)^{beta_L^+ - 1} = A_eff
 
-    These two equations determine A1 and X* (given K, phi, and hence A_eff).
+    These yield:
+    X* = [beta_L^+ / (beta_L^+ - 1)] * [delta*K/r + c*K^gamma] / A_eff
+    A_1 = A_eff * (X*)^{1 - beta_L^+} / beta_L^+
     """
     X_star = syms["X_star"]
-    beta_H = syms["beta_H"]
     beta_L_plus = syms["beta_L_plus"]
-    A1 = syms["A1"]
-    C_coeff = syms["C_coeff"]
     delta = syms["delta"]
     K = syms["K"]
     r = syms["r"]
@@ -288,98 +259,32 @@ def l_regime_option_value_full(syms):
     # A_eff is a symbolic placeholder
     A_eff = sp.Symbol("A_eff", positive=True)
 
+    total_cost = c * K**gamma_ + delta * K / r
+    trigger = (beta_L_plus / (beta_L_plus - 1)) * total_cost / A_eff
+
     npv_at_trigger = A_eff * X_star - delta * K / r - c * K**gamma_
 
     # Value-matching
-    vm = sp.Eq(
-        A1 * X_star**beta_L_plus + C_coeff * X_star**beta_H,
-        npv_at_trigger,
-    )
+    A1 = syms["A1"]
+    vm = sp.Eq(A1 * X_star**beta_L_plus, npv_at_trigger)
 
     # Smooth-pasting
-    sp_cond = sp.Eq(
-        A1 * beta_L_plus * X_star ** (beta_L_plus - 1)
-        + C_coeff * beta_H * X_star ** (beta_H - 1),
-        A_eff,
-    )
+    sp_cond = sp.Eq(A1 * beta_L_plus * X_star ** (beta_L_plus - 1), A_eff)
 
-    # Solve for A1 from smooth-pasting
+    # A_1 from smooth-pasting
     A1_from_sp = sp.solve(sp_cond, A1)[0]
-
-    # Substitute into value-matching to get equation for X*
-    vm_substituted = vm.subs(A1, A1_from_sp)
-
-    # Solve for X* (this is the trigger equation)
-    trigger_eq = sp.simplify(vm_substituted)
 
     return {
         "A_eff_symbol": A_eff,
+        "trigger": trigger,
         "value_matching": vm,
         "smooth_pasting": sp_cond,
         "A1_from_smooth_pasting": A1_from_sp,
-        "trigger_equation": trigger_eq,
-        "note_trigger": (
-            "The trigger X* is determined implicitly by the substituted "
-            "equation. In general this does not simplify to the paper's "
-            "beta_H/(beta_H-1) * cost/A_eff formula, which is only valid "
-            "for the single-exponent case (A1=0)."
-        ),
     }
 
 
 # =====================================================================
-# 4. When is A1 = 0? (Justifying the paper's simplified form)
-# =====================================================================
-
-
-def when_is_A1_zero(syms):
-    """Analyze when the homogeneous term A1 vanishes.
-
-    A1 = 0 occurs when:
-    1. There is no interior trigger in L (the firm never invests in L,
-       only waits for the regime switch). In this case, there are no
-       value-matching / smooth-pasting conditions to determine A1,
-       and the option value is purely F_L(X) = C * X^{beta_H}.
-
-    2. The condition (1 - 1/beta_L_plus)/alpha >= 1, i.e., the option
-       premium ratio in L exceeds 1, meaning the option to wait is so
-       valuable the firm never exercises in L.
-
-    The code in base_model.py checks this via has_interior_trigger("L").
-    When this returns False (common for baseline parameters), A1 = 0
-    and F_L = C * X^{beta_H} is correct.
-
-    When an interior L-trigger exists, the full two-term solution
-    F_L = A1 * X^{beta_L_plus} + C * X^{beta_H} must be used.
-    """
-    beta_L_plus = syms["beta_L_plus"]
-    alpha = syms["alpha"]
-    gamma_ = syms["gamma"]
-
-    # Option premium ratio in L
-    phi_L = (1 - 1 / beta_L_plus) / alpha
-
-    # Interior trigger exists when 1/gamma < phi_L < 1
-    exists_condition = sp.And(1 / gamma_ < phi_L, phi_L < 1)
-
-    return {
-        "option_premium_ratio_L": phi_L,
-        "interior_trigger_condition": exists_condition,
-        "A1_zero_when": sp.Or(phi_L >= 1, phi_L <= 1 / gamma_),
-        "note": (
-            "For the paper's baseline parameters (sigma_L=0.25, mu_L=0.01, "
-            "r=0.12, lambda=0.10), beta_L_plus solves the L-regime "
-            "characteristic equation with discount r+lambda=0.22. "
-            "The resulting phi_L typically exceeds 1, so A1=0 and the "
-            "simplified F_L = C * X^{beta_H} IS valid for the baseline. "
-            "However, the paper should STATE this condition explicitly "
-            "rather than asserting it without justification."
-        ),
-    }
-
-
-# =====================================================================
-# 5. Effective revenue coefficient A_eff (with training fraction)
+# 4. Effective revenue coefficient A_eff (with training fraction)
 # =====================================================================
 
 
@@ -390,6 +295,8 @@ def effective_revenue_coefficient(syms):
                   + lambda / (r - mu_L + lambda) * (phi*K)^alpha / (r - mu_H)
 
     This combines L-regime inference revenue and H-regime continuation value.
+    Note: A_eff captures the installed value per unit X for a firm that HAS
+    invested, not the option value (which is F_H = 0 for non-investors).
     """
     r = syms["r"]
     mu_L = syms["mu_L"]
@@ -421,17 +328,17 @@ def effective_revenue_coefficient(syms):
 
 
 # =====================================================================
-# 6. Optimal training fraction (Proposition 1)
+# 5. Optimal training fraction (Proposition 1)
 # =====================================================================
 
 
 def optimal_phi_conditions(syms):
     """Derive the first-order condition for the optimal training fraction.
 
-    The firm maximizes h(K, phi) = A_eff^{beta_H} / cost^{beta_H - 1}.
+    The firm maximizes h(K, phi) = A_eff^{beta_L^+} / cost^{beta_L^+ - 1}.
     Taking d/dphi of ln(h):
 
-    beta_H * (1/A_eff) * dA_eff/dphi = 0
+    beta_L^+ * (1/A_eff) * dA_eff/dphi = 0
 
     Since cost does not depend on phi, the FOC reduces to dA_eff/dphi = 0.
     """
@@ -455,15 +362,6 @@ def optimal_phi_conditions(syms):
     foc = sp.diff(A_eff, phi)
     foc_simplified = sp.simplify(foc)
 
-    # Check boundary behavior
-    # As phi -> 0+: d/dphi of [(1-phi)K]^alpha -> -alpha*K^alpha*(1-phi)^{alpha-1}*K
-    # But d/dphi of [phi*K]^alpha -> alpha*K^alpha*phi^{alpha-1}*K -> +inf (alpha < 1)
-    # So dA_eff/dphi -> +inf as phi -> 0+ (Inada condition from training term)
-
-    # As phi -> 1-: d/dphi of [(1-phi)K]^alpha -> -inf
-    # And d/dphi of [phi*K]^alpha -> alpha*K^alpha (finite)
-    # So dA_eff/dphi -> -inf as phi -> 1- (Inada condition from inference term)
-
     return {
         "foc": foc_simplified,
         "A_eff": A_eff,
@@ -477,7 +375,7 @@ def optimal_phi_conditions(syms):
 
 
 # =====================================================================
-# 7. Default boundary (Proposition 2)
+# 6. Default boundary (Proposition 2)
 # =====================================================================
 
 
@@ -499,14 +397,8 @@ def default_boundary_derivation(syms):
 
     X_D = (beta_neg / (beta_neg - 1)) * (c_D / r + delta * K / r) / A_eff
 
-    # Since beta_neg < 0, beta_neg/(beta_neg - 1) is in (0, 1)
-    # So X_D < (c_D + delta*K) / (r * A_eff) (the naive break-even)
-
     dXD_dA = sp.diff(X_D, A_eff)
-    # dX_D/dA_eff < 0 (higher effective revenue lowers default boundary)
-
     dXD_dcD = sp.diff(X_D, c_D)
-    # dX_D/dc_D > 0 (higher coupon raises default boundary)
 
     return {
         "X_D": X_D,
@@ -523,54 +415,14 @@ def default_boundary_derivation(syms):
 
 
 # =====================================================================
-# 8. Numerical verification against base_model.py
+# 7. Numerical verification against base_model.py
 # =====================================================================
 
 
-def verify_particular_solution_coefficient(params):
-    """Verify C = -lambda * B_H / Q_L(beta_H) against base_model.py.
-
-    Args:
-        params: ModelParameters instance.
-
-    Returns:
-        Dict with symbolic and numerical values for comparison.
-    """
-    import numpy as np
-
-    from .base_model import SingleFirmModel
-
-    model = SingleFirmModel(params)
-    p = params
-
-    # Numerical values from the code
-    C_code = model._particular_solution_coeff()
-    _, _, B_H_code = model._solve_regime_H()
-
-    # Symbolic verification
-    Q_L = (
-        0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
-        + p.mu_L * p.beta_H
-        - (p.r + p.lam)
-    )
-    C_formula = -p.lam * B_H_code / Q_L
-
-    return {
-        "C_from_code": C_code,
-        "C_from_formula": C_formula,
-        "B_H": B_H_code,
-        "Q_L_at_beta_H": Q_L,
-        "beta_H": p.beta_H,
-        "beta_L": p.beta_L,
-        "match": bool(np.abs(C_code - C_formula) < 1e-12),
-    }
-
-
 def verify_option_value_structure(params):
-    """Verify the two-term structure of F_L against the code.
+    """Verify the L-regime option value structure against the code.
 
-    Tests that F_L(X) = D_L * X^{beta_L} + C * X^{beta_H} when an
-    interior L-trigger exists, and F_L(X) = C * X^{beta_H} otherwise.
+    Under F_H = 0, the option value is F_L(X) = A_1 * X^{beta_L^+}.
 
     Args:
         params: ModelParameters instance.
@@ -586,76 +438,30 @@ def verify_option_value_structure(params):
     p = params
 
     has_L_trigger = model.has_interior_trigger("L")
-    C = model._particular_solution_coeff()
 
     if not has_L_trigger:
-        # F_L = C * X^{beta_H} (single-term, A1 = 0)
-        test_X = 0.05
-        F_L_code = model.option_value_L(test_X)
-        F_L_formula = C * test_X**p.beta_H
         return {
             "has_L_trigger": False,
-            "form": "F_L(X) = C * X^{beta_H} (single-term, A1=0)",
-            "F_L_code": F_L_code,
-            "F_L_formula": F_L_formula,
-            "match": bool(np.abs(F_L_code - F_L_formula) < 1e-10),
-            "C": C,
-            "paper_simplified_form_valid": True,
-        }
-    else:
-        # F_L = D_L * X^{beta_L} + C * X^{beta_H} (two-term)
-        X_L, _K_L, D_L = model._solve_regime_L()
-        if X_L is None:  # pragma: no cover
-            msg = "Expected interior L-trigger but got None"
-            raise RuntimeError(msg)
-        test_X = X_L * 0.5  # Below the trigger
-        F_L_code = model.option_value_L(test_X)
-        F_L_formula = D_L * test_X**p.beta_L + C * test_X**p.beta_H
-        return {
-            "has_L_trigger": True,
-            "form": "F_L(X) = D_L * X^{beta_L} + C * X^{beta_H} (two-term)",
-            "X_L_star": X_L,
-            "D_L": D_L,
-            "C": C,
-            "F_L_code": F_L_code,
-            "F_L_formula": F_L_formula,
-            "match": bool(
-                np.abs(F_L_code - F_L_formula) / max(abs(F_L_code), 1e-10) < 1e-8
-            ),
-            "paper_simplified_form_valid": False,
+            "form": "No interior trigger in L",
+            "match": False,
+            "note": "Cannot verify option value without interior trigger",
         }
 
+    X_L, _K_L, A_1 = model._solve_regime_L()
 
-def verify_baseline_simplification():
-    """Check whether the paper's simplified form is valid at baseline params.
-
-    At the default baseline (sigma_L=0.25, mu_L=0.01, r=0.12, lam=0.10),
-    check if the L-regime has no interior trigger, validating F_L = C*X^{beta_H}.
-    """
-    from .parameters import ModelParameters
-
-    p = ModelParameters()
-
-    # Compute the option premium ratio in L
-    phi_L = (1.0 - 1.0 / p.beta_L) / p.alpha
+    test_X = X_L * 0.5  # Below the trigger
+    F_L_code = model.option_value_L(test_X)
+    F_L_formula = A_1 * test_X**p.beta_L
 
     return {
-        "beta_L_plus": p.beta_L,
-        "option_premium_ratio_L": phi_L,
-        "has_interior_L_trigger": 1.0 / p.gamma < phi_L < 1.0,
-        "simplified_form_valid": phi_L >= 1.0,
-        "conclusion": (
-            f"phi_L = {phi_L:.4f}. "
-            + (
-                "phi_L >= 1, so no interior trigger in L. "
-                "The simplified F_L = C * X^{beta_H} IS valid for "
-                "the baseline parameters. The paper should state this "
-                "condition explicitly."
-                if phi_L >= 1.0
-                else "phi_L < 1, so an interior trigger exists in L. "
-                "The full two-term solution F_L = A1*X^{beta_L_plus} + C*X^{beta_H} "
-                "must be used."
-            )
+        "has_L_trigger": True,
+        "form": "F_L(X) = A_1 * X^{beta_L^+} (homogeneous solution)",
+        "X_L_star": X_L,
+        "A_1": A_1,
+        "F_L_code": F_L_code,
+        "F_L_formula": F_L_formula,
+        "match": bool(
+            np.abs(F_L_code - F_L_formula) / max(abs(F_L_code), 1e-10) < 1e-8
         ),
     }
 
@@ -663,12 +469,14 @@ def verify_baseline_simplification():
 def verify_smooth_pasting_L(params):
     """Verify smooth-pasting for the L-regime option value.
 
-    When an interior trigger exists:
-    dF_L/dX |_{X=X*} = dV_L/dX |_{X=X*} = A_L * K^alpha
+    Under F_H = 0, smooth-pasting at the trigger gives:
+    dF_L/dX |_{X=X*} = A_eff(phi*, K*)
+
+    The derivative of the installed value w.r.t. X is A_eff, because
+    V(X, phi, K) = A_eff(phi, K) * X - delta*K/r.
 
     Args:
-        params: ModelParameters instance with alpha and r such that
-                an interior L-trigger exists.
+        params: ModelParameters instance.
 
     Returns:
         Dict with smooth-pasting verification.
@@ -683,14 +491,14 @@ def verify_smooth_pasting_L(params):
     if not model.has_interior_trigger("L"):
         return {"has_L_trigger": False, "skip": True}
 
-    X_L, K_L, D_L = model._solve_regime_L()
-    C = model._particular_solution_coeff()
+    X_L, K_L, A_1 = model._solve_regime_L()
+    _, _, phi_star = model.optimal_trigger_capacity_phi()
 
-    # dF_L/dX at X*
-    dF = D_L * p.beta_L * X_L ** (p.beta_L - 1) + C * p.beta_H * X_L ** (p.beta_H - 1)
+    # dF_L/dX at X*: A_1 * beta_L * X^(beta_L - 1)
+    dF = A_1 * p.beta_L * X_L ** (p.beta_L - 1)
 
-    # dV_L/dX at X* = A_L * K_L^alpha
-    dV = p.A_L * K_L**p.alpha
+    # dV/dX at X* = A_eff(phi*, K*)
+    dV = model._effective_revenue_coeff_single(phi_star, K_L)
 
     return {
         "has_L_trigger": True,
@@ -701,8 +509,46 @@ def verify_smooth_pasting_L(params):
     }
 
 
+def verify_baseline_simplification():
+    """Check baseline parameters for interior L-regime trigger under F_H = 0.
+
+    Under F_H = 0, the capacity optimization uses beta_L^+ in the option
+    premium. An interior K* requires alpha > 1 - 1/beta_L^+. This is
+    more restrictive than the old model which used beta_H.
+    """
+    from .parameters import ModelParameters
+
+    p = ModelParameters()
+
+    # Minimum alpha for interior K* under F_H = 0
+    alpha_min = 1.0 - 1.0 / p.beta_L
+    has_interior = p.alpha > alpha_min
+
+    # K-optimization exponent: must be > 0
+    k_exponent = p.beta_L * (p.alpha - 1) + 1
+
+    return {
+        "beta_L_plus": p.beta_L,
+        "beta_H": p.beta_H,
+        "alpha": p.alpha,
+        "alpha_min_for_interior_K": alpha_min,
+        "k_optimization_exponent": k_exponent,
+        "has_interior_L_trigger": has_interior,
+        "conclusion": (
+            f"alpha = {p.alpha:.2f}, alpha_min = {alpha_min:.4f}. "
+            + (
+                "Interior L-regime trigger exists under F_H = 0."
+                if has_interior
+                else f"No interior L-regime trigger under F_H = 0. "
+                f"Need alpha > {alpha_min:.4f} "
+                f"(K-optimization exponent = {k_exponent:.4f} < 0)."
+            )
+        ),
+    }
+
+
 # =====================================================================
-# 9. Generate LaTeX for the paper
+# 8. Generate LaTeX for the paper
 # =====================================================================
 
 
@@ -727,8 +573,8 @@ def generate_latex():
     return {
         "char_eq_H": sp.latex(ch_H["equation"]),
         "char_eq_L": sp.latex(ch_L["equation"]),
-        "Q_L_at_beta_H": sp.latex(l_ode["Q_L_at_beta_H"]),
-        "C_coefficient": sp.latex(l_ode["C"]),
+        "Q_L": sp.latex(l_ode["Q_L"]),
+        "trigger": sp.latex(l_full["trigger"]),
         "value_matching": sp.latex(l_full["value_matching"]),
         "smooth_pasting": sp.latex(l_full["smooth_pasting"]),
         "A1_expr": sp.latex(l_full["A1_from_smooth_pasting"]),

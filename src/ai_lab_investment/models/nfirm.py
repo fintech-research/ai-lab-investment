@@ -199,9 +199,9 @@ class NFirmModel:
     ) -> float:
         """Negative log of option value factor for (K, phi) optimization.
 
-        Maximizes h(K, phi) = A_eff^beta_H / cost^(beta_H-1).
-        Uses beta_H because the investment option is driven by H-regime
-        expectations (consistent with base_model and duopoly).
+        Maximizes h(K, phi) = A_eff^beta_L / cost^(beta_L-1).
+        Uses beta_L (L-regime root with discount r + lam) because under
+        F_H = 0 the option value is governed by L-regime dynamics.
         """
         log_K, phi = params_vec
         K = np.exp(log_K)
@@ -210,7 +210,7 @@ class NFirmModel:
             return 1e20
 
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
 
         a_eff = self._effective_revenue_coeff(
             K, phi, competitor_capacities, competitor_phis
@@ -233,7 +233,7 @@ class NFirmModel:
     ) -> float:
         """Optimal trigger X*(K, phi) for an entrant with given competitors."""
         p = self.params
-        beta = p.beta_H
+        beta = p.beta_L
         markup = beta / (beta - 1.0)
 
         a_eff = self._effective_revenue_coeff(
