@@ -627,14 +627,14 @@ def create_investment_dilemma() -> plt.Figure:
 
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
     ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
-    ax.legend(loc="upper left", framealpha=0.9)
+    ax.legend(loc="upper center", framealpha=0.9)
     ax.set_ylim(bottom=-2)
 
     ax.annotate(
         "Underinvestment\n(conservative)",
-        xy=(0.04, 15),
+        xy=(0.08, 16),
         fontsize="small",
-        ha="center",
+        ha="left",
         color="navy",
     )
     ax.annotate(
