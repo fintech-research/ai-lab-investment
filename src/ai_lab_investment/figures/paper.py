@@ -74,6 +74,7 @@ def create_sample_paths() -> plt.Figure:
     ax.set_xlabel("Time (years)")
     ax.set_ylabel(r"Demand level $X_t$")
     ax.legend(loc="upper left", framealpha=0.9)
+    fig.tight_layout()
     return fig
 
 
@@ -131,6 +132,7 @@ def create_option_value() -> plt.Figure:
     ax.legend(loc="upper left", framealpha=0.9)
     ax.set_xlim(0, X_vals[-1])
     ax.set_ylim(bottom=min(0, NPV.min() * 1.1))
+    fig.tight_layout()
     return fig
 
 
@@ -312,6 +314,7 @@ def create_default_boundaries() -> plt.Figure:
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
     ax.legend(loc="center left", framealpha=0.9)
+    fig.tight_layout()
     return fig
 
 
@@ -632,7 +635,7 @@ def create_investment_dilemma() -> plt.Figure:
 
     ax.annotate(
         "Underinvestment\n(conservative)",
-        xy=(0.08, 16),
+        xy=(0.055, 16),
         fontsize="small",
         ha="left",
         color="navy",
@@ -645,4 +648,5 @@ def create_investment_dilemma() -> plt.Figure:
         color="darkred",
     )
 
+    fig.tight_layout()
     return fig

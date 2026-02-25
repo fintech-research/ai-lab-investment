@@ -54,8 +54,8 @@ _TALK_OVERRIDES: dict[str, object] = {
     "axes.spines.top": False,
     "axes.spines.right": False,
     "axes.grid": False,
-    "figure.dpi": 150,
-    "savefig.dpi": 150,
+    "figure.dpi": 300,
+    "savefig.dpi": 300,
     "savefig.bbox": "tight",
 }
 
@@ -71,7 +71,7 @@ def _save(create_fn, name: str) -> None:
         fig.savefig(OUT / f"{name}.pdf")
         plt.close(fig)
 
-    with plt.style.context(["seaborn-v0_8-talk", _TALK_OVERRIDES]):
+    with plt.style.context(["seaborn-v0_8-paper", _TALK_OVERRIDES]):
         fig = create_fn()
         fig.savefig(OUT / f"{name}.png")
         plt.close(fig)
