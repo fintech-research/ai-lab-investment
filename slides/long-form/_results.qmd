@@ -22,21 +22,29 @@
 
 ## Training-Inference Allocation
 
-**Distinctive feature**: GPU clusters serve dual purpose
+**Distinctive feature**: GPU clusters serve dual purpose; $\phi \in (0,1)$ fixed at investment
 
-$$\pi(X, K, \phi) = X \cdot \underbrace{A(\phi K)^\eta}_{\text{quality (training)}} \cdot \underbrace{((1-\phi)K)^\alpha}_{\text{capacity (inference)}}$$
-
-::: {.fragment}
-**Optimal allocation** (Proposition 5):
-$$\phi^* = \frac{\eta}{\alpha + \eta} \approx 15\%$$
-
-- Independent of $X$ and $K$
-- Consistent with industry practice (10--20% for training)
-- Scaling exponent $\eta \approx 0.07$ from @kaplan2020scaling
+::: {.columns}
+::: {.column width="50%"}
+**Low regime** (pre-AGI): inference drives revenue
+$$\pi^L = X [(1-\phi)K]^\alpha$$
+:::
+::: {.column width="50%"}
+**High regime** (post-AGI): training quality determines position
+$$\pi^H = X (\phi K)^\alpha$$
+:::
 :::
 
 ::: {.fragment}
-**Separability**: $\phi^*$ is independent of demand and capacity $\Rightarrow$ training-inference allocation decouples from investment timing
+**Optimal training fraction** at baseline $\lambda = 0.10$:
+$$\phi^* \approx 0.70$$
+
+- Increases in $\lambda$: more optimistic firms allocate more to training
+- Reflects high value of H-regime positioning relative to L-regime inference revenue
+:::
+
+::: {.fragment}
+**Key asymmetry**: under-training is costly; forgoing H-regime option value accounts for most of the value loss in Dario's dilemma
 :::
 
 ---

@@ -69,7 +69,7 @@ This is the structural default probability from @merton1974pricing, adapted to o
 @fig-credit-risk presents the credit risk implications.
 Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level three times the default boundary.
 Spreads are concave in leverage: approximately 170 bps for very low leverage ($\ell \approx 0.05$), rising steeply to about 260 bps at moderate leverage ($\ell = 0.20$) and reaching approximately 310 bps at $\ell = 0.70$.
-Panel (b) shows the 5-year default probability, which rises from under 1\% at low leverage to approximately 4\% at $\ell = 0.70$.
+Panel (b) shows the 5-year default probability, which rises from nearly zero at low leverage to approximately 1.3\% at $\ell = 0.70$.
 The modest default probabilities reflect the substantial distance to default at three times $X_D$; at demand levels closer to the boundary, default probabilities would be considerably higher.
 
 ![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Spreads are concave in leverage, rising steeply at low leverage and flattening at high leverage. Default probability is increasing and convex. Evaluated at a demand level three times the default boundary, using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}

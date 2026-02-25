@@ -4,7 +4,7 @@
 |:----------|:------|:-------|
 | $r$ (risk-adjusted discount) | 0.12 | Representative WACC |
 | $\mu_L, \mu_H$ (growth) | 0.01, 0.06 | Cloud revenue data |
-| $\sigma_L, \sigma_H$ (vol) | 0.25, 0.30 | Revenue volatility |
+| $\sigma$ (vol) | 0.25 | Revenue volatility |
 | $\alpha$ (revenue elasticity) | 0.40 | Scaling laws |
 | $\gamma$ (cost convexity) | 1.50 | Supply chain data |
 | $\lambda$ (baseline) | 0.10 | Moderate prior |
@@ -16,15 +16,16 @@
 | | Frontier Lab | Platform | Hyperscaler | Compute Racer |
 |:--|:------------|:---------|:------------|:--------------|
 | *Archetype* | Anthropic | OpenAI | Google | xAI |
-| Revenue '25 (\$B) | 3.0 | 12.0 | 55.0 | 2.0 |
-| CapEx '25 (\$B) | 6.0 | 15.0 | 60.0 | 10.0 |
-| **CapEx / Revenue** | **2.00** | **1.25** | **1.09** | **5.00** |
-| Leverage | 0.20 | 0.30 | 0.10 | 0.25 |
+| Revenue 2025 (\$B) | 4.5 | 12.5 | 60.0 | 0.5 |
+| CapEx 2025 (\$B) | 3.0 | 12.0 | 91.0 | 10.0 |
+| **CapEx / Revenue** | **0.67** | **0.96** | **1.52** | **20.0** |
+| Leverage | 0.05 | 0.05 | 0.10 | 0.15 |
+| Training $\hat{\phi}$ | 0.55 | 0.60 | 0.35 | 0.75 |
 
 ::: {.fragment}
-**Key observation**: All firms have CapEx > Revenue (historically unusual)
+**Key observation**: xAI-like compute racer invests 20$\times$ revenue; others near or below parity
 
-$\Rightarrow$ Investing far ahead of current demand
+$\Rightarrow$ Extreme heterogeneity in investment intensity reflects heterogeneous beliefs about $\lambda$
 :::
 
 ---
@@ -33,25 +34,25 @@ $\Rightarrow$ Investing far ahead of current demand
 
 ![](figures/fig_firm_comparison.png){width="90%"}
 
-All firms above 1.0x CapEx/Revenue; distinct clusters in growth-leverage space
+xAI-like compute racer at 20$\times$; other firms near or below parity; distinct clusters in growth-leverage space
 
 ---
 
 ## Baseline Results
 
-**Single-firm** (H regime): $X^* \approx 0.016$, $K^* \approx 0.055$
+**Single-firm** (phi-aware): $X^* \approx 0.0047$, $K^* \approx 0.0067$, $\phi^* \approx 0.70$
 
-**Duopoly equilibrium**:
+**Duopoly equilibrium** (zero leverage):
 
-- Follower: $X_F \approx 1.0$, $K_F \approx 3.5$
-- Leader invests earlier via preemption: $X_P \approx 0.009 < X_F$
+- Follower: $X_F \approx 0.57$, $K_F \approx 1.30$, $\phi_F \approx 0.70$
+- Leader preempts at $X_P \approx 0.0082 < X_H^{\text{mono}} \approx 0.0163$
 
 ::: {.fragment}
 **Strategic interaction**:
 
-- Accelerates investment (preemption trigger below monopolist trigger)
+- Accelerates investment: preemption trigger $\approx 50\%$ of monopolist trigger
 - Reduces per-firm capacity (revenue sharing)
-- With leverage: raises credit spreads 50--400+ bps depending on $\ell$
+- With leverage: credit spreads 170--310 bps; 5-yr default under 2\% across $\ell \in [0.05, 0.70]$
 :::
 
 ---

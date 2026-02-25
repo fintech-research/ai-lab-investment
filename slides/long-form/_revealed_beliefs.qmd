@@ -33,7 +33,7 @@ Range of disagreement ($\lambda \in [0.05, 0.5]$): 2--20 years expected, 22--92%
 
 ![](figures/fig_credit_risk.png){width="90%"}
 
-Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$
+Spreads reach ~310 bps; 5-year default probability ~1.3% at $\ell = 0.70$
 
 ---
 
@@ -71,18 +71,21 @@ Spreads exceed 1,200 bps and default prob. ~40% at $\ell = 0.70$
 
 ## The AI Investment Dilemma: Asymmetry
 
-**Proposition 6**: Aggressive overinvestment is costlier than conservative underinvestment
+**Dario's dilemma**: conservative underinvestment is *costlier* than aggressive overinvestment
 
 ::: {.fragment}
 **Value loss**: $\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})$
 
-The loss function is *asymmetric*: steeper on the aggressive side
+The loss function is *asymmetric*: steeper on the conservative (underinvestment) side
+
+- Under-training ($\lambda_{\text{invest}} \ll \lambda_{\text{true}}$): forfeits H-regime option value ($\approx 26\%$ loss at $\lambda_{\text{invest}} = 0.02$)
+- Over-training ($\lambda_{\text{invest}} \gg \lambda_{\text{true}}$): sacrifices L-regime inference ($\approx 23\%$ loss at $\lambda_{\text{invest}} = 0.50$)
 :::
 
 ::: {.fragment}
-**Implication**: Observed extreme investment can be rationalized **only** if firms genuinely hold high-$\lambda$ beliefs
+**Implication**: rational firms err toward higher training allocation even under uncertainty
 
-$\Rightarrow$ Strategic posturing is too costly to explain the data
+$\Rightarrow$ Consistent with observed aggressive AI investment behavior
 :::
 
 ---
