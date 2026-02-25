@@ -3,13 +3,13 @@
 This section develops quantitative implications of the duopoly model: growth option decomposition, credit risk analysis, the AI investment dilemma, and equity valuation sensitivity to beliefs.
 All results in this section are numerical, computed under the stylized calibration of @sec-calibration; they illustrate the model's economic mechanisms rather than delivering empirically testable point estimates.
 
-@fig-lambda-timeline provides intuition for the economic content of the effective arrival rate $\tilde{\lambda}$.
-Panel (a) shows the expected time to regime switch $E[T] = 1/\tilde{\lambda}$, which ranges from 20 years at $\tilde{\lambda} = 0.05$ to 1 year at $\tilde{\lambda} = 1.0$.
-Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\tilde{\lambda}}$.
-At $\tilde{\lambda} = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\tilde{\lambda} = 0.50$, this rises to 92\%.
-The steep part of both curves lies in the range $\tilde{\lambda} \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
+@fig-lambda-timeline provides intuition for the economic content of the effective arrival rate $\lambda$.
+Panel (a) shows the expected time to regime switch $E[T] = 1/\lambda$, which ranges from 20 years at $\lambda = 0.05$ to 1 year at $\lambda = 1.0$.
+Panel (b) shows the probability of a regime switch occurring within a 5-year planning horizon, $P = 1 - e^{-5\lambda}$.
+At $\lambda = 0.10$ (our baseline), there is a 39\% probability of a switch within 5 years; at $\lambda = 0.50$, this rises to 92\%.
+The steep part of both curves lies in the range $\lambda \in [0.05, 0.50]$, which is precisely the range of disagreement among AI market participants---highlighting why even small differences in beliefs translate to large differences in investment behavior.
 
-![Interpretation of the effective arrival rate $\tilde{\lambda}$. (a) Expected time to regime switch $E[T] = 1/\tilde{\lambda}$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\tilde{\lambda} \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
+![Interpretation of the effective arrival rate $\lambda$. (a) Expected time to regime switch $E[T] = 1/\lambda$ (years). (b) Probability of a regime switch within 5 years. The range of current market disagreement, $\lambda \in [0.05, 0.50]$, spans expected horizons from 2 to 20 years and 5-year switch probabilities from 22\% to 92\%.](figures/fig_lambda_timeline.pdf){#fig-lambda-timeline}
 
 ### Growth Option Decomposition
 
@@ -26,7 +26,7 @@ V_{\text{growth}} = F(X) - V_{\text{AIP}},
 $$
 where $F(X)$ is the total option value including the possibility of future investment at the optimal $(K^*, \phi^*)$. This measures how much additional value the firm could realize by adjusting from $(K_{\text{installed}}, \phi_{\text{installed}})$ to the optimal $(K^*, \phi^*)$.
 
-3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$, which now depends on both the arrival rate $\tilde{\lambda}$ and the training allocation $\phi$.
+3. **Regime switch value**: the additional value from the possibility of transitioning from $L$ to $H$, which now depends on both the arrival rate $\lambda$ and the training allocation $\phi$.
 
 The growth option fraction $V_{\text{growth}} / V_{\text{total}}$ is a measure of how much of the firm's value derives from future investment opportunities rather than current operations.
 For frontier AI labs, I find that growth options account for the majority of firm value---typically 60--80\%---reflecting the fact that current revenues are small relative to the anticipated future demand.
@@ -61,7 +61,7 @@ This creates a novel interaction between training allocation and credit risk: fi
 
 The probability of default within horizon $T$ is approximated using the distance to default:
 $$
-P(\text{default within } T) \approx \Phi\left(-\frac{\ln(X/X_D) + (\mu_s - \frac{1}{2}\sigma_s^2)T}{\sigma_s \sqrt{T}}\right),
+P(\text{default within } T) \approx \Phi\left(-\frac{\ln(X/X_D) + (\mu_s - \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}\right),
 $$
 where $\Phi$ is the standard normal CDF.
 This is the structural default probability from @merton1974pricing, adapted to our setting with regime-dependent parameters.
@@ -96,10 +96,10 @@ $$
 $$
 where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$---choosing $(X^*, K^*, \phi^*)$ optimal for $\lambda_b$---when the true parameter is $\lambda_a$.
 Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
-The training fraction enters the value loss through two channels: a mismatched $\phi$ produces suboptimal revenue in both regimes, and through the endogenous $\tilde{\lambda}$, it may accelerate or delay the regime switch relative to the optimal timing.
+The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes.
 
 **Numerical Finding 2** (Asymmetric AI investment dilemma).
-*Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\tilde{\lambda}_{\text{true}} = 0.10$, a conservative firm investing as if $\tilde{\lambda} = 0.02$ loses approximately 25\% of value, while an aggressive firm investing as if $\tilde{\lambda} = 0.20$ loses only about 5\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
+*Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\lambda_{\text{true}} = 0.10$, a conservative firm investing as if $\lambda = 0.02$ loses approximately 25\% of value, while an aggressive firm investing as if $\lambda = 0.20$ loses only about 5\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
 
 The intuition is that the optimal training fraction $\phi^* \approx 0.70$ at baseline reflects the high value of H-regime positioning.
 A conservative firm that under-allocates to training ($\phi \approx 0.14$ at $\lambda_{\text{invest}} = 0.02$) sacrifices most of the H-regime option value, which is the dominant component of $A_{\text{eff}}$.
@@ -109,7 +109,7 @@ However, the Amodei scenario---"I could buy \$1 trillion of compute that starts 
 
 @fig-investment-dilemma visualizes the asymmetry by plotting the value loss $\Delta V$ as a function of $\lambda_{\text{invest}}$ for a fixed $\lambda_{\text{true}} = 0.10$.
 The loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ (correct beliefs) and increases in both directions, but the left branch (underinvestment, $\lambda_{\text{invest}} < \lambda_{\text{true}}$) rises more steeply than the right (overinvestment).
-A firm investing as if $\tilde{\lambda} = 0.02$ (deep pessimism) loses approximately 25\% of value, while a firm investing as if $\tilde{\lambda} = 0.50$ (extreme optimism) loses approximately 20\%---a substantial asymmetry driven by the training allocation channel.
+A firm investing as if $\lambda = 0.02$ (deep pessimism) loses approximately 25\% of value, while a firm investing as if $\lambda = 0.50$ (extreme optimism) loses approximately 20\%---a substantial asymmetry driven by the training allocation channel.
 With leverage ($\ell = 0.40$, dashed line), the two curves are nearly identical, reflecting the negligible role of default risk at the model's scale; at much larger absolute investments, leverage-amplified losses would widen the gap on the aggressive side.
 The shaded region marks the "danger zone" where value losses from overinvestment exceed 10\%.
 
@@ -118,18 +118,18 @@ The shaded region marks the "danger zone" where value losses from overinvestment
 #### Implications
 
 The AI investment dilemma has several implications.
-Within the model, the observed aggressive investment patterns of frontier AI labs are *rational*: the cost of being too conservative ($\Delta V \approx 25\%$ at $\tilde{\lambda}_{\text{invest}} = 0.02$) far exceeds the cost of being too aggressive ($\Delta V \approx 5\%$ at $\tilde{\lambda}_{\text{invest}} = 0.20$), so a risk-neutral firm should err on the side of higher training allocation even when uncertain about $\tilde{\lambda}$.
+Within the model, the observed aggressive investment patterns of frontier AI labs are *rational*: the cost of being too conservative ($\Delta V \approx 25\%$ at $\lambda_{\text{invest}} = 0.02$) far exceeds the cost of being too aggressive ($\Delta V \approx 5\%$ at $\lambda_{\text{invest}} = 0.20$), so a risk-neutral firm should err on the side of higher training allocation even when uncertain about $\lambda$.
 This illustrative comparison should be distinguished from a formal revealed-beliefs methodology, which would require a richer model (dynamic $\phi$, heterogeneous information), proper identification, and estimation; such an exercise is left for future work.
-The asymmetry means that *underinvestment* is more informative than overinvestment---a conservative firm allocating little to training ($\phi \ll \phi^*$) must hold genuinely pessimistic beliefs about $\tilde{\lambda}$, since the cost of under-training is so high.
+The asymmetry means that *underinvestment* is more informative than overinvestment---a conservative firm allocating little to training ($\phi \ll \phi^*$) must hold genuinely pessimistic beliefs about $\lambda$, since the cost of under-training is so high.
 The asymmetric loss function implies that firms should hedge against conservative under-training more than against aggressive over-training, rationalizing the observation that frontier AI labs consistently push the boundary of training compute investment.
 At the scale of trillion-dollar commitments, however, absolute (as opposed to percentage) losses from overinvestment can be existential, especially with leverage---a distinction the single-firm model does not fully capture.
 
 ### Equity Valuation Sensitivity
 
 The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
-I compute option values across a range of $\tilde{\lambda}$ values, holding all other parameters at baseline values.
+I compute option values across a range of $\lambda$ values, holding all other parameters at baseline values.
 
-The results show that equity value is increasing and convex in $\tilde{\lambda}$: higher $\tilde{\lambda}$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\tilde{\lambda}$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
-The steepest part of the valuation curve lies around $\tilde{\lambda} \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
+The results show that equity value is increasing and convex in $\lambda$: higher $\lambda$ implies earlier and larger investment with more training, generating more value from the growth option, and the marginal effect of higher $\lambda$ is itself increasing, so the valuation gap between optimistic and pessimistic firms widens as beliefs become more extreme.
+The steepest part of the valuation curve lies around $\lambda \in [0.1, 0.5]$, precisely the range of disagreement among market participants.
 This convexity implies that a portfolio of frontier AI labs should exhibit positive convexity to AI timeline news: good news about AI capabilities should increase valuations more than bad news decreases them, because the option value is convex in the underlying arrival rate.
-The training allocation channel amplifies this convexity: at higher $\tilde{\lambda}$, firms not only invest more but allocate more to training, compounding the H-regime upside.
+The training allocation channel amplifies this convexity: at higher $\lambda$, firms not only invest more but allocate more to training, compounding the H-regime upside.

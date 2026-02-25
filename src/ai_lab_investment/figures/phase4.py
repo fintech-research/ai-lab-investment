@@ -81,7 +81,7 @@ def plot_sensitivity_analysis(
     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
     panels = [
-        ("sigma_H", np.linspace(0.20, 0.50, 25), r"$\sigma_H$", "(A)"),
+        ("sigma", np.linspace(0.20, 0.50, 25), r"$\sigma$", "(A)"),
         ("alpha", np.linspace(0.30, 0.50, 25), r"$\alpha$", "(B)"),
         ("r", np.linspace(0.08, 0.20, 25), r"$r$", "(C)"),
         ("delta", np.linspace(0.01, 0.08, 25), r"$\delta$", "(D)"),

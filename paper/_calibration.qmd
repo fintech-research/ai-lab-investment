@@ -14,12 +14,9 @@ The calibration proceeds in four steps: I first set the demand process parameter
 |:----------|:--------:|:----------------|:------:|
 | $\mu_L$ | 0.01 | Cloud computing baseline growth | Chosen for discipline |
 | $\mu_H$ | 0.06 | Upper-range AI revenue growth projections | Chosen for discipline |
-| $\sigma_L$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
-| $\sigma_H$ | 0.30 | Elevated uncertainty under transformative AI | Chosen for discipline |
+| $\sigma$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
 | $r$ | 0.12 | WACC, representative frontier AI lab | Inferred from Damodaran |
-| $\lambda_0$ | 0.05 | Rest-of-world AI progress | Chosen for discipline |
-| $\xi$ | 0 | Endogenous training contribution (baseline: exogenous) | Chosen |
-| $\eta$ | 0.07 | Inferred from Kaplan et al. (2020), Hoffmann et al. (2022) scaling laws | Inferred |
+| $\lambda$ | 0.10 | Regime-switch arrival rate (exogenous belief) | Chosen for discipline |
 | $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
 | $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
 | $c$ | 1.00 | Normalization | --- |
@@ -32,14 +29,13 @@ The calibration proceeds in four steps: I first set the demand process parameter
 ### Demand Process
 
 The demand process parameters govern the drift and volatility of AI compute demand under each regime.
-In the low regime ($L$), I use $\mu_L = 0.01$ and $\sigma_L = 0.25$, reflecting the modest growth and moderate uncertainty that characterizes the current AI services market outside of frontier model training; the low drift captures baseline growth in cloud computing revenue, while the volatility reflects demand uncertainty for inference services.
-In the high regime ($H$), I use $\mu_H = 0.06$ and $\sigma_H = 0.30$, reflecting the substantially higher growth and elevated volatility that would characterize a world in which transformative AI capabilities generate massive new demand; the growth rate is calibrated to match the upper range of AI revenue growth projections from industry analysts.
+I use regime-dependent drifts $\mu_L = 0.01$ and $\mu_H = 0.06$, with common volatility $\sigma = 0.25$.
+The low-regime drift captures baseline growth in cloud computing revenue; the high-regime drift reflects the substantially higher growth that would characterize a world in which transformative AI capabilities generate massive new demand, calibrated to the upper range of AI revenue growth projections from industry analysts.
+The common volatility reflects demand uncertainty observed in quarterly revenue data for cloud providers.
 
-The exogenous component of the arrival rate is $\lambda_0 = 0.05$ per year, reflecting rest-of-world AI progress (algorithmic advances, academic research, open-source contributions) that occurs independently of the modeled firms' investments.
-The total effective arrival rate $\tilde{\lambda}$ combines this baseline with the endogenous contribution from firms' training compute (@eq-endogenous-lambda).
-Under the baseline calibration with $\xi = 0$ (exogenous model), the total effective rate $\tilde{\lambda} = 0.10$ per year implies an expected time to regime switch of 10 years.
-The baseline represents a moderate prior, intended to approximate the marginal investor's belief rather than any particular executive's view.
-It is significantly more conservative than the beliefs implied by @amodei2024machines ($\lambda \approx 0.30$--$0.50$) or @hassabis2025breakthroughs ($\lambda \approx 0.10$--$0.15$), and the dispersion across these views is precisely what generates the cross-sectional variation in investment behavior analyzed in @sec-valuation.
+The arrival rate $\lambda = 0.10$ per year implies an expected time to regime switch of 10 years.
+This baseline represents a moderate prior, intended to approximate the marginal investor's belief rather than any particular executive's view.
+It is more conservative than the beliefs implied by @amodei2024machines ($\lambda \approx 0.30$--$0.50$) or @hassabis2025breakthroughs ($\lambda \approx 0.10$--$0.15$), and the dispersion across these views is precisely what generates the cross-sectional variation in investment behavior analyzed in @sec-valuation.
 
 The baseline discount rate is $r = 0.12$, the risk-adjusted WACC for a representative frontier AI lab.
 As discussed in @sec-model, $r$ is the WACC and $\mu_s$ is the risk-adjusted (certainty-equivalent) growth rate; all valuation uses this reduced-form framework throughout.
@@ -60,24 +56,8 @@ Economic depreciation through technological obsolescence (e.g., H100$\to$B200 tr
 The model is relatively insensitive to this parameter: @tbl-elasticities reports elasticities of $+2.2$ for the trigger and $+2.0$ for capacity, among the smallest of all parameters.
 At $\delta = 0.10$, implied beliefs shift modestly but qualitative results are unchanged; a higher $\delta$ strengthens the paper's conclusions by making the AI investment dilemma more asymmetric, because higher operating costs amplify losses from overinvestment relative to the opportunity cost of underinvestment.
 
-### Endogenous Arrival Rate Parameters
-
-The scaling exponent $\eta = 0.07$ governs diminishing returns in the contribution of training compute to AI progress: doubling training compute raises the arrival rate contribution by only $2^{0.07} - 1 \approx 5\%$.
-This value is *inferred* from the neural scaling laws literature, not directly observed.
-@kaplan2020scaling report that cross-entropy loss decreases as a power law of training compute, $L \propto C^{-\alpha_C}$ with $\alpha_C \approx 0.050$; @hoffmann2022training find $\alpha_C \approx 0.067$ under compute-optimal (Chinchilla) scaling.
-The mapping from loss reduction to regime-switch arrival rate involves two non-trivial steps: (i) translating a decrease in loss into an improvement in economically relevant model capability, and (ii) translating capability improvement into a marginal increase in the probability of the economy transitioning to the high-demand regime.
-Step (i) is model-dependent: loss-capability relationships are nonlinear and task-specific, with some benchmarks showing threshold effects (near-zero performance until a critical loss level, then rapid improvement).
-Step (ii) depends on adoption thresholds, complementary investments, and institutional readiness---factors external to the scaling law.
-I use $\eta = 0.07$ as a plausible central value within the $[0.05, 0.10]$ range spanned by these estimates, interpreting it as the elasticity of AI progress with respect to training compute.
-Two recent developments bracket the uncertainty.
-DeepSeek V3 achieved frontier-competitive performance at roughly 10$\times$ lower compute cost (\$5.6M for the final training run), suggesting that algorithmic efficiency gains can substitute for raw compute, potentially raising the effective $\eta$ [@deepseek2025r1].
-Conversely, @sorscher2025illusion argue that for long-horizon agentic tasks, scaling shows "non-diminishing improvements," suggesting that the relevant exponent for economically transformative capabilities may exceed the loss-based estimates.
-The mapping from loss-compute power laws to arrival-rate elasticities is inherently uncertain and represents one of the calibration's weakest links.
-The model is quantitatively robust to this parameter: with $\eta = 0.07$ and the baseline $\xi$, the endogenous channel is modest (doubling one firm's training raises $\tilde{\lambda}$ by approximately 5\%), so the exogenous baseline $\lambda_0$ dominates the arrival rate for most firm-level decisions.
-The firm contribution scaling parameter $\xi$ converts the modeled firms' training compute into arrival rate units.
-The baseline $\xi = 0$ corresponds to the exogenous-$\lambda$ model; for the endogenous analysis, I calibrate $\xi$ so that the industry's current training compute ($\sum \phi_i K_i$ across the four stylized firms) contributes approximately half of the total arrival rate, yielding $\tilde{\lambda} \approx 2\lambda_0$.
-This 50\% split reflects the observation that frontier AI labs collectively conduct the majority of the world's largest training runs, but that academic research, open-source projects (e.g., Llama, Mistral), and international competitors (e.g., DeepSeek) contribute substantially to overall progress.
-The choice is inherently uncertain; varying the endogenous share from 25\% to 75\% shifts the quantitative importance of the training externality but preserves all qualitative results (see Appendix F on exogenous vs. endogenous $\lambda$ robustness). With $\eta = 0.07$, the endogenous channel is quantitatively modest: doubling a single firm's training compute raises its contribution to $\tilde{\lambda}$ by only $2^{0.07} - 1 \approx 5\%$, so the model effectively reduces to the exogenous-$\lambda$ case for most firm-level decisions.
+The arrival rate $\lambda$ is treated as exogenous throughout the main text.
+Appendix C extends the model to endogenous $\tilde{\lambda} = \lambda + \xi[(\phi_i K_i)^\eta + (\phi_j K_j)^\eta]$, where training investments collectively accelerate the regime switch; with the calibrated scaling exponent $\eta = 0.07$ (inferred from @kaplan2020scaling and @hoffmann2022training), the endogenous channel is quantitatively modest (doubling one firm's training raises the arrival rate contribution by approximately 5\%), so the main results are robust to this extension.
 
 ### Stylized Firm Archetypes
 
@@ -145,13 +125,13 @@ Under the baseline calibration, the single-firm model with training-inference al
 The duopoly equilibrium with zero leverage produces a follower policy of $X_F \approx 9.37$, $K_F \approx 17.63$, and $\phi_F \approx 0.70$, with the leader preempting at $X_P \approx 0.055$ and the monopolist trigger at $X_L^{\text{mono}} \approx 0.114$.
 
 Strategic interaction accelerates investment (the preemption trigger $X_P \approx 0.055 < X_H^* \approx 0.114$) but reduces capacity per firm relative to the monopolist benchmark.
-Both firms optimally allocate approximately 70\% to training ($\phi^* \approx 0.70$), reflecting the high value of the H-regime continuation payoff at the baseline arrival rate $\tilde{\lambda} = 0.10$; the optimal training fraction is determined by the balance between L-regime inference value and H-regime training value and is independent of the competitive position in the exogenous-$\lambda$ model.
+Both firms optimally allocate approximately 70\% to training ($\phi^* \approx 0.70$), reflecting the high value of the H-regime continuation payoff at the baseline arrival rate $\lambda = 0.10$; the optimal training fraction is determined by the balance between L-regime inference value and H-regime training value.
 
 ### Sensitivity Analysis
 
 The following comparative statics are robust across the calibration range; @tbl-elasticities in the Appendix reports elasticities at the baseline.
 The investment trigger, capacity, and training fraction are sensitive to several key parameters.
-Higher volatility $\sigma_H$ increases the option value of waiting, raising the investment trigger---the standard real options result that uncertainty raises the value of flexibility; for frontier AI labs, this means that higher uncertainty about future demand justifies more cautious investment timing, even as firms rush to build.
+Higher volatility $\sigma$ increases the option value of waiting, raising the investment trigger---the standard real options result that uncertainty raises the value of flexibility; for frontier AI labs, this means that higher uncertainty about future demand justifies more cautious investment timing, even as firms rush to build.
 A higher discount rate $r$ reduces the present value of future cash flows, raising the trigger and reducing optimal capacity; the wide variation in WACC across AI firms (10\%--18\% in our calibration) implies substantially different investment policies even for firms with identical beliefs about $\lambda$.
-Higher $\tilde{\lambda}$ increases the weight on H-regime revenue in $A_{\text{eff}}$ (@eq-a-eff), raising the effective revenue coefficient, lowering the investment trigger, and shifting the optimal training fraction $\phi^*$ upward as the expected payoff from training quality increases; the net effect is that higher $\tilde{\lambda}$ leads to earlier investment, larger capacity, and a higher share of training---consistent with the observation that more optimistic firms invest more aggressively and allocate more compute to frontier model development.
+Higher $\lambda$ increases the weight on H-regime revenue in $A_{\text{eff}}$ (@eq-a-eff), raising the effective revenue coefficient, lowering the investment trigger, and shifting the optimal training fraction $\phi^*$ upward as the expected payoff from training quality increases; the net effect is that higher $\lambda$ leads to earlier investment, larger capacity, and a higher share of training---consistent with the observation that more optimistic firms invest more aggressively and allocate more compute to frontier model development.
 Finally, lower revenue elasticity $\alpha$ (stronger diminishing returns) reduces optimal capacity and raises the trigger; this parameter is crucial for the contest function specification, as lower $\alpha$ reduces the benefit of capacity dominance in both regimes, weakening the preemption incentive.

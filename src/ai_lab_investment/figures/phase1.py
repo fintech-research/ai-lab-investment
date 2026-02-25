@@ -19,7 +19,7 @@ def plot_comparative_statics_H(
 ) -> plt.Figure:
     """4-panel comparative statics for regime H.
 
-    Shows how trigger and capacity respond to sigma_H, alpha, gamma, and delta.
+    Shows how trigger and capacity respond to sigma, alpha, gamma, and delta.
     """
     if params is None:
         params = ModelParameters()
@@ -32,7 +32,7 @@ def plot_comparative_statics_H(
     )
 
     panels = [
-        ("sigma_H", np.linspace(0.20, 0.50, 30), r"Volatility $\sigma_H$", "(A)"),
+        ("sigma", np.linspace(0.20, 0.50, 30), r"Volatility $\sigma$", "(A)"),
         ("alpha", np.linspace(0.33, 0.47, 30), r"Revenue elasticity $\alpha$", "(B)"),
         ("gamma", np.linspace(1.2, 2.5, 30), r"Cost convexity $\gamma$", "(C)"),
         ("delta", np.linspace(0.01, 0.10, 30), r"Operating cost $\delta$", "(D)"),

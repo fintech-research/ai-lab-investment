@@ -18,7 +18,7 @@ First, I provide analytical and semi-analytical characterization of the optimal 
 Firms choose not only when to invest and how much capacity to install, but how to split that capacity between model training (which builds capabilities for the future) and inference serving (which generates revenue today).
 In the current (low) regime, revenue depends on inference capacity through a Tullock contest; in the post-adoption (high) regime, revenue depends on training quality.
 This regime-specific competition creates a genuine strategic trade-off absent from standard capacity models: a firm that allocates too much to training sacrifices current revenue and risks default, while a firm that allocates too little sacrifices its competitive position in the transformative AI regime.
-Under exogenous hazard, I provide analytical characterization of the optimal training fraction, investment trigger, and capacity (Proposition 1); comparative statics under endogenous hazard are established numerically.
+I provide analytical characterization of the optimal training fraction, investment trigger, and capacity (Proposition 1).
 Duopoly preemption changes both timing and training incentives: the leader allocates more to training than the follower because the monopoly phase eliminates the opportunity cost of forgone inference revenue (Proposition 3).
 
 Second, the interaction of training allocation with leverage and default risk produces a *faith-based survival* mechanism: training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-switch continuation value, lowering the default boundary (Proposition 2).
@@ -41,7 +41,7 @@ I verify numerically that the qualitative patterns survive with $N > 2$ firms in
 {{< include _literature.qmd >}}
 
 The paper proceeds as follows.
-@sec-model presents the model environment with training-inference allocation, endogenous regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
+@sec-model presents the model environment with training-inference allocation, regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
 @sec-calibration describes the stylized calibration to frontier AI lab archetypes and presents baseline numerical results.
 @sec-valuation develops quantitative implications: growth option decomposition, credit risk, the AI investment dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.

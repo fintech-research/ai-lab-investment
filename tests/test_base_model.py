@@ -124,7 +124,7 @@ class TestRegimeL:
     def test_with_high_alpha_has_L_trigger(self):
         """With sufficiently high alpha, regime L has an interior trigger."""
         # Both regimes need phi in (1/gamma, 1). High alpha + low vol works.
-        p = ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma_H=0.10, sigma_L=0.15)
+        p = ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma=0.12)
         m = SingleFirmModel(p)
         if not m.has_interior_trigger("L"):
             pytest.skip("No interior trigger in L for these parameters")
@@ -135,10 +135,10 @@ class TestRegimeL:
 
 class TestComparativeStatics:
     def test_higher_sigma_higher_trigger_H(self, model):
-        """Higher H volatility -> higher trigger (more option value)."""
-        stats = model.comparative_statics("sigma_H", np.array([0.25, 0.35]), regime="H")
+        """Higher volatility -> higher trigger (more option value)."""
+        stats = model.comparative_statics("sigma", np.array([0.25, 0.35]), regime="H")
         valid = stats["has_trigger"]
-        assert valid.sum() == 2, "Both sigma_H values should yield valid triggers"
+        assert valid.sum() == 2, "Both sigma values should yield valid triggers"
         assert stats["triggers"][1] > stats["triggers"][0]
 
     def test_alpha_affects_trigger_H(self, model):
@@ -154,7 +154,7 @@ class TestComparativeStatics:
 
     def test_returns_correct_shape(self, model):
         vals = np.linspace(0.25, 0.50, 10)
-        stats = model.comparative_statics("sigma_H", vals, regime="H")
+        stats = model.comparative_statics("sigma", vals, regime="H")
         assert len(stats["triggers"]) == 10
 
 

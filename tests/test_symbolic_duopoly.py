@@ -42,7 +42,7 @@ def default_params():
 @pytest.fixture
 def high_alpha_params():
     """Parameters where L-regime has an interior trigger."""
-    return ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma_H=0.10, sigma_L=0.15)
+    return ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma=0.12)
 
 
 # =====================================================================
@@ -66,7 +66,7 @@ class TestCharacteristicEquations:
 
         # Evaluate symbolic root at numerical parameter values
         subs = {
-            syms["sigma_H"]: p.sigma_H,
+            syms["sigma"]: p.sigma,
             syms["mu_H"]: p.mu_H,
             syms["r"]: p.r,
         }
@@ -79,7 +79,7 @@ class TestCharacteristicEquations:
         p = default_params
 
         subs = {
-            syms["sigma_L"]: p.sigma_L,
+            syms["sigma"]: p.sigma,
             syms["mu_L"]: p.mu_L,
             syms["r"]: p.r,
             syms["lam"]: p.lam,
@@ -95,9 +95,8 @@ class TestCharacteristicEquations:
         # Verify by checking that setting lambda=0 gives the standard equation
         eq_no_lambda = eq.subs(syms["lam"], 0)
         eq_H = characteristic_equation_H(syms)["equation"]
-        # Same structure but with sigma_L, mu_L
+        # Same structure but with mu_L (sigma is shared)
         eq_H_with_L_params = eq_H.subs({
-            syms["sigma_H"]: syms["sigma_L"],
             syms["mu_H"]: syms["mu_L"],
         })
         assert sp.simplify(eq_no_lambda - eq_H_with_L_params) == 0
@@ -138,7 +137,7 @@ class TestLRegimeODE:
         """Q_L(beta_H) should be nonzero for default parameters."""
         p = default_params
         Q_L = (
-            0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
+            0.5 * p.sigma**2 * p.beta_H * (p.beta_H - 1)
             + p.mu_L * p.beta_H
             - (p.r + p.lam)
         )

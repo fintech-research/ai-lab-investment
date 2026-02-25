@@ -72,7 +72,7 @@ def plot_nfirm_comparative_statics(
 
     for n in [2, 3, 4]:
         m = NFirmModel(params, n_firms=n, leverage=0.0)
-        stats = m.comparative_statics("sigma_H", sigma_vals, regime="H")
+        stats = m.comparative_statics("sigma", sigma_vals, regime="H")
         valid = stats["has_solution"]
 
         if valid.sum() > 0:
@@ -91,12 +91,12 @@ def plot_nfirm_comparative_statics(
                 label=f"N={n} last",
             )
 
-    ax1.set_xlabel(r"Volatility $\sigma_H$")
+    ax1.set_xlabel(r"Volatility $\sigma$")
     ax1.set_ylabel("Leader trigger $X_1^*$")
     ax1.set_title("(A) Leader Trigger vs. Volatility")
     ax1.legend()
 
-    ax2.set_xlabel(r"Volatility $\sigma_H$")
+    ax2.set_xlabel(r"Volatility $\sigma$")
     ax2.set_ylabel("Last entrant trigger")
     ax2.set_title("(B) Last Entrant Trigger vs. Volatility")
     ax2.legend()

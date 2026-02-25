@@ -361,7 +361,7 @@ class DuopolyModel:
         the positive root computation in parameters.py which uses discount = r + lam.
         """
         p = self.params
-        sigma = p.sigma_H if regime == "H" else p.sigma_L
+        sigma = p.sigma
         mu = p.mu_H if regime == "H" else p.mu_L
         a = 0.5 * sigma**2
         b = mu - 0.5 * sigma**2

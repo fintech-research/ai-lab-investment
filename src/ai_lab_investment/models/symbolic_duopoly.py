@@ -46,8 +46,7 @@ def define_symbols():
     syms["X"] = sp.Symbol("X", positive=True)
     syms["mu_L"] = sp.Symbol("mu_L", real=True)
     syms["mu_H"] = sp.Symbol("mu_H", real=True)
-    syms["sigma_L"] = sp.Symbol("sigma_L", positive=True)
-    syms["sigma_H"] = sp.Symbol("sigma_H", positive=True)
+    syms["sigma"] = sp.Symbol("sigma", positive=True)
     syms["r"] = sp.Symbol("r", positive=True)
     syms["lam"] = sp.Symbol("lambda", positive=True)  # tilde{lambda}
 
@@ -84,16 +83,16 @@ def define_symbols():
 def characteristic_equation_H(syms):
     """Characteristic equation for the H-regime (absorbing).
 
-    (sigma_H^2 / 2) * beta * (beta - 1) + mu_H * beta - r = 0
+    (sigma^2 / 2) * beta * (beta - 1) + mu_H * beta - r = 0
 
     Returns the equation (set equal to zero) and its positive root.
     """
     beta = syms["beta"]
-    sigma_H = syms["sigma_H"]
+    sigma = syms["sigma"]
     mu_H = syms["mu_H"]
     r = syms["r"]
 
-    eq = sp.Rational(1, 2) * sigma_H**2 * beta * (beta - 1) + mu_H * beta - r
+    eq = sp.Rational(1, 2) * sigma**2 * beta * (beta - 1) + mu_H * beta - r
     roots = sp.solve(eq, beta)
 
     # Return the equation and the two roots
@@ -110,18 +109,18 @@ def characteristic_equation_L(syms):
 
     The homogeneous part of the L-regime ODE uses effective discount (r + lambda):
 
-    (sigma_L^2 / 2) * beta * (beta - 1) + mu_L * beta - (r + lambda) = 0
+    (sigma^2 / 2) * beta * (beta - 1) + mu_L * beta - (r + lambda) = 0
 
     This is because the regime-switching term lambda * [F_H - F_L] acts
     as an additional "discount" on F_L.
     """
     beta = syms["beta"]
-    sigma_L = syms["sigma_L"]
+    sigma = syms["sigma"]
     mu_L = syms["mu_L"]
     r = syms["r"]
     lam = syms["lam"]
 
-    eq = sp.Rational(1, 2) * sigma_L**2 * beta * (beta - 1) + mu_L * beta - (r + lam)
+    eq = sp.Rational(1, 2) * sigma**2 * beta * (beta - 1) + mu_L * beta - (r + lam)
     roots = sp.solve(eq, beta)
 
     return {
@@ -199,10 +198,10 @@ def l_regime_ode(syms):
 
     The L-regime option value satisfies the HJB equation:
 
-    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' + lambda[F_H(X) - F_L(X)] - r F_L = 0
+    (1/2) sigma^2 X^2 F_L'' + mu_L X F_L' + lambda[F_H(X) - F_L(X)] - r F_L = 0
 
     Rearranging:
-    (1/2) sigma_L^2 X^2 F_L'' + mu_L X F_L' - (r + lambda) F_L + lambda F_H(X) = 0
+    (1/2) sigma^2 X^2 F_L'' + mu_L X F_L' - (r + lambda) F_L + lambda F_H(X) = 0
 
     Since F_H(X) = B_H * X^{beta_H}, this is a second-order Euler ODE with
     a non-homogeneous term lambda * B_H * X^{beta_H}.
@@ -222,11 +221,11 @@ def l_regime_ode(syms):
     Substituting C * X^{beta_H} into the homogeneous operator:
     C * Q_L(beta_H) * X^{beta_H} + lambda * B_H * X^{beta_H} = 0
 
-    where Q_L(beta) = (1/2) sigma_L^2 beta(beta-1) + mu_L beta - (r + lambda)
+    where Q_L(beta) = (1/2) sigma^2 beta(beta-1) + mu_L beta - (r + lambda)
 
     So: C = -lambda * B_H / Q_L(beta_H)
     """
-    sigma_L = syms["sigma_L"]
+    sigma = syms["sigma"]
     mu_L = syms["mu_L"]
     r = syms["r"]
     lam = syms["lam"]
@@ -235,9 +234,7 @@ def l_regime_ode(syms):
 
     # Q_L evaluated at beta_H
     Q_L_at_beta_H = (
-        sp.Rational(1, 2) * sigma_L**2 * beta_H * (beta_H - 1)
-        + mu_L * beta_H
-        - (r + lam)
+        sp.Rational(1, 2) * sigma**2 * beta_H * (beta_H - 1) + mu_L * beta_H - (r + lam)
     )
 
     # Particular solution coefficient
@@ -367,7 +364,7 @@ def when_is_A1_zero(syms):
         "interior_trigger_condition": exists_condition,
         "A1_zero_when": sp.Or(phi_L >= 1, phi_L <= 1 / gamma_),
         "note": (
-            "For the paper's baseline parameters (sigma_L=0.25, mu_L=0.01, "
+            "For the paper's baseline parameters (sigma=0.25, mu_L=0.01, "
             "r=0.12, lambda=0.10), beta_L_plus solves the L-regime "
             "characteristic equation with discount r+lambda=0.22. "
             "The resulting phi_L typically exceeds 1, so A1=0 and the "
@@ -549,9 +546,7 @@ def verify_particular_solution_coefficient(params):
 
     # Symbolic verification
     Q_L = (
-        0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
-        + p.mu_L * p.beta_H
-        - (p.r + p.lam)
+        0.5 * p.sigma**2 * p.beta_H * (p.beta_H - 1) + p.mu_L * p.beta_H - (p.r + p.lam)
     )
     C_formula = -p.lam * B_H_code / Q_L
 
@@ -629,7 +624,7 @@ def verify_option_value_structure(params):
 def verify_baseline_simplification():
     """Check whether the paper's simplified form is valid at baseline params.
 
-    At the default baseline (sigma_L=0.25, mu_L=0.01, r=0.12, lam=0.10),
+    At the default baseline (sigma=0.25, mu_L=0.01, r=0.12, lam=0.10),
     check if the L-regime has no interior trigger, validating F_L = C*X^{beta_H}.
     """
     from .parameters import ModelParameters

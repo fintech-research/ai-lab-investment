@@ -369,7 +369,7 @@ class TestDefaultRisk:
         m = DuopolyModel(p)
         lam_tilde = p.lam  # 0.10
         # Direct computation: (σ²/2)β(β-1) + μβ - (r + λ̃) = 0
-        sigma, mu = p.sigma_L, p.mu_L
+        sigma, mu = p.sigma, p.mu_L
         a = 0.5 * sigma**2
         b = mu - 0.5 * sigma**2
         c = -(p.r + lam_tilde)
@@ -462,7 +462,7 @@ class TestEquityDebt:
 class TestComparativeStatics:
     def test_sigma_statics_has_solutions(self, model):
         """Comparative statics over sigma should produce solutions."""
-        stats = model.comparative_statics("sigma_H", np.linspace(0.25, 0.45, 5))
+        stats = model.comparative_statics("sigma", np.linspace(0.25, 0.45, 5))
         assert stats["has_solution"].sum() >= 2
 
     def test_leverage_statics_has_solutions(self, default_params):
@@ -473,7 +473,7 @@ class TestComparativeStatics:
 
     def test_leader_always_before_follower_in_statics(self, model):
         """In all valid solutions, leader trigger < follower trigger."""
-        stats = model.comparative_statics("sigma_H", np.linspace(0.25, 0.45, 5))
+        stats = model.comparative_statics("sigma", np.linspace(0.25, 0.45, 5))
         valid = stats["has_solution"]
         if valid.sum() > 0:
             assert np.all(stats["X_leader"][valid] <= stats["X_follower"][valid])

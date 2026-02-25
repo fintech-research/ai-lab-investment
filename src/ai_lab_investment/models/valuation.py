@@ -191,7 +191,7 @@ class ValuationAnalysis:
 
         p = self.params
         mu = p.mu_H if regime == "H" else p.mu_L
-        sigma = p.sigma_H if regime == "H" else p.sigma_L
+        sigma = p.sigma
 
         # Distance to default (in log space)
         d2 = (np.log(X_current / X_D) + (mu - 0.5 * sigma**2) * horizon) / (

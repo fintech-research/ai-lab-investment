@@ -126,7 +126,7 @@ class SingleFirmModel:
             msg = (
                 f"No interior solution in regime H. phi={phi:.3f}. "
                 f"Need {1 / p.gamma:.3f} < phi < 1. "
-                f"Try increasing alpha or sigma_H."
+                f"Try increasing alpha or sigma."
             )
             raise RuntimeError(msg)
 
@@ -159,7 +159,7 @@ class SingleFirmModel:
 
         _, _, B_H = self._solve_regime_H()
         Q_L = (
-            0.5 * p.sigma_L**2 * p.beta_H * (p.beta_H - 1)
+            0.5 * p.sigma**2 * p.beta_H * (p.beta_H - 1)
             + p.mu_L * p.beta_H
             - (p.r + p.lam)
         )
@@ -359,7 +359,7 @@ class SingleFirmModel:
         for t in range(n_steps):
             s = regime[t]
             mu = p.mu_H if s == 1 else p.mu_L
-            sigma = p.sigma_H if s == 1 else p.sigma_L
+            sigma = p.sigma
 
             dW = rng.normal(0, dt**0.5)
             X[t + 1] = X[t] * np.exp((mu - 0.5 * sigma**2) * dt + sigma * dW)
