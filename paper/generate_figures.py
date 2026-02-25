@@ -104,59 +104,8 @@ def fig_sample_paths():
 
 
 # ==================================================================
-# Figure 2 -Option value vs NPV of immediate investment
+# (Old Figure 2 removed: H-regime option value is 0 under F_H = 0)
 # ==================================================================
-def fig_option_value():
-    from ai_lab_investment.models import ModelParameters, SingleFirmModel
-
-    p = ModelParameters()
-    model = SingleFirmModel(p)
-    X_star, K_star = model.optimal_trigger_and_capacity("H")
-
-    X_vals = np.linspace(0.001 * X_star, 3.0 * X_star, 300)
-    F_H = np.array([model.option_value_H(x) for x in X_vals])
-    NPV = np.array([
-        model.installed_value(x, K_star, "H") - model.investment_cost(K_star)
-        for x in X_vals
-    ])
-
-    fig, ax = plt.subplots(figsize=(FULL_W, 3.5))
-    ax.plot(X_vals, F_H, "k-", linewidth=1.8, label=r"Option value $F_H(X)$")
-    ax.plot(
-        X_vals,
-        NPV,
-        "--",
-        color="0.4",
-        linewidth=1.3,
-        label="NPV of immediate investment",
-    )
-    ax.axvline(X_star, color="0.6", linestyle=":", linewidth=0.8)
-    ax.annotate(
-        r"$X_H^*$",
-        xy=(X_star, 0),
-        xytext=(X_star * 1.08, max(F_H) * 0.15),
-        fontsize=9,
-        color="0.4",
-    )
-
-    # Shade the "value of waiting" region
-    mask = X_vals < X_star
-    ax.fill_between(X_vals[mask], NPV[mask], F_H[mask], alpha=0.12, color="steelblue")
-    ax.text(
-        X_star * 0.3,
-        max(F_H) * 0.12,
-        "Value of\nwaiting",
-        fontsize=8,
-        color="steelblue",
-        ha="center",
-    )
-
-    ax.set_xlabel(r"Demand level $X$")
-    ax.set_ylabel("Value")
-    ax.legend(loc="upper left", framealpha=0.9)
-    ax.set_xlim(0, X_vals[-1])
-    ax.set_ylim(bottom=min(0, NPV.min() * 1.1))
-    _save(fig, "fig_option_value")
 
 
 # ==================================================================
@@ -218,25 +167,36 @@ def fig_comparative_statics():
 
 
 # ==================================================================
-# Figure 4 -Regime switch value: L-option vs lambda
+# Figure -L-regime option value vs lambda (under F_H = 0)
 # ==================================================================
 def fig_lambda_option_value():
+    """L-regime option value as a function of arrival rate lambda.
+
+    Under F_H = 0, higher lambda has a dual effect on the trigger:
+    1. A_eff channel: higher lambda raises A_eff, lowering the trigger.
+    2. Option premium channel: higher lambda raises beta_L^+, pushing
+       beta_L^+/(beta_L^+ - 1) toward 1 (value of waiting shrinks).
+
+    Note: This figure requires alpha > 1 - 1/beta_L for interior solution.
+    At baseline alpha=0.40, F_L = 0 (no interior capacity). We use
+    alpha=0.70 to demonstrate the dual channel mechanism.
+    """
     from ai_lab_investment.models import ModelParameters, SingleFirmModel
 
     lam_vals = np.linspace(0.01, 0.80, 60)
-    X_ref = 0.01  # a demand level below the H-trigger
+    X_ref = 0.003  # demand level below the trigger
 
     F_L_vals = np.full_like(lam_vals, np.nan)
-    F_H_vals = np.full_like(lam_vals, np.nan)
-    C_vals = np.full_like(lam_vals, np.nan)
+    beta_L_vals = np.full_like(lam_vals, np.nan)
+    markup_vals = np.full_like(lam_vals, np.nan)
 
     for i, lam in enumerate(lam_vals):
         try:
-            p = ModelParameters(lam=lam)
+            p = ModelParameters(lam=lam, alpha=0.70)
             model = SingleFirmModel(p)
             F_L_vals[i] = model.option_value_L(X_ref)
-            F_H_vals[i] = model.option_value_H(X_ref)
-            C_vals[i] = model._particular_solution_coeff()
+            beta_L_vals[i] = p.beta_L
+            markup_vals[i] = p.beta_L / (p.beta_L - 1.0)
         except (ValueError, RuntimeError):
             continue
 
@@ -250,22 +210,21 @@ def fig_lambda_option_value():
         linewidth=1.5,
         label=r"$F_L(X)$ (pre-adoption)",
     )
-    ax1.axhline(
-        F_H_vals[0],
-        color="0.5",
-        linestyle="--",
-        linewidth=1.0,
-        label=r"$F_H(X)$ (post-adoption)",
-    )
-    ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
+    ax1.set_xlabel(r"Arrival rate $\tilde{\lambda}$ (yr$^{-1}$)")
     ax1.set_ylabel(f"Option value at $X={X_ref}$")
     ax1.legend(fontsize=8)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
-    valid_c = ~np.isnan(C_vals)
-    ax2.plot(lam_vals[valid_c], C_vals[valid_c], "k-", linewidth=1.5)
-    ax2.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
-    ax2.set_ylabel(r"Switching value coefficient $C$")
+    # Panel (b): option premium (dual channel visualization)
+    valid_m = ~np.isnan(markup_vals)
+    ax2.plot(
+        lam_vals[valid_m],
+        markup_vals[valid_m],
+        "k-",
+        linewidth=1.5,
+    )
+    ax2.set_xlabel(r"Arrival rate $\tilde{\lambda}$ (yr$^{-1}$)")
+    ax2.set_ylabel(r"Option premium $\beta_L^+ / (\beta_L^+ - 1)$")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     plt.tight_layout()
@@ -567,57 +526,64 @@ def fig_lambda_timeline():
 
 
 # ==================================================================
-# Figure 10 -Growth option decomposition
+# Figure -Installed value decomposition (L vs H regime components)
 # ==================================================================
 def fig_growth_decomposition():
+    """Decompose installed value into L-regime and H-regime components.
+
+    Under F_H = 0, there is no post-AGI expansion option. Instead, the
+    installed firm's value decomposes into inference revenue (L-regime)
+    and training premium (H-regime continuation via A_eff).
+
+    Panel (a): L-regime inference vs H-regime training components.
+    Panel (b): H-regime fraction of total value vs training fraction.
+    """
     from ai_lab_investment.models import ModelParameters, SingleFirmModel
 
     p = ModelParameters()
     model = SingleFirmModel(p)
     _, K_star = model.optimal_trigger_and_capacity("H")
 
-    # Use K_installed as fractions of optimal K
-    K_fracs = np.linspace(0.0, 2.0, 60)
-    K_installed_vals = K_fracs * K_star
     X = model._trigger_for_K(K_star, "H") * 1.5  # above trigger
 
-    assets = np.array([
-        model.installed_value(X, k, "H") if k > 0 else 0.0 for k in K_installed_vals
-    ])
-    option_val = model.option_value_H(X)  # total option value at X
-    expansion = np.maximum(option_val - assets, 0.0)
+    phi_vals = np.linspace(0.05, 0.95, 60)
+    v_inference = np.zeros_like(phi_vals)
+    v_training = np.zeros_like(phi_vals)
+
+    for i, phi in enumerate(phi_vals):
+        inf_cap = (1.0 - phi) * K_star
+        tr_cap = phi * K_star
+        denom_L = p.r - p.mu_L + p.lam
+        # L-regime inference component
+        v_inference[i] = inf_cap**p.alpha / denom_L * X
+        # H-regime training component (via lambda transition)
+        if tr_cap > 0:
+            v_training[i] = p.lam / denom_L * tr_cap**p.alpha * p.A_H * X
+
+    total = v_inference + v_training
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
     ax1.fill_between(
-        K_fracs, 0, assets, alpha=0.4, color="#1f77b4", label="Assets-in-place"
+        phi_vals, 0, v_inference, alpha=0.4, color="#1f77b4", label="Inference (L)"
     )
     ax1.fill_between(
-        K_fracs,
-        assets,
-        assets + expansion,
+        phi_vals,
+        v_inference,
+        total,
         alpha=0.4,
         color="#ff7f0e",
-        label="Expansion option",
+        label="Training (H)",
     )
-    ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
-    ax1.annotate(
-        r"$K_H^*$",
-        xy=(1.0, 0),
-        xytext=(1.12, max(assets) * 0.5),
-        fontsize=9,
-        color="0.4",
-    )
-    ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
-    ax1.set_ylabel("Value")
-    ax1.legend(fontsize=8, loc="upper left")
+    ax1.set_xlabel(r"Training fraction $\phi$")
+    ax1.set_ylabel("Installed value components")
+    ax1.legend(fontsize=8, loc="upper right")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
-    total = assets + expansion
-    growth_frac = np.where(total > 0, expansion / total * 100, 0)
-    ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
-    ax2.set_xlabel(r"Installed capacity ($K / K_H^*$)")
-    ax2.set_ylabel("Growth option fraction (%)")
+    h_frac = np.where(total > 0, v_training / total * 100, 0)
+    ax2.plot(phi_vals, h_frac, "k-", linewidth=1.5)
+    ax2.set_xlabel(r"Training fraction $\phi$")
+    ax2.set_ylabel("H-regime fraction of value (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
@@ -751,7 +717,6 @@ def fig_investment_dilemma():
 if __name__ == "__main__":
     print("Generating paper figures...")
     fig_sample_paths()
-    fig_option_value()
     fig_comparative_statics()
     fig_lambda_option_value()
     fig_default_boundaries()

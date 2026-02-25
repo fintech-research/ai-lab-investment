@@ -197,7 +197,6 @@ def plot_lambda_sensitivity(
     lam_vals = np.linspace(0.01, 0.50, 30)
     triggers_H = np.full_like(lam_vals, np.nan)
     capacities_H = np.full_like(lam_vals, np.nan)
-    C_vals = np.full_like(lam_vals, np.nan)
 
     for i, lam in enumerate(lam_vals):
         try:
@@ -206,22 +205,16 @@ def plot_lambda_sensitivity(
             X_H, K_H = m.optimal_trigger_and_capacity("H")
             triggers_H[i] = X_H
             capacities_H[i] = K_H
-            C_vals[i] = m._particular_solution_coeff()
         except (ValueError, RuntimeError):
             continue
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
+    fig, ax1 = plt.subplots(figsize=(6, 4.5))
 
     valid = ~np.isnan(triggers_H)
     ax1.plot(lam_vals[valid], triggers_H[valid], "b-", linewidth=2)
     ax1.set_xlabel(r"Regime-switch arrival rate $\lambda$")
     ax1.set_ylabel(r"Investment trigger $X^*_H$")
     ax1.set_title("H-Regime Trigger vs. Arrival Rate")
-
-    ax2.plot(lam_vals[valid], C_vals[valid], "r-", linewidth=2)
-    ax2.set_xlabel(r"Regime-switch arrival rate $\lambda$")
-    ax2.set_ylabel("$C$ (switching value coefficient)")
-    ax2.set_title("L-Regime Option Value from Switching")
 
     plt.tight_layout()
 
