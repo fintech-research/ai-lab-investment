@@ -563,7 +563,7 @@ def create_growth_decomposition() -> plt.Figure:
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
     ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
     ax1.set_ylabel("Value")
-    ax1.legend(loc="upper left")
+    ax1.legend(loc="lower right")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     total = assets + counterfactual
