@@ -1,60 +1,36 @@
 ## Appendix {.unnumbered}
 
-| Symbol | Parameter | Baseline | Interpretation |
-|:--------:|:----------|:--------:|:---------------|
-| $\mu_L$ | L-regime drift | 0.01 | Risk-adjusted demand growth, pre-adoption |
-| $\mu_H$ | H-regime drift | 0.06 | Risk-adjusted demand growth, post-adoption |
-| $\sigma$ | Volatility | 0.25 | Demand uncertainty (common across regimes) |
-| $r$ | Discount rate (WACC) | 0.12 | Risk-adjusted cost of capital |
-| $\lambda$ | Arrival rate | 0.10 | Regime-switch arrival rate (exogenous) |
-| $\alpha$ | Revenue elasticity | 0.40 | Diminishing returns to capacity in revenue |
-| $\gamma$ | Cost convexity | 1.50 | Increasing marginal cost of capacity |
-| $c$ | Unit cost (normalization) | 1.00 | Investment cost scale |
-| $\delta$ | Operating cost rate | 0.03 | Power, cooling, maintenance per unit capacity |
-| $\phi$ | Training fraction | --- | Endogenous; share of capacity allocated to training |
-| $\ell$ | Leverage ratio | --- | Debt / investment cost |
-| $c_d$ | Coupon rate | 0.05 | Cost of debt |
-| $b$ | Bankruptcy cost | 0.30 | Fraction of value lost in default |
+| Symbol | Parameter | Baseline | Target / Source | Status |
+|:------:|:----------|:--------:|:----------------|:------:|
+| $\mu_L$ | L-regime drift | 0.01 | Cloud computing baseline growth | Chosen |
+| $\mu_H$ | H-regime drift | 0.06 | Upper-range AI revenue growth projections | Chosen |
+| $\sigma$ | Volatility | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
+| $r$ | Discount rate (WACC) | 0.12 | WACC, representative frontier AI lab | Inferred |
+| $\lambda$ | Arrival rate | 0.10 | Regime-switch arrival rate (exogenous belief) | Chosen |
+| $\alpha$ | Revenue elasticity | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
+| $\gamma$ | Cost convexity | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen |
+| $c$ | Unit cost | 1.00 | Normalization | --- |
+| $\delta$ | Operating cost rate | 0.03 | Power, cooling, maintenance (flow cost only) | Inferred |
+| $\phi$ | Training fraction | --- | Endogenous choice variable | --- |
+| $\ell$ | Leverage ratio | --- | Endogenous choice variable | --- |
+| $c_d$ | Coupon rate | 0.05 | Cost of debt for frontier AI labs | Inferred |
+| $b$ | Bankruptcy cost | 0.30 | Bankruptcy cost fraction | Standard |
 
-: Model parameters with baseline values and interpretations. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. {#tbl-parameters tbl-colwidths="[10,25,12,53]"}
+: Model parameters with baseline values and calibration status. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. Status: "Inferred" = backed out from observable proxies; "Chosen" = chosen for discipline (selected to generate plausible magnitudes without a precise empirical target); "Standard" = standard value from the literature. {#tbl-parameters tbl-colwidths="[8,20,8,46,10]"}
 
-| Symbol | Meaning | Exogenous / Endogenous |
-|:------:|:--------|:----------------------:|
+| Symbol | Meaning | Type |
+|:------:|:--------|:-----|
 | $X_t$ | Demand process | Exogenous (GBM) |
-| $\mu_s$ | Regime-$s$ drift | Exogenous |
-| $\sigma$ | Common volatility | Exogenous |
-| $\lambda$ | Regime-switch arrival rate | Exogenous |
 | $K$ | Installed capacity | Endogenous (choice) |
-| $\phi$ | Training fraction ($\phi K$ = training, $(1-\phi)K$ = inference) | Endogenous (choice) |
-| $\alpha$ | Revenue elasticity to capacity | Exogenous |
-| $\gamma$ | Cost convexity ($I(K) = cK^\gamma$) | Exogenous |
 | $A_H$ | H-regime present-value multiplier: $1/(r - \mu_H)$ | Derived (primitives) |
 | $A_{\text{eff}}$ | Effective revenue coefficient combining L- and H-regime values | Derived (choices) |
 | $\beta_H$ | Positive characteristic root, H-regime ODE | Derived (primitives) |
 | $\beta_L^+$ | Positive characteristic root, L-regime ODE (with $\lambda$) | Derived (primitives) |
 | $s_i^L, s_i^H$ | Tullock contest shares (L-regime inference, H-regime training) | Derived (choices) |
-| $\ell$ | Leverage ratio: $D_0 / I(K)$ | Endogenous (choice) |
-| $c_d$ | Coupon rate on debt | Exogenous |
 | $X_D$ | Endogenous default boundary | Derived |
 | $X^*$ | Optimal investment trigger | Derived |
 
-: Key notation. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
-
-| Parameter | Baseline | Target / Source | Status |
-|:----------|:--------:|:----------------|:------:|
-| $\mu_L$ | 0.01 | Cloud computing baseline growth | Chosen for discipline |
-| $\mu_H$ | 0.06 | Upper-range AI revenue growth projections | Chosen for discipline |
-| $\sigma$ | 0.25 | Quarterly revenue volatility, cloud providers | Inferred |
-| $r$ | 0.12 | WACC, representative frontier AI lab | Inferred from Damodaran |
-| $\lambda$ | 0.10 | Regime-switch arrival rate (exogenous belief) | Chosen for discipline |
-| $\alpha$ | 0.40 | GPU utilization rates, diminishing marginal compute value | Inferred |
-| $\gamma$ | 1.50 | Power/supply-chain bottlenecks, site prep costs | Chosen for discipline |
-| $c$ | 1.00 | Normalization | --- |
-| $\delta$ | 0.03 | Power, cooling, maintenance (flow cost only) | Inferred from industry |
-| $c_d$ | 0.05 | Cost of debt for frontier AI labs | Inferred |
-| $b$ | 0.30 | Bankruptcy cost fraction | Standard (Leland 1994) |
-
-: Parameter calibration status. "Directly observed" = taken from empirical estimates; "Inferred" = backed out from observable proxies; "Chosen for discipline" = selected to generate plausible magnitudes without a precise empirical target. {#tbl-param-mapping tbl-colwidths="[14,10,42,18]"}
+: Additional notation not listed in @tbl-parameters. "Derived (primitives)" indicates quantities computed from exogenous parameters only; "Derived (choices)" indicates quantities that additionally depend on endogenous decisions $(K, \phi)$. {#tbl-notation tbl-colwidths="[12,58,30]"}
 
 \newpage
 

@@ -8,7 +8,7 @@ Second, the training fractions $\hat{\phi}$ are inferred from incomplete data an
 Third, the scaling exponent $\eta$ is inferred from the neural scaling laws literature through a non-trivial mapping (see below).
 The calibration proceeds in four steps: I first set the demand process parameters, then the technology and cost parameters, then the endogenous arrival rate parameters, and finally the financial parameters.
 
-@tbl-param-mapping in the Appendix summarizes the calibration status of each parameter.
+@tbl-parameters in the Appendix summarizes the calibration status of each parameter.
 
 ### Demand Process
 
