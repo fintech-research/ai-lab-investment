@@ -593,7 +593,7 @@ def create_investment_dilemma() -> plt.Figure:
     va = ValuationAnalysis(p)
 
     fixed_true = 0.10
-    lam_range = np.linspace(0.02, 0.50, 30)
+    lam_range = np.linspace(0.005, 0.50, 40)
 
     losses_unlev = []
     for li in lam_range:
@@ -614,7 +614,6 @@ def create_investment_dilemma() -> plt.Figure:
     ax.plot(lam_range, losses_lev_arr, "k--", linewidth=1.5, label=r"$\ell = 0.40$")
 
     ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
-    ax.axhline(0, color="0.6", alpha=0.3, linewidth=0.5)
 
     high_loss = losses_unlev_arr > 10
     if high_loss.any():
@@ -631,11 +630,12 @@ def create_investment_dilemma() -> plt.Figure:
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
     ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
     ax.legend(loc="upper center", framealpha=0.9)
-    ax.set_ylim(bottom=-2)
+    ax.set_xlim(0, 0.5)
+    ax.set_ylim(0, 28)
 
     ax.annotate(
         "Underinvestment\n(conservative)",
-        xy=(0.055, 16),
+        xy=(0.045, 16),
         fontsize="small",
         ha="left",
         color="navy",
