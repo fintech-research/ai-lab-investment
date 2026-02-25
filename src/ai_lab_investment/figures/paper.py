@@ -74,6 +74,7 @@ def create_sample_paths() -> plt.Figure:
     ax.set_xlabel("Time (years)")
     ax.set_ylabel(r"Demand level $X_t$")
     ax.legend(loc="upper left", framealpha=0.9)
+    fig.tight_layout()
     return fig
 
 
@@ -131,6 +132,7 @@ def create_option_value() -> plt.Figure:
     ax.legend(loc="upper left", framealpha=0.9)
     ax.set_xlim(0, X_vals[-1])
     ax.set_ylim(bottom=min(0, NPV.min() * 1.1))
+    fig.tight_layout()
     return fig
 
 
@@ -312,6 +314,7 @@ def create_default_boundaries() -> plt.Figure:
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
     ax.legend(loc="center left", framealpha=0.9)
+    fig.tight_layout()
     return fig
 
 
@@ -560,7 +563,7 @@ def create_growth_decomposition() -> plt.Figure:
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
     ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
     ax1.set_ylabel("Value")
-    ax1.legend(loc="upper left")
+    ax1.legend(loc="lower right")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     total = assets + counterfactual
@@ -590,7 +593,7 @@ def create_investment_dilemma() -> plt.Figure:
     va = ValuationAnalysis(p)
 
     fixed_true = 0.10
-    lam_range = np.linspace(0.02, 0.50, 30)
+    lam_range = np.linspace(0.005, 0.50, 40)
 
     losses_unlev = []
     for li in lam_range:
@@ -611,7 +614,6 @@ def create_investment_dilemma() -> plt.Figure:
     ax.plot(lam_range, losses_lev_arr, "k--", linewidth=1.5, label=r"$\ell = 0.40$")
 
     ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
-    ax.axhline(0, color="0.6", alpha=0.3, linewidth=0.5)
 
     high_loss = losses_unlev_arr > 10
     if high_loss.any():
@@ -627,14 +629,15 @@ def create_investment_dilemma() -> plt.Figure:
 
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
     ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
-    ax.legend(loc="upper left", framealpha=0.9)
-    ax.set_ylim(bottom=-2)
+    ax.legend(loc="upper center", framealpha=0.9)
+    ax.set_xlim(0, 0.5)
+    ax.set_ylim(0, 28)
 
     ax.annotate(
         "Underinvestment\n(conservative)",
-        xy=(0.04, 15),
+        xy=(0.045, 16),
         fontsize="small",
-        ha="center",
+        ha="left",
         color="navy",
     )
     ax.annotate(
@@ -645,4 +648,5 @@ def create_investment_dilemma() -> plt.Figure:
         color="darkred",
     )
 
+    fig.tight_layout()
     return fig
