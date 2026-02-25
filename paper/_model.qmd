@@ -32,27 +32,25 @@ In practice, firms expand incrementally and can repurpose compute across workloa
 A frontier AI laboratory produces intelligence by combining two forms of compute.
 *Training compute* optimizes a neural network's parameters on massive datasets, yielding a model whose quality scales as a power law of compute invested.
 *Inference compute* runs the trained model to serve predictions and generate revenue.
-Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction---creating an allocation problem with no close parallel in traditional capital budgeting.
+Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction and their associated power production---creating an allocation problem with no close parallel in traditional capital budgeting.
 
-A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference.
-Training compute is $\phi K$ and inference compute is $(1-\phi) K$.
+A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference, such that training compute is $\phi K$ and inference compute is $(1-\phi) K$.
 Revenue depends on the demand regime:
 
-- **Low regime** ($L$, pre-adoption): revenue derives from *inference*---serving current demand for AI predictions and services.
+- **Low regime** ($L$, pre-AGI): revenue derives from *inference*---serving current demand for AI predictions and services.
   Firm $i$'s flow revenue is:
   $$
   \pi_i^L(X) = X \cdot [(1-\phi_i)K_i]^\alpha,
   $$ {#eq-revenue-L}
   where $\alpha \in (0,1)$ captures diminishing returns to inference capacity.
 
-- **High regime** ($H$, post-adoption): revenue derives from *training quality*---the capability of the firm's models determines its competitive position in a world of sustained high demand.
+- **High regime** ($H$, post-AGI): revenue derives from *training quality*---the capability of the firm's models determines its competitive position in a world of sustained high demand.
   Firm $i$'s flow revenue is:
   $$
   \pi_i^H(X) = X \cdot (\phi_i K_i)^\alpha.
   $$ {#eq-revenue-H}
 
 This regime-dependent revenue structure captures a fundamental asymmetry in AI infrastructure: today, inference capacity determines revenue (you must serve demand), but in a world of transformative AI, training quality determines competitive position (the best models capture the market).
-Amodei describes the current allocation constraint: "Why doesn't everyone spend 100\% of their compute on training? It's because if they didn't get any revenue, they couldn't raise money... As a stylized fact, it's 50\%" [@amodei2025training].
 The training fraction $\phi$ is chosen at investment time and fixed thereafter.^[Dynamic reallocation of $\phi$ post-investment would require modeling $\phi$ as a continuous state variable in the HJB equation, substantially increasing computational complexity. The static choice is already rich enough to generate the key economic trade-offs. I note this as a limitation in @sec-discussion.]
 
 Installed capacity incurs a continuous operating cost at rate $\delta \geq 0$ per unit, representing power, cooling, maintenance, and personnel expenses.^[This is distinct from *economic depreciation* (physical decay or technological obsolescence of GPU hardware). In the model, capacity $K$ remains constant once installed; $\delta K$ is a perpetual flow cost, not a decay rate. The @sec-calibration discusses the relationship between $\delta$ and accounting depreciation in detail. Nvidia has released new GPU architectures on roughly 18--24 month cycles (A100 in 2020, H100 in 2022, B200 in 2024), and algorithmic breakthroughs can accelerate obsolescence further: DeepSeek R1 achieved frontier reasoning performance using older-generation H800 GPUs at a fraction of the expected cost [@deepseek2025r1], demonstrating that efficiency gains can devalue installed infrastructure independently of hardware cycles.]
