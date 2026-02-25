@@ -365,7 +365,6 @@ def create_credit_risk() -> plt.Figure:
 
 def create_competition_effect() -> plt.Figure:
     """Two-panel: monopolist vs duopoly leader triggers and ratios."""
-    from ..models.base_model import SingleFirmModel
     from ..models.duopoly import DuopolyModel
     from ..models.parameters import ModelParameters
 
@@ -380,18 +379,18 @@ def create_competition_effect() -> plt.Figure:
     for i, s in enumerate(sigmas):
         try:
             ps = p.with_param(sigma=s)
-            m = SingleFirmModel(ps)
-            X_m, K_m = m.optimal_trigger_and_capacity("H")
-            mono_trig[i] = X_m
-
             duo = DuopolyModel(ps, leverage=0.0)
             eq = duo.solve_preemption_equilibrium("H")
+            X_mono = eq["X_leader_monopolist"]
+            # same K as monopolist: preemption uses monopolist's optimal K
+            K_mono = eq["K_leader"]
+            mono_trig[i] = X_mono
             leader_trig[i] = eq["X_leader"]
 
-            if X_m > 0:
-                trig_ratio[i] = eq["X_leader"] / X_m
-            if K_m > 0:
-                cap_ratio[i] = eq["K_leader"] / K_m
+            if X_mono > 0:
+                trig_ratio[i] = eq["X_leader"] / X_mono
+            if K_mono > 0:
+                cap_ratio[i] = eq["K_leader"] / K_mono
         except (ValueError, RuntimeError):
             pass
 
