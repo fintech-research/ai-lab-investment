@@ -1,28 +1,6 @@
 # ai-lab-investment
 
-This is a template repository for research projects that use Python and Quarto.
-
-- **Github repository**: <https://github.com/vgreg/ai-lab-investment/>
-
-## Getting started with your project
-
-### 1. Create a New Repository
-
-First, make sure you satifsy the [requirements](#requirements) below.
-
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
-
-```bash
-just install
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:vgreg/ai-lab-investment.git
-git push -u origin main
-```
-
-You are now ready to start development on your project! Usage instructions below are for collaborators who clone the repository after this initial setup.
-
----
+A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). See the [paper](https://github.com/fintech-research/ai-lab-investment) for details.
 
 ## Getting started
 
@@ -58,11 +36,7 @@ just install
 
 This will create a virtual environment, install the required dependencies, set up pre-commit hooks, and create a local `.env` file from the example provided.
 
-Make sure to edit the `.env` file to set your environment variables, then run the following command to initialize the data directory structure:
-
-```bash
-just init-dirs
-```
+Make sure to edit the `.env` file to set your environment variables.
 
 ## Useful commands
 
@@ -81,6 +55,10 @@ Some commonly used commands include:
 - `just render-paper`: Render the research paper.
 - `just render-slides`: Render the presentation slides.
 - `just preview-slides`: Preview the presentation slides in a web browser.
+
+## License
+
+Code is licensed under the [MIT License](LICENSE). The paper and slides (everything under `paper/` and `slides/`) are licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
 
 ---
 
