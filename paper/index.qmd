@@ -29,7 +29,7 @@ keywords:
   - training-inference allocation
   - duopoly preemption
   - default risk
-thanks: "I thank Tolga Cenesizogly and Charles Martineau for helpful comments. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
+thanks: "I thank Tolga Cenesizogly and Charles Martineau for helpful comments. AI assistance was used extensively in writing this paper; the code for the project and details on the use of AI tools are available at \\url{https://github.com/fintech-research/ai-lab-investment}. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
 
 
