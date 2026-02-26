@@ -30,7 +30,7 @@ A stylized calibration to four AI lab archetypes illustrates that the asymmetry 
 The model focuses on duopoly as the core strategic setting.
 Frontier AI training competition is highly concentrated: as of 2025, the vast majority of the world's largest training runs are conducted by a handful of laboratories, often backed by or partnered with a single cloud provider (e.g., Anthropic--Amazon, OpenAI--Microsoft) or building proprietary clusters (e.g., xAI's Colossus).
 The dominant strategic margin is not atomistic competition but rivalry among a few labs, each making multi-billion-dollar capacity commitments.
-Duopoly is the minimal model that captures the key forces---strategic preemption, race-like training allocation incentives, and continuation-value effects under leverage---while maintaining analytical tractability.^[An $N>2$ extension along the lines of @bouis2009multistage is feasible but sacrifices the closed-form characterization that makes the duopoly results transparent.]
+Duopoly is the minimal model that captures the key forces---strategic preemption, race-like training allocation incentives, and continuation-value effects under leverage---while maintaining analytical tractability.^[An $N>2$ extension along the lines of @bouis2009multistage may be feasible but would sacrifice the closed-form characterization that makes the duopoly results transparent.]
 
 {{< include _literature.qmd >}}
 
