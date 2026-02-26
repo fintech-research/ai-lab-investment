@@ -22,7 +22,7 @@ It is more conservative than the beliefs implied by @amodei2024machines ($\lambd
 
 The baseline discount rate is $r = 0.12$, the risk-adjusted WACC for a representative frontier AI lab.
 As discussed in @sec-model, $r$ is the WACC and $\mu_s$ is the risk-adjusted (certainty-equivalent) growth rate; all valuation uses this reduced-form framework throughout.
-The baseline exceeds typical corporate WACCs because frontier AI labs carry substantial technology risk and are typically high-growth with elevated cost of equity; Damodaran's January 2025 industry estimates give WACCs of 7.2\% for computer software and 10.8\% for semiconductors, and CAPM-based estimates for private AI labs with market betas of 1.5--2.5 yield a cost of equity of approximately 10.5--15.0\%.
+The baseline exceeds typical corporate WACCs because frontier AI labs carry substantial technology risk and are typically high-growth with elevated cost of equity; @damodaran2025wacc industry estimates give WACCs of 7.2\% for computer software and 10.8\% for semiconductors, and CAPM-based estimates for private AI labs with market betas of 1.5--2.5 yield a cost of equity of approximately 10.5--15.0\%.
 The analytical results and figures in @sec-model use $r = 0.12$ throughout; these illustrate model properties at a representative WACC and do not correspond to any specific firm archetype.
 The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sensitivity analysis.
 
