@@ -245,8 +245,8 @@ The calibration uses data from the following sources:
 | Training fraction ($\hat{\phi}$) | @amodei2026dwarkesh ($\sim$50/50); @epoch2025openai (OpenAI 2024 breakdown); @deloitte2026tmt (industry trajectory) |
 | Leverage ratios | Anthropic: effectively all-equity; OpenAI [@openai2024credit]; Google [@alphabet2025q4]; xAI: \$5B+ secured debt [@bloomberg2026xai] |
 | WACC | @damodaran2025wacc industry estimates; CAPM with $\beta = 1.5$--$2.5$ for private labs |
-| Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\% [@alphabet2025q4], AWS +24\% [@jassy2026confidence], Azure +39\% [@microsoft2026q2] |
-| Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers [@alphabet2025q4; @jassy2026confidence; @microsoft2026q2] |
+| Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\% [@alphabet2025q4], AWS +24\% [@palmer2026amazon], Azure +39\% [@microsoft2026q2] |
+| Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers [@alphabet2025q4; @palmer2026amazon; @microsoft2026q2] |
 | Operating cost rate ($\delta$) | Industry estimates: annual operating cost $\approx$30--40\% of hardware CapEx; hyperscaler PPA rates \$0.03--0.06/kWh |
 
 : Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}

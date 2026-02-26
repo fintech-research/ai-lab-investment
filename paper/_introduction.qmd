@@ -1,7 +1,7 @@
 ## Introduction {#sec-introduction}
 
 The race to build artificial intelligence infrastructure is the defining capital allocation event of the 2020s.
-Between 2023 and 2025, the leading AI laboratories (OpenAI, Anthropic, Google DeepMind, xAI, and their compute partners) committed over \$200 billion in 2024 alone, with combined capital expenditure from the four largest investors projected to reach \$660--690 billion in 2026 [@jassy2026confidence].
+Between 2023 and 2025, the leading AI laboratories (OpenAI, Anthropic, Google DeepMind, xAI, and their compute partners) committed over \$200 billion in 2024 alone, with combined capital expenditure from the four largest investors projected to reach \$660--690 billion in 2026 [@palmer2026amazon; @alphabet2025q4; @microsoft2026q2].
 OpenAI's Stargate joint venture with SoftBank, Oracle, and MGX alone commits up to \$500 billion in U.S. AI infrastructure through 2029, with an initial deployment of \$100 billion [@openai2025stargate].
 These investments are largely irreversible and the competitive dynamics of AI development make delay potentially fatal.^[The centrality of compute to AI capability has made it a focal point for governance: governments and firms increasingly use compute allocation, monitoring, and export controls as levers for AI safety and industrial policy; see @sastry2024computing for a comprehensive treatment.]
 Yet the fundamental uncertainty driving these decisions---whether and when AI capabilities will reach a transformative threshold---remains profoundly unresolved.
