@@ -16,12 +16,12 @@ affiliations:
   - id: 1
     name: HEC Montréal
 abstract: |
-  Frontier AI laboratories racing to develop Artificial General Intelligence (AGI) face uncertain timing of transformative demand and must decide how much to invest in compute infrastructure and how to allocate it between current monetization (inference) and future capability-building (training).
-  I develop a real-options model of irreversible capacity investment with regime switching, duopoly competition via Tullock contests, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
-  The model delivers analytical investment triggers and capacity for a single firm, and semi-analytical characterization of a duopoly preemption equilibrium in which the leader trains more and invests earlier than the follower.
-  A "faith-based survival" mechanism emerges: training investment raises the effective revenue coefficient through the expected post-AGI continuation value, lowering the default boundary---the hope of transformative AI keeps the firm alive.
+  Frontier AI laboratories racing toward Artificial General Intelligence (AGI) face uncertain timing of transformative demand and must decide how much irreversible capacity to build and how to split it between inference (current revenue) and training (future capability).
+  I develop a real-options model with regime switching, duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
+  The model delivers analytical investment triggers and a duopoly preemption equilibrium in which the leader trains more and invests earlier than the follower.
+  A "faith-based survival" mechanism emerges: training raises the expected post-AGI continuation value, lowering the default boundary---the hope of AGI keeps the firm alive.
   An asymmetric dilemma arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
-  A stylized calibration to four AI firm archetypes illustrates the magnitudes and highlights how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
+  Calibration to four AI lab archetypes illustrates how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
 keywords:
   - real options
   - AI infrastructure
