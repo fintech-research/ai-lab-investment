@@ -1,6 +1,8 @@
 # ai-lab-investment
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). See the [paper](https://github.com/fintech-research/ai-lab-investment) for details.
+A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). See the [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6305300) for details.
+
+- **Github repository**: <https://github.com/fintech-research/ai-lab-investment/>
 
 ## Getting started
 
