@@ -238,6 +238,29 @@ Equilibrium uniqueness for the duopoly is assessed by running the optimization f
 
 **Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds. At extreme archetype WACCs, (A2) may fail: the hyperscaler ($r = 0.10$) violates the lower bound; the compute racer ($r = 0.18$) violates the upper bound. All archetype-specific results use full numerical optimization that does not require (A2).
 
+**Baseline results summary.** @tbl-baseline-results reports the computed optimal policy and admissibility checks at baseline parameters.
+
+| Quantity | Value | Notes |
+|:---------|------:|:------|
+| $r$ | 0.12 | WACC (discount rate) |
+| $\mu_L$ | 0.01 | L-regime risk-adjusted drift |
+| $\mu_H$ | 0.06 | H-regime risk-adjusted drift |
+| $\sigma$ | 0.25 | Common volatility |
+| $\alpha$ | 0.40 | Revenue elasticity |
+| $\gamma$ | 1.50 | Cost convexity |
+| $\lambda$ | 0.10 | Regime-switch arrival rate |
+| $\delta$ | 0.03 | Operating cost rate |
+| $\beta_L^+$ | 3.01 | Positive root, L-regime ODE |
+| $\beta_H$ | 1.55 | Positive root, H-regime ODE |
+| $(1-1/\beta_L^+)/\alpha$ | 1.67 | (A3) check ($\geq 1$: satisfied) |
+| $(\beta_H - 1)/(\alpha\beta_H)$ | 0.89 | (A2) check ($\in (1/\gamma, 1)$: satisfied) |
+| $K^*$ | 0.0067 | Optimal capacity |
+| $\phi^*$ | 0.70 | Optimal training fraction |
+| $X^*$ | 0.0047 | Optimal investment trigger |
+| $\underline{\phi}$ | 0.18 | Faith-based survival threshold |
+
+: Baseline parameters, computed optimal policy, and admissibility verification. {#tbl-baseline-results tbl-colwidths="[40,15,45]"}
+
 ### C. Calibration Details and Data Sources {.unnumbered}
 
 The calibration uses data from the following sources:
