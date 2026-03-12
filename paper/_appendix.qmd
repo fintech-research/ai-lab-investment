@@ -223,7 +223,7 @@ Since all three channels contribute weakly negative third derivatives, $W'''(\la
 ### B. Numerical Verification Methods {.unnumbered}
 
 All numerical results are computed using SciPy 1.14 optimization routines in Python 3.13.
-The single-firm and duopoly optimizations use bounded Nelder-Mead over $(K, \phi) \in [0.01, 10] \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation.
+The single-firm and duopoly optimizations use Nelder-Mead over $(\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation. The log-transform on $K$ ensures positivity without imposing artificial bounds; multiple starting points ($\log K_0 \in \{-2, 0, 2\}$, $\phi_0 \in \{0.15, 0.30, 0.50, 0.70\}$) are used to guard against local optima.
 Convergence tolerance is $10^{-8}$ on function values.
 For the preemption trigger $X_P$, I use Brent's root-finding method on $L(X) - F(X) = 0$ over $(X_D, X_F^*)$.
 Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a grid of 500 points and confirming exactly one sign change.
