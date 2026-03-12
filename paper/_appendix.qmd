@@ -66,7 +66,7 @@ Setting $(\partial \ln h / \partial K) = 0$:
 $$
 \frac{\beta_H}{A_{\text{eff}}} \frac{\partial A_{\text{eff}}}{\partial K} = \frac{(\beta_H - 1)(c\gamma K^{\gamma - 1} + \delta / r)}{cK^\gamma + \delta K / r},
 $$ {#eq-foc-K}
-which for the pure H-regime case ($A_{\text{eff}} = A_H (\phi K)^\alpha$) simplifies to the closed-form expression in Proposition 1.
+Since $A_{\text{eff}}$ takes the form $g(\phi) \cdot K^\alpha$ (both in the pure H-regime and under regime switching), the left-hand side reduces to $\alpha \beta_H / K$, which is independent of $\phi$. Solving for $K$ yields the closed-form expression in Proposition 1, confirming that $K^*$ depends only on the cost and technology parameters $(\alpha, \beta_H, \gamma, \delta, r, c)$, not on the training fraction.
 
 *Step 5: Existence of interior $\phi^*$ (Lemma).*
 
@@ -209,7 +209,7 @@ Since all three channels contribute weakly negative third derivatives, $W'''(\la
 
 | Result | Economic statement | Method | Domain |
 |:-------|:-------------------|:-------|:-------|
-| Proposition 1 | Optimal $K^*(\phi), \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Assumption 1 |
+| Proposition 1 | Optimal $K^*, \phi^*$; interiority and uniqueness of $\phi^*$; comparative statics in $\lambda$, $(r-\mu_L)^{-1}$ | Closed-form / implicit function | Assumption 1 |
 | Proposition 2(i)--(ii) | Default boundary properties; faith-based survival; closed-form $\underline{\phi}$ | Closed-form / implicit function | Assumption 1 |
 | Proposition 2(iii)--(iv) | Leverage-training substitution; rival capacity effect | Analytical (mechanical) | Assumption 1 |
 | Proposition 3(i) | Existence of $X_P$ | Analytical (IVT) | Assumption 1 |

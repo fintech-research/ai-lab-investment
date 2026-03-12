@@ -126,11 +126,11 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 *All four conditions are satisfied at the baseline calibration ($\beta_L^+ \approx 3.01$, $(1 - 1/\beta_L^+)/\alpha \approx 1.67$) and verified numerically at all parameter values used in the paper. Appendix B provides the full boundary analysis, including sensitivity of (A2) and (A3) to archetype-specific WACCs and the treatment when (A3) fails.*
 
 **Proposition 1** (Optimal capacity and training fraction).
-*The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. In the H-regime, the optimal capacity conditional on a given $\phi$ is:*
+*The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. The optimal capacity is:*
 $$
-K^*(\phi) = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}} \cdot \phi^{-\alpha/(\gamma - 1)},
+K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
 $$
-*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. Note that this is the optimal capacity for a given training fraction; the joint optimum $(K^*, \phi^*)$ solves the coupled system $K^*(\phi^*)$ and the first-order condition for $\phi^*$ simultaneously.*
+*provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. Note that $K^*$ is independent of $\phi$: the effective revenue coefficient takes the form $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ (both in the pure H-regime and under regime switching), so the $\phi$-dependent factor cancels in the first-order condition for $K$ (see Appendix A, Step 4). The optimal $\phi^*$ is then determined separately by maximizing $A_{\text{eff}}$ over $\phi$, and the joint optimum $(K^*, \phi^*)$ yields the investment trigger via smooth pasting.*
 
 *When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (Assumption 1, condition A3), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
 
