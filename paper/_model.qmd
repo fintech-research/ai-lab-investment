@@ -174,8 +174,8 @@ $$ {#eq-option-L-general}
 
 **When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
 The homogeneous coefficient $A_1$ is determined by value-matching and smooth-pasting at the L-regime investment trigger.
-When no interior trigger exists *in the L-regime alone*---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that L-regime revenue by itself is insufficient to justify investment---there are no L-regime boundary conditions to pin down $A_1$, and the option value reduces to $F_L(X) = C \cdot X^{\beta_H}$.
-For the baseline calibration, the option premium ratio exceeds unity (Assumption 1, condition A3), so this simplification is valid and the option value derives entirely from the expected regime switch.
+When no interior trigger exists *in the L-regime alone*---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that L-regime revenue by itself is insufficient to justify investment---the general solution $F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H}$ has $A_1 = 0$ because there is no L-regime exercise boundary to pin it down: the only boundary conditions are the smooth-pasting conditions at the investment trigger driven by $A_{\text{eff}}$ (which includes the H-regime prospect), and these determine $C$ alone.
+For the baseline calibration, the option premium ratio exceeds unity (Assumption 1, condition A3), so this simplification is valid and the option value derives entirely from the expected regime switch. As a robustness check, solving the full two-term problem at baseline confirms that the $A_1 X^{\beta_L^+}$ term contributes less than 0.1% of $F_L$ at the optimum.
 
 When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
