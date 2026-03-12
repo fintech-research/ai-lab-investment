@@ -193,15 +193,24 @@ class ValuationAnalysis:
         mu = p.mu_H if regime == "H" else p.mu_L
         sigma = p.sigma
 
-        # Distance to default (in log space)
-        d2 = (np.log(X_current / X_D) + (mu - 0.5 * sigma**2) * horizon) / (
-            sigma * np.sqrt(horizon)
-        )
-
-        # Normal CDF approximation
+        # First-passage (barrier) probability for GBM hitting X_D
+        # P(min_{0<=t<=T} X_t <= X_D) = N(-d1) + (X_D/X)^{2nu/sigma^2} N(-d2)
+        # where nu = mu - sigma^2/2, d1 = [ln(X/X_D) + nu*T]/(sigma*sqrt(T)),
+        # d2 = [ln(X/X_D) - nu*T]/(sigma*sqrt(T))
         from scipy.stats import norm
 
-        return float(norm.cdf(-d2))
+        nu = mu - 0.5 * sigma**2
+        sqrt_T = sigma * np.sqrt(horizon)
+        log_ratio = np.log(X_current / X_D)
+
+        d1 = (log_ratio + nu * horizon) / sqrt_T
+        d2 = (log_ratio - nu * horizon) / sqrt_T
+
+        prob = norm.cdf(-d1)
+        if sigma > 0:
+            prob += (X_D / X_current) ** (2 * nu / sigma**2) * norm.cdf(-d2)
+
+        return float(np.clip(prob, 0.0, 1.0))
 
     def credit_spread_curve(
         self,
