@@ -6,21 +6,27 @@ You are reviewing a research project and its accompanying codebase. Your task is
 
 ## Project Overview
 
-**Title:** "Investing in Intelligence: A Real Options Framework for AI Compute Infrastructure"
+**Title:** "Investing in Artificial General Intelligence"
 
-**Author:** Vincent Gregoire (HEC Montreal)
+**Author:** Vincent Grégoire (HEC Montréal)
 
-**Research question:** How should firms optimally invest in irreversible AI compute capacity under demand uncertainty, regime switching, strategic competition, and default risk — and what do observed investment decisions reveal about firms' private beliefs regarding transformative AI?
+**Research question:** How should a frontier AI laboratory optimally time, size, and allocate an irreversible capacity investment between training (future capability) and inference (current revenue) under demand uncertainty, regime switching, duopoly competition, and endogenous default risk?
 
 **Methodology:** The paper builds a unified real options model in several layers:
 
-1. **Single-firm benchmark** (Phase 1): Analytical solution for optimal investment trigger and capacity with regime-switching demand and diminishing returns calibrated to AI scaling laws.
-2. **Duopoly with default risk** (Phase 2): Extends the benchmark to two-firm competition with endogenous default boundaries and credit risk.
-3. **N-firm sequential equilibrium** (Phase 3): Numerical backward-induction solution for N heterogeneous firms with dynamic training/inference allocation.
-4. **Calibration** (Phase 4): Parameters calibrated to publicly available data on AI compute costs, scaling laws, and stylized firm characteristics.
-5. **Revealed beliefs** (Phase 5): An inversion methodology that backs out firms' implied probability of transformative AI arrival from observable investment and market cap data.
+1. **Single-firm benchmark:** Analytical solution for optimal investment trigger, capacity, and training fraction with regime-switching demand (absorbing high state arriving with Poisson intensity λ) and diminishing returns calibrated to AI scaling laws.
+2. **Duopoly with default risk:** Extends the benchmark to two-firm preemption competition with Tullock contest revenue, endogenous (Leland-style) default boundaries, and credit risk. The leader invests first and enjoys a monopoly phase until follower entry.
+3. **Calibration:** Parameters calibrated to publicly available data on four stylized AI lab archetypes (hyperscaler, frontier lab, compute racer, lean lab).
+4. **Valuation and Dario's dilemma:** Value decomposition, credit risk analysis, and an asymmetric belief-mismatch cost analysis showing that underinvestment is costlier in expected value than overinvestment, while overinvestment carries higher tail (default) risk.
 
-**Target journals:** AER, JF, RFS, or Econometrica.
+**Key model features:**
+- Training-inference allocation (φ): firms split capacity between inference (L-regime revenue) and training (H-regime competitive position)
+- K* is independent of φ (separable FOCs); φ* is interior and determined by maximizing A_eff
+- Faith-based survival: training raises A_eff through the H-regime continuation value, lowering the default boundary
+- First-passage (barrier) default probability, consistent with Leland-style default mechanism
+- Dario's dilemma: asymmetric cost of belief mismatch about λ (W''' > 0 → underinvestment costlier)
+
+**Target journals:** JF, RFS, or Econometrica.
 
 ---
 
@@ -31,14 +37,13 @@ ai-lab-investment/
 ├── src/ai_lab_investment/       # Core source code
 │   ├── __main__.py              # Entry point
 │   ├── pipeline.py              # Hydra-decorated pipeline orchestrator
-│   ├── models/                  # Economic models (Phases 1-3)
-│   │   ├── base_model.py        # Single-firm benchmark
-│   │   ├── duopoly.py           # Duopoly with default risk
-│   │   ├── nfirm.py             # N-firm sequential equilibrium
+│   ├── models/                  # Economic models
+│   │   ├── base_model.py        # Single-firm benchmark (simple + full φ-aware modes)
+│   │   ├── duopoly.py           # Duopoly with default risk and preemption
 │   │   ├── parameters.py        # Parameter definitions and calibration
-│   │   ├── symbolic_duopoly.py  # SymPy symbolic verification of duopoly
-│   │   └── valuation.py         # Revealed beliefs and growth decomposition
-│   ├── calibration/             # Phase 4
+│   │   ├── symbolic_duopoly.py  # SymPy symbolic verification of duopoly ODEs
+│   │   └── valuation.py         # Credit risk, Dario's dilemma, growth decomposition
+│   ├── calibration/             # Calibration
 │   │   ├── data.py              # Data loading and preprocessing
 │   │   └── revealed_beliefs.py  # Revealed beliefs inference algorithm
 │   ├── figures/                 # Figure generation
@@ -46,37 +51,36 @@ ai-lab-investment/
 │   │   ├── phi_allocation.py    # Training/inference allocation figures
 │   │   ├── phase1.py            # Exploratory base model figures
 │   │   ├── phase2.py            # Exploratory duopoly figures
-│   │   ├── phase3.py            # Exploratory N-firm figures
 │   │   ├── phase4.py            # Exploratory calibration figures
 │   │   └── phase5.py            # Exploratory valuation figures
 │   └── utils/
 │       ├── directories.py       # Directory path resolution
 │       └── files.py             # Timestamped file naming
-├── tests/                       # 227 tests across 7 test files
+├── tests/                       # 190 tests across 6 test files
 │   ├── test_base_model.py
 │   ├── test_calibration.py
 │   ├── test_duopoly.py
-│   ├── test_nfirm.py
 │   ├── test_parameters.py
 │   ├── test_symbolic_duopoly.py
 │   └── test_valuation.py
 ├── paper/                       # Research paper (Quarto -> PDF)
 │   ├── index.qmd                # Main file; includes all sections
-│   ├── _introduction.qmd
-│   ├── _model.qmd               # Environment, technology, single-firm benchmark
-│   ├── _extensions.qmd          # N-firm equilibrium, training-inference allocation
-│   ├── _calibration.qmd         # Calibration (demand, technology, stylized firms)
-│   ├── _valuation.qmd           # Revealed beliefs methodology, growth decomposition
-│   ├── _discussion.qmd          # Discussion and policy implications
+│   ├── _introduction.qmd        # Motivation, contribution, literature review
+│   ├── _model.qmd               # Model: demand, technology, single-firm, duopoly
+│   ├── _calibration.qmd         # Calibration to four AI lab archetypes
+│   ├── _valuation.qmd           # Value decomposition, credit risk, Dario's dilemma
+│   ├── _discussion.qmd          # Policy implications, testable predictions, limitations
 │   ├── _conclusion.qmd
-│   ├── _literature.qmd          # Literature review
-│   ├── _appendix.qmd            # Proofs (Propositions 1, 5)
+│   ├── _literature.qmd          # Literature review (included within introduction)
+│   ├── _appendix.qmd            # Proofs (Propositions 1-3), numerical methods, calibration details
 │   ├── generate_figures.py      # Thin wrapper: applies styles and saves output
 │   ├── references.bib           # BibTeX references
-│   └── figures/                 # Generated figures (*.pdf, *.png)
+│   └── figures/                 # Generated figures (*.pdf, *.png; 11 figures)
+├── notebooks/
+│   └── model_derivation.ipynb   # SymPy derivation notebook (8 sections + audit)
 ├── conf/config.yaml             # Hydra pipeline configuration
-├── plan.md                      # Detailed 5-phase research plan
 ├── CLAUDE.md                    # Project instructions and conventions
+├── AGENTS.md                    # Detailed agent instructions
 ├── justfile                     # Task runner (just check, just test, etc.)
 └── pyproject.toml               # Python project metadata
 ```
@@ -93,7 +97,7 @@ Verify that the implementation is correct, the tests are meaningful, and the cod
 
 ### Part 2: Paper Review
 
-Evaluate the paper as a referee would for a top finance or economics journal (AER, Econometrica, JF, RFS).
+Evaluate the paper as a referee would for a top finance or economics journal (JF, RFS, Econometrica).
 
 ---
 
@@ -103,18 +107,20 @@ Work through every section below. For each item, state whether it **passes**, **
 
 ### 1. Mathematical Correctness
 
-- [ ] **Propositions vs. code**: For each proposition in the paper (`_model.qmd`, `_extensions.qmd`, `_appendix.qmd`), locate the corresponding implementation in the source code. Verify that the formulas in code match the formulas in the paper exactly. Flag any discrepancies, even notational ones.
-- [ ] **Proofs**: Read the proofs in `_appendix.qmd`. Check logical completeness — are all steps justified? Are boundary/edge cases handled?
-- [ ] **Numerical methods**: In `models/nfirm.py` and `calibration/revealed_beliefs.py`, verify that numerical algorithms (root-finding, backward induction, fixed-point iteration) are correctly implemented. Check convergence criteria and tolerances.
-- [ ] **Parameter consistency**: Verify that default parameter values in `models/parameters.py` match the calibration values stated in `_calibration.qmd`. Check units and scaling.
-- [ ] **Regime switching**: Verify the regime-switching demand process implementation in `models/base_model.py` matches the specification in `_model.qmd`. Check transition intensities, drift, and volatility handling.
+- [ ] **Propositions vs. code**: For each proposition in the paper (`_model.qmd`, `_appendix.qmd`), locate the corresponding implementation in the source code. The paper has three propositions: Proposition 1 (optimal K*, φ*), Proposition 2 (default boundary properties, faith-based survival), and Proposition 3 (preemption equilibrium). Verify that the formulas in code match the formulas in the paper exactly. Flag any discrepancies, even notational ones.
+- [ ] **Proofs**: Read the proofs in `_appendix.qmd`. Check logical completeness — are all steps justified? Are boundary/edge cases handled? Pay particular attention to: (a) the separability of K* and φ* in Proposition 1, (b) the two-channel derivative ∂X_D/∂λ in Proposition 2(ii), and (c) the Dario's dilemma Taylor expansion sign argument.
+- [ ] **Two model modes**: The code has two modes — *simple* (no φ: `installed_value()`, `optimal_trigger_and_capacity()`) and *full* (with φ: `optimal_trigger_capacity_phi()`, `installed_value_with_phi()`). Verify both are internally consistent and that the paper uses the full mode for all reported results.
+- [ ] **Numerical methods**: In `calibration/revealed_beliefs.py` and the optimization routines in `base_model.py` and `duopoly.py`, verify that numerical algorithms (root-finding, Nelder-Mead optimization, Brent's method) are correctly implemented. Check convergence criteria and tolerances.
+- [ ] **Parameter consistency**: Verify that default parameter values in `models/parameters.py` match the calibration values stated in `_calibration.qmd` and the baseline results table in `_appendix.qmd`. Check units and scaling.
+- [ ] **Regime switching**: Verify the regime-switching demand process implementation in `models/base_model.py` matches the specification in `_model.qmd`. Check transition intensities, drift, volatility, and the absorbing-state assumption for regime H.
+- [ ] **Default probability**: Verify that the first-passage (barrier hitting) probability in `valuation.py` is correctly implemented and matches the formula in `_valuation.qmd`.
 
 ### 2. Code Quality and Testing
 
 - [ ] **Test coverage**: Run `just test` (or `uv run pytest --cov`) and report coverage. Identify any untested functions or branches in the models.
-- [ ] **Test meaningfulness**: Read through the 7 test files. Are the tests checking economically meaningful properties (e.g., option values are positive, triggers decrease with volatility, default boundary lies below investment trigger)? Or are they trivial/tautological?
-- [ ] **Edge cases**: Are boundary conditions tested? (e.g., zero volatility, single firm in N-firm model, lambda = 0 or very large lambda)
-- [ ] **Numerical stability**: Check for potential numerical issues: division by zero guards, overflow in exponentials, ill-conditioned matrices, convergence failures.
+- [ ] **Test meaningfulness**: Read through the 6 test files. Are the tests checking economically meaningful properties (e.g., option values are positive, triggers decrease with volatility, default boundary lies below investment trigger, K* is independent of φ)? Or are they trivial/tautological?
+- [ ] **Edge cases**: Are boundary conditions tested? (e.g., zero volatility, lambda = 0 or very large lambda, leverage = 0, φ at boundaries)
+- [ ] **Numerical stability**: Check for potential numerical issues: division by zero guards, overflow in exponentials, convergence failures in optimization.
 - [ ] **Code organization**: Is the code well-structured? Are responsibilities cleanly separated between modules? Any code smells or unnecessary complexity?
 - [ ] **Reproducibility**: Can results be reproduced by running `just run-pipeline`? Are random seeds set where needed?
 
@@ -124,10 +130,10 @@ Review the paper as a referee for a top journal. Address each sub-item.
 
 #### 3a. Structure and Argument
 
-- [ ] **Motivation**: Is the introduction compelling? Does it clearly articulate why this problem matters and what gap the paper fills?
-- [ ] **Literature positioning**: Does the paper adequately situate itself relative to the real options literature (Dixit & Pindyck, McDonald & Siegel), strategic investment games (Grenadier, Weeds), and AI economics literature? Are there important omissions?
-- [ ] **Model building**: Does the progression from single-firm to duopoly to N-firm feel natural and well-motivated? Is each extension clearly justified?
-- [ ] **Identification**: Is the revealed beliefs methodology convincingly identified? What assumptions drive the inversion, and are they clearly stated and reasonable?
+- [ ] **Motivation**: Is the introduction compelling? Does it clearly articulate the core economic question (timing, sizing, and allocating irreversible capacity under regime uncertainty), the gap in existing theory, and the key insight (training-survival channel)?
+- [ ] **Literature positioning**: Does the paper adequately situate itself relative to the real options literature (Dixit & Pindyck, McDonald & Siegel), strategic investment games (Grenadier, Huisman & Kort), R&D race models (Loury, Reinganum), structural credit risk (Leland, Merton), and AI economics literature? Are there important omissions?
+- [ ] **Model building**: Does the progression from single-firm to duopoly feel natural and well-motivated? Is the duopoly focus (rather than N-firm) adequately justified?
+- [ ] **Key assumptions**: Are the maintained assumptions (A1–A4) clearly stated and their economic content explained? Is the simplified L-regime option value (A3) convincingly justified?
 - [ ] **Conclusion**: Does it summarize findings effectively without overclaiming?
 
 #### 3b. Writing Quality
@@ -151,10 +157,10 @@ Review the paper as a referee for a top journal. Address each sub-item.
 
 ### 5. Calibration and Results
 
-- [ ] **Parameter values**: Are calibrated parameter values reasonable and well-sourced? Check against the references cited in `_calibration.qmd`.
-- [ ] **Sensitivity**: Does the paper adequately explore sensitivity to key parameters (volatility, arrival rate, number of firms, cost of capital)?
+- [ ] **Parameter values**: Are calibrated parameter values reasonable and well-sourced? Check against the references cited in `_calibration.qmd` and the data sources table in `_appendix.qmd`.
+- [ ] **Sensitivity**: Does the paper adequately explore sensitivity to key parameters (volatility, arrival rate, revenue elasticity, cost convexity, cost of capital)?
 - [ ] **Comparative statics**: Verify that reported comparative statics (how triggers/values change with parameters) are consistent with economic intuition and the model's predictions.
-- [ ] **Revealed beliefs results**: Are the implied belief estimates for stylized firms plausible? Do they pass a basic sanity check?
+- [ ] **Dario's dilemma results**: Are the value loss percentages and default probabilities under belief mismatches correctly computed and internally consistent? Does the Taylor expansion sign argument match the numerical results?
 - [ ] **Growth decomposition**: Is the decomposition of firm value into installed capacity value and growth option value correctly computed and reported?
 
 ---
