@@ -71,7 +71,7 @@ def _save(create_fn, name: str) -> None:
         fig.savefig(OUT / f"{name}.pdf")
         plt.close(fig)
 
-    with plt.style.context(["seaborn-v0_8-paper", _TALK_OVERRIDES]):
+    with plt.style.context(["seaborn-v0_8-talk", _TALK_OVERRIDES]):
         fig = create_fn()
         fig.savefig(OUT / f"{name}.png")
         plt.close(fig)
