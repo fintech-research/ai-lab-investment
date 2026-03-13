@@ -307,6 +307,11 @@ class TestPreemptionEquilibrium:
         """Training fractions should be interior: 0 < phi < 1."""
         eq = model.solve_preemption_equilibrium("H")
         assert 0 < eq["phi_leader"] < 1
+
+    def test_single_crossing_verified(self, model):
+        """L(X) - F(X) should have exactly one sign change (single crossing)."""
+        eq = model.solve_preemption_equilibrium("H")
+        assert eq["single_crossing"]
         assert 0 < eq["phi_follower"] < 1
 
 

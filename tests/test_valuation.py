@@ -157,6 +157,62 @@ class TestDarioDilemma:
                 assert abs(result["value_loss_pct"][i, i]) < 0.01
 
 
+class TestDarioDilemmaLeveraged:
+    """Tests for the leveraged Dario's dilemma."""
+
+    def test_matched_beliefs_no_loss(self, va):
+        """When beliefs match, value loss should be zero."""
+        result = va.dario_dilemma_leveraged(0.10, 0.10, leverage=0.40)
+        assert "error" not in result
+        assert abs(result["value_loss_pct"]) < 1e-6
+
+    def test_value_losses_non_negative(self, va):
+        """Mismatched beliefs produce non-negative value losses."""
+        for li in [0.02, 0.50]:
+            result = va.dario_dilemma_leveraged(0.10, li, leverage=0.40)
+            assert "error" not in result
+            assert result["value_loss_pct"] >= -1e-6
+
+    def test_default_prob_consistency_with_main_method(self, va):
+        """Default probs should match the standalone default_probability()."""
+        result = va.dario_dilemma_leveraged(0.10, 0.10, leverage=0.40)
+        assert "error" not in result
+        # The leveraged method evaluates under p_true; create matching VA
+        p_true = va.params.with_param(lam=0.10)
+        va_true = ValuationAnalysis(p_true)
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        model = SingleFirmModel(p_true)
+        X, K, phi = model.optimal_trigger_capacity_phi()
+        dp_standalone = va_true.default_probability(
+            X_current=X,
+            K=K,
+            leverage=0.40,
+            phi=phi,
+            regime="L",
+            horizon=5.0,
+        )
+        assert abs(result["default_prob_optimal"] - dp_standalone) < 1e-10
+
+    def test_baseline_default_probs(self, va):
+        """Regression: default probs at baseline match paper values."""
+        r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
+        r_aggr = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        assert "error" not in r_cons
+        assert "error" not in r_aggr
+        # Paper: conservative ~0.79%, aggressive ~5.04%
+        assert abs(r_cons["default_prob_mismatch"] - 0.0079) < 0.002
+        assert abs(r_aggr["default_prob_mismatch"] - 0.0504) < 0.005
+
+    def test_aggressive_higher_default_prob(self, va):
+        """Aggressive overinvestment has higher default probability."""
+        r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
+        r_aggr = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        assert "error" not in r_cons
+        assert "error" not in r_aggr
+        assert r_aggr["default_prob_mismatch"] > r_cons["default_prob_mismatch"]
+
+
 # ------------------------------------------------------------------
 # Equity value vs lambda
 # ------------------------------------------------------------------

@@ -20,7 +20,7 @@ abstract: |
   I develop a real-options model with regime switching, duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
   The model delivers analytical investment triggers and a duopoly preemption equilibrium in which the leader trains more and invests earlier than the follower.
   A "faith-based survival" mechanism emerges: training raises the expected post-AGI continuation value, lowering the default boundary---the hope of AGI keeps the firm alive.
-  An asymmetric dilemma arises in which aggressive overinvestment carries higher downside risk than conservative underinvestment.
+  An asymmetric dilemma arises: conservative underinvestment is costlier in expected value, but aggressive overinvestment carries substantially higher tail (default) risk.
   Calibration to four AI lab archetypes illustrates how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
 keywords:
   - real options

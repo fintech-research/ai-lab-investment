@@ -835,6 +835,12 @@ class DuopolyModel:
             except ValueError:
                 X_P = X_L_mono
 
+        # Verify single crossing on a grid
+        grid = np.linspace(X_low, X_high, 500)
+        gaps = np.array([self._preemption_gap(x, regime) for x in grid])
+        sign_changes = np.sum(np.diff(np.sign(gaps)) != 0)
+        single_crossing = bool(sign_changes == 1)
+
         # Compute default boundaries
         X_D_L = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
         X_D_F = self.default_boundary(phi_F, K_F, phi_L, K_L, lev_F)
@@ -855,6 +861,7 @@ class DuopolyModel:
             "X_default_follower": X_D_F,
             "X_leader_monopolist": X_L_mono,
             "lambda_tilde": lam_tilde,
+            "single_crossing": single_crossing,
         }
         self._cache[cache_key] = result
         return result

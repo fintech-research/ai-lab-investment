@@ -69,12 +69,12 @@ This is the exact barrier hitting probability for GBM, consistent with the Lelan
 Since $\mu_s$ is the risk-adjusted (certainty-equivalent) drift, this yields a risk-neutral default probability consistent with the spread calculation; the physical-measure default probability (using the unadjusted drift) would be lower.
 
 @fig-credit-risk presents the credit risk implications.
-Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level three times the default boundary.
+Panel (a) shows credit spreads as a function of leverage, evaluated at a fixed demand level.
 Spreads are concave in leverage: approximately 170 bps for very low leverage ($\ell \approx 0.05$), rising steeply to about 260 bps at moderate leverage ($\ell = 0.20$) and reaching approximately 310 bps at $\ell = 0.70$.
-Panel (b) shows the 5-year default probability (first-passage), which rises from approximately 0.5\% at low leverage to approximately 0.8\% at $\ell = 0.70$.
-The modest default probabilities reflect the substantial distance to default at three times $X_D$; at demand levels closer to the boundary, default probabilities would be considerably higher.
+Panel (b) shows the 5-year default probability (first-passage), which rises from approximately 0.2\% at low leverage to approximately 6\% at $\ell = 0.70$.
+The steep increase in default probability at high leverage reflects the shrinking distance to default: as leverage increases, the default boundary $X_D$ rises while the firm's demand level is fixed, compressing the safety margin.
 
-![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Spreads are concave in leverage, rising steeply at low leverage and flattening at high leverage. Default probability is increasing and convex. Evaluated at a demand level three times the default boundary, using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
+![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Spreads are concave in leverage, rising steeply at low leverage and flattening at high leverage. Default probability is increasing and convex in leverage, reflecting the rising default boundary. Evaluated at a fixed demand level using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
 
 ### Dario's Dilemma
 
@@ -101,7 +101,7 @@ Note that I evaluate the investment *outcomes* under the true demand process ($\
 The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes.
 
 **Numerical Finding 2** (Dario's dilemma).
-*Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\lambda_{\text{true}} = 0.10$, a conservative firm investing as if $\lambda = 0.02$ loses approximately 25\% of value, while an aggressive firm investing as if $\lambda = 0.20$ loses only about 5\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
+*Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\lambda_{\text{true}} = 0.10$, a conservative firm investing as if $\lambda = 0.02$ loses approximately 26\% of value, while an aggressive firm investing as if $\lambda = 0.20$ loses only about 6\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
 
 The intuition is that the optimal training fraction $\phi^* \approx 0.70$ at baseline reflects the high value of H-regime positioning.
 A conservative firm that under-allocates to training ($\phi \approx 0.14$ at $\lambda_{\text{invest}} = 0.02$) sacrifices most of the H-regime option value, which is the dominant component of $A_{\text{eff}}$.
@@ -111,7 +111,7 @@ However, the Amodei scenario---"I could buy \$1 trillion of compute that starts 
 
 @fig-investment-dilemma visualizes the asymmetry by plotting the value loss $\Delta V$ as a function of $\lambda_{\text{invest}}$ for a fixed $\lambda_{\text{true}} = 0.10$.
 The loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ (correct beliefs) and increases in both directions, but the left branch (underinvestment, $\lambda_{\text{invest}} < \lambda_{\text{true}}$) rises more steeply than the right (overinvestment).
-A firm investing as if $\lambda = 0.02$ (deep pessimism) loses approximately 25\% of value, while a firm investing as if $\lambda = 0.50$ (extreme optimism) loses approximately 20\%---a substantial asymmetry driven by the training allocation channel.
+A firm investing as if $\lambda = 0.02$ (deep pessimism) loses approximately 26\% of value, while a firm investing as if $\lambda = 0.50$ (extreme optimism) loses approximately 23\%---a substantial asymmetry driven by the training allocation channel.
 With leverage ($\ell = 0.40$, dashed line), the two curves are nearly identical, reflecting the negligible role of default risk at the model's scale; at much larger absolute investments, leverage-amplified losses would widen the gap on the aggressive side.
 The shaded region marks the "danger zone" where value losses from overinvestment exceed 10\%.
 
@@ -125,7 +125,7 @@ The dilemma is thus genuinely two-sided: underinvestment is costlier in expected
 #### Implications
 
 Dario's dilemma has several implications.
-Within the model, the observed aggressive investment patterns of frontier AI labs are *rational*: the cost of being too conservative ($\Delta V \approx 25\%$ at $\lambda_{\text{invest}} = 0.02$) far exceeds the cost of being too aggressive ($\Delta V \approx 5\%$ at $\lambda_{\text{invest}} = 0.20$), so a risk-neutral firm should err on the side of higher training allocation even when uncertain about $\lambda$.
+Within the model, the observed aggressive investment patterns of frontier AI labs are *rational*: the cost of being too conservative ($\Delta V \approx 26\%$ at $\lambda_{\text{invest}} = 0.02$) far exceeds the cost of being too aggressive ($\Delta V \approx 6\%$ at $\lambda_{\text{invest}} = 0.20$), so a risk-neutral firm should err on the side of higher training allocation even when uncertain about $\lambda$.
 This illustrative comparison should be distinguished from a formal revealed-beliefs methodology, which would require a richer model (dynamic $\phi$, heterogeneous information), proper identification, and estimation; such an exercise is left for future work.
 The asymmetry means that *underinvestment* is more informative than overinvestment---a conservative firm allocating little to training ($\phi \ll \phi^*$) must hold genuinely pessimistic beliefs about $\lambda$, since the cost of under-training is so high.
 The asymmetric loss function implies that firms should hedge against conservative under-training more than against aggressive over-training, rationalizing the observation that frontier AI labs consistently push the boundary of training compute investment.

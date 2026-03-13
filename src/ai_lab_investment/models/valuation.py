@@ -96,6 +96,11 @@ class ValuationAnalysis:
     # Credit risk
     # ------------------------------------------------------------------
 
+    # Fixed demand level for credit risk evaluation.
+    # Using a fixed level (rather than a multiple of X_D) ensures consistent
+    # distance-to-default comparisons across leverage levels.
+    CREDIT_RISK_DEMAND_LEVEL = 0.10
+
     def credit_spread(
         self,
         leverage: float,
@@ -132,9 +137,7 @@ class ValuationAnalysis:
             bankruptcy_cost=0.30,
         )
 
-        # Compute at a demand level above the default boundary
-        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
-        X = max(X_D * 3, 0.1)
+        X = self.CREDIT_RISK_DEMAND_LEVEL
 
         coupon = duo.coupon_payment(K)
         D = duo.debt_value(X, phi, K, 0.0, 0.0)
@@ -219,9 +222,9 @@ class ValuationAnalysis:
     ) -> dict[str, np.ndarray]:
         """Compute credit spreads across leverage levels.
 
-        Default probability is evaluated at the same demand level used
-        for credit spread computation (3x the default boundary at each
-        leverage level). This produces leverage-varying default risk.
+        Both spread and default probability are evaluated at a fixed
+        demand level (CREDIT_RISK_DEMAND_LEVEL), ensuring consistent
+        distance-to-default comparisons across leverage levels.
         """
         n = len(leverage_values)
         spreads = np.full(n, np.nan)
@@ -230,17 +233,11 @@ class ValuationAnalysis:
         for i, lev in enumerate(leverage_values):
             try:
                 spreads[i] = self.credit_spread(lev, regime=regime)
-                # Use the same X evaluation as credit_spread (3x X_D)
-                duo = DuopolyModel(
-                    self.params,
-                    leverage=lev,
-                    coupon_rate=0.05,
-                    bankruptcy_cost=0.30,
-                )
-                X_D = duo.default_boundary(0.5, 1.0, 0.0, 0.0)
-                X_current = max(X_D * 3, 0.1)
                 default_probs[i] = self.default_probability(
-                    X_current=X_current, K=1.0, leverage=lev, regime=regime
+                    X_current=self.CREDIT_RISK_DEMAND_LEVEL,
+                    K=1.0,
+                    leverage=lev,
+                    regime=regime,
                 )
             except (ValueError, RuntimeError):
                 continue
@@ -397,19 +394,24 @@ class ValuationAnalysis:
         value_loss_pct = value_loss / abs(ev_optimal) if ev_optimal != 0 else 0
 
         # Conditional default probabilities under true dynamics
-        from scipy.stats import norm as _norm
-
-        def _default_prob(X_entry, K, phi, horizon=5.0):
-            X_D = duo_true.default_boundary(phi, K, 0.0, 0.0)
-            if X_D <= 0 or X_entry <= X_D:
-                return 1.0 if X_D > 0 else 0.0
-            d2 = (
-                np.log(X_entry / X_D) + (p_true.mu_L - 0.5 * p_true.sigma**2) * horizon
-            ) / (p_true.sigma * np.sqrt(horizon))
-            return float(_norm.cdf(-d2))
-
-        dp_optimal = _default_prob(X_true, K_true, phi_true)
-        dp_mismatch = _default_prob(X_invest, K_invest, phi_invest)
+        # Use the full first-passage formula (consistent with default_probability())
+        va_true = ValuationAnalysis(p_true)
+        dp_optimal = va_true.default_probability(
+            X_current=X_true,
+            K=K_true,
+            leverage=leverage,
+            phi=phi_true,
+            regime="L",
+            horizon=5.0,
+        )
+        dp_mismatch = va_true.default_probability(
+            X_current=X_invest,
+            K=K_invest,
+            leverage=leverage,
+            phi=phi_invest,
+            regime="L",
+            horizon=5.0,
+        )
 
         return {
             "lambda_true": lambda_true,
