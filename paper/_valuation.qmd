@@ -32,8 +32,8 @@ where $\text{NPV}(K^*, \phi^*)$ is the net present value at the optimal capacity
 The capacity gap fraction $V_{\text{gap}} / V_{\text{total}}$ measures how far a firm is from optimal scale.
 For frontier AI labs, the capacity gap accounts for the majority of firm value---typically 60--80\%---reflecting the fact that current installed capacity is small relative to what the model prescribes.
 
-@fig-growth-decomposition illustrates the value decomposition.
-Panel (a) decomposes total firm value into assets-in-place (blue) and capacity gap value (orange) as a function of installed capacity relative to the optimal level $K_H^*$.
+@fig-growth-decomposition illustrates the decomposition using the absorbing H-regime valuation as a simplified example (where $A_{\text{eff}}$ reduces to $A_H \cdot (\phi K)^\alpha$); the general formulas above apply equally to the L-regime with regime switching.
+Panel (a) decomposes total firm value into assets-in-place (blue) and capacity gap value (orange) as a function of installed capacity relative to the H-regime optimal level $K_H^*$.
 When the firm has little installed capacity ($K/K_H^* \ll 1$), most of its value comes from the potential to reach optimal capacity, and assets-in-place are small.
 As installed capacity approaches $K_H^*$, assets-in-place rise concavely (diminishing returns) while the capacity gap value shrinks because the firm is already near optimal scale.
 Panel (b) shows the capacity gap fraction, which declines steeply from near 100\% at very low $K/K_H^*$ to near zero once capacity reaches the optimal level.
