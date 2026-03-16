@@ -141,7 +141,9 @@ $$
 
 *Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 
-The capacity formula in Proposition 1 carries over to the duopoly (@sec-duopoly), where the contest shares modify $A_{\text{eff},i}$ but do not enter the first-order condition for $K$; the training fraction and investment trigger, by contrast, depend on the competitive environment.
+In the duopoly (@sec-duopoly), the contest shares $s_i^L$ and $s_i^H$ depend on own capacity $K_i$, so the exact separability $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ that underlies the closed-form $K^*$ does not hold.
+The follower's optimal capacity is determined jointly with $\phi_F$ by numerical optimization.
+However, the leader's optimal capacity is numerically identical to the monopolist's (Proposition 1) across all parameterizations tested---a regularity attributable to the dominance of the monopoly-phase FOC, where $s_L = 1$ and the Proposition 1 separability holds exactly.
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -372,7 +374,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 @fig-competition-effect quantifies the preemption effect, plotting the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of volatility $\sigma$.
 The leader invests strictly earlier than the monopolist for all volatility levels, and the gap widens with $\sigma$: as uncertainty increases, the option value of waiting rises for both, but the preemption incentive compresses the leader's delay disproportionately.
 At baseline ($\sigma = 0.25$), preemption cuts the leader's trigger roughly in half relative to the monopolist.
-Competition primarily affects *timing* rather than *scale*: the leader's optimal capacity is identical to the monopolist's across all volatility levels.
+Competition primarily affects *timing* rather than *scale*: the leader's optimal capacity is numerically identical to the monopolist's across all volatility levels (a computational regularity; see the discussion after Proposition 1).
 
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
