@@ -49,7 +49,16 @@ If the regime switch has not occurred after one period, the remaining expected b
 
 The option to reallocate is therefore valuable, and its availability at the initial date affects the optimal $\phi_1$. With the option to increase $\phi$ later if the switch occurs, the firm can afford to start with *lower* $\phi_1$ (more inference) and shift to training upon observing the switch. The static model, which lacks this option, forces the firm to "pre-commit" to its long-run training allocation, biasing $\phi^*$ upward relative to the dynamic optimum.
 
-This suggests that the static model *overstates* the initial training fraction: firms in practice can and do reallocate GPUs between training and inference on timescales of weeks. The implied $\lambda$ that rationalizes a given observed $\phi$ would therefore be *higher* under the dynamic model than under the static model, because the observed $\phi$ represents a deliberate choice despite the option to reallocate, rather than an irreversible commitment. Dynamic reallocation would also attenuate two of the paper's headline mechanisms: the faith-based survival channel (since a struggling firm could shift from training to inference to boost cash flow) and the Dario's dilemma asymmetry (since an over-training firm could partially recover by reallocating to inference). A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB equation) is left for future work.
+This suggests that the static model *overstates* the initial training fraction: the calibrated $\phi^* \approx 0.70$ is an upper bound on what the static model prescribes; under dynamic reallocation, the equivalent static $\phi$ would be lower because part of the training allocation is deferred to the post-switch period.
+Firms in practice can and do reallocate GPUs between training and inference on timescales of weeks.
+The implied $\lambda$ that rationalizes a given observed $\hat{\phi}$ would therefore be *higher* under the dynamic model than under the static model, because the observed $\hat{\phi}$ represents a deliberate choice despite the option to reallocate, rather than an irreversible commitment.
+
+Dynamic reallocation would attenuate the paper's headline mechanisms but not eliminate them.
+The faith-based survival channel (Proposition 2) would be weakened because a struggling firm could shift from training to inference to boost L-regime cash flow, partially offsetting the default-boundary reduction from high $\phi$.
+However, the channel survives as long as the firm's expected post-switch revenue (which depends on the *cumulative* training investment, not just the current allocation) contributes to $A_{\text{eff}}$---and the option to reallocate *toward* training upon a switch reinforces the continuation-value floor.
+The Dario's dilemma asymmetry (Numerical Finding 2) would be attenuated because an over-training firm could partially recover by reallocating to inference, reducing the cost of aggressive overinvestment.
+The asymmetry between underinvestment and overinvestment would narrow but persist, because the dominant channel---the destruction of H-regime option value from under-training---operates through the *level* of training investment, not its adjustability.
+A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB equation) is left for future work.
 
 ### Limitations
 
