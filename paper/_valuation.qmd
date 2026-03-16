@@ -96,9 +96,11 @@ The value loss from mismatch is:
 $$
 \Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
 $$
-where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the NPV of investing according to belief $\lambda_b$---choosing $(X^*, K^*, \phi^*)$ optimal for $\lambda_b$---when the true parameter is $\lambda_a$.
-Note that I evaluate the investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
+where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the expected present value, evaluated at a common initial demand level $X_0$, of following the investment policy $(X^*, K^*, \phi^*)$ optimal for belief $\lambda_b$ when the true demand process is governed by $\lambda_a$.
+The timing discount $(X_0/X^*)^{\beta_H}$ adjusts for different waiting times before the respective triggers are reached.
+I evaluate investment *outcomes* under the true demand process ($\lambda_a$) but use the *investment policy* derived from the (possibly mistaken) belief $\lambda_b$.
 The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes.
+Throughout, percentage value losses are reported as $\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})$, the loss as a fraction of the first-best value.
 
 **Numerical Finding 2** (Dario's dilemma).
 *Across all parameterizations tested, the value loss from conservative underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) exceeds the value loss from aggressive overinvestment ($\lambda_{\text{invest}} > \lambda_{\text{true}}$) for the same magnitude of mismatch $|\lambda_{\text{invest}} - \lambda_{\text{true}}|$. The asymmetry arises from the training allocation channel: a conservative firm drastically under-allocates to training ($\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$), forgoing the H-regime option value that accounts for most of the firm's worth. At baseline parameters with $\lambda_{\text{true}} = 0.10$, a conservative firm investing as if $\lambda = 0.02$ loses approximately 26\% of value, while an aggressive firm investing as if $\lambda = 0.20$ loses only about 6\%. For $\ell > 0$, leverage marginally increases the cost of overinvestment through higher coupon obligations but does not reverse the asymmetry at this scale.*
