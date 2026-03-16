@@ -351,6 +351,7 @@ The leader must account for the follower's future entry.
 Before the follower invests ($X < X_F$), the leader earns monopoly revenue---contest share $s_L = 1$ in both regimes---and the effective revenue coefficient reflects the full monopoly value.
 After the follower invests ($X \geq X_F$), revenue is shared according to the regime-specific contests.
 The leader's value incorporates both phases and the transition between them.
+As with the default boundary, the follower's entry trigger $X_F$ is computed using the unconditional $A_{\text{eff}}$ framework and is not regime-contingent: a fully state-dependent formulation would feature separate triggers $(X_F^L, X_F^H)$ linked by the switching intensity, but the unconditional approach preserves the key economic forces while maintaining tractability.
 The leader must also account for the fact that the follower's entry dilutes the leader's contest share in both regimes.
 
 **Preemption trigger.**
