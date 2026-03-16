@@ -67,7 +67,9 @@ The Leland mechanism is best viewed as an analytically tractable approximation t
 The qualitative predictions---that higher training investment lowers the distress threshold through the continuation-value channel, that leverage amplifies overinvestment losses, and that the default boundary rises with rival capacity---apply across financing structures; the specific Leland closed forms are the vehicle for these insights, not the literal description of any single firm's capital structure.
 
 The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
-Revenue depends on *relative* capacity, which fits a zero-sum share game but not a growing market; in particular, the Tullock form assumes a fixed total market size, which understates the market expansion effect of AI adoption and biases the model toward stronger competition effects relative to a setting where investment expands the pie.
+Revenue depends on *relative* capacity through a zero-sum share function: symmetric entry by a second firm splits aggregate revenue rather than expanding it, unlike a Cournot specification where additional industry capacity would serve new demand.
+Under asymmetry, the Tullock form produces a revenue-expansion effect (see @sec-duopoly), but it does not capture the market-growing effect of AI adoption where investment expands total addressable demand.
+This biases the model toward stronger competition effects relative to a setting where investment expands the pie.
 A Cournot specification would avoid this limitation at the cost of additional complexity (see Appendix E).
 
 All valuation uses a reduced-form risk-adjusted framework (see the footnote in @sec-model defining $r$ and $\mu_s$), abstracting from state-dependence of risk premia across regimes.
