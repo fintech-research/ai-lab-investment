@@ -19,7 +19,7 @@ First, firms choose not only when to invest and how much capacity to install, bu
 In the current (low) regime, revenue depends on inference capacity through a Tullock contest; in the post-AGI (high) regime, revenue depends on training quality.
 This regime-specific competition creates a genuine strategic trade-off absent from standard capacity models: a firm that allocates too much to training sacrifices current revenue and risks default, while a firm that allocates too little sacrifices its competitive position in the transformative AI regime.
 I provide analytical characterization of the optimal training fraction, investment trigger, and capacity.
-Duopoly preemption changes both timing and training incentives: the leader allocates more to training than the follower because the monopoly phase eliminates the opportunity cost of forgone inference revenue.
+Duopoly preemption changes both timing and training incentives: the leader allocates more to training than the follower because the monopoly phase eliminates the contest-share component of the opportunity cost of training---with no rival, the leader's market share is insensitive to its training allocation, reducing the marginal cost of training relative to the duopoly phase.
 
 Second, the interaction of training allocation with leverage and default risk produces a *faith-based survival* mechanism: training investment raises the effective revenue coefficient $A_{\text{eff}}$ through the expected post-AGI continuation value, lowering the default boundary---but only in parameter regions where this channel dominates current cash-flow weakness, a condition I characterize in closed form for the symmetric duopoly.
 
