@@ -227,12 +227,12 @@ Since the training allocation channel dominates, $W'''(\lambda_{\text{true}}) > 
 ### B. Numerical Verification Methods {.unnumbered}
 
 All numerical results are computed using SciPy 1.14 optimization routines in Python 3.13.
-The single-firm and duopoly optimizations use Nelder-Mead over $(\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation. The log-transform on $K$ ensures positivity without imposing artificial bounds; multiple starting points ($\log K_0 \in \{-2, 0, 2\}$, $\phi_0 \in \{0.15, 0.30, 0.50, 0.70\}$) are used to guard against local optima.
+The single-firm and duopoly optimizations use Nelder-Mead over $(\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]$, with the trigger $X^*$ recomputed from the smooth-pasting condition at each function evaluation. The log-transform on $K$ ensures positivity without imposing artificial bounds; multiple starting points ($\log K_0 \in \{-2, 0, 2\}$, $\phi_0 \in \{0.15, 0.30, 0.50, 0.70\}$) are used to guard against local optima, yielding 12 deterministic starting points in total.
 Convergence tolerance is $10^{-8}$ on function values.
 For the preemption trigger $X_P$, I use Brent's root-finding method on $L(X) - F(X) = 0$ over $(X_D, X_F^*)$.
-Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a grid of 500 points and confirming exactly one sign change.
+Single crossing of leader and follower values is verified at each parameterization by evaluating $L(X) - F(X)$ on a deterministic grid of 500 points and confirming exactly one sign change.
 No case of multiple crossings was found across all parameterizations tested (varying $\sigma \in [0.10, 0.50]$, $\alpha \in [0.20, 0.60]$, $\gamma \in [1.10, 2.00]$, $\lambda \in [0.01, 0.50]$, $\ell \in [0, 0.70]$).
-Equilibrium uniqueness for the duopoly is assessed by running the optimization from 10 random starting points; all converge to the same solution.
+Equilibrium uniqueness for the duopoly is assessed by running the optimization from the same 12 deterministic starting points; all converge to the same solution.
 
 **Assumption (A3) boundary.** The L-regime insufficiency condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 3.01$), this yields $\alpha \leq 1 - 1/\beta_L^+ \approx 0.67$. The baseline $\alpha = 0.40$ satisfies (A3) comfortably, and the condition holds throughout the sensitivity range $\alpha \in [0.20, 0.60]$. For $\alpha > 0.67$, the full two-term solution @eq-option-L-general must be used; qualitative patterns are preserved.
 
@@ -309,7 +309,10 @@ I vary each calibration parameter by $\pm 25\%$ from the baseline and re-compute
 The qualitative findings are robust: the asymmetry of Dario's dilemma, the large capacity gap fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
-Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main results, though the preemption incentive is somewhat weaker because capacity differences translate less directly into revenue differences.
+Replacing the Tullock contest with a Cournot competition model (where firms choose quantities and price clears the market) preserves the main qualitative results.
+The faith-based survival mechanism (Proposition 2) is robust to the competition specification: the default boundary $X_D = [\beta_s^-/(\beta_s^- - 1)] \cdot (c_D/r + \delta K_i/r) / A_{\text{eff},i}$ depends on $A_{\text{eff},i}$ regardless of how revenue shares are determined, and $\partial A_{\text{eff},i}/\partial \lambda > 0$ holds under both Tullock and Cournot for $\phi_i > \underline{\phi}$.
+The preemption incentive is somewhat weaker under Cournot because capacity differences translate less directly into revenue differences: under Tullock, a capacity advantage maps directly to a larger revenue share ($s_i \propto K_i^\alpha$), whereas under Cournot, additional capacity lowers the equilibrium price, partially offsetting the quantity gain.
+Dario's dilemma asymmetry is likewise preserved: under both specifications, a conservative firm that under-allocates to training forfeits the H-regime continuation value that dominates $A_{\text{eff}}$, producing a steeper value-loss curve on the underinvestment side.
 
 **Alternative regime structure.**
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.

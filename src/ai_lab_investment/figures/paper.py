@@ -150,7 +150,7 @@ def create_comparative_statics() -> plt.Figure:
         ("sigma", np.linspace(0.18, 0.32, 40), r"Volatility $\sigma$"),
         ("alpha", np.linspace(0.30, 0.45, 40), r"Revenue elasticity $\alpha$"),
         ("gamma", np.linspace(1.2, 2.0, 40), r"Cost convexity $\gamma$"),
-        ("delta", np.linspace(0.01, 0.08, 40), r"Depreciation $\delta$"),
+        ("delta", np.linspace(0.01, 0.08, 40), r"Operating cost $\delta$"),
     ]
 
     fig, axes = plt.subplots(2, 2, figsize=(FULL_W, 4.5))
