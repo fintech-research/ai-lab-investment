@@ -133,6 +133,11 @@ The asymmetry means that *underinvestment* is more informative than overinvestme
 The asymmetric loss function implies that firms should hedge against conservative under-training more than against aggressive over-training, rationalizing the observation that frontier AI labs consistently push the boundary of training compute investment.
 At the scale of trillion-dollar commitments, however, absolute (as opposed to percentage) losses from overinvestment can be existential, especially with leverage---a distinction the single-firm model does not fully capture.
 
+The single-firm formalization isolates the belief-mismatch channel in its cleanest form, but the motivating narrative (and the paper's duopoly model) emphasizes competitive preemption as a key forcing function.
+In a duopoly extension of Dario's dilemma, a conservative firm would face an additional strategic penalty: by investing later (higher $X^*$) and allocating less to training, it would lose the leader position to an aggressive rival, forfeiting the monopoly-phase rents that drive the preemption equilibrium (Proposition 3).
+This strategic channel would amplify the underinvestment cost relative to the single-firm benchmark, reinforcing the asymmetry.
+The duopoly Dario's dilemma---quantifying the interaction of belief mismatches with the race to lead---is a natural extension left for future work.
+
 ### Equity Valuation Sensitivity
 
 The model generates strong predictions about how equity valuation depends on AI timeline beliefs.
