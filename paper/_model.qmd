@@ -257,7 +257,7 @@ The effective revenue coefficient $A_{\text{eff},i}$ embodies the central econom
 
 Each firm finances investment with a mix of equity and debt.
 I parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance.
-Debt pays a continuous coupon $d = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate.
+Debt pays a continuous coupon $c_D = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate and $c_D$ denotes the total coupon payment (used throughout).
 Following @leland1994corporate, equity holders choose to default endogenously when the equity value falls to zero.
 
 #### Default boundary
@@ -321,7 +321,7 @@ Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered
 
 Debt value is:
 $$
-D(X) = \frac{d}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) \left(A_{\text{eff},i}\, X_D\right) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+D(X) = \frac{c_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) \left(A_{\text{eff},i}\, X_D\right) \left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
 where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy and $A_{\text{eff},i}\, X_D$ is the gross revenue present value at the default boundary (the liquidation value of the firm's productive assets, before deducting maintenance costs, following @leland1994corporate).
 
