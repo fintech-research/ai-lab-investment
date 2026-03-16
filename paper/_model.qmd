@@ -317,7 +317,7 @@ where $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duo
 The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
 The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the smooth-pasting conditions on the going-concern equity $E(X) + (1-\ell)I(K)$ pin the default boundary $X_D$ in @eq-default-boundary and are independent of the sunk equity contribution.
 At $X = X_D$, $E(X_D) = -(1-\ell)I(K) \leq 0$: the equity holders' sunk contribution is lost, but limited liability prevents negative payoffs, so equity is worth $\max\{E(X),\, 0\}$.
-Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$.
+Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$, treated as a perpetuity with no endogenous abandonment option.^[An unlevered firm with $\delta > 0$ could in principle shut down to avoid operating costs. The omission of this abandonment option is conservative (it slightly understates equity value) and quantitatively negligible because the firm invests at $X^*$ well above any potential abandonment threshold.]
 
 Debt value is:
 $$
