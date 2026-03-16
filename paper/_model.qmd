@@ -136,7 +136,7 @@ $$
 
 *(i) $\phi^*$ is increasing in $\lambda$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
-*(ii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
+*(ii) $\phi^*$ is increasing in the H-regime growth rate $\mu_H$: a higher post-AGI growth rate increases the relative value of training, shifting the optimal allocation toward training. Note that $\phi^*$ is independent of $\mu_L$: L-regime drift affects both inference revenue and the regime-switching discount symmetrically through the common factor $1/(r - \mu_L + \lambda)$, leaving the ratio $w_H/w_L = \lambda / (r - \mu_H)$ unchanged.*
 
 *Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 

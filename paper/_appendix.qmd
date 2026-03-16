@@ -101,7 +101,7 @@ which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\s
 From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
 
 (i) $\partial \phi^* / \partial \lambda > 0$: Higher $\lambda$ increases $w_H / w_L = \lambda A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
-(ii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
+(ii) $\partial \phi^* / \partial \mu_H > 0$: Higher $\mu_H$ lowers $r - \mu_H$, increasing $w_H / w_L = \lambda / (r - \mu_H)$. Since $\phi^*$ is increasing in $w_H / w_L$, the optimal training fraction rises. Note that $\phi^*$ is independent of $\mu_L$: both $w_L = 1/(r - \mu_L + \lambda)$ and $w_H = \lambda A_H / (r - \mu_L + \lambda)$ share the denominator $(r - \mu_L + \lambda)$, so $w_H / w_L = \lambda A_H = \lambda / (r - \mu_H)$ does not depend on $\mu_L$. $\square$
 
 #### Proof of Proposition 2 {.unnumbered}
 
