@@ -287,18 +287,18 @@ The stylized firms are composites designed to capture the key features of each f
 
 | Parameter | Symbol | Baseline | $\varepsilon_{X^*}$ | $\varepsilon_{K^*}$ | $\varepsilon_{\phi^*}$ |
 |:----------|:------:|:--------:|:-------------------:|:-------------------:|:----------------------:|
-| Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ | $-3.2$ |
-| Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ | $-5.1$ |
-| H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ | $+8.3$ |
-| Volatility | $\sigma$ | 0.25 | $+10.8$ | $+12.1$ | $+2.1$ |
-| Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ | $+0.8$ |
-| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $-0.3$ |
-| Arrival rate | $\lambda$ | 0.10 | $-6.5$ | $+4.8$ | $+12.7$ |
+| Discount rate | $r$ | 0.12 | $-20.8$ | $-28.8$ | $-1.0$ |
+| Revenue elasticity | $\alpha$ | 0.40 | $+19.7$ | $+24.2$ | $+0.2$ |
+| H-regime drift | $\mu_H$ | 0.06 | $+15.2$ | $+20.8$ | $+0.5$ |
+| Volatility | $\sigma$ | 0.25 | $+9.2$ | $+12.0$ | $\approx 0$ |
+| Cost convexity | $\gamma$ | 1.50 | $+3.2$ | $+7.0$ | $\approx 0$ |
+| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $\approx 0$ |
+| Arrival rate | $\lambda$ | 0.10 | $-0.2$ | $\approx 0$ | $+0.5$ |
 
-: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
+: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values via central finite differences ($\pm 0.01\%$ perturbation). {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
 
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
-The training fraction $\phi^*$ is most sensitive to the arrival rate $\lambda$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
+The training fraction $\phi^*$ is remarkably insensitive to most parameters: its FOC depends only on the ratio $w_H/w_L = \lambda/(r - \mu_H)$, so $\phi^*$ responds primarily to $\lambda$ ($\varepsilon = +0.5$), $\mu_H$ ($\varepsilon = +0.5$), and $r$ ($\varepsilon = -1.0$), with negligible sensitivity to $\sigma$, $\gamma$, and $\delta$, which do not enter the training allocation FOC. Similarly, $K^*$ is independent of $\lambda$ (Proposition 1), confirmed by $\varepsilon_{K^*,\lambda} \approx 0$.
 
 ### E. Robustness {.unnumbered}
 
