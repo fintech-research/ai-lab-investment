@@ -60,18 +60,18 @@ This creates a novel interaction between training allocation and credit risk: fi
 
 #### Default probability
 
-The probability of default within horizon $T$ is approximated using the distance to default:
+The probability of default within horizon $T$ is the first-passage probability for GBM hitting the barrier $X_D$:
 $$
-P(\text{default within } T) \approx \Phi\left(-\frac{\ln(X/X_D) + (\mu_s - \frac{1}{2}\sigma^2)T}{\sigma \sqrt{T}}\right),
+P(\text{default within } T) = \Phi(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \Phi(-d_2),
 $$
-where $\Phi$ is the standard normal CDF.
-This is the structural default probability from @merton1974pricing, adapted to our setting with regime-dependent parameters.
+where $\nu = \mu_s - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\Phi$ is the standard normal CDF.
+This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model.
 Since $\mu_s$ is the risk-adjusted (certainty-equivalent) drift, this yields a risk-neutral default probability consistent with the spread calculation; the physical-measure default probability (using the unadjusted drift) would be lower.
 
 @fig-credit-risk presents the credit risk implications.
 Panel (a) shows credit spreads as a function of leverage, evaluated at a demand level three times the default boundary.
 Spreads are concave in leverage: approximately 170 bps for very low leverage ($\ell \approx 0.05$), rising steeply to about 260 bps at moderate leverage ($\ell = 0.20$) and reaching approximately 310 bps at $\ell = 0.70$.
-Panel (b) shows the 5-year default probability, which rises from nearly zero at low leverage to approximately 1.3\% at $\ell = 0.70$.
+Panel (b) shows the 5-year default probability (first-passage), which rises from approximately 0.5\% at low leverage to approximately 0.8\% at $\ell = 0.70$.
 The modest default probabilities reflect the substantial distance to default at three times $X_D$; at demand levels closer to the boundary, default probabilities would be considerably higher.
 
 ![Credit risk as a function of leverage. (a) Credit spread in basis points. (b) Five-year default probability. Spreads are concave in leverage, rising steeply at low leverage and flattening at high leverage. Default probability is increasing and convex. Evaluated at a demand level three times the default boundary, using the Leland structural model with coupon rate $c_d = 0.05$ and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}
@@ -116,8 +116,8 @@ With leverage ($\ell = 0.40$, dashed line), the two curves are nearly identical,
 The shaded region marks the "danger zone" where value losses from overinvestment exceed 10\%.
 
 The expected-value metric $\Delta V$ tells only half the story.
-The 5-year default probability under the true demand process reveals a complementary asymmetry: at $\ell = 0.40$, a conservative firm ($\lambda_{\text{invest}} = 0.02$) faces a default probability of 0.42\%---barely above the 0.34\% baseline---because it enters at a higher trigger with less capacity and lower coupon.
-An aggressively overinvesting firm ($\lambda_{\text{invest}} = 0.50$) faces a default probability of 2.69\%, nearly eight times the baseline, because it enters at a lower trigger with larger capacity and higher coupon obligations.
+The 5-year default probability under the true demand process reveals a complementary asymmetry: at $\ell = 0.40$, a conservative firm ($\lambda_{\text{invest}} = 0.02$) faces a default probability of 0.79\%---only slightly above the 0.64\% baseline---because it enters at a higher trigger with less capacity and lower coupon.
+An aggressively overinvesting firm ($\lambda_{\text{invest}} = 0.50$) faces a default probability of 5.04\%, nearly eight times the baseline, because it enters at a lower trigger with larger capacity and higher coupon obligations.
 The dilemma is thus genuinely two-sided: underinvestment is costlier in expected value, but overinvestment carries substantially higher tail risk.
 
 ![Dario's dilemma: value loss from belief mismatch. Solid line: unleveraged ($\ell = 0$); dashed line: leveraged ($\ell = 0.40$). The loss $\Delta V$ is plotted as a function of $\lambda_{\text{invest}}$ for fixed $\lambda_{\text{true}} = 0.10$. The left branch (underinvestment) rises more steeply than the right (overinvestment), driven by the cost of under-allocating to training. The shaded region marks losses exceeding 10\% of optimal value. Parameters: baseline calibration.](figures/fig_investment_dilemma.pdf){#fig-investment-dilemma}
