@@ -22,8 +22,9 @@ For the model to have well-defined present values, I require $r > \mu_H > \mu_L$
 
 ### Technology
 
-A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures diminishing returns (equivalently, convex investment costs).
-This specification nests the standard linear cost ($\gamma = 1$, constant returns) and reflects the empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]: doubling compute does not double capability.
+A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures convex investment costs: power constraints, GPU supply bottlenecks, data center site preparation, and construction complexity all contribute to increasing marginal costs of capacity procurement.
+This specification nests the standard linear cost ($\gamma = 1$, constant returns).
+The distinct empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]---doubling compute does not double capability---is captured separately by the revenue elasticity $\alpha \in (0,1)$ in the contest functions below.
 Two simplifying assumptions should be flagged at the outset: capacity is fixed once installed (no incremental expansion or mothballing), and the investment decision is a single irreversible commitment rather than a sequence of staged options.
 In practice, firms expand incrementally and can repurpose compute across workloads; these extensions are discussed in @sec-discussion.
 
