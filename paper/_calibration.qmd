@@ -29,7 +29,8 @@ The firm-specific WACCs in @tbl-firms (ranging from 0.10 to 0.18) enter the sens
 ### Technology Parameters
 
 The revenue elasticity $\alpha = 0.40$ governs diminishing returns to capacity in revenue generation, entering both the L-regime inference contest (@eq-contest-L) and the H-regime training contest (@eq-contest-H).
-Doubling the relevant capacity measure increases revenue by approximately $2^{0.4} \approx 1.32$ times---a 32\% increase rather than 100\%---reflecting the empirical observation that GPU utilization rates decline as capacity grows and that the marginal value of additional compute diminishes as models approach capability frontiers.
+Holding contest share fixed (or in the single-firm case), doubling the relevant capacity measure increases revenue by approximately $2^{0.4} \approx 1.32$ times---a 32\% increase rather than 100\%---reflecting diminishing returns to scale.
+In a symmetric duopoly, a unilateral doubling also raises the contest share, so the total revenue gain is larger (approximately 50\% at baseline).
 The cost function $I(K) = cK^\gamma$ with convexity $\gamma = 1.50$ captures increasing marginal costs from power constraints, supply chain bottlenecks (particularly for advanced GPUs), and site preparation costs; I normalize the unit cost $c = 1.0$, so all monetary values are interpreted relative to this normalization.
 
 The operating cost rate $\delta = 0.03$ represents the ongoing cost of maintaining installed capacity---power, cooling, maintenance, and personnel---expressed as a fraction of capacity per year, distinct from both accounting depreciation and economic depreciation of GPU hardware.
