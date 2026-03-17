@@ -275,7 +275,13 @@ The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\lambda$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
 Optimism about transformative AI, backed by training investment, extends the firm's solvency by raising the equity value at any demand level.
+As noted above, the unconditional $A_{\text{eff},i}$ framework introduces less than 1\% error relative to a fully coupled regime-switching default model at baseline, because the absorbing regime structure and remote H-regime default make the perpetuity approximation tight (see the preceding footnote and Appendix A for details).
 Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives no H-regime upside, faces a higher default boundary, and is more vulnerable to demand downturns.
+
+The mechanism differs from the standard result that growth options lower default boundaries in Leland-type models.
+In models with exogenous growth options, increasing option value unambiguously improves solvency.
+Here, the growth option value is endogenously controlled by $\phi$, and raising $\phi$ simultaneously reduces current inference revenue---creating a genuine trade-off between solvency through future continuation value and solvency through current cash flow.
+The faith-based survival condition (@eq-phi-underbar below) characterizes precisely when the continuation-value channel dominates the cash-flow sacrifice.
 
 **Proposition 2** (Endogenous default with faith-based survival; leveraged duopoly).
 *For a levered firm in the duopoly with fixed capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$, the default boundary $X_D$ has the following properties:*
