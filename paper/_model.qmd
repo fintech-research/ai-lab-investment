@@ -380,4 +380,4 @@ Competition primarily affects *timing* rather than *scale*: the leader's optimal
 
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
-@tbl-result-taxonomy in the Appendix summarizes the analytical status of each result.
+Propositions 1 and 2 are fully analytical; Proposition 3 combines an analytical existence proof with computational verification of uniqueness and numerical comparative statics. @tbl-result-taxonomy in the Appendix provides a detailed classification of the analytical status of each result.

@@ -36,7 +36,7 @@ Duopoly is the minimal model that captures the key forces---strategic preemption
 {{< include _literature.qmd >}}
 
 The paper proceeds as follows.
-@sec-model presents the model environment with training-inference allocation, regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; all analytical results are contained in this section.
+@sec-model presents the model environment with training-inference allocation, regime switching, the single-firm benchmark, and the duopoly equilibrium with default risk; the analytical and semi-analytical results are contained in this section.
 @sec-calibration describes the stylized calibration to frontier AI lab archetypes and presents baseline numerical results.
 @sec-valuation develops quantitative implications: value decomposition, credit risk, Dario's dilemma, and equity valuation sensitivity.
 @sec-discussion considers policy implications, testable predictions, and limitations.
