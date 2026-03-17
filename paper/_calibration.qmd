@@ -114,7 +114,10 @@ The model is normalized by $c = 1$ (investment cost scale), so absolute levels o
 The quantitative content resides in *ratios* and *percentages*: the preemption discount $X_P / X_H^{\text{mono}} \approx 0.50$, the training fraction $\phi^* \approx 0.70$, the value-loss asymmetry (26\% vs.\ 6\%), and the credit spread levels (170--310 bps).
 The raw scale difference between single-firm and duopoly environments reflects the change in the effective revenue coefficient: in the single-firm model with regime switching, $A_{\text{eff}}$ is large (the H-regime prospect amplifies revenue per unit of demand), so the firm invests at low $X$ with small $K$; in the duopoly, contest shares reduce per-firm $A_{\text{eff}}$, requiring higher demand and larger capacity to justify entry.
 This is analogous to comparing a monopolist and a Cournot duopolist in standard IO: the equilibrium quantities differ in level, but the economic mechanisms are the same.
-All cross-environment comparisons in the paper use within-environment ratios or percentage changes, which are invariant to the cost normalization.
+The demand shifter $X$ and capacity $K$ are abstract state variables; only their ratios carry economic content.
+To map to observable units, one would set $c$ so that $I(K) = cK^\gamma$ matches observed CapEx for a given archetype---for example, setting $c \approx \$2.0\text{B}$ maps the duopoly follower's investment cost $I(K_F) = K_F^{1.5} \approx 1.48$ to approximately \$3B, matching the Anthropic-like archetype's annual CapEx.
+This rescaling affects no ratio, percentage, or spread reported in the paper; the model is intentionally unit-free in this sense.
+All cross-environment comparisons use within-environment ratios or percentage changes, which are invariant to the cost normalization.
 
 Strategic interaction accelerates investment: the preemption trigger $X_P \approx 0.0082$ is roughly half the monopolist benchmark $X_H^{\text{mono}} \approx 0.0163$.
 Both firms optimally allocate approximately 70\% to training ($\phi^* \approx 0.70$), reflecting the high value of the H-regime continuation payoff at the baseline arrival rate $\lambda = 0.10$; the optimal training fraction is determined by the balance between L-regime inference value and H-regime training value.
