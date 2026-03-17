@@ -58,6 +58,7 @@ The faith-based survival channel (Proposition 2) would be weakened because a str
 However, the channel survives as long as the firm's expected post-switch revenue (which depends on the *cumulative* training investment, not just the current allocation) contributes to $A_{\text{eff}}$---and the option to reallocate *toward* training upon a switch reinforces the continuation-value floor.
 The Dario's dilemma asymmetry (Numerical Finding 2) would be attenuated because an over-training firm could partially recover by reallocating to inference, reducing the cost of aggressive overinvestment.
 The asymmetry between underinvestment and overinvestment would narrow but persist, because the dominant channel---the destruction of H-regime option value from under-training---operates through the *level* of training investment, not its adjustability.
+A two-period numerical illustration (Appendix E, @tbl-dynamic-phi) confirms these qualitative predictions: the initial allocation $\phi_1$ is close to the static optimum $\phi^* \approx 0.70$ across all adjustment costs, the value gain from dynamic reallocation is modest (1.7\% under free reallocation), and the faith-based survival threshold $\underline{\phi} \approx 0.18$ is unchanged.
 A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB equation) is left for future work.
 
 ### Limitations

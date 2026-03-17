@@ -574,6 +574,336 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
+    # Duopoly Dario dilemma (OF-6)
+    # ------------------------------------------------------------------
+
+    def dario_dilemma_duopoly(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        leverage: float = 0.0,
+    ) -> dict[str, float]:
+        """Dario's dilemma in a duopoly: one-sided belief mismatch.
+
+        A rational rival plays the equilibrium strategy under lambda_true.
+        The focal firm plays the optimal single-firm strategy under
+        lambda_invest, then enters the duopoly where the rival plays
+        optimally.  This captures the strategic penalty of wrong beliefs:
+        a conservative firm loses the leader position.
+
+        Returns dict with value losses for single-firm and duopoly
+        benchmarks.
+        """
+
+        # --- rational rival's optimal policy under true lambda ---
+        p_true = self.params.with_param(lam=lambda_true)
+        model_true = SingleFirmModel(p_true)
+        duo_true = DuopolyModel(
+            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+
+        try:
+            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+        except (ValueError, RuntimeError):
+            return {"error": "No solution at true lambda"}
+
+        # --- focal firm's policy under mistaken belief ---
+        p_invest = self.params.with_param(lam=lambda_invest)
+        model_invest = SingleFirmModel(p_invest)
+        try:
+            X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+        except (ValueError, RuntimeError):
+            return {"error": "No solution at invest lambda"}
+
+        # --- single-firm benchmark (reuse existing method) ---
+        sf = self.dario_dilemma(lambda_true, lambda_invest)
+
+        # --- duopoly evaluation ---
+        # Determine who leads. The firm with the lower trigger enters first.
+        beta = p_true.beta_H
+
+        if X_inv <= X_true:
+            # Focal firm leads (invests first), rival follows
+            # Leader value: monopoly until rival enters, then duopoly
+            V_mono = duo_true.monopolist_value_L(X_inv, phi_inv, K_inv)
+            V_duo = duo_true.installed_value_L(X_inv, phi_inv, K_inv, phi_true, K_true)
+            # Rival enters at X_true; PV of revenue drop
+            if X_true > X_inv and X_true > 0:
+                V_mono_XF = duo_true.monopolist_value_L(X_true, phi_inv, K_inv)
+                V_duo_XF = duo_true.installed_value_L(
+                    X_true, phi_inv, K_inv, phi_true, K_true
+                )
+                drop = V_mono_XF - V_duo_XF
+                entry_factor = (X_inv / X_true) ** beta
+                npv_focal = V_mono - drop * entry_factor
+            else:
+                npv_focal = V_duo
+            npv_focal -= duo_true.investment_cost(K_inv)
+        else:
+            # Rival leads, focal firm follows
+            # Focal firm enters at X_inv into duopoly directly
+            V_duo = duo_true.installed_value_L(X_inv, phi_inv, K_inv, phi_true, K_true)
+            npv_focal = V_duo - duo_true.investment_cost(K_inv)
+
+        # Optimal duopoly case: focal firm also plays correctly
+        # Symmetric: both invest at the same trigger, immediate duopoly
+        V_opt_duo = duo_true.installed_value_L(
+            X_true, phi_true, K_true, phi_true, K_true
+        )
+        npv_optimal = V_opt_duo - duo_true.investment_cost(K_true)
+
+        # Timing discount to common X_0
+        X_0 = min(X_true, X_inv) * 0.5
+        if X_0 <= 0:
+            X_0 = 1e-6
+
+        ev_opt = npv_optimal * (X_0 / X_true) ** beta if npv_optimal > 0 else 0
+        ev_focal = npv_focal * (X_0 / X_inv) ** beta if npv_focal > 0 else 0
+        loss_duo = ev_opt - ev_focal
+        loss_duo_pct = loss_duo / abs(ev_opt) if ev_opt != 0 else 0
+
+        return {
+            "lambda_true": lambda_true,
+            "lambda_invest": lambda_invest,
+            "value_loss_pct_single": sf.get("value_loss_pct", np.nan),
+            "value_loss_pct_duopoly": loss_duo_pct,
+            "ev_optimal_duopoly": ev_opt,
+            "ev_mismatch_duopoly": ev_focal,
+            "focal_leads": X_inv <= X_true,
+            "X_focal": X_inv,
+            "X_rival": X_true,
+            "phi_focal": phi_inv,
+            "phi_rival": phi_true,
+        }
+
+    # ------------------------------------------------------------------
+    # Two-period dynamic phi illustration (OF-3)
+    # ------------------------------------------------------------------
+
+    def two_period_dynamic_phi(
+        self,
+        lambda_val: float | None = None,
+        dt: float = 1.0,
+        adjustment_cost: float = 0.0,
+    ) -> dict[str, float]:
+        """Two-period illustration of dynamic training reallocation.
+
+        Period 1: firm invests with phi_1.
+        Period 2: if regime switched (prob p_switch), firm uses phi_H.
+                  if no switch (prob 1 - p_switch), firm uses phi_L2.
+        Reallocation costs kappa * (delta_phi)^2 per reallocation event.
+
+        Args:
+            lambda_val: Arrival rate (defaults to params.lam).
+            dt: Period length in years.
+            adjustment_cost: Quadratic reallocation cost kappa.
+
+        Returns:
+            Dict comparing static and dynamic allocations.
+        """
+        from scipy import optimize as sp_opt
+
+        p = self.params
+        lam = lambda_val if lambda_val is not None else p.lam
+
+        # Probability of switch in period 1
+        p_switch = 1.0 - np.exp(-lam * dt)
+        disc_1 = np.exp(-p.r * dt)
+
+        # Static benchmark
+        p_lam = p.with_param(lam=lam)
+        model_static = SingleFirmModel(p_lam)
+        _, K_s, phi_s = model_static.optimal_trigger_capacity_phi()
+
+        kappa = adjustment_cost
+
+        def _period_value(phi_1: float, phi_H: float, phi_L2: float) -> float:
+            """Expected PV of two-period revenue (per unit X, at K_s)."""
+            K = K_s
+            alpha = p.alpha
+
+            # Period 1: L-regime revenue (inference + H-option from training)
+            a_eff_1 = ((1.0 - phi_1) * K) ** alpha / (p.r - p.mu_L + lam)
+            a_eff_1 += lam / (p.r - p.mu_L + lam) * (phi_1 * K) ** alpha * p.A_H
+
+            # Approximate PV from period 1 flows
+            pv_1 = a_eff_1 * (1.0 - disc_1 * (1.0 - p_switch)) * dt / (dt + 1e-12)
+            # Simplified: use the effective coefficient times the period fraction
+            pv_1 = a_eff_1 * (1.0 - np.exp(-(p.r - p.mu_L + lam) * dt))
+
+            # Period 2 outcomes:
+            # If switch: H-regime revenue with phi_H
+            rev_2_H = (phi_H * K) ** alpha * p.A_H
+
+            # If no switch: L-regime with phi_L2
+            rev_2_L = ((1.0 - phi_L2) * K) ** alpha / (p.r - p.mu_L + lam)
+            rev_2_L += lam / (p.r - p.mu_L + lam) * (phi_L2 * K) ** alpha * p.A_H
+
+            pv_2 = disc_1 * (p_switch * rev_2_H + (1.0 - p_switch) * rev_2_L)
+
+            # Adjustment costs (expected)
+            adj = kappa * (
+                p_switch * (phi_H - phi_1) ** 2
+                + (1.0 - p_switch) * (phi_L2 - phi_1) ** 2
+            )
+
+            return pv_1 + pv_2 - adj
+
+        def _neg_value(params_vec: np.ndarray) -> float:
+            phi_1, phi_H, phi_L2 = params_vec
+            if (
+                phi_1 <= 0.01
+                or phi_1 >= 0.99
+                or phi_H <= 0.01
+                or phi_H >= 0.99
+                or phi_L2 <= 0.01
+                or phi_L2 >= 0.99
+            ):
+                return 1e20
+            return -_period_value(phi_1, phi_H, phi_L2)
+
+        # Optimize
+        best_val = 1e20
+        best_params = None
+        for p1 in [0.3, 0.5, 0.7]:
+            for pH in [0.5, 0.7, 0.9]:
+                for pL in [0.2, 0.4, 0.6]:
+                    x0 = np.array([p1, pH, pL])
+                    try:
+                        result = sp_opt.minimize(
+                            _neg_value,
+                            x0,
+                            method="Nelder-Mead",
+                            options={"maxiter": 2000, "xatol": 1e-8},
+                        )
+                        if result.fun < best_val:
+                            best_val = result.fun
+                            best_params = result.x
+                    except (ValueError, RuntimeError):
+                        continue
+
+        if best_params is None:
+            return {"error": "Dynamic phi optimization failed"}
+
+        phi_1_opt = np.clip(best_params[0], 0.01, 0.99)
+        phi_H_opt = np.clip(best_params[1], 0.01, 0.99)
+        phi_L2_opt = np.clip(best_params[2], 0.01, 0.99)
+
+        # Compute effective A_eff for the dynamic allocation
+        val_dynamic = _period_value(phi_1_opt, phi_H_opt, phi_L2_opt)
+        val_static = _period_value(phi_s, phi_s, phi_s)
+
+        # Faith-based survival threshold under dynamic phi
+        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
+        phi_underbar = R / (1.0 + R)
+
+        return {
+            "phi_static": phi_s,
+            "phi_1_dynamic": phi_1_opt,
+            "phi_H_dynamic": phi_H_opt,
+            "phi_L2_dynamic": phi_L2_opt,
+            "phi_underbar": phi_underbar,
+            "value_dynamic": val_dynamic,
+            "value_static": val_static,
+            "value_gain_pct": (val_dynamic - val_static) / abs(val_static) * 100
+            if val_static != 0
+            else 0,
+            "p_switch": p_switch,
+            "adjustment_cost": kappa,
+            "phi_1_below_static": phi_1_opt < phi_s,
+        }
+
+    # ------------------------------------------------------------------
+    # Fixed-pie contest robustness (OF-4)
+    # ------------------------------------------------------------------
+
+    def fixed_pie_robustness(
+        self,
+        leverage: float = 0.0,
+    ) -> dict[str, float]:
+        """Compare Tullock vs fixed-pie contest equilibrium objects.
+
+        Solves the duopoly under both the standard Tullock contest and
+        the fixed-pie variant (no revenue expansion), and reports key
+        equilibrium quantities for comparison.
+        """
+        p = self.params
+
+        # --- Standard Tullock ---
+        duo_tullock = DuopolyModel(
+            p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        try:
+            eq_tullock = duo_tullock.solve_preemption_equilibrium()
+        except (ValueError, RuntimeError):
+            return {"error": "Tullock equilibrium failed"}
+
+        # Faith-based survival threshold
+        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
+        phi_underbar = R / (1.0 + R)
+
+        # Dario dilemma asymmetry ratio under Tullock
+        dd_cons = self.dario_dilemma(0.10, 0.02)
+        dd_aggr = self.dario_dilemma(0.10, 0.20)
+        loss_cons = dd_cons.get("value_loss_pct", np.nan)
+        loss_aggr = dd_aggr.get("value_loss_pct", np.nan)
+        asym_tullock = abs(loss_cons / loss_aggr) if loss_aggr != 0 else np.nan
+
+        # --- Fixed-pie contest ---
+        # Re-solve follower and leader under fixed-pie A_eff
+        # We use the standard DuopolyModel but swap the revenue method
+        duo_fp = DuopolyModel(
+            p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+
+        # Store original method and monkey-patch for fixed-pie
+        orig_a_eff = duo_fp._effective_revenue_coeff
+        duo_fp._effective_revenue_coeff = (
+            lambda phi_i, K_i, phi_j, K_j, monopolist=False: (
+                orig_a_eff(phi_i, K_i, phi_j, K_j, monopolist=True)
+                if monopolist
+                else duo_fp._effective_revenue_coeff_fixed_pie(phi_i, K_i, phi_j, K_j)
+            )
+        )
+
+        try:
+            eq_fp = duo_fp.solve_preemption_equilibrium()
+        except (ValueError, RuntimeError):
+            eq_fp = None
+
+        # Dario's dilemma under fixed-pie is computed using single-firm
+        # (contest spec doesn't affect the single-firm dilemma, so the
+        # asymmetry ratio is the same)
+
+        result = {
+            # Tullock results
+            "tullock_phi_F": eq_tullock["phi_follower"],
+            "tullock_X_F": eq_tullock["X_follower"],
+            "tullock_K_F": eq_tullock["K_follower"],
+            "tullock_X_P": eq_tullock["X_leader"],
+            "tullock_phi_underbar": phi_underbar,
+            "tullock_asym_ratio": asym_tullock,
+            "tullock_preemption_discount": (
+                eq_tullock["X_leader"] / eq_tullock["X_leader_monopolist"]
+            ),
+        }
+
+        if eq_fp is not None:
+            result.update({
+                "fixedpie_phi_F": eq_fp["phi_follower"],
+                "fixedpie_X_F": eq_fp["X_follower"],
+                "fixedpie_K_F": eq_fp["K_follower"],
+                "fixedpie_X_P": eq_fp["X_leader"],
+                "fixedpie_preemption_discount": (
+                    eq_fp["X_leader"] / eq_fp["X_leader_monopolist"]
+                ),
+            })
+        else:
+            result["fixedpie_error"] = "Fixed-pie equilibrium failed"
+
+        return result
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
 

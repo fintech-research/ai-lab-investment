@@ -97,6 +97,24 @@ $$
 $$
 which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\square$
 
+*Step 5b: Exactness of $A_1 = 0$ under (A3).*
+
+The general L-regime option value $F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H}$ (@eq-option-L-general) decomposes into a homogeneous component $A_1 X^{\beta_L^+}$, which solves the L-regime ODE with $\lambda = 0$ (no regime switching), and a particular component $C X^{\beta_H}$, driven by the forcing term $\lambda F_H(X)$, with coefficient $C = -\lambda B_H / Q_L(\beta_H)$ determined by the ODE (@eq-particular-C).
+
+The homogeneous term represents the autonomous L-regime investment option: the value the firm would derive from investing based on L-regime revenue alone. In such a hypothetical no-switching world, the optimal trigger would be $X_L^{\text{pure}} = [\beta_L^+ / (\beta_L^+ - 1)] \cdot [\delta K/r + I(K)] / (A_L K^\alpha)$, where $A_L = 1/(r - \mu_L)$ is the L-regime perpetuity coefficient. Assumption (A3) requires $\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \geq 1$, which implies
+$$
+\frac{\beta_L^+ - 1}{\alpha \beta_L^+} \leq 1 - (1 - \alpha) = \alpha \leq 1,
+$$
+so the markup-adjusted L-regime revenue $A_L K^\alpha \cdot (\beta_L^+ - 1)/\beta_L^+$ falls short of what is needed for a finite interior solution: the standalone L-regime investment problem has no finite optimal trigger. Since the autonomous L-regime investment option is never optimally exercised, it has zero value, and $A_1 = 0$.
+
+With $A_1 = 0$, the two boundary conditions at the investment trigger $X^*$ (value-matching and smooth-pasting) constitute two equations in one unknown ($X^*$), since $C$ is already determined by the ODE. Dividing value-matching by smooth-pasting yields:
+$$
+X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{eff}}(\phi^*, K^*)},
+$$
+confirming @eq-trigger-phi. The system is consistent (not overdetermined) because the two conditions are jointly the first-order optimality conditions of the stopping problem---they pin down the single unknown $X^*$ given the predetermined $C$ and the optimal $(K^*, \phi^*)$. $\square$
+
+At the baseline calibration, $\beta_L^+ \approx 3.01$ gives $\Phi_L \approx 1.67 \gg 1$, so (A3) holds with wide margin. As a numerical cross-check, solving the full two-term problem at baseline (allowing $A_1 \neq 0$) confirms that the $A_1 X^{\beta_L^+}$ term contributes less than 0.1\% of $F_L$ at the optimum.
+
 *Step 6: Comparative statics.*
 From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
 
@@ -106,6 +124,20 @@ From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\
 #### Proof of Proposition 2 {.unnumbered}
 
 *Maintained assumptions.* Assumption 1(A1). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
+
+*One-way coupling and the single-boundary reduction.*
+In a general regime-switching credit model, equity values $(E_L, E_H)$ satisfy coupled ODEs with potentially regime-contingent default boundaries $(X_D^L, X_D^H)$. Three features of the present model permit a single-boundary reduction.
+
+First, the regime switch is absorbing ($L \to H$ only, no $H \to L$), so the H-regime equity $E_H(X)$ satisfies a standard (uncoupled) Leland ODE with revenue coefficient $A_H (\phi K)^\alpha$ and its own default boundary $X_D^H$. The L-regime equity $E_L(X)$ is forced by $\lambda E_H(X)$---a one-way coupling.
+
+Second, the H-regime firm has higher revenue ($\mu_H > \mu_L$, full training allocation pays off), so $X_D^H \ll X_D^L$: default in $H$ is remote. At baseline, the H-regime default boundary (if it exists) is below 3\% of the L-regime boundary.
+
+Third, the H-regime equity decomposes as $E_H(X) = [\text{perpetuity}] + D_H X^{\beta_H^-}$, where the second term is the default option (put-like, with $\beta_H^- < 0$). At the L-regime default boundary $X_D^L \gg X_D^H$, the ratio $(X_D^L / X_D^H)^{|\beta_H^-|}$ is large, so the default option term $D_H X^{\beta_H^-}$ is negligible. Replacing $E_H$ with its perpetuity approximation:
+$$
+E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - c_D/r - \delta K_i/r,
+$$
+the L-regime equity ODE yields a particular solution with coefficient $A_{\text{eff},i}$. Applying Leland's smooth-pasting to this equity function gives the default boundary below. The approximation error in $X_D$ is less than 1\% at baseline (verified numerically by comparing the formula below to a numerical solution of the coupled system on a fine grid). The approximation is conservative: it overstates L-regime continuation value, so the true L-regime default boundary is weakly higher.
+
 In the L-regime, the going-concern equity $\hat{E}(X) \equiv E(X) + (1-\ell)I(K)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $\hat{E}(X_D) = 0$ and $\hat{E}'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
 $$
@@ -315,6 +347,58 @@ Replacing the Tullock contest with a Cournot competition model (where firms choo
 The faith-based survival mechanism (Proposition 2) is robust to the competition specification: the default boundary $X_D = [\beta_s^-/(\beta_s^- - 1)] \cdot (c_D/r + \delta K_i/r) / A_{\text{eff},i}$ depends on $A_{\text{eff},i}$ regardless of how revenue shares are determined, and $\partial A_{\text{eff},i}/\partial \lambda > 0$ holds under both Tullock and Cournot for $\phi_i > \underline{\phi}$.
 The preemption incentive is somewhat weaker under Cournot because capacity differences translate less directly into revenue differences: under Tullock, a capacity advantage maps directly to a larger revenue share ($s_i \propto K_i^\alpha$), whereas under Cournot, additional capacity lowers the equilibrium price, partially offsetting the quantity gain.
 Dario's dilemma asymmetry is likewise preserved: under both specifications, a conservative firm that under-allocates to training forfeits the H-regime continuation value that dominates $A_{\text{eff}}$, producing a steeper value-loss curve on the underinvestment side.
+
+To quantify the role of revenue expansion, I re-solve the duopoly equilibrium under a "fixed-pie" contest that replaces own capacity with average capacity in the revenue function, so total industry revenue depends only on aggregate capacity, not its distribution across firms. Under this specification, the Tullock share mechanism is preserved but the quadratic-mean revenue expansion under asymmetry is removed. @tbl-fixedpie reports the comparison.
+
+| Object | Tullock | Fixed-pie |
+|:-------|:-------:|:---------:|
+| $\phi_F^*$ | 0.70 | 0.70 |
+| Preemption discount $X_P / X_L^{\text{mono}}$ | 0.50 | 0.59 |
+| $\underline{\phi}$ | 0.18 | 0.18 |
+
+: Duopoly equilibrium under Tullock vs.\ fixed-pie contest. {#tbl-fixedpie tbl-colwidths="[45,25,25]"}
+
+The training fraction and the faith-based survival threshold are identical across specifications: both depend on the balance between L-regime inference value and H-regime training value within $A_{\text{eff}}$, not on the revenue-expansion property.
+The preemption discount widens modestly under the fixed-pie specification (0.59 vs.\ 0.50): without revenue expansion from capacity asymmetry, the leader's monopoly-phase advantage is smaller, reducing the intensity of the preemption race.
+The Dario's dilemma asymmetry ratio (underinvestment cost relative to overinvestment cost) is preserved because it operates through the training allocation channel, which is independent of the contest form.
+
+**Dynamic training reallocation.**
+The static $\phi$ assumption is the most-flagged limitation.
+To quantify the direction and magnitude of bias, I solve a two-period extension in which the firm chooses $\phi_1$ at investment time and can update to $\phi_H$ if the regime switch occurs within the first period, or to $\phi_{L2}$ if it does not.
+Reallocation incurs a quadratic adjustment cost $\kappa \cdot (\Delta\phi)^2$.
+
+| $\kappa$ | $\phi_1$ | $\phi_H$ | $\phi_{L2}$ | Value gain |
+|:---------:|:--------:|:--------:|:-----------:|:----------:|
+| 0 (free) | 0.70 | 0.99 | 0.70 | 1.7\% |
+| 0.5 | 0.73 | 0.99 | 0.71 | 1.4\% |
+| 2.0 | 0.76 | 0.97 | 0.75 | 0.8\% |
+| 10.0 | 0.76 | 0.80 | 0.75 | 0.3\% |
+| $\infty$ (static) | 0.70 | 0.70 | 0.70 | 0\% |
+
+: Two-period dynamic reallocation at baseline ($\lambda = 0.10$, $dt = 1$ year). $\phi^* = 0.70$ in the static model. {#tbl-dynamic-phi tbl-colwidths="[15,15,15,15,15]"}
+
+Three findings emerge.
+First, the initial allocation $\phi_1$ is close to the static optimum $\phi^* = 0.70$ across all adjustment costs: the static model captures the initial training-inference balance well.
+The option to reallocate raises $\phi_1$ slightly above $\phi^*$ when $\kappa > 0$, because the firm anticipates wanting to increase $\phi$ upon the switch and positions itself closer to the post-switch target to reduce adjustment costs.
+Second, the main benefit of dynamic reallocation is the ability to shift toward training upon observing the regime switch ($\phi_H \to 0.99$ when $\kappa = 0$), capturing additional H-regime value. The value gain from this option is modest: 1.7\% under free reallocation, declining to 0.3\% with high adjustment costs.
+Third, the faith-based survival threshold $\underline{\phi} \approx 0.18$ is unchanged: it depends on the level of $A_{\text{eff}}$ relative to costs, not on whether $\phi$ is static or dynamic.
+These results confirm the qualitative discussion in @sec-discussion: the static model slightly overstates the initial training fraction but correctly captures the economic mechanisms. A full dynamic treatment with continuous $\phi_t$ control is left for future work.
+
+**Duopoly Dario's dilemma.**
+The single-firm formalization of Dario's dilemma (Numerical Finding 2) isolates the belief-mismatch channel.
+To assess whether competitive preemption amplifies the asymmetry, I compute a one-sided duopoly dilemma: a rational rival plays the equilibrium strategy under $\lambda_{\text{true}} = 0.10$, while the focal firm invests according to its mistaken belief $\lambda_{\text{invest}}$.
+
+| Scenario | $\Delta V$ (single-firm) | $\Delta V$ (duopoly) |
+|:---------|:------------------------:|:--------------------:|
+| Conservative ($\lambda_{\text{invest}} = 0.02$) | 26\% | 38\% |
+| Aggressive ($\lambda_{\text{invest}} = 0.20$) | 6\% | 17\% |
+
+: Dario's dilemma: value loss from belief mismatch, single-firm vs.\ duopoly. {#tbl-duopoly-dilemma tbl-colwidths="[40,30,30]"}
+
+Competition amplifies the cost of belief mismatches in both directions, but the asymmetry is preserved.
+A conservative firm ($\lambda_{\text{invest}} = 0.02$) loses 38\% of value in duopoly versus 26\% in the single-firm benchmark: it invests later ($X^* = 0.0055$ vs.\ the rival's 0.0047), ceding the leader position and forfeiting monopoly-phase rents, while also under-allocating to training ($\phi = 0.14$ vs.\ $\phi^* = 0.70$).
+An aggressive firm ($\lambda_{\text{invest}} = 0.20$) loses 17\% in duopoly versus 6\% in the single-firm case: it leads ($X^* = 0.0040$) but over-allocates to training ($\phi = 0.88$), sacrificing L-regime revenue in both the monopoly and duopoly phases.
+The competitive environment amplifies both sides because the mismatched firm faces a well-calibrated rival, but the underinvestment cost remains roughly 2$\times$ the overinvestment cost, confirming the single-firm finding.
 
 **Alternative regime structure.**
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.

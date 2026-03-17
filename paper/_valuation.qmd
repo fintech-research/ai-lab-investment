@@ -134,9 +134,8 @@ The asymmetric loss function implies that firms should hedge against conservativ
 At the scale of trillion-dollar commitments, however, absolute (as opposed to percentage) losses from overinvestment can be existential, especially with leverage---a distinction the single-firm model does not fully capture.
 
 The single-firm formalization isolates the belief-mismatch channel in its cleanest form, but the motivating narrative (and the paper's duopoly model) emphasizes competitive preemption as a key forcing function.
-In a duopoly extension of Dario's dilemma, a conservative firm would face an additional strategic penalty: by investing later (higher $X^*$) and allocating less to training, it would lose the leader position to an aggressive rival, forfeiting the monopoly-phase rents that drive the preemption equilibrium (Proposition 3).
-This strategic channel would amplify the underinvestment cost relative to the single-firm benchmark, reinforcing the asymmetry.
-The duopoly Dario's dilemma---quantifying the interaction of belief mismatches with the race to lead---is a natural extension left for future work.
+In the duopoly extension (Appendix E), a conservative firm faces an additional strategic penalty: by investing later and allocating less to training, it cedes the leader position to a well-calibrated rival, forfeiting the monopoly-phase rents that drive the preemption equilibrium (Proposition 3).
+This competitive channel amplifies the underinvestment cost from 26\% (single-firm) to 38\% (duopoly), while overinvestment costs rise from 6\% to 17\%---the asymmetry is preserved and quantitatively reinforced (@tbl-duopoly-dilemma).
 
 ### Equity Valuation Sensitivity
 
