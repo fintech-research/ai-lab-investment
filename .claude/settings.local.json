@@ -48,7 +48,8 @@
       "Bash(git -C /Users/vincentgregoire/Documents/GitHub/prediction-markets-overview add src/prediction_markets/pipeline/description.py src/prediction_markets/tables/summary.py)",
       "Bash(tail:*)",
       "Bash(echo === Agent $id ===:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebFetch(domain:vincent.codes.finance)"
     ],
     "deny": [],
     "ask": []
