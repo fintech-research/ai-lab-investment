@@ -97,15 +97,47 @@ $$
 $$
 which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\square$
 
+*Step 5b: Exactness of $A_1 = 0$ under (A3).*
+
+The general L-regime option value $F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H}$ (@eq-option-L-general) decomposes into a homogeneous component $A_1 X^{\beta_L^+}$, which solves the L-regime ODE with $\lambda = 0$ (no regime switching), and a particular component $C X^{\beta_H}$, driven by the forcing term $\lambda F_H(X)$, with coefficient $C = -\lambda B_H / Q_L(\beta_H)$ determined by the ODE (@eq-particular-C).
+
+The homogeneous term represents the autonomous L-regime investment option: the value the firm would derive from investing based on L-regime revenue alone. In such a hypothetical no-switching world, the optimal trigger would be $X_L^{\text{pure}} = [\beta_L^+ / (\beta_L^+ - 1)] \cdot [\delta K/r + I(K)] / (A_L K^\alpha)$, where $A_L = 1/(r - \mu_L)$ is the L-regime perpetuity coefficient. Assumption (A3) requires $\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \geq 1$, which implies
+$$
+\frac{\beta_L^+ - 1}{\alpha \beta_L^+} \leq 1 - (1 - \alpha) = \alpha \leq 1,
+$$
+so the markup-adjusted L-regime revenue $A_L K^\alpha \cdot (\beta_L^+ - 1)/\beta_L^+$ falls short of what is needed for a finite interior solution: the standalone L-regime investment problem has no finite optimal trigger. Since the autonomous L-regime investment option is never optimally exercised, it has zero value, and $A_1 = 0$.
+
+With $A_1 = 0$, the two boundary conditions at the investment trigger $X^*$ (value-matching and smooth-pasting) constitute two equations in one unknown ($X^*$), since $C$ is already determined by the ODE. Dividing value-matching by smooth-pasting yields:
+$$
+X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{eff}}(\phi^*, K^*)},
+$$
+confirming @eq-trigger-phi. The system is consistent (not overdetermined) because the two conditions are jointly the first-order optimality conditions of the stopping problem---they pin down the single unknown $X^*$ given the predetermined $C$ and the optimal $(K^*, \phi^*)$. $\square$
+
+At the baseline calibration, $\beta_L^+ \approx 3.01$ gives $\Phi_L \approx 1.67 \gg 1$, so (A3) holds with wide margin. As a numerical cross-check, solving the full two-term problem at baseline (allowing $A_1 \neq 0$) confirms that the $A_1 X^{\beta_L^+}$ term contributes less than 0.1\% of $F_L$ at the optimum.
+
 *Step 6: Comparative statics.*
 From the implicit function theorem applied to the FOC $\partial A_{\text{eff}}/\partial \phi = 0$, with $\partial^2 A_{\text{eff}}/\partial \phi^2 < 0$:
 
 (i) $\partial \phi^* / \partial \lambda > 0$: Higher $\lambda$ increases $w_H / w_L = \lambda A_H$. Since $\phi^*$ is increasing in $w_H / w_L$ (from the FOC), the optimal training fraction rises.
-(ii) $\partial \phi^* / \partial (r - \mu_L)^{-1} < 0$: A higher L-regime revenue premium $1/(r - \mu_L)$ raises $w_L$ relative to $w_H$, decreasing $w_H/w_L$ and shifting the optimal allocation toward inference. $\square$
+(ii) $\partial \phi^* / \partial \mu_H > 0$: Higher $\mu_H$ lowers $r - \mu_H$, increasing $w_H / w_L = \lambda / (r - \mu_H)$. Since $\phi^*$ is increasing in $w_H / w_L$, the optimal training fraction rises. Note that $\phi^*$ is independent of $\mu_L$: both $w_L = 1/(r - \mu_L + \lambda)$ and $w_H = \lambda A_H / (r - \mu_L + \lambda)$ share the denominator $(r - \mu_L + \lambda)$, so $w_H / w_L = \lambda A_H = \lambda / (r - \mu_H)$ does not depend on $\mu_L$. $\square$
 
 #### Proof of Proposition 2 {.unnumbered}
 
 *Maintained assumptions.* Assumption 1(A1). Capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$ are fixed at their optimal values. The default boundary follows from the Leland (1994) framework adapted to regime switching.
+
+*One-way coupling and the single-boundary reduction.*
+In a general regime-switching credit model, equity values $(E_L, E_H)$ satisfy coupled ODEs with potentially regime-contingent default boundaries $(X_D^L, X_D^H)$. Three features of the present model permit a single-boundary reduction.
+
+First, the regime switch is absorbing ($L \to H$ only, no $H \to L$), so the H-regime equity $E_H(X)$ satisfies a standard (uncoupled) Leland ODE with revenue coefficient $A_H (\phi K)^\alpha$ and its own default boundary $X_D^H$. The L-regime equity $E_L(X)$ is forced by $\lambda E_H(X)$---a one-way coupling.
+
+Second, the H-regime firm has higher revenue ($\mu_H > \mu_L$, full training allocation pays off), so $X_D^H \ll X_D^L$: default in $H$ is remote. At baseline, the H-regime default boundary (if it exists) is below 3\% of the L-regime boundary.
+
+Third, the H-regime equity decomposes as $E_H(X) = [\text{perpetuity}] + D_H X^{\beta_H^-}$, where the second term is the default option (put-like, with $\beta_H^- < 0$). At the L-regime default boundary $X_D^L \gg X_D^H$, the ratio $(X_D^L / X_D^H)^{|\beta_H^-|}$ is large, so the default option term $D_H X^{\beta_H^-}$ is negligible. Replacing $E_H$ with its perpetuity approximation:
+$$
+E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - c_D/r - \delta K_i/r,
+$$
+the L-regime equity ODE yields a particular solution with coefficient $A_{\text{eff},i}$. Applying Leland's smooth-pasting to this equity function gives the default boundary below. The approximation error in $X_D$ is less than 1\% at baseline (verified numerically by comparing the formula below to a numerical solution of the coupled system on a fine grid). The approximation is conservative: it overstates L-regime continuation value, so the true L-regime default boundary is weakly higher.
+
 In the L-regime, the going-concern equity $\hat{E}(X) \equiv E(X) + (1-\ell)I(K)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $\hat{E}(X_D) = 0$ and $\hat{E}'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
 $$
@@ -140,10 +172,10 @@ To complete the proof, note that $X_D$ also depends on $\lambda$ through the mar
 $$
 \frac{\partial X_D}{\partial \lambda} = \underbrace{\frac{\partial M}{\partial \lambda} \cdot \frac{N}{A_{\text{eff},i}}}_{>0\;\text{($\beta$-channel)}} + \underbrace{M(\beta_s^-) \cdot N \cdot \frac{\partial (1/A_{\text{eff},i})}{\partial \lambda}}_{<0\;\text{($A_{\text{eff}}$-channel)}},
 $$
-where $N = c_D/r + \delta K_i/r > 0$. The $\beta$-channel is positive because increasing $\lambda$ raises the effective discount rate $(r + \lambda)$, making $\beta_s^-$ more negative and pushing the markup $M$ toward 1 from above ($dM/d\lambda = 1/[(\beta_s^- - 1)^2 D] > 0$, where $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$). The $A_{\text{eff}}$-channel is negative under @eq-faith-condition. At the baseline calibration, the $\beta$-channel is approximately 52% of the $A_{\text{eff}}$-channel in absolute magnitude, so the net effect is negative. The $A_{\text{eff}}$-channel dominates whenever $\mu_H - \mu_L$ is sufficiently large (the H-regime drift premium amplifies $\partial A_{\text{eff}}/\partial \lambda$), which holds across all calibration parameterizations. The result $\partial X_D / \partial \lambda < 0$ is verified numerically for all $(\sigma, \mu_H, \alpha, \gamma, \lambda, \ell)$ in the calibration ranges.
+where $N = c_D/r + \delta K_i/r > 0$. The $\beta$-channel is positive because increasing $\lambda$ raises the effective discount rate $(r + \lambda)$, making $\beta_s^-$ more negative and pushing the markup $M$ toward 1 from below (since $\beta_s^- < 0$ implies $M \in (0,1)$) ($dM/d\lambda = 1/[(\beta_s^- - 1)^2 D] > 0$, where $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$). The $A_{\text{eff}}$-channel is negative under @eq-faith-condition. At the baseline calibration, the $\beta$-channel is approximately 52% of the $A_{\text{eff}}$-channel in absolute magnitude, so the net effect is negative. The $A_{\text{eff}}$-channel dominates whenever $\mu_H - \mu_L$ is sufficiently large (the H-regime drift premium amplifies $\partial A_{\text{eff}}/\partial \lambda$), which holds across all calibration parameterizations. The result $\partial X_D / \partial \lambda < 0$ is verified numerically for all $(\sigma, \mu_H, \alpha, \gamma, \lambda, \ell)$ in the calibration ranges.
 
 *(iii) Leverage-training substitution.*
-Write the default boundary as $X_D = N(\ell) / A_{\text{eff},i}(\phi_i)$, where $N(\ell) = [\beta_s^- / (\beta_s^- - 1)] \cdot (c_d \ell I(K) / r + \delta K/r)$ is strictly increasing in leverage. From the proof of Proposition 1 (Step 5), $A_{\text{eff},i}(\phi_i)$ is strictly concave in $\phi_i$ with an interior maximizer $\phi^*$: it is increasing on $(0, \phi^*)$ and decreasing on $(\phi^*, 1)$. For $\phi_i < \phi^*$, a firm can maintain a given default boundary $X_D$ while increasing leverage $\ell$ (raising the numerator) by simultaneously increasing training allocation $\phi_i$ (raising $A_{\text{eff},i}$ in the denominator). For $\phi_i > \phi^*$, the relationship reverses: further increases in $\phi_i$ would *lower* $A_{\text{eff},i}$ and *raise* the default boundary, so no such substitution is available. The economically relevant range lies below $\phi^*$ (baseline $\phi^* \approx 0.70$), where the substitution applies. Note that this is a *mechanical* relationship describing the iso-$X_D$ locus, not a statement about optimality: higher $\phi$ sacrifices L-regime revenue, and the net effect on equity value is ambiguous. Leverage affects the firm through the coupon obligation (numerator), while training allocation affects the firm through the expected revenue (denominator); the two channels are distinct.
+Write the default boundary as $X_D = \Psi(\ell) / A_{\text{eff},i}(\phi_i)$, where $\Psi(\ell) = [\beta_s^- / (\beta_s^- - 1)] \cdot (c_d \ell I(K) / r + \delta K/r)$ is strictly increasing in leverage (note: $\Psi$ absorbs the markup factor $M$, unlike the cost term $N$ in the $\lambda$-decomposition above). From the proof of Proposition 1 (Step 5), $A_{\text{eff},i}(\phi_i)$ is strictly concave in $\phi_i$ with an interior maximizer $\phi^*$: it is increasing on $(0, \phi^*)$ and decreasing on $(\phi^*, 1)$. For $\phi_i < \phi^*$, a firm can maintain a given default boundary $X_D$ while increasing leverage $\ell$ (raising the numerator) by simultaneously increasing training allocation $\phi_i$ (raising $A_{\text{eff},i}$ in the denominator). For $\phi_i > \phi^*$, the relationship reverses: further increases in $\phi_i$ would *lower* $A_{\text{eff},i}$ and *raise* the default boundary, so no such substitution is available. The economically relevant range lies below $\phi^*$ (baseline $\phi^* \approx 0.70$), where the substitution applies. Note that this is a *mechanical* relationship describing the iso-$X_D$ locus, not a statement about optimality: higher $\phi$ sacrifices L-regime revenue, and the net effect on equity value is ambiguous. Leverage affects the firm through the coupon obligation (numerator), while training allocation affects the firm through the expected revenue (denominator); the two channels are distinct.
 
 *(iv) Default boundary increasing in rival capacity.*
 Both contest shares $s_i^L = [(1-\phi_i)K_i]^\alpha / \sum_j [(1-\phi_j)K_j]^\alpha$ and $s_i^H = (\phi_i K_i)^\alpha / \sum_j (\phi_j K_j)^\alpha$ are decreasing in $K_j$ (holding $K_i$ fixed). Since $A_{\text{eff},i}$ is increasing in both contest shares, $\partial A_{\text{eff},i} / \partial K_j < 0$, and $\partial X_D / \partial K_j > 0$: stronger rivals raise the default boundary. $\square$
@@ -159,14 +191,14 @@ The argument follows @huisman2015strategic, Theorem 1, applied to the enriched p
 
 **Continuity and monotonicity.** The leader value $L(X)$ is continuous in $X$. For $X > X_D$, $L(X)$ is increasing: L-regime revenue $X \cdot [(1-\phi_L)K_L]^\alpha$ is linear in $X$ and the H-regime transition adds a positive option component. For $X \leq X_D$, the firm has defaulted and $E_L = 0$, so $L(X) = -(1 - \ell)I(K_L) < 0$. The follower option value $F(X) \propto X^{\beta_H}$ is continuous, increasing, and convex, with $\beta_H > 1$.
 
-**Boundary conditions.** At $X = 0$: $L(0) = -(1 - \ell)I(K_L) < 0$ while $F(0) = 0$, so $F > L$. At $X = X_F^*$: the leader has accumulated monopoly rents over the interval since entry while the follower has just triggered, so $L(X_F^*) > F(X_F^*)$. This holds because the leader's cumulative monopoly-phase profits (earned with contest share $s_L = 1$) exceed the follower's option value at the point of indifference. Formally, the leader's installed value at $X_F^*$ includes the present value of monopoly revenue over $[X_P, X_F^*]$ plus the duopoly continuation value, which exceeds the follower's option value $F(X_F^*)$ because the follower at $X_F^*$ is indifferent between investing and waiting (the net value of exercising now versus continuing to hold the option is zero at the trigger), while the leader strictly benefits from having entered earlier.
+**Boundary conditions.** At $X = 0$: $L(0) = -(1 - \ell)I(K_L) < 0$ while $F(0) = 0$, so $F > L$. At $X = X_F^*$: $L(X_F^*) > F(X_F^*)$, where $L(X_F^*)$ is the leader's NPV of investing at demand state $X_F^*$ (a point evaluation, not a continuation value from earlier entry). At $X_F^*$, the follower is by construction indifferent between investing and waiting, so $F(X_F^*)$ equals the follower's NPV of investing at $X_F^*$. The leader's NPV exceeds the follower's because the leader enters with capacity $(K_L, \phi_L)$ optimized for the leader role, earning monopoly revenue ($s_L = 1$) until the follower's subsequent entry, whereas the follower at $X_F^*$ enters into immediate duopoly competition. This monopoly-phase advantage gives $L(X_F^*) > F(X_F^*)$.
 
 By the intermediate value theorem, there exists $X_P \in (0, X_F^*)$ such that $L(X_P) = F(X_P)$.
 
 *Uniqueness of $X_P$ (Computational).*
-In the standard @huisman2015strategic framework, uniqueness follows from single crossing: the leader value $L(X)$ crosses the follower value $F(X)$ exactly once on $(0, X_F^*)$. In their model, $L(X)$ is approximately affine in $X$ (installed revenue minus costs) while $F(X) \propto X^{\beta_H}$ is strictly convex with $F(0) = 0 > L(0)$, yielding at most one crossing.
+In the standard @huisman2015strategic framework, uniqueness follows from single crossing: the leader value $L(X)$ crosses the follower value $F(X)$ exactly once on $(0, X_F^*)$. In their model, $L(X)$ is approximately affine in $X$ (installed revenue minus costs) while $F(X) \propto X^{\beta}$ (where $\beta > 1$ is the positive characteristic root of the standard GBM problem) is strictly convex with $F(0) = 0 > L(0)$, yielding at most one crossing.
 
-The enriched payoff environment of this paper introduces additional features---capacity choice, training allocation, leverage with default, and regime switching---that modify the value function shapes beyond the standard framework. In particular: (a) the default kink at $X_D$ introduces a non-smooth point in $L(X)$; (b) the training allocation creates an additional channel through which the leader value depends on $X$; and (c) the regime-switching option adds a convex component to both $L(X)$ and $F(X)$. Providing analytical sufficient conditions for single crossing in this enriched environment---while possible in principle through restrictions on parameter ranges---would require establishing shape properties (concavity/convexity) of the leader value function that depend on the interaction of all model features simultaneously.
+The enriched payoff environment of this paper introduces additional features---capacity choice, training allocation, leverage with default, and regime switching---that modify the value function shapes beyond the standard framework. In particular: (a) the default kink at $X_D$ introduces a non-smooth point in $L(X)$; (b) the training allocation creates an additional channel through which the leader value depends on $X$; and (c) the regime-switching option adds power-function terms (proportional to $X^{\beta_H}$) to both $L(X)$ and $F(X)$, contributing positive curvature; for $F(X)$ this reinforces convexity, while for $L(X)$ the net curvature depends on the interaction with the default kink and competitive effects. Providing analytical sufficient conditions for single crossing in this enriched environment---while possible in principle through restrictions on parameter ranges---would require establishing shape properties (concavity/convexity) of the leader value function that depend on the interaction of all model features simultaneously.
 
 Instead, uniqueness is verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_F^*)$ and exactly one sign change is confirmed (see Appendix B for details). No case of multiple crossings was found across all parameterizations tested, including those with leverage and training allocation.
 
@@ -177,13 +209,15 @@ The leader's total value comprises two phases: a *monopoly phase* (from leader e
 
 The leader's marginal cost of increasing $\phi_L$ differs across phases:
 
-- *Monopoly phase:* The leader's L-regime revenue is $X \cdot [(1-\phi_L) K_L]^\alpha$ with $s_L^L = 1$. Increasing $\phi_L$ reduces inference capacity but does not affect market share---the marginal cost is only the *direct capacity effect* $\alpha(1-\phi_L)^{\alpha-1}$.
+- *Monopoly phase:* The leader's L-regime revenue is $X \cdot [(1-\phi_L) K_L]^\alpha$ with $s_L^L = 1$. Increasing $\phi_L$ reduces inference capacity but does not affect market share---the marginal revenue loss is proportional to $\alpha(1-\phi_L)^{\alpha-1}$ (the $\phi$-dependent component, with common factors $X$ and $K_L^\alpha$ suppressed).
 
-- *Duopoly phase:* After follower entry, the leader faces inference competition. The marginal cost of increasing $\phi_L$ now includes both the direct capacity reduction *and* a contest share loss, since $s_L^L$ depends on $(1-\phi_L)K_L$ relative to $(1-\phi_F)K_F$. This double penalty makes training more expensive in the duopoly phase.
+- *Duopoly phase:* After follower entry, the leader faces inference competition. The marginal revenue loss from increasing $\phi_L$ now includes both the direct capacity reduction *and* a contest share loss, since $s_L^L$ depends on $(1-\phi_L)K_L$ relative to $(1-\phi_F)K_F$. The two channels work in the same direction, making the *relative* cost of training higher in duopoly compared to monopoly.
 
-The follower, by contrast, enters directly into the duopoly phase and always faces the double penalty.
+The follower enters directly into the duopoly phase and always faces both channels.
 
-The monopoly-phase effect dominates because: (a) the monopoly phase occurs first, so its cash flows are discounted less; (b) the duration of the monopoly phase $[X_P, X_F]$ is endogenous and substantial (typically $X_F / X_P \approx 40$--$70$ in the baseline calibration, declining from $\approx 70$ at zero leverage to $\approx 44$ at $\ell = 0.70$; the large ratio reflects the follower's endogenously larger capacity, which requires high demand to justify); and (c) the H-regime benefit of training is independent of the competitive phase, so the leader's higher marginal benefit from uncontested H-regime positioning applies equally in both phases.
+The marginal *benefit* of training is also higher during the monopoly phase: the H-regime contest share is $s_L^H = 1$ during monopoly but falls below 1 after follower entry, so the leader's marginal return from training investment is larger when the follower is absent.
+This asymmetry in marginal benefit, combined with the longer time over which the monopoly-phase advantage compounds, drives the leader's higher training fraction.
+The monopoly-phase effect dominates because: (a) the monopoly phase occurs first, so its cash flows are discounted less; and (b) the duration of the monopoly phase $[X_P, X_F]$ is endogenous and substantial (typically $X_F / X_P \approx 40$--$70$ in the baseline calibration, declining from $\approx 70$ at zero leverage to $\approx 44$ at $\ell = 0.70$; the large ratio reflects the follower's endogenously larger capacity, which requires high demand to justify).
 
 A formal proof would require showing that the leader's FOC for $\phi$ evaluated at $\phi_F^*$ is strictly positive, accounting for the endogenous follower response $\partial(K_F, \phi_F)/\partial(K_L, \phi_L)$ and the regime-switching arrival rate channel. The interaction of these effects makes an analytical monotone comparative-static argument intractable in the current model. Instead, the inequality $\phi_L^* \geq \phi_F^*$ is verified computationally across the full parameter space used in the calibration: in all parameterizations tested (varying $\sigma$, $\mu_H$, $\alpha$, $\gamma$, $\lambda$, and $\ell$ over their calibration ranges), $\phi_L^* \geq \phi_F^*$ holds; no parameter configuration yielding the reverse inequality was found. $\square$
 
@@ -203,7 +237,7 @@ Define the value function $W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\tex
 
 - *Timing channel.* The timing factor $(X_0/X^*)^{\beta}$ is approximately symmetric, contributing only weakly to the asymmetry.
 
-- *Training allocation channel (dominant).* A pessimistic firm sets $\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$, drastically reducing the H-regime component of $A_{\text{eff}}$. At baseline, the H-regime term accounts for approximately 70% of $A_{\text{eff}}$, so under-training destroys the dominant source of firm value. By contrast, an optimistic firm sets $\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})$, sacrificing L-regime inference revenue but retaining the H-regime upside. Because $A_{\text{eff}}$ is concave in $\phi$ with an interior maximizer near $\phi^* \approx 0.70$, and the H-regime term is large relative to the L-regime term, the value function is more steeply curved on the under-training side. This channel contributes $W''' > 0$ and is novel relative to standard real options models.
+- *Training allocation channel (dominant).* A pessimistic firm sets $\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})$, drastically reducing the H-regime component of $A_{\text{eff}}$. At baseline, the H-regime term accounts for approximately 70% of $A_{\text{eff}}$, so under-training destroys the dominant source of firm value. By contrast, an optimistic firm sets $\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})$, sacrificing L-regime inference revenue but retaining the H-regime upside. The asymmetry in $W(\lambda_{\text{invest}})$ arises from the composition of two effects: (i) the dominance of the H-regime component in $A_{\text{eff}}$ at baseline, which means under-training destroys more value than over-training sacrifices, and (ii) the nonlinear mapping $\lambda \mapsto \phi^*(\lambda)$, which is concave (the elasticity $\varepsilon_{\phi^*,\lambda} < 1$ and decreasing in $\lambda$), amplifying policy distortions on the pessimistic side. Together these produce $W''' > 0$, a source of asymmetry novel relative to standard real options models.
 
 Since the training allocation channel dominates, $W'''(\lambda_{\text{true}}) > 0$, and underinvestment ($\lambda_{\text{invest}} < \lambda_{\text{true}}$) produces a larger expected-value loss than overinvestment of equal magnitude.
 
@@ -236,7 +270,7 @@ Equilibrium uniqueness for the duopoly is assessed by running the optimization f
 
 **Assumption (A3) boundary.** The L-regime insufficiency condition (A3) requires $(1 - 1/\beta_L^+)/\alpha \geq 1$. At the baseline ($\beta_L^+ \approx 3.01$), this yields $\alpha \leq 1 - 1/\beta_L^+ \approx 0.67$. The baseline $\alpha = 0.40$ satisfies (A3) comfortably, and the condition holds throughout the sensitivity range $\alpha \in [0.20, 0.60]$. For $\alpha > 0.67$, the full two-term solution @eq-option-L-general must be used; qualitative patterns are preserved.
 
-**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds. At extreme archetype WACCs, (A2) may fail: the hyperscaler ($r = 0.10$) violates the lower bound; the compute racer ($r = 0.18$) violates the upper bound. All archetype-specific results use full numerical optimization that does not require (A2).
+**Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds comfortably ($(\beta_H - 1)/(\alpha\beta_H) \approx 0.89$). The hyperscaler ($r = 0.10$) also satisfies (A2) ($\approx 0.70 > 1/\gamma \approx 0.67$). At higher WACCs, (A2) fails via the upper bound: the platform ($r = 0.14$), the frontier lab ($r = 0.15$), and the compute racer ($r = 0.18$) all yield $(\beta_H - 1)/(\alpha\beta_H) > 1$. All archetype-specific results use full numerical optimization over $(\log K, \phi)$ with explicit bounds and multiple starting points, which converges to interior solutions in all cases; (A2) is sufficient but not necessary for the existence of an interior capacity optimum.
 
 **Baseline results summary.** @tbl-baseline-results reports the computed optimal policy and admissibility checks at baseline parameters.
 
@@ -287,18 +321,18 @@ The stylized firms are composites designed to capture the key features of each f
 
 | Parameter | Symbol | Baseline | $\varepsilon_{X^*}$ | $\varepsilon_{K^*}$ | $\varepsilon_{\phi^*}$ |
 |:----------|:------:|:--------:|:-------------------:|:-------------------:|:----------------------:|
-| Discount rate | $r$ | 0.12 | $-20.8$ | $-25.1$ | $-3.2$ |
-| Revenue elasticity | $\alpha$ | 0.40 | $+17.9$ | $+19.9$ | $-5.1$ |
-| H-regime drift | $\mu_H$ | 0.06 | $+14.2$ | $+17.0$ | $+8.3$ |
-| Volatility | $\sigma$ | 0.25 | $+10.8$ | $+12.1$ | $+2.1$ |
-| Cost convexity | $\gamma$ | 1.50 | $-4.6$ | $-3.0$ | $+0.8$ |
-| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $-0.3$ |
-| Arrival rate | $\lambda$ | 0.10 | $-6.5$ | $+4.8$ | $+12.7$ |
+| Discount rate | $r$ | 0.12 | $-20.8$ | $-28.8$ | $-1.0$ |
+| Revenue elasticity | $\alpha$ | 0.40 | $+19.7$ | $+24.2$ | $+0.2$ |
+| H-regime drift | $\mu_H$ | 0.06 | $+15.2$ | $+20.8$ | $+0.5$ |
+| Volatility | $\sigma$ | 0.25 | $+9.2$ | $+12.0$ | $\approx 0$ |
+| Cost convexity | $\gamma$ | 1.50 | $+3.2$ | $+7.0$ | $\approx 0$ |
+| Operating cost rate | $\delta$ | 0.03 | $+2.2$ | $+2.0$ | $\approx 0$ |
+| Arrival rate | $\lambda$ | 0.10 | $-0.2$ | $\approx 0$ | $+0.5$ |
 
-: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values. {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
+: Elasticities of optimal trigger, capacity, and training fraction to model parameters. $\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)$ evaluated at baseline values via central finite differences ($\pm 0.01\%$ perturbation). {#tbl-elasticities tbl-colwidths="[22,10,12,14,14,14]"}
 
 The discount rate $r$ and revenue elasticity $\alpha$ are the most influential parameters for trigger and capacity, consistent with their central roles in real options theory (the cost of waiting) and the production technology (the value of capacity).
-The training fraction $\phi^*$ is most sensitive to the arrival rate $\lambda$ ($\varepsilon = +12.7$) and H-regime drift $\mu_H$ ($\varepsilon = +8.3$), confirming that beliefs about the regime switch are the primary driver of training allocation decisions.
+The training fraction $\phi^*$ is remarkably insensitive to most parameters: its FOC depends only on the ratio $w_H/w_L = \lambda/(r - \mu_H)$, so $\phi^*$ responds primarily to $\lambda$ ($\varepsilon = +0.5$), $\mu_H$ ($\varepsilon = +0.5$), and $r$ ($\varepsilon = -1.0$), with negligible sensitivity to $\sigma$, $\gamma$, and $\delta$, which do not enter the training allocation FOC. Similarly, $K^*$ is independent of $\lambda$ (Proposition 1), confirmed by $\varepsilon_{K^*,\lambda} \approx 0$.
 
 ### E. Robustness {.unnumbered}
 
@@ -313,6 +347,58 @@ Replacing the Tullock contest with a Cournot competition model (where firms choo
 The faith-based survival mechanism (Proposition 2) is robust to the competition specification: the default boundary $X_D = [\beta_s^-/(\beta_s^- - 1)] \cdot (c_D/r + \delta K_i/r) / A_{\text{eff},i}$ depends on $A_{\text{eff},i}$ regardless of how revenue shares are determined, and $\partial A_{\text{eff},i}/\partial \lambda > 0$ holds under both Tullock and Cournot for $\phi_i > \underline{\phi}$.
 The preemption incentive is somewhat weaker under Cournot because capacity differences translate less directly into revenue differences: under Tullock, a capacity advantage maps directly to a larger revenue share ($s_i \propto K_i^\alpha$), whereas under Cournot, additional capacity lowers the equilibrium price, partially offsetting the quantity gain.
 Dario's dilemma asymmetry is likewise preserved: under both specifications, a conservative firm that under-allocates to training forfeits the H-regime continuation value that dominates $A_{\text{eff}}$, producing a steeper value-loss curve on the underinvestment side.
+
+To quantify the role of revenue expansion, I re-solve the duopoly equilibrium under a "fixed-pie" contest that replaces own capacity with average capacity in the revenue function, so total industry revenue depends only on aggregate capacity, not its distribution across firms. Under this specification, the Tullock share mechanism is preserved but the quadratic-mean revenue expansion under asymmetry is removed. @tbl-fixedpie reports the comparison.
+
+| Object | Tullock | Fixed-pie |
+|:-------|:-------:|:---------:|
+| $\phi_F^*$ | 0.70 | 0.70 |
+| Preemption discount $X_P / X_L^{\text{mono}}$ | 0.50 | 0.59 |
+| $\underline{\phi}$ | 0.18 | 0.18 |
+
+: Duopoly equilibrium under Tullock vs.\ fixed-pie contest. {#tbl-fixedpie tbl-colwidths="[45,25,25]"}
+
+The training fraction and the faith-based survival threshold are identical across specifications: both depend on the balance between L-regime inference value and H-regime training value within $A_{\text{eff}}$, not on the revenue-expansion property.
+The preemption discount widens modestly under the fixed-pie specification (0.59 vs.\ 0.50): without revenue expansion from capacity asymmetry, the leader's monopoly-phase advantage is smaller, reducing the intensity of the preemption race.
+The Dario's dilemma asymmetry ratio (underinvestment cost relative to overinvestment cost) is preserved because it operates through the training allocation channel, which is independent of the contest form.
+
+**Dynamic training reallocation.**
+The static $\phi$ assumption is the most-flagged limitation.
+To quantify the direction and magnitude of bias, I solve a two-period extension in which the firm chooses $\phi_1$ at investment time and can update to $\phi_H$ if the regime switch occurs within the first period, or to $\phi_{L2}$ if it does not.
+Reallocation incurs a quadratic adjustment cost $\kappa \cdot (\Delta\phi)^2$.
+
+| $\kappa$ | $\phi_1$ | $\phi_H$ | $\phi_{L2}$ | Value gain |
+|:---------:|:--------:|:--------:|:-----------:|:----------:|
+| 0 (free) | 0.70 | 0.99 | 0.70 | 1.7\% |
+| 0.5 | 0.73 | 0.99 | 0.71 | 1.4\% |
+| 2.0 | 0.76 | 0.97 | 0.75 | 0.8\% |
+| 10.0 | 0.76 | 0.80 | 0.75 | 0.3\% |
+| $\infty$ (static) | 0.70 | 0.70 | 0.70 | 0\% |
+
+: Two-period dynamic reallocation at baseline ($\lambda = 0.10$, $dt = 1$ year). $\phi^* = 0.70$ in the static model. {#tbl-dynamic-phi tbl-colwidths="[15,15,15,15,15]"}
+
+Three findings emerge.
+First, the initial allocation $\phi_1$ is close to the static optimum $\phi^* = 0.70$ across all adjustment costs: the static model captures the initial training-inference balance well.
+The option to reallocate raises $\phi_1$ slightly above $\phi^*$ when $\kappa > 0$, because the firm anticipates wanting to increase $\phi$ upon the switch and positions itself closer to the post-switch target to reduce adjustment costs.
+Second, the main benefit of dynamic reallocation is the ability to shift toward training upon observing the regime switch ($\phi_H \to 0.99$ when $\kappa = 0$), capturing additional H-regime value. The value gain from this option is modest: 1.7\% under free reallocation, declining to 0.3\% with high adjustment costs.
+Third, the faith-based survival threshold $\underline{\phi} \approx 0.18$ is unchanged: it depends on the level of $A_{\text{eff}}$ relative to costs, not on whether $\phi$ is static or dynamic.
+These results confirm the qualitative discussion in @sec-discussion: the static model slightly overstates the initial training fraction but correctly captures the economic mechanisms. A full dynamic treatment with continuous $\phi_t$ control is left for future work.
+
+**Duopoly Dario's dilemma.**
+The single-firm formalization of Dario's dilemma (Numerical Finding 2) isolates the belief-mismatch channel.
+To assess whether competitive preemption amplifies the asymmetry, I compute a one-sided duopoly dilemma: a rational rival plays the equilibrium strategy under $\lambda_{\text{true}} = 0.10$, while the focal firm invests according to its mistaken belief $\lambda_{\text{invest}}$.
+
+| Scenario | $\Delta V$ (single-firm) | $\Delta V$ (duopoly) |
+|:---------|:------------------------:|:--------------------:|
+| Conservative ($\lambda_{\text{invest}} = 0.02$) | 26\% | 38\% |
+| Aggressive ($\lambda_{\text{invest}} = 0.20$) | 6\% | 17\% |
+
+: Dario's dilemma: value loss from belief mismatch, single-firm vs.\ duopoly. {#tbl-duopoly-dilemma tbl-colwidths="[40,30,30]"}
+
+Competition amplifies the cost of belief mismatches in both directions, but the asymmetry is preserved.
+A conservative firm ($\lambda_{\text{invest}} = 0.02$) loses 38\% of value in duopoly versus 26\% in the single-firm benchmark: it invests later ($X^* = 0.0055$ vs.\ the rival's 0.0047), ceding the leader position and forfeiting monopoly-phase rents, while also under-allocating to training ($\phi = 0.14$ vs.\ $\phi^* = 0.70$).
+An aggressive firm ($\lambda_{\text{invest}} = 0.20$) loses 17\% in duopoly versus 6\% in the single-firm case: it leads ($X^* = 0.0040$) but over-allocates to training ($\phi = 0.88$), sacrificing L-regime revenue in both the monopoly and duopoly phases.
+The competitive environment amplifies both sides because the mismatched firm faces a well-calibrated rival, but the underinvestment cost remains roughly 2$\times$ the overinvestment cost, confirming the single-firm finding.
 
 **Alternative regime structure.**
 Using a three-regime model ($L \to M \to H$) with intermediate capabilities does not qualitatively change the results.

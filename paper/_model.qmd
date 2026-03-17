@@ -22,8 +22,9 @@ For the model to have well-defined present values, I require $r > \mu_H > \mu_L$
 
 ### Technology
 
-A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures diminishing returns (equivalently, convex investment costs).
-This specification nests the standard linear cost ($\gamma = 1$, constant returns) and reflects the empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]: doubling compute does not double capability.
+A firm invests an irreversible lump sum $I(K) = cK^\gamma$ to install capacity $K > 0$, where $\gamma > 1$ captures convex investment costs: power constraints, GPU supply bottlenecks, data center site preparation, and construction complexity all contribute to increasing marginal costs of capacity procurement.
+This specification nests the standard linear cost ($\gamma = 1$, constant returns).
+The distinct empirical regularity that AI scaling laws exhibit diminishing returns to compute [@kaplan2020scaling; @hoffmann2022training]---doubling compute does not double capability---is captured separately by the revenue elasticity $\alpha \in (0,1)$ in the contest functions below.
 Two simplifying assumptions should be flagged at the outset: capacity is fixed once installed (no incremental expansion or mothballing), and the investment decision is a single irreversible commitment rather than a sequence of staged options.
 In practice, firms expand incrementally and can repurpose compute across workloads; these extensions are discussed in @sec-discussion.
 
@@ -136,11 +137,13 @@ $$
 
 *(i) $\phi^*$ is increasing in $\lambda$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
-*(ii) $\phi^*$ is decreasing in the L-regime revenue premium $(r - \mu_L)^{-1}$: higher current inference revenue incentivizes more inference capacity.*
+*(ii) $\phi^*$ is increasing in the H-regime growth rate $\mu_H$: a higher post-AGI growth rate increases the relative value of training, shifting the optimal allocation toward training. Note that $\phi^*$ is independent of $\mu_L$: L-regime drift affects both inference revenue and the regime-switching discount symmetrically through the common factor $1/(r - \mu_L + \lambda)$, leaving the ratio $w_H/w_L = \lambda / (r - \mu_H)$ unchanged.*
 
 *Proof.* The joint optimization over $(K, \phi)$ is in Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Appendix A, Steps 5--6. $\square$
 
-The capacity formula in Proposition 1 carries over to the duopoly (@sec-duopoly), where the contest shares modify $A_{\text{eff},i}$ but do not enter the first-order condition for $K$; the training fraction and investment trigger, by contrast, depend on the competitive environment.
+In the duopoly (@sec-duopoly), the contest shares $s_i^L$ and $s_i^H$ depend on own capacity $K_i$, so the exact separability $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ that underlies the closed-form $K^*$ does not hold.
+The follower's optimal capacity is determined jointly with $\phi_F$ by numerical optimization.
+However, the leader's optimal capacity is numerically identical to the monopolist's (Proposition 1) across all parameterizations tested---a regularity attributable to the dominance of the monopoly-phase FOC, where $s_L = 1$ and the Proposition 1 separability holds exactly.
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -175,10 +178,12 @@ F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
 $$ {#eq-option-L-general}
 
 **When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
-The homogeneous coefficient $A_1$ is determined by value-matching and smooth-pasting at the L-regime investment trigger.
-When no interior trigger exists *in the L-regime alone*---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that L-regime revenue by itself is insufficient to justify investment---the general solution $F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H}$ has $A_1 = 0$ because there is no L-regime exercise boundary to pin it down: the only boundary conditions are the smooth-pasting conditions at the investment trigger driven by $A_{\text{eff}}$ (which includes the H-regime prospect), and these determine $C$ alone.
-This is not an approximation but an exact consequence of Assumption (A3): because L-regime demand alone does not justify investment, the homogeneous term $A_1 X^{\beta_L^+}$---which would reflect the standalone L-regime exercise option---has no boundary condition to pin the coefficient $A_1$, so $A_1 = 0$ exactly.
-For the baseline calibration, the option premium ratio exceeds unity (Assumption 1, condition A3), so this simplification is valid and the option value derives entirely from the expected regime switch. As a robustness check, solving the full two-term problem at baseline confirms that the $A_1 X^{\beta_L^+}$ term contributes less than 0.1% of $F_L$ at the optimum.
+The particular-solution coefficient $C$ is fully determined by the ODE's forcing structure (@eq-particular-C).
+The homogeneous coefficient $A_1$, by contrast, would be determined by value-matching and smooth-pasting at a standalone L-regime investment trigger.
+When no such trigger exists---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that L-regime revenue by itself is insufficient to justify investment---$A_1 = 0$ because there is no L-regime exercise boundary to pin it down.
+The remaining boundary conditions (value-matching and smooth-pasting at the investment trigger driven by the combined $A_{\text{eff}}$) then determine the trigger $X^*$, with $C$ already known from the ODE.
+This is not an approximation but an exact consequence of Assumption (A3): the homogeneous term $A_1 X^{\beta_L^+}$ represents the autonomous L-regime investment option, and under (A3) this option is never exercised because L-regime revenue alone is insufficient to justify irreversible investment at any finite trigger. An option that is never exercised has zero value, so $A_1 = 0$ exactly. The formal argument, including the consistency check that the two boundary conditions at $X^*$ are not overdetermined when $C$ is predetermined, is given in Appendix A (Step 5b of the Proof of Proposition 1).
+For the baseline calibration, the option premium ratio exceeds unity ($\Phi_L \approx 1.67$; Assumption 1, condition A3), so this simplification is valid and the option value derives entirely from the expected regime switch. Solving the full two-term problem at baseline confirms that the $A_1 X^{\beta_L^+}$ term contributes less than 0.1% of $F_L$ at the optimum.
 
 When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
@@ -224,10 +229,11 @@ The parameter $\alpha$ controls the sensitivity of market share to the relevant 
 Three properties of the Tullock specification under asymmetry merit discussion.
 First, under symmetric capacities ($K_i = K_j$, $\phi_i = \phi_j$), each firm's contest share is $s_i = 1/2$ and total industry revenue equals $X \cdot K^\alpha$, the standard single-firm benchmark.
 Second, under *asymmetric* capacities, the share function is convex in relative capacity: the larger firm's share exceeds its capacity ratio, producing a "winner-take-more" dynamic consistent with AI markets where the leading model captures a disproportionate share of API revenue and enterprise contracts.
-Total industry revenue $\sum_i \pi_i = X \cdot \sum_i [(1-\phi_i)K_i]^{2\alpha} / \sum_j [(1-\phi_j)K_j]^\alpha$ can exceed the symmetric benchmark because the sum of $2\alpha$-terms in the numerator exceeds the squared sum of $\alpha$-terms.
+Total industry revenue $\sum_i \pi_i = X \cdot (y_1^2 + y_2^2) / (y_1 + y_2)$, where $y_i = [(1-\phi_i)K_i]^\alpha$, can exceed the symmetric benchmark $X \cdot (y_1 + y_2)/2$ under asymmetry, because the quadratic mean exceeds the arithmetic mean whenever $y_1 \neq y_2$ (equivalently, $y_1^2 + y_2^2 \geq (y_1 + y_2)^2/2$ with strict inequality under asymmetry).
 Third, with $\alpha < 1$ the contest is "regular" in the sense of @skaperdas1996contest: equilibrium is unique, there is no over-dissipation of rents, and comparative statics are well-behaved---larger capacity always increases the contest share, but with diminishing marginal returns.
-The revenue-inflating property of asymmetry would be undesirable in markets with elastic total demand where entry expands the pie; a Cournot specification would avoid this at the cost of additional complexity.
-Appendix E verifies that all main qualitative results---interior $\phi^*$, faith-based survival, and preemption---are preserved under Cournot competition, confirming that the investment and allocation incentives are driven by the underlying economics rather than the specific contest functional form.
+The revenue-inflating property of asymmetry means that the leader's gain from capacity dominance partly reflects pie expansion, not just share theft; this could amplify preemption incentives and leader-follower value gaps beyond what a fixed-pie specification would deliver.
+A Cournot specification would avoid this feature at the cost of additional complexity.
+Appendix E verifies that all main qualitative results---interior $\phi^*$, faith-based survival, preemption, and the Dario's dilemma asymmetry---are preserved under Cournot competition, confirming that the investment and allocation incentives are driven by the underlying economics rather than the specific contest functional form or the revenue-expansion property.
 The training fraction $\phi$ introduces a new strategic dimension: a firm's choice of $\phi$ affects its competitive position *differently* in each regime, creating a trade-off between L-regime and H-regime market share.
 
 #### Installed value in the duopoly
@@ -252,7 +258,7 @@ The effective revenue coefficient $A_{\text{eff},i}$ embodies the central econom
 
 Each firm finances investment with a mix of equity and debt.
 I parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance.
-Debt pays a continuous coupon $d = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate.
+Debt pays a continuous coupon $c_D = c_d \cdot \ell \cdot I(K)$ where $c_d$ is the coupon rate and $c_D$ denotes the total coupon payment (used throughout).
 Following @leland1994corporate, equity holders choose to default endogenously when the equity value falls to zero.
 
 #### Default boundary
@@ -264,7 +270,7 @@ $$
 X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}},
 $$ {#eq-default-boundary}
 where $\beta_s^-$ (with $s = L$) is the negative root of the L-regime characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$, incorporating the regime-switching term through the effective discount rate $r + \lambda$; $c_D$ is the coupon payment; and $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duopoly.
-The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.^[The default boundary uses $A_{\text{eff},i}$, which incorporates the regime-switching opportunity in unconditional expectation. A fully coupled regime-switching default model would feature state-dependent boundaries---one for each regime---linked by the switching intensity. The unconditional $A_{\text{eff}}$ approximation is standard in applied regime-switching real options models and is conservative in the sense that it overstates the continuation value in regime $L$ (by averaging over the switching possibility), implying the true L-regime default boundary may be somewhat higher than @eq-default-boundary.]
+The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.^[The default boundary uses $A_{\text{eff},i}$, which incorporates the regime-switching opportunity in unconditional expectation. In a fully coupled regime-switching default model, equity values $(E_L, E_H)$ would satisfy coupled ODEs with regime-contingent default boundaries $(X_D^L, X_D^H)$. Three features of the present model reduce this to a single boundary. First, the regime switch is absorbing ($L \to H$ only), so $E_H(X)$ satisfies a standard uncoupled Leland equity ODE---the coupling is one-way. Second, the H-regime firm has higher revenue ($\mu_H > \mu_L$, full training allocation), so $X_D^H \ll X_D^L$; default in $H$ is remote. Third, because the H-regime default option term (proportional to $(X/X_D^H)^{|\beta_H^-|}$) is negligible at the L-regime default boundary, replacing $E_H$ with its perpetuity approximation introduces an error of less than 1\% in $X_D$ at baseline (verified numerically; see Appendix A). Under this approximation, the L-regime equity ODE has perpetuity coefficient $A_{\text{eff},i}$ and Leland's smooth-pasting yields @eq-default-boundary exactly. The approximation is conservative: it overstates L-regime continuation value (by ignoring remote H-regime default), so the true L-regime default boundary is weakly higher. The faith-based survival threshold $\underline{\phi}$ (@eq-phi-underbar) is independent of $\lambda$: it characterizes the condition $\partial A_{\text{eff},i}/\partial \lambda > 0$, which depends on the ratio of H-regime to L-regime revenue terms but not on the level of $\lambda$ itself, since $\lambda$ appears symmetrically in the numerator and denominator of $A_{\text{eff},i}$ at the threshold.]
 
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\lambda$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
@@ -280,7 +286,7 @@ Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives 
 $$
 \underline{\phi} = \frac{R}{1 + R}, \quad R \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 $$ {#eq-phi-underbar}
-*For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$), $R = (0.06/0.11)^{2.5} \approx 0.22$ and $\underline{\phi} \approx 0.18$. Note that $\underline{\phi}$ is decreasing in $\alpha$ (lower diminishing returns make training more effective), decreasing in $\mu_H - \mu_L$ (a larger regime-switch growth premium amplifies the H-regime term), and increasing in $r$ (higher discounting reduces the present value of the continuation opportunity).*
+*For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$), $R = (0.06/0.11)^{2.5} \approx 0.22$ and $\underline{\phi} \approx 0.18$. Note that $\underline{\phi}$ is increasing in $\alpha$ (with less concavity in the revenue function, a larger training allocation is needed for the H-regime term to dominate), decreasing in $\mu_H - \mu_L$ (a larger regime-switch growth premium amplifies the H-regime term, lowering the threshold), and increasing in $r$ (higher discounting reduces the present value of the continuation opportunity).*
 
 *(iii) For a given capacity $K$ and training fraction $\phi_i$ below the interior maximizer of $A_{\text{eff},i}(\cdot)$, there exists a leverage-training substitution along the iso-$X_D$ locus: a firm can maintain the same default boundary $X_D$ while increasing leverage (which raises the coupon obligation in the numerator) by simultaneously increasing the training fraction (which raises $A_{\text{eff},i}$ through the H-regime term in the denominator). This is a mechanical relationship describing the set of $(\ell, \phi)$ pairs consistent with a given default boundary, not a statement about optimality. It implies that, empirically, highly levered AI firms should exhibit higher training fractions than their less levered peers---not because leverage causes training, but because both are jointly determined by the firm's beliefs about $\lambda$ and its financing capacity.*
 
@@ -312,11 +318,11 @@ where $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duo
 The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
 The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the smooth-pasting conditions on the going-concern equity $E(X) + (1-\ell)I(K)$ pin the default boundary $X_D$ in @eq-default-boundary and are independent of the sunk equity contribution.
 At $X = X_D$, $E(X_D) = -(1-\ell)I(K) \leq 0$: the equity holders' sunk contribution is lost, but limited liability prevents negative payoffs, so equity is worth $\max\{E(X),\, 0\}$.
-Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$.
+Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$, treated as a perpetuity with no endogenous abandonment option.^[An unlevered firm with $\delta > 0$ could in principle shut down to avoid operating costs. The omission of this abandonment option is conservative (it slightly understates equity value) and quantitatively negligible because the firm invests at $X^*$ well above any potential abandonment threshold.]
 
 Debt value is:
 $$
-D(X) = \frac{d}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) \left(A_{\text{eff},i}\, X_D\right) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+D(X) = \frac{c_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + (1 - b) \left(A_{\text{eff},i}\, X_D\right) \left(\frac{X}{X_D}\right)^{\beta_s^-},
 $$
 where $b \in [0,1]$ is the fraction of firm value lost in bankruptcy and $A_{\text{eff},i}\, X_D$ is the gross revenue present value at the default boundary (the liquidation value of the firm's productive assets, before deducting maintenance costs, following @leland1994corporate).
 
@@ -346,6 +352,7 @@ The leader must account for the follower's future entry.
 Before the follower invests ($X < X_F$), the leader earns monopoly revenue---contest share $s_L = 1$ in both regimes---and the effective revenue coefficient reflects the full monopoly value.
 After the follower invests ($X \geq X_F$), revenue is shared according to the regime-specific contests.
 The leader's value incorporates both phases and the transition between them.
+As with the default boundary, the follower's entry trigger $X_F$ is computed using the unconditional $A_{\text{eff}}$ framework and is not regime-contingent: a fully state-dependent formulation would feature separate triggers $(X_F^L, X_F^H)$ linked by the switching intensity, but the unconditional approach preserves the key economic forces while maintaining tractability.
 The leader must also account for the fact that the follower's entry dilutes the leader's contest share in both regimes.
 
 **Preemption trigger.**
@@ -369,7 +376,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 @fig-competition-effect quantifies the preemption effect, plotting the monopolist's optimal trigger alongside the duopoly leader's preemption trigger as a function of volatility $\sigma$.
 The leader invests strictly earlier than the monopolist for all volatility levels, and the gap widens with $\sigma$: as uncertainty increases, the option value of waiting rises for both, but the preemption incentive compresses the leader's delay disproportionately.
 At baseline ($\sigma = 0.25$), preemption cuts the leader's trigger roughly in half relative to the monopolist.
-Competition primarily affects *timing* rather than *scale*: the leader's optimal capacity is identical to the monopolist's across all volatility levels.
+Competition primarily affects *timing* rather than *scale*: the leader's optimal capacity is numerically identical to the monopolist's across all volatility levels (a computational regularity; see the discussion after Proposition 1).
 
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 

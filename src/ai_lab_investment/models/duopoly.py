@@ -140,6 +140,59 @@ class DuopolyModel:
             return 0.5
         return num / denom
 
+    def contest_share_L_fixed_pie(
+        self, phi_i: float, K_i: float, phi_j: float, K_j: float
+    ) -> float:
+        """Fixed-pie L-regime share (same Tullock shares, no expansion)."""
+        return self.contest_share_L(phi_i, K_i, phi_j, K_j)
+
+    def contest_share_H_fixed_pie(
+        self, phi_i: float, K_i: float, phi_j: float, K_j: float
+    ) -> float:
+        """Fixed-pie H-regime share (same Tullock shares, no expansion)."""
+        return self.contest_share_H(phi_i, K_i, phi_j, K_j)
+
+    def _effective_revenue_coeff_fixed_pie(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+    ) -> float:
+        """A_eff under fixed-pie contest (no revenue expansion).
+
+        Uses average capacity instead of own capacity in the revenue
+        term, so total industry revenue depends only on aggregate
+        capacity, not its distribution. Under symmetry this equals the
+        standard Tullock A_eff; under asymmetry revenue expansion is
+        removed.
+        """
+        p = self.params
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+
+        inf_i = (1.0 - phi_i) * K_i
+        inf_j = (1.0 - phi_j) * K_j
+        tr_i = phi_i * K_i
+        tr_j = phi_j * K_j
+
+        # Average capacity (per-firm symmetric benchmark)
+        avg_inf = (inf_i + inf_j) / 2.0
+        avg_tr = (tr_i + tr_j) / 2.0
+
+        s_L = self.contest_share_L(phi_i, K_i, phi_j, K_j)
+        s_H = self.contest_share_H(phi_i, K_i, phi_j, K_j)
+
+        denom_L = p.r - p.mu_L + lam_tilde
+        if denom_L <= 0:
+            return 0.0
+
+        a_eff = avg_inf**p.alpha * s_L / denom_L
+
+        if avg_tr > 0 and lam_tilde > 0:
+            a_eff += lam_tilde / denom_L * avg_tr**p.alpha * s_H * p.A_H
+
+        return a_eff
+
     # ------------------------------------------------------------------
     # Effective revenue coefficient (combined L + H)
     # ------------------------------------------------------------------
@@ -642,7 +695,7 @@ class DuopolyModel:
         p = self.params
 
         # Follower's best response
-        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L)
+        X_F, K_F, phi_F, _lev_F = self.solve_follower(K_L, phi_L)
 
         # Leader's costs
         c_D_L = self.coupon_payment(K_L, lev_L)
