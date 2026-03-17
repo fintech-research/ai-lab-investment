@@ -275,7 +275,13 @@ The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of
 Crucially, $A_{\text{eff},i}$ includes the H-regime continuation value through the $\lambda$ term.
 This creates a *faith-based survival* mechanism: a firm that invests heavily in training (high $\phi_i$) increases the H-regime component of $A_{\text{eff},i}$, which *lowers* the default boundary.
 Optimism about transformative AI, backed by training investment, extends the firm's solvency by raising the equity value at any demand level.
+As noted above, the unconditional $A_{\text{eff},i}$ framework introduces less than 1\% error relative to a fully coupled regime-switching default model at baseline, because the absorbing regime structure and remote H-regime default make the perpetuity approximation tight (see the preceding footnote and Appendix A for details).
 Conversely, a firm that allocates entirely to inference ($\phi_i = 0$) receives no H-regime upside, faces a higher default boundary, and is more vulnerable to demand downturns.
+
+The mechanism differs from the standard result that growth options lower default boundaries in Leland-type models.
+In models with exogenous growth options, increasing option value unambiguously improves solvency.
+Here, the growth option value is endogenously controlled by $\phi$, and raising $\phi$ simultaneously reduces current inference revenue---creating a genuine trade-off between solvency through future continuation value and solvency through current cash flow.
+The faith-based survival condition (@eq-phi-underbar below) characterizes precisely when the continuation-value channel dominates the cash-flow sacrifice.
 
 **Proposition 2** (Endogenous default with faith-based survival; leveraged duopoly).
 *For a levered firm in the duopoly with fixed capacity $(K_i, \phi_i)$ and rival $(K_j, \phi_j)$, the default boundary $X_D$ has the following properties:*
@@ -356,6 +362,8 @@ As with the default boundary, the follower's entry trigger $X_F$ is computed usi
 The leader must also account for the fact that the follower's entry dilutes the leader's contest share in both regimes.
 
 **Preemption trigger.**
+The duopoly is solved under common beliefs: both firms share the same $\lambda$, and the equilibrium is symmetric.
+Cross-sectional variation in investment behavior (@sec-calibration, @sec-valuation) arises from comparative statics in $\lambda$ and other primitives across firm archetypes, not from equilibrium interaction among firms with different priors.
 In a symmetric equilibrium, both firms would like to be the leader.
 The preemption trigger $X_P$ is the demand level at which the leader's value equals the follower's option value: $L(X_P) = F(X_P)$.
 At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
@@ -380,4 +388,4 @@ Competition primarily affects *timing* rather than *scale*: the leader's optimal
 
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
-@tbl-result-taxonomy in the Appendix summarizes the analytical status of each result.
+Propositions 1 and 2 are fully analytical; Proposition 3 combines an analytical existence proof with computational verification of uniqueness and numerical comparative statics. @tbl-result-taxonomy in the Appendix provides a detailed classification of the analytical status of each result.
