@@ -7,6 +7,7 @@ format:
     output-file: ai_lab_investment.html
   pdf:
     output-file: ai_lab_investment.pdf
+    keep-tex: true
 authors:
   - name: Vincent Grégoire
     affil-id: 1
