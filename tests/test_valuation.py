@@ -1,5 +1,7 @@
 """Tests for valuation analysis."""
 
+import itertools
+
 import numpy as np
 import pytest
 
@@ -76,16 +78,16 @@ class TestCreditRisk:
         assert spread == 0.0
 
     def test_positive_leverage_positive_spread(self, va):
-        """Levered firm has positive spread."""
+        """Levered firm has strictly positive spread once the coupon claim
+        outgrows the inference collateral (baseline: above ell ~ 0.13)."""
         spread = va.credit_spread(leverage=0.4)
-        assert spread >= 0.0
+        assert spread > 0.0
 
     def test_higher_leverage_higher_spread(self, va):
-        """Higher leverage should produce higher spread."""
+        """Higher leverage should produce strictly higher spread."""
         s1 = va.credit_spread(leverage=0.2)
         s2 = va.credit_spread(leverage=0.6)
-        # Both should be non-negative; higher leverage >= lower
-        assert s2 >= s1
+        assert s2 > s1 > 0.0
 
     def test_zero_leverage_zero_default_prob(self, va):
         """Unlevered firm has zero default probability."""
@@ -98,10 +100,10 @@ class TestCreditRisk:
         assert 0.0 <= prob <= 1.0
 
     def test_higher_leverage_higher_default_prob(self, va):
-        """Higher leverage should increase default probability."""
-        p1 = va.default_probability(X_current=1.0, K=1.0, leverage=0.2)
-        p2 = va.default_probability(X_current=1.0, K=1.0, leverage=0.6)
-        assert p2 >= p1
+        """Higher leverage should strictly increase default probability."""
+        p1 = va.default_probability(X_current=0.10, K=1.0, leverage=0.2)
+        p2 = va.default_probability(X_current=0.10, K=1.0, leverage=0.6)
+        assert p2 > p1 > 0.0
 
     def test_credit_spread_curve_shape(self, va):
         """Credit spread curve should return correct shapes."""
@@ -176,25 +178,25 @@ class TestDarioDilemma:
     def test_matched_beliefs_no_loss(self, va):
         """When beliefs match, value loss should be zero."""
         result = va.dario_dilemma(lambda_true=0.20, lambda_invest=0.20)
-        if "error" not in result:
-            assert abs(result["value_loss"]) < 1e-8
-            assert abs(result["value_loss_pct"]) < 1e-8
+        assert "error" not in result
+        assert abs(result["value_loss"]) < 1e-8
+        assert abs(result["value_loss_pct"]) < 1e-8
 
     def test_mismatched_beliefs_positive_loss(self, va):
         """Mismatched beliefs should produce positive value loss."""
         result = va.dario_dilemma(lambda_true=0.30, lambda_invest=0.10)
-        if "error" not in result:
-            assert result["value_loss"] >= 0.0
+        assert "error" not in result
+        assert result["value_loss"] >= 0.0
 
     def test_conservative_flag(self, va):
         """Should correctly identify conservative vs aggressive."""
         result = va.dario_dilemma(lambda_true=0.30, lambda_invest=0.10)
-        if "error" not in result:
-            assert result["is_conservative"] is True
+        assert "error" not in result
+        assert result["is_conservative"] is True
 
         result2 = va.dario_dilemma(lambda_true=0.10, lambda_invest=0.30)
-        if "error" not in result2:
-            assert result2["is_conservative"] is False
+        assert "error" not in result2
+        assert result2["is_conservative"] is False
 
     def test_dario_surface_shape(self, va):
         """Dario dilemma surface should have correct shape."""
@@ -207,9 +209,9 @@ class TestDarioDilemma:
         """Diagonal of the surface (matched beliefs) should be near zero."""
         vals = np.array([0.1, 0.2, 0.3])
         result = va.dario_dilemma_surface(vals, vals)
-        for i in range(len(vals)):
-            if not np.isnan(result["value_loss_pct"][i, i]):
-                assert abs(result["value_loss_pct"][i, i]) < 0.01
+        diag = np.diagonal(result["value_loss_pct"])
+        assert not np.any(np.isnan(diag))
+        assert np.all(np.abs(diag) < 0.01)
 
 
 class TestDarioDilemmaLeveraged:
@@ -303,12 +305,12 @@ class TestEquityValueVsLambda:
         assert len(result["capacities"]) == 4
 
     def test_positive_values(self, va):
-        """Option values should be positive where solutions exist."""
+        """Option values should be positive at all baseline-range lambdas."""
         lam_vals = np.array([0.10, 0.20, 0.50])
         result = va.equity_value_vs_lambda(lam_vals)
         valid = ~np.isnan(result["option_values"])
-        if valid.sum() > 0:
-            assert np.all(result["option_values"][valid] > 0)
+        assert valid.sum() == len(lam_vals)
+        assert np.all(result["option_values"][valid] > 0)
 
 
 # ------------------------------------------------------------------
@@ -377,5 +379,112 @@ class TestPhiAwareValuation:
         lam_vals = np.array([0.05, 0.50])
         result = va.equity_value_vs_lambda_with_phi(lam_vals)
         valid = ~np.isnan(result["phis"])
-        if valid.sum() == 2:
-            assert result["phis"][1] > result["phis"][0]
+        assert valid.sum() == 2
+        assert result["phis"][1] > result["phis"][0]
+
+
+# ------------------------------------------------------------------
+# Capacity gap decomposition (paper fig-growth-decomposition)
+# ------------------------------------------------------------------
+
+
+class TestCapacityGapDecomposition:
+    def test_gap_declines_and_vanishes(self, va):
+        """Gap fraction declines in installed capacity and reaches zero
+        before K/K* = 1 (the benchmark nets out the full investment cost
+        while assets-in-place are gross of sunk costs)."""
+        K_fracs = np.linspace(0.05, 1.2, 24)
+        d = va.capacity_gap_decomposition(K_fracs)
+        gf = d["gap_fraction"]
+        assert np.all(np.diff(gf) <= 1e-9)  # weakly declining
+        assert gf[0] > 50.0  # large gap at low installed capacity
+        assert gf[-1] == 0.0  # zero at and beyond optimal scale
+        # Crossover strictly below K/K* = 1
+        below_one = K_fracs < 1.0
+        assert np.any(gf[below_one] == 0.0)
+
+    def test_paper_range_30_to_60_pct(self, va):
+        """Paper claim: gap fraction roughly 30-60% for K/K* in [0.1, 0.3]."""
+        d = va.capacity_gap_decomposition(np.array([0.1, 0.3]))
+        assert 40.0 < d["gap_fraction"][0] < 60.0
+        assert 20.0 < d["gap_fraction"][1] < 35.0
+
+
+# ------------------------------------------------------------------
+# Appendix E robustness tables (regression pins)
+# ------------------------------------------------------------------
+
+
+class TestAppendixERobustness:
+    """Regression pins for the Appendix E robustness tables.
+
+    These functions generate tbl-fixedpie, tbl-duopoly-dilemma, and
+    tbl-dynamic-phi in the paper; the pins keep the published numbers
+    reproducible from the test suite.
+    """
+
+    def test_fixed_pie_table(self, va):
+        """tbl-fixedpie: phi_F = 0.70 under both contests; preemption
+        discount 0.57 (Tullock) vs 0.63 (fixed pie); phi_underbar 0.18."""
+        result = va.fixed_pie_robustness(leverage=0.0)
+        assert "error" not in result
+        assert "fixedpie_error" not in result
+        assert abs(result["tullock_phi_F"] - 0.70) < 0.01
+        assert abs(result["fixedpie_phi_F"] - 0.70) < 0.01
+        assert abs(result["tullock_preemption_discount"] - 0.573) < 0.01
+        assert abs(result["fixedpie_preemption_discount"] - 0.628) < 0.01
+        assert abs(result["tullock_phi_underbar"] - 0.180) < 0.005
+
+    def test_duopoly_dilemma_table(self, va):
+        """tbl-duopoly-dilemma: 26%->38% conservative, 6%->17% aggressive;
+        competition amplifies both losses but preserves the asymmetry."""
+        r_cons = va.dario_dilemma_duopoly(0.10, 0.02)
+        r_aggr = va.dario_dilemma_duopoly(0.10, 0.20)
+        assert "error" not in r_cons
+        assert "error" not in r_aggr
+        assert abs(r_cons["value_loss_pct_duopoly"] - 0.383) < 0.02
+        assert abs(r_aggr["value_loss_pct_duopoly"] - 0.173) < 0.02
+        assert r_cons["value_loss_pct_duopoly"] > r_cons["value_loss_pct_single"]
+        assert r_aggr["value_loss_pct_duopoly"] > r_aggr["value_loss_pct_single"]
+        assert r_cons["value_loss_pct_duopoly"] > r_aggr["value_loss_pct_duopoly"]
+        assert r_cons["focal_leads"] is False  # conservative cedes the lead
+        assert r_aggr["focal_leads"] is True
+
+    def test_dynamic_phi_table(self, va):
+        """tbl-dynamic-phi: phi_1 near the static optimum, phi_H -> 0.99 at
+        kappa = 0, modest value gains declining in the adjustment cost,
+        phi_underbar unchanged."""
+        gains = []
+        for kappa in [0.0, 0.5, 2.0, 10.0]:
+            r = va.two_period_dynamic_phi(adjustment_cost=kappa)
+            assert "error" not in r
+            gains.append(r["value_gain_pct"])
+            assert abs(r["phi_underbar"] - 0.180) < 0.005
+            if kappa == 0.0:
+                assert r["phi_H_dynamic"] >= 0.95
+                assert abs(r["phi_1_dynamic"] - 0.70) < 0.02
+                assert 1.0 < r["value_gain_pct"] < 2.0
+        assert all(g1 >= g2 - 1e-9 for g1, g2 in itertools.pairwise(gains))
+
+
+# ------------------------------------------------------------------
+# Option value curvature in lambda (paper, Equity Valuation Sensitivity)
+# ------------------------------------------------------------------
+
+
+class TestOptionValueCurvatureInLambda:
+    def test_increasing_and_concave_over_policy_range(self, va):
+        """The option value is increasing and concave in lambda over the
+        policy-relevant range [0.1, 0.5]. Curvature in lambda is
+        independent of X (F = C(lambda) X^beta_H below the trigger), so a
+        single evaluation point suffices."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        lams = np.linspace(0.10, 0.50, 9)
+        vals = []
+        for lam in lams:
+            m = SingleFirmModel(va.params.with_param(lam=lam))
+            vals.append(m.option_value_with_phi(0.001))
+        vals = np.array(vals)
+        assert np.all(np.diff(vals) > 0)  # increasing in lambda
+        assert np.all(np.diff(vals, 2) < 0)  # concave in lambda

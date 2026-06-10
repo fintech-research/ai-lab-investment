@@ -80,7 +80,10 @@ class ValuationAnalysis:
         else:
             regime_switch = 0.0
 
-        expansion_option = option_val - assets if option_val > assets else 0.0
+        # The option value already embeds the regime-switch component, so
+        # the expansion option is the residual after both assets-in-place
+        # and the regime-switch value (avoids double counting in the total).
+        expansion_option = max(option_val - assets - regime_switch, 0.0)
         total = assets + expansion_option + regime_switch
 
         return {
@@ -548,6 +551,64 @@ class ValuationAnalysis:
             "X_trigger": X_star,
         }
 
+    def capacity_gap_decomposition(
+        self,
+        K_fracs: np.ndarray,
+        demand_multiple: float = 1.5,
+    ) -> dict[str, Any]:
+        """Capacity-gap decomposition across installed-capacity levels.
+
+        For each installed capacity K = frac * K*, computes assets-in-place
+        (gross installed value at the optimal training fraction phi*) and
+        the capacity gap value, defined as the shortfall of assets-in-place
+        relative to the *net* value of the optimally sized greenfield
+        project, NPV(K*, phi*) = V(X, phi*, K*) - I(K*), floored at zero.
+        Because the benchmark nets out the full investment cost I(K*) while
+        assets-in-place are gross of sunk costs, the gap reaches zero
+        before K reaches K*. This is the comparative-statics measure of
+        distance to optimal scale reported in the paper, not the NPV of
+        incremental expansion from the installed base.
+
+        Args:
+            K_fracs: Installed capacity as fractions of optimal K*.
+            demand_multiple: Demand evaluation point as a multiple of the
+                optimal trigger X*.
+
+        Returns:
+            Dict with 'K_fracs', 'assets_in_place', 'capacity_gap',
+            'gap_fraction' (percent), and scalars 'X_eval', 'K_star',
+            'phi_star', 'npv_optimal'.
+        """
+        model = SingleFirmModel(self.params)
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        X_eval = demand_multiple * X_star
+
+        npv_optimal = model.installed_value_with_phi(
+            X_eval, phi_star, K_star, "L"
+        ) - model.investment_cost(K_star)
+
+        assets = np.full_like(K_fracs, np.nan, dtype=float)
+        gap = np.full_like(K_fracs, np.nan, dtype=float)
+        for i, frac in enumerate(K_fracs):
+            assets[i] = model.installed_value_with_phi(
+                X_eval, phi_star, frac * K_star, "L"
+            )
+            gap[i] = max(npv_optimal - assets[i], 0.0)
+
+        total = assets + gap
+        gap_fraction = np.where(total > 0, gap / total * 100.0, 0.0)
+
+        return {
+            "K_fracs": K_fracs,
+            "assets_in_place": assets,
+            "capacity_gap": gap,
+            "gap_fraction": gap_fraction,
+            "X_eval": X_eval,
+            "K_star": K_star,
+            "phi_star": phi_star,
+            "npv_optimal": npv_optimal,
+        }
+
     def equity_value_vs_lambda_with_phi(
         self,
         lambda_values: np.ndarray,
@@ -596,11 +657,14 @@ class ValuationAnalysis:
     ) -> dict[str, Any]:
         """Dario's dilemma in a duopoly: one-sided belief mismatch.
 
-        A rational rival plays the equilibrium strategy under lambda_true.
-        The focal firm plays the optimal single-firm strategy under
-        lambda_invest, then enters the duopoly where the rival plays
-        optimally.  This captures the strategic penalty of wrong beliefs:
-        a conservative firm loses the leader position.
+        A well-calibrated rival follows its *single-firm* optimal policy
+        (trigger, capacity, training fraction) under lambda_true; it does
+        not re-optimize against the focal firm, so this is a tractable
+        benchmark rather than the full preemption equilibrium. The focal
+        firm plays the optimal single-firm strategy under lambda_invest,
+        and the firm with the lower trigger leads. This captures the
+        strategic penalty of wrong beliefs: a conservative firm cedes the
+        leader position and the monopoly-phase rents.
 
         Returns dict with value losses for single-firm and duopoly
         benchmarks.
@@ -637,9 +701,8 @@ class ValuationAnalysis:
             # Focal firm leads (invests first), rival follows
             # Leader value: monopoly until rival enters, then duopoly
             V_mono = duo_true.monopolist_value_L(X_inv, phi_inv, K_inv)
-            V_duo = duo_true.installed_value_L(X_inv, phi_inv, K_inv, phi_true, K_true)
-            # Rival enters at X_true; PV of revenue drop
-            if X_true > X_inv and X_true > 0:
+            if X_true > X_inv:
+                # Rival enters at X_true; PV of revenue drop
                 V_mono_XF = duo_true.monopolist_value_L(X_true, phi_inv, K_inv)
                 V_duo_XF = duo_true.installed_value_L(
                     X_true, phi_inv, K_inv, phi_true, K_true
@@ -648,7 +711,10 @@ class ValuationAnalysis:
                 entry_factor = (X_inv / X_true) ** beta
                 npv_focal = V_mono - drop * entry_factor
             else:
-                npv_focal = V_duo
+                # Simultaneous entry: immediate duopoly
+                npv_focal = duo_true.installed_value_L(
+                    X_inv, phi_inv, K_inv, phi_true, K_true
+                )
             npv_focal -= duo_true.investment_cost(K_inv)
         else:
             # Rival leads, focal firm follows
@@ -680,7 +746,7 @@ class ValuationAnalysis:
             "value_loss_pct_duopoly": loss_duo_pct,
             "ev_optimal_duopoly": ev_opt,
             "ev_mismatch_duopoly": ev_focal,
-            "focal_leads": X_inv <= X_true,
+            "focal_leads": bool(X_inv <= X_true),
             "X_focal": X_inv,
             "X_rival": X_true,
             "phi_focal": phi_inv,
@@ -731,11 +797,10 @@ class ValuationAnalysis:
         def _period_value(phi_1: float, phi_H: float, phi_L2: float) -> float:
             """Expected PV of two-period revenue (per unit X, at K_s)."""
             K = K_s
-            alpha = p.alpha
 
-            # Period 1: L-regime revenue (inference + H-option from training)
-            a_eff_1 = ((1.0 - phi_1) * K) ** alpha / (p.r - p.mu_L + lam)
-            a_eff_1 += lam / (p.r - p.mu_L + lam) * (phi_1 * K) ** alpha * p.A_H
+            # Period 1: L-regime revenue (inference + H-option from training).
+            # Reuses the model's effective revenue coefficient (eq-a-eff).
+            a_eff_1 = model_static._effective_revenue_coeff_single(phi_1, K)
 
             # PV from period 1 flows: effective coefficient times the
             # fraction of the perpetuity earned over [0, dt]
@@ -743,11 +808,10 @@ class ValuationAnalysis:
 
             # Period 2 outcomes:
             # If switch: H-regime revenue with phi_H
-            rev_2_H = (phi_H * K) ** alpha * p.A_H
+            rev_2_H = (phi_H * K) ** p.alpha * p.A_H
 
             # If no switch: L-regime with phi_L2
-            rev_2_L = ((1.0 - phi_L2) * K) ** alpha / (p.r - p.mu_L + lam)
-            rev_2_L += lam / (p.r - p.mu_L + lam) * (phi_L2 * K) ** alpha * p.A_H
+            rev_2_L = model_static._effective_revenue_coeff_single(phi_L2, K)
 
             pv_2 = disc_1 * (p_switch * rev_2_H + (1.0 - p_switch) * rev_2_L)
 

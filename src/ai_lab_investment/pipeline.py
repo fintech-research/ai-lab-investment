@@ -5,27 +5,9 @@ import hydra
 from dotenv import load_dotenv
 from omegaconf import DictConfig
 
-from .utils.directories import get_data_directories, get_results_directories
-from .utils.files import timestamp_file
+from .utils.directories import get_results_directories
 
 load_dotenv()
-
-
-def _run_data_steps(cfg: DictConfig):
-    """Run data download, preprocessing, and panel building steps."""
-    data_dirs = get_data_directories()
-    panel_path = data_dirs.clean / "panel.parquet"
-
-    if cfg.data.download:
-        logging.info("Downloading data")
-    if cfg.data.preprocess:
-        logging.info("Preprocessing data")
-    if cfg.data.build_panel:
-        logging.info("Building panel data")
-    if cfg.data.save_panel:
-        logging.info("Saving panel data")
-        panel_file = timestamp_file(panel_path)
-        logging.info(f"Panel saved to {panel_file}")
 
 
 def _run_phase1():
@@ -107,8 +89,6 @@ def _run_phase5():
 
 
 _TASK_RUNNERS = {
-    "simulations": lambda: logging.info("Running simulation"),
-    "main_regressions": lambda: logging.info("Running regression analysis"),
     "phase1_base_model": _run_phase1,
     "phase2_duopoly": _run_phase2,
     "phase4_calibration": _run_phase4,
@@ -120,8 +100,6 @@ _TASK_RUNNERS = {
 def pipeline(cfg: DictConfig):
     start_time = time.time()
     logging.getLogger().setLevel(cfg.logging_level)
-
-    _run_data_steps(cfg)
 
     for task_name, runner in _TASK_RUNNERS.items():
         if getattr(cfg.tasks, task_name, False):

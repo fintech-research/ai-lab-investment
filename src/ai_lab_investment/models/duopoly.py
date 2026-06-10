@@ -10,14 +10,15 @@ firms under:
 - Endogenous default boundary (Leland 1994)
 - Preemption equilibrium (Huisman & Kort 2015)
 
-The endogenous arrival rate:
+An endogenous arrival rate extension is plumbed through but switched
+off by default (xi = 0) and is NOT used in the paper:
     lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
 
-creates a positive externality: rival training helps bring AGI closer,
-benefiting both firms. The strategic interaction is in the H-regime share,
-not in the speed of arrival.
-
-When xi = 0, the model reduces to the exogenous-lambda baseline.
+With xi > 0 it would create a positive externality: rival training helps
+bring AGI closer, benefiting both firms. When xi = 0 (the paper's
+specification and the default), lambda_tilde reduces to the exogenous
+lam and the machinery is inert; it is retained only for robustness
+experiments.
 
 Investment trigger methodology:
     The investment trigger uses beta_H (the H-regime characteristic root)
@@ -898,6 +899,21 @@ class DuopolyModel:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
+        p = self.params
+        # The monopolist's A_eff is proportional to K^alpha (shares = 1),
+        # so the problem inherits the single-firm interior-capacity
+        # condition (A2); the leverage-adjusted cost has the same K-powers.
+        # Without it the objective diverges as K -> 0 and the optimizer
+        # would return a boundary artifact.
+        premium_ratio = (1.0 - 1.0 / p.beta_H) / p.alpha
+        if not 1.0 / p.gamma < premium_ratio < 1.0:
+            msg = (
+                f"No interior leader-monopolist optimum: condition (A2) "
+                f"fails ((beta_H - 1)/(alpha*beta_H) = {premium_ratio:.3f}, "
+                f"need {1 / p.gamma:.3f} < ratio < 1)."
+            )
+            raise RuntimeError(msg)
+
         lev_L = self.leverage
         best_val = 1e20
         best_params = None
@@ -926,7 +942,6 @@ class DuopolyModel:
         phi_L = np.clip(best_params[1], 0.01, 0.99)
 
         # Compute trigger using beta_H and A_eff
-        p = self.params
         beta = p.beta_H
         a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
 

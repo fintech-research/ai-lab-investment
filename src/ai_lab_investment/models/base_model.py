@@ -167,6 +167,14 @@ class SingleFirmModel:
             return 0.0
         return -p.lam * B_H / Q_L
 
+    def particular_solution_coeff(self) -> float:
+        """Public accessor for the regime-switching coefficient C.
+
+        C = -lambda * B_H / Q_L(beta_H), the particular-solution
+        coefficient of the L-regime option ODE (paper eq-particular-C).
+        """
+        return self._particular_solution_coeff()
+
     def _solve_regime_L(self) -> tuple[float | None, float | None, float]:
         """Solve for the regime L option.
 
@@ -481,6 +489,9 @@ class SingleFirmModel:
         log_K, phi = params_vec
         K = np.exp(log_K)
 
+        # Bound checks (log_K bounds match the duopoly solvers)
+        if log_K < -15 or log_K > 15:
+            return 1e20
         if phi <= 0.01 or phi >= 0.99:
             return 1e20
 
@@ -508,11 +519,27 @@ class SingleFirmModel:
             return self._cache[cache_key]
 
         p = self.params
+        # A_eff = g(phi) * K^alpha, so the K-problem has the pure-power
+        # structure of the H-regime sub-problem and requires the same
+        # interior-capacity condition (A2). When the upper bound fails
+        # (alpha*beta_H <= beta_H - 1), the objective increases without
+        # bound as K -> 0 and any reported optimum would be a boundary
+        # artifact, so refuse to solve rather than return garbage.
+        if not self.has_interior_trigger("H"):
+            ratio = self._option_premium_ratio("H")
+            msg = (
+                f"No interior (K, phi) optimum: condition (A2) fails "
+                f"((beta_H - 1)/(alpha*beta_H) = {ratio:.3f}, need "
+                f"{1 / p.gamma:.3f} < ratio < 1). The option-value factor "
+                f"diverges as K -> 0 when the upper bound fails."
+            )
+            raise RuntimeError(msg)
+
         beta = p.beta_H
         best_val = 1e20
         best_params = None
 
-        for log_K_init in [-2, 0, 2]:
+        for log_K_init in [-6, -2, 0, 2]:
             for phi_init in [0.15, 0.30, 0.50, 0.70]:
                 x0 = np.array([log_K_init, phi_init])
                 try:

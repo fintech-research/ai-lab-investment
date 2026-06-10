@@ -177,9 +177,9 @@ class TestEndogenousLambda:
 
 class TestInstalledValues:
     def test_L_regime_value_positive(self, model):
-        """L-regime value should be positive for reasonable params."""
+        """L-regime value should be strictly positive for reasonable params."""
         V = model.installed_value_L(1.0, 0.3, 1.0, 0.3, 1.0)
-        assert -model.params.delta / model.params.r < V
+        assert V > 0
 
     def test_H_regime_value_positive(self, model):
         """H-regime value should be positive for sufficient X."""
@@ -509,10 +509,68 @@ class TestDefaultRisk:
             assert c_D / p.r + 1e-12 >= D
 
     def test_default_boundary_below_trigger(self, levered_model):
-        """Default boundary should be below investment trigger."""
+        """Default boundary is positive under leverage and below the trigger."""
         eq = levered_model.solve_preemption_equilibrium("H")
-        if eq["X_default_follower"] > 0:
-            assert eq["X_default_follower"] < eq["X_follower"]
+        assert eq["X_default_follower"] > 0
+        assert eq["X_default_follower"] < eq["X_follower"]
+
+    def test_faith_based_survival_at_optimal_phi(self):
+        """Proposition 2(ii): dX_D/dlambda < 0 at the optimal training
+        fraction (phi* well above the threshold phi_underbar)."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        p = ModelParameters()
+        _, K_star, phi_star = SingleFirmModel(p).optimal_trigger_capacity_phi()
+        h = 1e-4
+
+        def x_d(lam):
+            m = DuopolyModel(p.with_param(lam=lam), leverage=0.40)
+            return m.default_boundary(phi_star, K_star, 0.0, 0.0, 0.40)
+
+        dXD_dlam = (x_d(p.lam + h) - x_d(p.lam - h)) / (2 * h)
+        assert dXD_dlam < 0
+
+    def test_default_boundary_increasing_in_lambda_below_threshold(self):
+        """Below phi_underbar both channels push the same way: the
+        A_eff-channel turns positive (inference dominates) and the
+        beta-channel is always positive, so dX_D/dlambda > 0."""
+        p = ModelParameters()
+        phi_low = 0.05  # well below phi_underbar ~ 0.18
+        h = 1e-4
+
+        def x_d(lam):
+            m = DuopolyModel(p.with_param(lam=lam), leverage=0.40)
+            return m.default_boundary(phi_low, 1.0, 0.0, 0.0, 0.40)
+
+        dXD_dlam = (x_d(p.lam + h) - x_d(p.lam - h)) / (2 * h)
+        assert dXD_dlam > 0
+
+    def test_phi_underbar_closed_form_is_aeff_lambda_threshold(self):
+        """Eq phi-underbar: at phi = phi_underbar (symmetric duopoly),
+        dA_eff/dlambda = 0; above it positive, below it negative."""
+        p = ModelParameters()
+        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
+        phi_underbar = R / (1.0 + R)
+        assert abs(phi_underbar - 0.180) < 0.005  # paper value
+
+        K = 1.0
+        h = 1e-5
+
+        def a_eff(phi, lam):
+            m = DuopolyModel(p.with_param(lam=lam))
+            # Symmetric duopoly: equal capacities and training fractions
+            return m._effective_revenue_coeff(phi, K, phi, K)
+
+        for phi, expected_sign in [
+            (phi_underbar, 0),
+            (phi_underbar + 0.05, 1),
+            (phi_underbar - 0.05, -1),
+        ]:
+            dA = (a_eff(phi, p.lam + h) - a_eff(phi, p.lam - h)) / (2 * h)
+            if expected_sign == 0:
+                assert abs(dA) < 1e-6
+            else:
+                assert np.sign(dA) == expected_sign
 
 
 # ------------------------------------------------------------------
@@ -571,8 +629,8 @@ class TestComparativeStatics:
         """In all valid solutions, leader trigger < follower trigger."""
         stats = model.comparative_statics("sigma", np.linspace(0.25, 0.45, 5))
         valid = stats["has_solution"]
-        if valid.sum() > 0:
-            assert np.all(stats["X_leader"][valid] <= stats["X_follower"][valid])
+        assert valid.sum() > 0
+        assert np.all(stats["X_leader"][valid] <= stats["X_follower"][valid])
 
 
 # ------------------------------------------------------------------

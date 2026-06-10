@@ -6,18 +6,9 @@ matplotlib:
       - Helvetica
     serif:
       - "Computer Modern Roman"
-data:
-  download: false
-  ignore_download_cache: false
-  preprocess: false
-  ignore_preprocess_cache: false
-  build_panel: false
-  save_panel: false
 tasks:
-  simulations: false
-  main_regressions: false
-  phase1_base_model: false
-  phase2_duopoly: false
-  phase4_calibration: false
-  phase5_valuation: false
+  phase1_base_model: true
+  phase2_duopoly: true
+  phase4_calibration: true
+  phase5_valuation: true
 params: {}
