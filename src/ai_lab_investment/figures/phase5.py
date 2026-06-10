@@ -181,7 +181,7 @@ def plot_dario_dilemma(
             lam_range,
             0,
             losses_arr,
-            where=high_loss,
+            where=high_loss.tolist(),
             alpha=0.10,
             color="red",
             label=r"Loss $> 10\%$",

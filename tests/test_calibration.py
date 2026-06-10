@@ -225,3 +225,40 @@ class TestPhiAwareBeliefs:
         calib = get_baseline_calibration()
         params = calib.to_model_params(xi=0.05)
         assert params.xi == 0.05
+
+
+class TestPhiInversion:
+    @pytest.fixture
+    def revealed_beliefs(self):
+        calib = get_baseline_calibration()
+        return RevealedBeliefs(calib)
+
+    def test_round_trip_through_model(self, revealed_beliefs):
+        """Generate phi*(lambda) from the model, invert it, recover lambda."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        lam_true = 0.10
+        params = revealed_beliefs.calibration.to_model_params(lam=lam_true)
+        model = SingleFirmModel(params)
+        _, _, phi_star = model.optimal_trigger_capacity_phi()
+
+        lam_recovered = revealed_beliefs.infer_lambda_from_phi(phi_star)
+        assert lam_recovered is not None
+        assert abs(lam_recovered - lam_true) / lam_true < 1e-3
+
+    def test_band_matches_paper_ranges(self, revealed_beliefs):
+        """Regression: xAI-like band [0.09, 0.17], Google-like [0.03, 0.05]."""
+        firms = {f.name: f for f in revealed_beliefs.calibration.firms}
+        xai = next(f for n, f in firms.items() if "xAI" in n)
+        google = next(f for n, f in firms.items() if "Google" in n)
+
+        b_xai = revealed_beliefs.phi_inversion_band(xai)
+        b_goog = revealed_beliefs.phi_inversion_band(google)
+        assert abs(b_xai["lambda_lo"] - 0.087) < 0.005
+        assert abs(b_xai["lambda_hi"] - 0.170) < 0.005
+        assert abs(b_goog["lambda_lo"] - 0.031) < 0.005
+        assert abs(b_goog["lambda_hi"] - 0.053) < 0.005
+
+    def test_inadmissible_phi_returns_none(self, revealed_beliefs):
+        assert revealed_beliefs.infer_lambda_from_phi(0.0) is None
+        assert revealed_beliefs.infer_lambda_from_phi(1.0) is None

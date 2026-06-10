@@ -317,3 +317,37 @@ class TestOptionValueWithPhi:
             X, phi_star, K_star, "L"
         ) - model.investment_cost(K_star)
         assert option >= npv - 1e-10
+
+
+class TestProposition1ClosedForm:
+    def test_closed_form_K_star_matches_optimizer(self, model):
+        """Proposition 1's closed-form K* must match the numerical optimum.
+
+        K* = [delta*(alpha*beta_H - beta_H + 1)
+              / (r*c*(gamma*(beta_H - 1) - alpha*beta_H))]^(1/(gamma-1))
+        """
+        p = model.params
+        b = p.beta_H
+        K_closed = (
+            p.delta
+            * (p.alpha * b - b + 1.0)
+            / (p.r * p.c * (p.gamma * (b - 1.0) - p.alpha * b))
+        ) ** (1.0 / (p.gamma - 1.0))
+        _, K_num, _ = model.optimal_trigger_capacity_phi()
+        assert abs(K_num - K_closed) / K_closed < 1e-4
+
+    def test_K_star_independent_of_phi(self, model):
+        """The optimal capacity is the same at any fixed training fraction
+        (separability: A_eff = g(phi) * K^alpha cancels in the K FOC)."""
+        from scipy import optimize
+
+        capacities = []
+        for phi in [0.30, 0.50, 0.70]:
+            result = optimize.minimize_scalar(
+                lambda log_K, phi=phi: model._objective_K_phi(np.array([log_K, phi])),
+                bounds=(-15, 15),
+                method="bounded",
+            )
+            capacities.append(np.exp(result.x))
+        assert abs(capacities[0] - capacities[1]) / capacities[1] < 1e-5
+        assert abs(capacities[2] - capacities[1]) / capacities[1] < 1e-5

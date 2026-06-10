@@ -111,6 +111,61 @@ class TestCreditRisk:
         assert len(result["credit_spread"]) == 5
         assert len(result["default_probability"]) == 5
 
+    def test_high_leverage_strictly_positive_spread(self, va):
+        """Once the coupon claim outgrows the inference liquidation value,
+        the spread must be strictly positive."""
+        assert va.credit_spread(leverage=0.7) > 0.0
+
+    def test_first_passage_probability_against_monte_carlo(self, va):
+        """Verify the closed-form barrier-hitting probability by simulation.
+
+        Simulates GBM paths under the L-regime drift with a Brownian-bridge
+        crossing correction (so the discrete grid does not understate
+        barrier hits) and compares the hit frequency to the formula.
+        """
+        from ai_lab_investment.models.duopoly import DuopolyModel
+
+        leverage, K, phi, horizon = 0.4, 1.0, 0.5, 5.0
+        X0 = va.CREDIT_RISK_DEMAND_LEVEL
+        p = va.params
+
+        duo = DuopolyModel(p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
+        p_formula = va.default_probability(
+            X_current=X0,
+            K=K,
+            leverage=leverage,
+            phi=phi,
+            regime="L",
+            horizon=horizon,
+        )
+
+        rng = np.random.default_rng(12345)
+        n_paths, n_steps = 20_000, 500
+        dt = horizon / n_steps
+        nu = p.mu_L - 0.5 * p.sigma**2
+        log_b = np.log(X_D)
+
+        log_x = np.full(n_paths, np.log(X0))
+        hit = np.zeros(n_paths, dtype=bool)
+        for _ in range(n_steps):
+            log_x_new = (
+                log_x + nu * dt + p.sigma * np.sqrt(dt) * rng.standard_normal(n_paths)
+            )
+            hit |= log_x_new <= log_b
+            # Brownian-bridge probability of crossing within the step
+            alive = ~hit
+            if alive.any():
+                d1 = log_x[alive] - log_b
+                d2 = log_x_new[alive] - log_b
+                p_bridge = np.exp(-2.0 * d1 * d2 / (p.sigma**2 * dt))
+                hit[np.flatnonzero(alive)[rng.random(alive.sum()) < p_bridge]] = True
+            log_x = log_x_new
+
+        p_mc = hit.mean()
+        # MC standard error ~0.0015; allow 4 standard errors
+        assert abs(p_mc - p_formula) < 0.006
+
 
 # ------------------------------------------------------------------
 # Dario dilemma
@@ -211,6 +266,25 @@ class TestDarioDilemmaLeveraged:
         assert "error" not in r_cons
         assert "error" not in r_aggr
         assert r_aggr["default_prob_mismatch"] > r_cons["default_prob_mismatch"]
+
+
+class TestDilemmaAsymmetry:
+    def test_underinvestment_costlier_for_equal_mismatch(self, va):
+        """Numerical Finding 2: for the same |lambda_invest - lambda_true|,
+        the conservative loss exceeds the aggressive loss."""
+        for delta in [0.05, 0.08]:
+            r_cons = va.dario_dilemma(0.10, 0.10 - delta)
+            r_aggr = va.dario_dilemma(0.10, 0.10 + delta)
+            assert "error" not in r_cons
+            assert "error" not in r_aggr
+            assert r_cons["value_loss_pct"] > r_aggr["value_loss_pct"]
+
+    def test_baseline_loss_magnitudes(self, va):
+        """Regression: paper values 26% (lambda=0.02) and 6% (lambda=0.20)."""
+        r_cons = va.dario_dilemma(0.10, 0.02)
+        r_aggr = va.dario_dilemma(0.10, 0.20)
+        assert abs(r_cons["value_loss_pct"] - 0.262) < 0.01
+        assert abs(r_aggr["value_loss_pct"] - 0.056) < 0.01
 
 
 # ------------------------------------------------------------------

@@ -230,7 +230,7 @@ class SingleFirmModel:
             return X_star, K_star
         else:
             X_star, K_star, _ = self._solve_regime_L()
-            if X_star is None:
+            if X_star is None or K_star is None:
                 msg = (
                     "No interior trigger in regime L. The firm waits for "
                     "the regime switch to H before investing. "
@@ -265,7 +265,7 @@ class SingleFirmModel:
         p = self.params
         C = self._particular_solution_coeff()
 
-        if X_star is not None and X_star <= X:
+        if X_star is not None and K_star is not None and X_star <= X:
             return self.installed_value(X, K_star, "L") - self.investment_cost(K_star)
         return D_L * X**p.beta_L + C * X**p.beta_H
 
@@ -400,7 +400,7 @@ class SingleFirmModel:
         # Regime L
         X_L, K_L, D_L = self._solve_regime_L()
         C = self._particular_solution_coeff()
-        if X_L is not None:
+        if X_L is not None and K_L is not None:
             results["L"] = {
                 "X_star": X_L,
                 "K_star": K_L,

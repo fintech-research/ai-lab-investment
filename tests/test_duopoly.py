@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from ai_lab_investment.models.base_model import SingleFirmModel
 from ai_lab_investment.models.duopoly import DuopolyModel
 from ai_lab_investment.models.parameters import ModelParameters
 
@@ -236,6 +237,55 @@ class TestFollower:
 
 
 # ------------------------------------------------------------------
+# Cross-model consistency (duopoly vs single-firm)
+# ------------------------------------------------------------------
+
+
+class TestCrossModelConsistency:
+    def test_zero_leverage_leader_matches_single_firm(self, model):
+        """At zero leverage the leader-monopolist problem IS the single-firm
+        problem: identical objectives must give identical (X*, K*, phi*).
+
+        Regression test for the leverage-drift bug, where the optimizer let
+        the leverage coordinate run to its bound before clipping, inflating
+        K by a factor of ~5.
+        """
+        sf = SingleFirmModel(model.params)
+        X_s, K_s, phi_s = sf.optimal_trigger_capacity_phi()
+        X_L, K_L, phi_L, lev_L = model.solve_leader_monopolist("H")
+        assert lev_L == 0.0
+        assert abs(X_L - X_s) / X_s < 1e-4
+        assert abs(K_L - K_s) / K_s < 1e-4
+        assert abs(phi_L - phi_s) < 1e-4
+
+    def test_solve_no_competition_matches_single_firm(self, model):
+        """The verification bridge method must agree with SingleFirmModel."""
+        sf = SingleFirmModel(model.params)
+        X_s, K_s = sf.optimal_trigger_and_capacity("H")
+        X_d, K_d = model.solve_no_competition("H")
+        assert abs(X_d - X_s) / X_s < 1e-10
+        assert abs(K_d - K_s) / K_s < 1e-10
+
+    def test_fixed_pie_symmetric_matches_tullock(self, default_params):
+        """Under symmetry, fixed-pie A_eff equals Tullock A_eff exactly."""
+        duo_t = DuopolyModel(default_params, contest="tullock")
+        duo_fp = DuopolyModel(default_params, contest="fixed_pie")
+        phi, K = 0.4, 1.3
+        a_t = duo_t._effective_revenue_coeff(phi, K, phi, K)
+        a_fp = duo_fp._effective_revenue_coeff(phi, K, phi, K)
+        assert abs(a_t - a_fp) < 1e-12
+
+    def test_fixed_pie_follower_not_degenerate(self, default_params):
+        """Fixed-pie follower capacity equals the single-firm K* (the
+        half-revenue problem has the same scale-invariant FOC for K)."""
+        duo_fp = DuopolyModel(default_params, contest="fixed_pie")
+        sf = SingleFirmModel(default_params)
+        _, K_s, _ = sf.optimal_trigger_capacity_phi()
+        _, K_F, _, _ = duo_fp.solve_follower(K_L=K_s, phi_L=0.70)
+        assert abs(K_F - K_s) / K_s < 1e-3
+
+
+# ------------------------------------------------------------------
 # Leader's problem
 # ------------------------------------------------------------------
 
@@ -243,7 +293,7 @@ class TestFollower:
 class TestLeader:
     def test_leader_monopolist_trigger_positive(self, model):
         """Leader's monopolist trigger should be positive."""
-        X_L, K_L, phi_L, lev_L = model.solve_leader_monopolist(regime="H")
+        X_L, K_L, phi_L, _lev_L = model.solve_leader_monopolist(regime="H")
         assert X_L > 0
         assert K_L > 0
         assert 0 < phi_L < 1
@@ -409,13 +459,54 @@ class TestDefaultRisk:
 
         default_claim = c_D / p.r - V_XD
 
-        # Value matching: E_ongoing(X_D) = V_XD - c_D/r + default_claim = 0
-        E_ongoing_XD = V_XD - c_D / p.r + default_claim
-        assert abs(E_ongoing_XD) < 1e-10
-
         # Smooth pasting: E'_ongoing(X_D) = A_eff + beta_neg * claim / X_D = 0
         E_prime_at_XD = A_eff + beta_neg * default_claim / X_D
         assert abs(E_prime_at_XD) < 1e-10
+
+        # Optimality (Leland): the smooth-pasting boundary maximizes the
+        # ongoing equity value over candidate boundaries. For a candidate
+        # boundary B, value matching pins the option coefficient and
+        # G(X; B) = A_eff*X - (delta*K + c_D)/r
+        #           + [(delta*K + c_D)/r - A_eff*B] * (X/B)^beta_neg.
+        # G(X; X_D) must dominate perturbed boundaries at any X > X_D.
+        N = (p.delta * K_i + c_D) / p.r
+
+        def ongoing_equity(X, B):
+            return A_eff * X - N + (N - A_eff * B) * (X / B) ** beta_neg
+
+        X_test = 2.0 * X_D
+        g_opt = ongoing_equity(X_test, X_D)
+        assert g_opt > ongoing_equity(X_test, 0.9 * X_D)
+        assert g_opt > ongoing_equity(X_test, 1.1 * X_D)
+
+    def test_debt_value_matching_at_default(self, default_params):
+        """As X -> X_D, debt value converges to the capped recovery."""
+        m = DuopolyModel(
+            default_params, leverage=0.5, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi_i, K_i, phi_j, K_j = 0.3, 1.0, 0.3, 1.0
+        lev = 0.5
+        p = default_params
+
+        X_D = m.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        c_D = m.coupon_payment(K_i, lev)
+        liq = m.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
+        recovery = min((1.0 - m.bankruptcy_cost) * liq, c_D / p.r)
+
+        D_at_boundary = m.debt_value(X_D * (1.0 + 1e-9), phi_i, K_i, phi_j, K_j, lev)
+        assert abs(D_at_boundary - recovery) < 1e-6
+
+    def test_debt_never_exceeds_riskless_value(self, default_params):
+        """Absolute priority cap: D(X) <= c_D / r at every demand level."""
+        m = DuopolyModel(
+            default_params, leverage=0.3, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        K_i = 1.0
+        c_D = m.coupon_payment(K_i, 0.3)
+        p = default_params
+        for X in [0.05, 0.1, 0.5, 1.0, 5.0]:
+            D = m.debt_value(X, 0.3, K_i, 0.3, 1.0, 0.3)
+            assert c_D / p.r + 1e-12 >= D
 
     def test_default_boundary_below_trigger(self, levered_model):
         """Default boundary should be below investment trigger."""
@@ -544,3 +635,22 @@ class TestSummary:
         s = model.summary()
         assert "leader_share_L" in s
         assert "leader_share_H" in s
+
+
+class TestCoupledDefaultBoundary:
+    def test_single_boundary_overstates_coupled(self, default_params):
+        """The single-boundary formula omits the positive H-regime default
+        option, so it weakly overstates the coupled boundary; the error is
+        small (a few percent) at baseline."""
+        m = DuopolyModel(
+            default_params, leverage=0.4, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi_i, K_i, phi_j, K_j = 0.70, 1.0, 0.70, 1.0
+        X_D = m.default_boundary(phi_i, K_i, phi_j, K_j)
+        X_D_c = m.default_boundary_coupled(phi_i, K_i, phi_j, K_j)
+        assert X_D_c > 0
+        assert X_D_c <= X_D
+        assert (X_D - X_D_c) / X_D_c < 0.05
+
+    def test_no_debt_returns_zero(self, model):
+        assert model.default_boundary_coupled(0.7, 1.0, 0.7, 1.0) == 0.0

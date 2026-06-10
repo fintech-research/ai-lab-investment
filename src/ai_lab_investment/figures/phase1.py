@@ -237,7 +237,7 @@ def plot_sample_paths(
     fig, ax = plt.subplots(figsize=(10, 5))
 
     X0 = X_star_H * 0.3
-    colors = plt.cm.Set2(np.linspace(0, 0.8, n_paths))
+    colors = plt.get_cmap("Set2")(np.linspace(0, 0.8, n_paths))
 
     for i in range(n_paths):
         path = model.simulate_demand(X0, T, dt=0.01, rng=rng)

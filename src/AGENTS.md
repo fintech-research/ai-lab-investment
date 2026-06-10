@@ -22,7 +22,7 @@ At baseline: β_L⁺ ≈ 3.01 (positive root of L-regime ODE with discount r+λ)
 
 ## Testing
 
-Tests are in `tests/` (7 files, one per module). Run with `just test`. `assert` statements allowed in tests.
+Tests are in `tests/` (6 files, one per module). Run with `just test`. `assert` statements allowed in tests.
 
 ## Code Style
 

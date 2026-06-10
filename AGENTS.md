@@ -24,7 +24,7 @@ Use the Context7 MCP tool to look up library documentation before writing code.
 - *Simple mode* (no training fraction): `SingleFirmModel.installed_value()`, `optimal_trigger_and_capacity()` — uses combined `A_L`/`A_H` from `parameters.py`. Used for basic H-regime analysis and comparative statics.
 - *Full model* (training-inference allocation): `optimal_trigger_capacity_phi()`, `installed_value_with_phi()` — uses `_effective_revenue_coeff_single()`, matching paper eq-a-eff. Used for all paper figures and the duopoly.
 
-Paper figures use the full model.
+Paper figures use the full model, except the H-regime illustrations (option value, comparative statics, sample paths), which use the simple H-regime mode.
 
 ## IMPORTANT: Figure Generation
 

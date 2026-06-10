@@ -313,7 +313,7 @@ def create_default_boundaries() -> plt.Figure:
 
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
-    ax.legend(loc="center left", framealpha=0.9)
+    ax.legend(loc="lower right", framealpha=0.9, fontsize="small")
     fig.tight_layout()
     return fig
 
@@ -357,7 +357,7 @@ def create_credit_risk() -> plt.Figure:
             linewidth=1.5,
         )
     ax2.set_xlabel("Leverage (D/I)")
-    ax2.set_ylabel("5-year default probability (%)")
+    ax2.set_ylabel("5-yr default prob. (%)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     fig.tight_layout()
@@ -403,7 +403,7 @@ def create_competition_effect() -> plt.Figure:
     )
     ax.set_xlabel(r"Volatility $\sigma$")
     ax.set_ylabel(r"Investment trigger $X^*$")
-    ax.legend()
+    ax.legend(loc="upper left", fontsize="small", framealpha=0.95)
 
     fig.tight_layout()
     return fig
@@ -430,7 +430,7 @@ def create_firm_comparison() -> plt.Figure:
     # Panel (a): broken y-axis bar chart for CapEx/Revenue
     # Upper segment shows the xAI outlier; lower segment shows the cluster
     fig = plt.figure(figsize=(FULL_W, 3.2))
-    gs = fig.add_gridspec(2, 2, height_ratios=[1, 2.5], hspace=0.08, wspace=0.35)
+    gs = fig.add_gridspec(2, 2, height_ratios=[1, 2.5], hspace=0.08, wspace=0.45)
     ax_top = fig.add_subplot(gs[0, 0])
     ax_bot = fig.add_subplot(gs[1, 0])
     ax2 = fig.add_subplot(gs[:, 1])
@@ -441,12 +441,14 @@ def create_firm_comparison() -> plt.Figure:
 
     # Upper axis: show the outlier region
     ax_top.set_ylim(18, 22)
+    ax_top.set_yticks([18, 20, 22])
     ax_top.set_xticklabels([])
     ax_top.tick_params(bottom=False)
     ax_top.set_title("(a)", loc="left", fontweight="bold")
 
     # Lower axis: show the cluster
     ax_bot.set_ylim(0, 3)
+    ax_bot.set_yticks([0, 1, 2])
     ax_bot.set_xticklabels(names, rotation=15, ha="right", fontsize="small")
     ax_bot.axhline(1.0, color="0.6", linestyle=":", linewidth=0.7)
 
@@ -457,12 +459,16 @@ def create_firm_comparison() -> plt.Figure:
 
     # Draw break marks
     d = 0.012
-    kw = {"transform": ax_top.transAxes, "color": "k", "clip_on": False, "lw": 0.8}
-    ax_top.plot((-d, +d), (-d, +d), **kw)
-    ax_top.plot((1 - d, 1 + d), (-d, +d), **kw)
-    kw = {"transform": ax_bot.transAxes, "color": "k", "clip_on": False, "lw": 0.8}
-    ax_bot.plot((-d, +d), (1 - d, 1 + d), **kw)
-    ax_bot.plot((1 - d, 1 + d), (1 - d, 1 + d), **kw)
+    for ax_break, ys in ((ax_top, (-d, +d)), (ax_bot, (1 - d, 1 + d))):
+        for xs in ((-d, +d), (1 - d, 1 + d)):
+            ax_break.plot(
+                xs,
+                ys,
+                transform=ax_break.transAxes,
+                color="k",
+                clip_on=False,
+                lw=0.8,
+            )
 
     # Shared y-label
     fig.text(0.01, 0.5, "CapEx / Revenue (2025)", va="center", rotation="vertical")
@@ -561,15 +567,15 @@ def create_growth_decomposition() -> plt.Figure:
         label="Capacity gap value",
     )
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
-    ax1.set_xlabel(r"Installed capacity ($K / K_H^*$)")
+    ax1.set_xlabel(r"Installed capacity ($K / K^*$)")
     ax1.set_ylabel("Value")
-    ax1.legend(loc="lower right")
+    ax1.legend(loc="upper left", fontsize="small", framealpha=0.95)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     total = assets + counterfactual
     growth_frac = np.where(total > 0, counterfactual / total * 100, 0)
     ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
-    ax2.set_xlabel(r"Installed capacity ($K / K_H^*$)")
+    ax2.set_xlabel(r"Installed capacity $K / K^*$")
     ax2.set_ylabel("Capacity gap fraction (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("(b)", loc="left", fontweight="bold")
@@ -621,7 +627,7 @@ def create_investment_dilemma() -> plt.Figure:
             lam_range,
             0,
             losses_unlev_arr,
-            where=high_loss,
+            where=high_loss.tolist(),
             alpha=0.10,
             color="red",
             label="Loss > 10%",
