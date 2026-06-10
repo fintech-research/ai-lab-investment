@@ -16,7 +16,7 @@ You are reviewing a research project and its accompanying codebase. Your task is
 
 1. **Single-firm benchmark:** Analytical solution for optimal investment trigger, capacity, and training fraction with regime-switching demand (absorbing high state arriving with Poisson intensity λ) and diminishing returns calibrated to AI scaling laws.
 2. **Duopoly with default risk:** Extends the benchmark to two-firm preemption competition with Tullock contest revenue, endogenous (Leland-style) default boundaries, and credit risk. The leader invests first and enjoys a monopoly phase until follower entry.
-3. **Calibration:** Parameters calibrated to publicly available data on four stylized AI lab archetypes (hyperscaler, frontier lab, compute racer, lean lab).
+3. **Calibration:** Parameters calibrated to publicly available data on four stylized AI lab archetypes: frontier lab (Anthropic-like), platform (OpenAI-like), hyperscaler (Google-like), and compute racer (xAI-like).
 4. **Valuation and Dario's dilemma:** Value decomposition, credit risk analysis, and an asymmetric belief-mismatch cost analysis showing that underinvestment is costlier in expected value than overinvestment, while overinvestment carries higher tail (default) risk.
 
 **Key model features:**
@@ -37,6 +37,7 @@ ai-lab-investment/
 ├── src/ai_lab_investment/       # Core source code
 │   ├── __main__.py              # Entry point
 │   ├── pipeline.py              # Hydra-decorated pipeline orchestrator
+│   ├── exceptions.py            # Custom exceptions
 │   ├── models/                  # Economic models
 │   │   ├── base_model.py        # Single-firm benchmark (simple + full φ-aware modes)
 │   │   ├── duopoly.py           # Duopoly with default risk and preemption
@@ -56,7 +57,7 @@ ai-lab-investment/
 │   └── utils/
 │       ├── directories.py       # Directory path resolution
 │       └── files.py             # Timestamped file naming
-├── tests/                       # 190 tests across 6 test files
+├── tests/                       # 196 tests across 6 test files
 │   ├── test_base_model.py
 │   ├── test_calibration.py
 │   ├── test_duopoly.py
@@ -72,14 +73,17 @@ ai-lab-investment/
 │   ├── _discussion.qmd          # Policy implications, testable predictions, limitations
 │   ├── _conclusion.qmd
 │   ├── _literature.qmd          # Literature review (included within introduction)
-│   ├── _appendix.qmd            # Proofs (Propositions 1-3), numerical methods, calibration details
+│   ├── _appendix.qmd            # A: Proofs (Props 1-3), B: numerical methods, C: calibration details, D: parameter sensitivity, E: robustness (Cournot, fixed-pie)
 │   ├── generate_figures.py      # Thin wrapper: applies styles and saves output
 │   ├── references.bib           # BibTeX references
 │   └── figures/                 # Generated figures (*.pdf, *.png; 11 figures)
 ├── notebooks/
-│   └── model_derivation.ipynb   # SymPy derivation notebook (8 sections + audit)
+│   └── model_derivation.ipynb   # SymPy derivation notebook (8 sections + summary + completeness audit)
+├── reports/                     # Review reports (yours goes here; do not read others)
+├── slides/                      # Presentation slides (out of review scope)
+├── docs/                        # MkDocs documentation site (out of review scope)
 ├── conf/config.yaml             # Hydra pipeline configuration
-├── CLAUDE.md                    # Project instructions and conventions
+├── CLAUDE.md                    # Project instructions (includes AGENTS.md)
 ├── AGENTS.md                    # Detailed agent instructions
 ├── justfile                     # Task runner (just check, just test, etc.)
 └── pyproject.toml               # Python project metadata
@@ -158,7 +162,7 @@ Review the paper as a referee for a top journal. Address each sub-item.
 ### 5. Calibration and Results
 
 - [ ] **Parameter values**: Are calibrated parameter values reasonable and well-sourced? Check against the references cited in `_calibration.qmd` and the data sources table in `_appendix.qmd`.
-- [ ] **Sensitivity**: Does the paper adequately explore sensitivity to key parameters (volatility, arrival rate, revenue elasticity, cost convexity, cost of capital)?
+- [ ] **Sensitivity and robustness**: Does the paper adequately explore sensitivity to key parameters (volatility, arrival rate, revenue elasticity, cost convexity, cost of capital; Appendix D) and robustness to the contest specification (Appendix E: Cournot and fixed-pie alternatives to Tullock)?
 - [ ] **Comparative statics**: Verify that reported comparative statics (how triggers/values change with parameters) are consistent with economic intuition and the model's predictions.
 - [ ] **Dario's dilemma results**: Are the value loss percentages and default probabilities under belief mismatches correctly computed and internally consistent? Does the Taylor expansion sign argument match the numerical results?
 - [ ] **Growth decomposition**: Is the decomposition of firm value into installed capacity value and growth option value correctly computed and reported?

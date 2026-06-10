@@ -10,6 +10,8 @@ quantifies the "Dario dilemma" — the cost of belief mismatches between
 a firm's true lambda and its investment strategy.
 """
 
+from typing import Any
+
 import numpy as np
 
 from .base_model import SingleFirmModel
@@ -38,7 +40,7 @@ class ValuationAnalysis:
         X: float,
         K_installed: float,
         regime: str = "H",
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Decompose firm value into components.
 
         Args:
@@ -106,20 +108,26 @@ class ValuationAnalysis:
         leverage: float,
         K: float = 1.0,
         phi: float = 0.5,
-        regime: str = "H",
+        regime: str = "L",
         risk_free_rate: float | None = None,
     ) -> float:
         """Compute credit spread for a levered firm.
 
-        Credit spread = yield on risky debt - risk-free rate.
+        Credit spread = yield on risky debt - benchmark yield.
         yield = coupon / debt_value.
+
+        The benchmark is the model's discount rate r: all claims are
+        valued by discounting at r, so a default-free perpetuity with
+        coupon c_D is worth c_D / r and yields exactly r. The spread is
+        therefore zero when default risk is absent and measures only the
+        default-risk component.
 
         Args:
             leverage: Debt-to-investment ratio.
             K: Capacity level.
             phi: Training fraction (default 0.5).
-            regime: Demand regime.
-            risk_free_rate: Risk-free rate (defaults to r - 0.03).
+            regime: Demand regime (unused; debt is an L-regime claim).
+            risk_free_rate: Benchmark rate (defaults to the model's r).
 
         Returns:
             Credit spread in absolute terms (e.g., 0.02 = 200 bps).
@@ -128,7 +136,7 @@ class ValuationAnalysis:
             return 0.0
 
         if risk_free_rate is None:
-            risk_free_rate = max(self.params.r - 0.03, 0.01)
+            risk_free_rate = self.params.r
 
         duo = DuopolyModel(
             self.params,
@@ -155,22 +163,25 @@ class ValuationAnalysis:
         K: float,
         leverage: float,
         phi: float = 0.5,
-        regime: str = "H",
+        regime: str = "L",
         horizon: float = 5.0,
     ) -> float:
         """Approximate probability of default within horizon.
 
-        Uses the probability that GBM hits the default boundary
-        within the given time horizon.
-
-        P(default in T) approx= N(-d2) where d2 is from Black-Scholes.
+        Uses the first-passage probability that GBM hits the default
+        boundary within the given time horizon. The default boundary
+        X_D is an L-regime object (the firm defaults pre-switch), so the
+        L-regime drift mu_L is the consistent choice and the default.
+        The calculation abstracts from the regime switch itself: a
+        switch to H before hitting X_D would effectively remove default
+        risk, so the figure is an upper bound on the pre-switch hazard.
 
         Args:
             X_current: Current demand level.
             K: Capacity.
             leverage: Debt-to-investment ratio.
             phi: Training fraction (default 0.5).
-            regime: Demand regime.
+            regime: Demand regime governing the drift (default "L").
             horizon: Time horizon in years.
 
         Returns:
@@ -218,7 +229,7 @@ class ValuationAnalysis:
     def credit_spread_curve(
         self,
         leverage_values: np.ndarray,
-        regime: str = "H",
+        regime: str = "L",
     ) -> dict[str, np.ndarray]:
         """Compute credit spreads across leverage levels.
 
@@ -256,7 +267,7 @@ class ValuationAnalysis:
         self,
         lambda_true: float,
         lambda_invest: float,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Quantify the cost of belief mismatches.
 
         Uses the phi-aware model where lambda enters through A_eff,
@@ -342,7 +353,7 @@ class ValuationAnalysis:
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.40,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Quantify belief-mismatch cost with leverage (default risk).
 
         Uses total firm value (E + D) from the Leland structural model,
@@ -494,7 +505,7 @@ class ValuationAnalysis:
         X: float,
         K_installed: float = 0.0,
         phi: float = 0.5,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Decompose firm value using the phi-aware model.
 
         Uses the combined L+H revenue structure where phi determines
@@ -582,7 +593,7 @@ class ValuationAnalysis:
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.0,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Dario's dilemma in a duopoly: one-sided belief mismatch.
 
         A rational rival plays the equilibrium strategy under lambda_true.
@@ -685,7 +696,7 @@ class ValuationAnalysis:
         lambda_val: float | None = None,
         dt: float = 1.0,
         adjustment_cost: float = 0.0,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Two-period illustration of dynamic training reallocation.
 
         Period 1: firm invests with phi_1.
@@ -726,9 +737,8 @@ class ValuationAnalysis:
             a_eff_1 = ((1.0 - phi_1) * K) ** alpha / (p.r - p.mu_L + lam)
             a_eff_1 += lam / (p.r - p.mu_L + lam) * (phi_1 * K) ** alpha * p.A_H
 
-            # Approximate PV from period 1 flows
-            pv_1 = a_eff_1 * (1.0 - disc_1 * (1.0 - p_switch)) * dt / (dt + 1e-12)
-            # Simplified: use the effective coefficient times the period fraction
+            # PV from period 1 flows: effective coefficient times the
+            # fraction of the perpetuity earned over [0, dt]
             pv_1 = a_eff_1 * (1.0 - np.exp(-(p.r - p.mu_L + lam) * dt))
 
             # Period 2 outcomes:
@@ -820,7 +830,7 @@ class ValuationAnalysis:
     def fixed_pie_robustness(
         self,
         leverage: float = 0.0,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Compare Tullock vs fixed-pie contest equilibrium objects.
 
         Solves the duopoly under both the standard Tullock contest and
@@ -850,20 +860,12 @@ class ValuationAnalysis:
         asym_tullock = abs(loss_cons / loss_aggr) if loss_aggr != 0 else np.nan
 
         # --- Fixed-pie contest ---
-        # Re-solve follower and leader under fixed-pie A_eff
-        # We use the standard DuopolyModel but swap the revenue method
         duo_fp = DuopolyModel(
-            p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
-        )
-
-        # Store original method and monkey-patch for fixed-pie
-        orig_a_eff = duo_fp._effective_revenue_coeff
-        duo_fp._effective_revenue_coeff = (
-            lambda phi_i, K_i, phi_j, K_j, monopolist=False: (
-                orig_a_eff(phi_i, K_i, phi_j, K_j, monopolist=True)
-                if monopolist
-                else duo_fp._effective_revenue_coeff_fixed_pie(phi_i, K_i, phi_j, K_j)
-            )
+            p,
+            leverage=leverage,
+            coupon_rate=0.05,
+            bankruptcy_cost=0.30,
+            contest="fixed_pie",
         )
 
         try:
@@ -920,8 +922,10 @@ class ValuationAnalysis:
         leverages = [0.0, 0.2, 0.4, 0.6]
         result["credit"] = {}
         for lev in leverages:
-            spread = self.credit_spread(lev, regime=regime)
-            prob = self.default_probability(X, 1.0, lev, regime=regime)
+            # Credit metrics are L-regime objects regardless of the
+            # regime used for the value decomposition above.
+            spread = self.credit_spread(lev, regime="L")
+            prob = self.default_probability(X, 1.0, lev, regime="L")
             result["credit"][f"leverage_{lev}"] = {
                 "spread_bps": spread * 10000,
                 "default_prob_5yr": prob,

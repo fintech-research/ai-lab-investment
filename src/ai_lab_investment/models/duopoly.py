@@ -27,6 +27,8 @@ Investment trigger methodology:
     providing a combined effective revenue coefficient A_eff for the trigger.
 """
 
+import logging
+
 import numpy as np
 from scipy import optimize
 
@@ -54,19 +56,28 @@ class DuopolyModel:
         leverage: float = 0.0,
         coupon_rate: float = 0.05,
         bankruptcy_cost: float = 0.30,
+        contest: str = "tullock",
     ):
         """Initialize the duopoly model.
 
         Args:
             params: Base model parameters (includes xi, lam_0, eta).
-            leverage: Default debt-to-investment-cost ratio D/I(K). 0 = all equity.
+            leverage: Debt-to-investment-cost ratio D/I(K) for both firms
+                (exogenous). 0 = all equity.
             coupon_rate: Coupon rate on debt as fraction of face value.
             bankruptcy_cost: Fraction of firm value lost in default (alpha_bc).
+            contest: Revenue-sharing specification, "tullock" (default) or
+                "fixed_pie" (same Tullock shares, no revenue expansion
+                under asymmetry).
         """
+        if contest not in ("tullock", "fixed_pie"):
+            msg = f"Unknown contest specification: {contest!r}"
+            raise ValueError(msg)
         self.params = params
         self.leverage = leverage
         self.coupon_rate = coupon_rate
         self.bankruptcy_cost = bankruptcy_cost
+        self.contest = contest
         self._cache: dict = {}
 
     # ------------------------------------------------------------------
@@ -161,35 +172,30 @@ class DuopolyModel:
     ) -> float:
         """A_eff under fixed-pie contest (no revenue expansion).
 
-        Uses average capacity instead of own capacity in the revenue
-        term, so total industry revenue depends only on aggregate
-        capacity, not its distribution. Under symmetry this equals the
-        standard Tullock A_eff; under asymmetry revenue expansion is
-        removed.
+        The industry pie is the arithmetic mean of the firms' standalone
+        revenues, X * (y_i + y_j) / 2 with y_i the regime-relevant
+        capacity measure raised to alpha, and shares are Tullock
+        (s_i = y_i / (y_i + y_j)). Firm i's revenue is therefore
+        s_i * (y_i + y_j) / 2 = y_i / 2: half its standalone revenue.
+        Under symmetry this equals the standard Tullock payoff; under
+        asymmetry the quadratic-mean revenue expansion is removed (the
+        total pie is invariant to share-stealing), and no firm can
+        free-ride on the rival's capacity.
         """
         p = self.params
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
 
         inf_i = (1.0 - phi_i) * K_i
-        inf_j = (1.0 - phi_j) * K_j
         tr_i = phi_i * K_i
-        tr_j = phi_j * K_j
-
-        # Average capacity (per-firm symmetric benchmark)
-        avg_inf = (inf_i + inf_j) / 2.0
-        avg_tr = (tr_i + tr_j) / 2.0
-
-        s_L = self.contest_share_L(phi_i, K_i, phi_j, K_j)
-        s_H = self.contest_share_H(phi_i, K_i, phi_j, K_j)
 
         denom_L = p.r - p.mu_L + lam_tilde
         if denom_L <= 0:
             return 0.0
 
-        a_eff = avg_inf**p.alpha * s_L / denom_L
+        a_eff = 0.5 * inf_i**p.alpha / denom_L
 
-        if avg_tr > 0 and lam_tilde > 0:
-            a_eff += lam_tilde / denom_L * avg_tr**p.alpha * s_H * p.A_H
+        if tr_i > 0 and lam_tilde > 0:
+            a_eff += lam_tilde / denom_L * 0.5 * tr_i**p.alpha * p.A_H
 
         return a_eff
 
@@ -220,6 +226,9 @@ class DuopolyModel:
         Returns:
             Effective revenue coefficient A_eff.
         """
+        if self.contest == "fixed_pie" and not monopolist:
+            return self._effective_revenue_coeff_fixed_pie(phi_i, K_i, phi_j, K_j)
+
         p = self.params
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
 
@@ -403,6 +412,90 @@ class DuopolyModel:
         )
         return max(X_D, 0.0)
 
+    def default_boundary_coupled(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        leverage: float | None = None,
+    ) -> float:
+        """L-regime default boundary from the coupled regime-switching system.
+
+        Verification counterpart to default_boundary(). The H-regime equity
+        has the closed Leland form E_H(X) = A' X - N + D_H X^{beta_H^-} with
+        its own boundary X_D^H; the L-regime equity ODE is forced by
+        lambda * E_H, giving particular terms A_eff X - N + C_2 X^{beta_H^-}
+        plus the homogeneous A_neg X^{beta_L^-}. Value matching and smooth
+        pasting at X_D pin (A_neg, X_D) jointly. The single-boundary
+        formula in default_boundary() replaces E_H with its perpetuity,
+        omitting the (positive) H-regime default option D_H X^{beta_H^-};
+        it therefore understates continuation value and weakly overstates
+        X_D (about 3% at baseline).
+        """
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0:
+            return 0.0
+
+        p = self.params
+        c_D = self.coupon_payment(K_i, lev)
+        if c_D <= 0:
+            return 0.0
+
+        is_monopolist = K_j <= 0
+        s_H = 1.0 if is_monopolist else self.contest_share_H(phi_i, K_i, phi_j, K_j)
+        a_eff = self._effective_revenue_coeff(
+            phi_i, K_i, phi_j, K_j, monopolist=is_monopolist
+        )
+        if a_eff <= 0:
+            return np.inf
+
+        N = (c_D + p.delta * K_i) / p.r
+        tr_cap = phi_i * K_i
+        if tr_cap <= 0:
+            # No H-regime revenue: the coupled system degenerates to the
+            # single-boundary case.
+            return self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        A_prime = p.A_H * tr_cap**p.alpha * s_H
+
+        # H-regime Leland boundary and default-option coefficient
+        beta_H_neg = self._negative_root("H", 0.0)
+        X_D_H = beta_H_neg / (beta_H_neg - 1.0) * N / A_prime
+        D_H = (N - A_prime * X_D_H) * X_D_H ** (-beta_H_neg)
+
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_L_neg = self._negative_root("L", lam_tilde)
+        Q_L = (
+            0.5 * p.sigma**2 * beta_H_neg * (beta_H_neg - 1.0)
+            + p.mu_L * beta_H_neg
+            - (p.r + lam_tilde)
+        )
+        C_2 = -lam_tilde * D_H / Q_L
+
+        X_D_guess = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+
+        def system(v: np.ndarray) -> list[float]:
+            log_X_D, A_neg = v
+            X_D = np.exp(log_X_D)
+            E = a_eff * X_D - N + C_2 * X_D**beta_H_neg + A_neg * X_D**beta_L_neg
+            E_prime = (
+                a_eff
+                + C_2 * beta_H_neg * X_D ** (beta_H_neg - 1.0)
+                + A_neg * beta_L_neg * X_D ** (beta_L_neg - 1.0)
+            )
+            return [E, E_prime * X_D]
+
+        sol, _, ier, _ = optimize.fsolve(
+            system, [np.log(X_D_guess), 0.0], full_output=True
+        )
+        if ier != 1:
+            logging.warning(
+                "Coupled default boundary failed to converge; "
+                "returning single-boundary formula"
+            )
+            return X_D_guess
+        return float(np.exp(sol[0]))
+
     def _negative_root(self, regime: str, lam_tilde: float = 0.0) -> float:
         """Negative root of the characteristic equation.
 
@@ -493,7 +586,16 @@ class DuopolyModel:
     ) -> float:
         """Debt value accounting for default risk.
 
-        D(X) = coupon/r - [coupon/r - (1 - alpha_bc) * V(X_D)] * (X/X_D)^beta_neg
+        D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg
+
+        Recovery in default is (1 - alpha_bc) times the liquidation value
+        of the *inference* business only: bankruptcy destroys the
+        H-regime continuation value embedded in A_eff (the speculative
+        post-AGI payoff requires the going concern -- its researchers,
+        models, and training program -- and does not survive
+        liquidation). Recovery is further capped at the riskless value of
+        the coupon claim c_D/r (absolute priority: creditors cannot
+        recover more than their claim is worth default-free).
         """
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
@@ -509,15 +611,38 @@ class DuopolyModel:
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
         beta_neg = self._negative_root("L", lam_tilde)
 
-        if K_j > 0:
-            V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
-        else:
-            V_XD = self.monopolist_value_L(X_D, phi_i, K_i)
-
-        recovery = (1.0 - self.bankruptcy_cost) * (V_XD + p.delta * K_i / p.r)
+        liq = self.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
+        recovery = (1.0 - self.bankruptcy_cost) * liq
+        recovery = min(recovery, c_D / p.r)
         default_loss = c_D / p.r - recovery
         debt = c_D / p.r - default_loss * (X / X_D) ** beta_neg
         return max(debt, 0.0)
+
+    def liquidation_value(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+    ) -> float:
+        """Liquidation value of firm i's productive assets at demand X.
+
+        Only the inference business survives liquidation: the buyer
+        acquires the capacity serving current demand and earns the
+        L-regime revenue stream until the regime switch, capitalized at
+        the effective rate r - mu_L + lambda. The H-regime continuation
+        value (the faith-based component of A_eff) is destroyed in
+        bankruptcy. Gross of operating costs, following Leland (1994).
+        """
+        p = self.params
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        denom_L = p.r - p.mu_L + lam_tilde
+        if denom_L <= 0:
+            return 0.0
+        inf_cap = (1.0 - phi_i) * K_i
+        s_L = 1.0 if K_j <= 0 else self.contest_share_L(phi_i, K_i, phi_j, K_j)
+        return inf_cap**p.alpha * s_L * X / denom_L
 
     def firm_value(
         self,
@@ -578,28 +703,33 @@ class DuopolyModel:
 
         return markup * total_cost / a_eff
 
-    def _follower_objective_3d(
+    def _follower_objective(
         self,
         params_vec: np.ndarray,
         K_L: float,
         phi_L: float,
     ) -> float:
-        """Negative of follower's option value factor for 3D optimization.
+        """Negative of follower's option value factor for (K, phi) optimization.
 
-        params_vec = [log_K, phi, leverage]
-        Maximizes h(K, phi, lev) = a_eff^beta_H / cost^(beta_H-1).
+        params_vec = [log_K, phi]; leverage is fixed at the model's
+        exogenous self.leverage. Leverage must not be a free coordinate:
+        debt is issued at face value with coupon rate c_d < r, so the
+        cost term b is strictly decreasing in leverage and an optimizer
+        would always run to the upper bound.
+        Maximizes h(K, phi) = a_eff^beta_H / cost^(beta_H-1).
         """
-        log_K, phi_F, lev_F = params_vec
+        log_K, phi_F = params_vec
         K_F = np.exp(log_K)
 
         # Bound checks (log_K bounds match base_model's (-15, 15))
         if log_K < -15 or log_K > 15:
             return 1e20
-        if phi_F <= 0.01 or phi_F >= 0.99 or lev_F < 0 or lev_F > 0.95:
+        if phi_F <= 0.01 or phi_F >= 0.99:
             return 1e20
 
         p = self.params
         beta = p.beta_H
+        lev_F = self.leverage
 
         a_eff = self._effective_revenue_coeff(phi_F, K_F, phi_L, K_L)
 
@@ -617,10 +747,11 @@ class DuopolyModel:
         phi_L: float,
         regime: str = "H",
     ) -> tuple[float, float, float, float]:
-        """Solve follower's optimal investment problem (3D).
+        """Solve follower's optimal investment problem over (K, phi).
 
         Given leader's (K_L, phi_L), find follower's optimal
-        trigger, capacity, training fraction, and leverage.
+        trigger, capacity, and training fraction. Leverage is the
+        model's exogenous self.leverage.
 
         Args:
             K_L: Leader's installed capacity.
@@ -628,37 +759,33 @@ class DuopolyModel:
             regime: Regime label (for cache key compatibility).
 
         Returns:
-            (X_F*, K_F*, phi_F*, lev_F*): Follower's optimal choices.
+            (X_F*, K_F*, phi_F*, lev_F): Follower's optimal choices;
+            lev_F equals the exogenous leverage.
         """
-        cache_key = ("follower_3d", K_L, phi_L, regime)
+        cache_key = ("follower", K_L, phi_L, regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        # 3D optimization with multiple starting points
-        # When leverage=0 (all-equity), fix leverage at 0
-        max_lev = min(self.leverage * 1.5 + 0.1, 0.95) if self.leverage > 0 else 0.0
+        lev_F = self.leverage
         best_val = 1e20
         best_params = None
 
-        lev_starts = [0.0] if max_lev == 0 else [0.0, self.leverage, max_lev * 0.7]
-
-        for log_K_init in [-2, 0, 2]:
-            for phi_init in [0.15, 0.30, 0.50]:
-                for lev_init in lev_starts:
-                    x0 = np.array([log_K_init, phi_init, lev_init])
-                    try:
-                        result = optimize.minimize(
-                            self._follower_objective_3d,
-                            x0,
-                            args=(K_L, phi_L),
-                            method="Nelder-Mead",
-                            options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
-                        )
-                        if result.fun < best_val:
-                            best_val = result.fun
-                            best_params = result.x
-                    except (ValueError, RuntimeError):
-                        continue
+        for log_K_init in [-6, -2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50, 0.70]:
+                x0 = np.array([log_K_init, phi_init])
+                try:
+                    result = optimize.minimize(
+                        self._follower_objective,
+                        x0,
+                        args=(K_L, phi_L),
+                        method="Nelder-Mead",
+                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                    )
+                    if result.fun < best_val:
+                        best_val = result.fun
+                        best_params = result.x
+                except (ValueError, RuntimeError):
+                    continue
 
         if best_params is None or best_val >= 1e19:
             msg = f"Follower optimization failed for K_L={K_L:.4f}, phi_L={phi_L:.3f}"
@@ -666,7 +793,6 @@ class DuopolyModel:
 
         K_F = np.exp(best_params[0])
         phi_F = np.clip(best_params[1], 0.01, 0.99)
-        lev_F = np.clip(best_params[2], 0.0, max_lev)
         X_F = self._follower_trigger(K_F, phi_F, K_L, phi_L, lev_F)
 
         self._cache[cache_key] = (X_F, K_F, phi_F, lev_F)
@@ -690,25 +816,23 @@ class DuopolyModel:
         2. Post-follower-entry, L-regime: duopoly revenues
         3. H-regime (after switch): duopoly quality-based revenue
 
+        Built from equity_value() so the Leland default option enters the
+        leader's value on the same terms as the follower's (the follower
+        side of the preemption gap is also an equity_value).
+
         Accounts for follower's entry changing lambda_tilde.
         """
         p = self.params
 
         # Follower's best response
-        X_F, K_F, phi_F, _lev_F = self.solve_follower(K_L, phi_L)
-
-        # Leader's costs
-        c_D_L = self.coupon_payment(K_L, lev_L)
-        I_L = self.investment_cost(K_L)
-        equity_cost_L = (1.0 - lev_L) * I_L
+        X_F, K_F, phi_F, _ = self.solve_follower(K_L, phi_L)
 
         if X >= X_F:
-            # Follower already entered — duopoly
-            V_duo = self.installed_value_L(X, phi_L, K_L, phi_F, K_F)
-            return max(V_duo - equity_cost_L - c_D_L / p.r, 0.0)
+            # Follower already entered — duopoly equity (with default option)
+            return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
 
-        # Phase 1: Monopolist (before follower enters)
-        V_mono = self.monopolist_value_L(X, phi_L, K_L)
+        # Phase 1: Monopolist equity (with default option)
+        eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
 
         # Phase 2: Revenue drop when follower enters
         V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
@@ -719,30 +843,31 @@ class DuopolyModel:
         beta = p.beta_H
         entry_factor = (X / X_F) ** beta if X_F > 0 else 1.0
 
-        V_leader = V_mono - revenue_drop * entry_factor
+        return max(eq_mono - revenue_drop * entry_factor, 0.0)
 
-        return max(V_leader - equity_cost_L - c_D_L / p.r, 0.0)
-
-    def _leader_objective_3d(
+    def _leader_objective(
         self,
         params_vec: np.ndarray,
     ) -> float:
-        """Negative of leader's option value factor for 3D optimization.
+        """Negative of leader's option value factor for (K, phi) optimization.
 
-        params_vec = [log_K, phi, leverage]
+        params_vec = [log_K, phi]; leverage is fixed at the model's
+        exogenous self.leverage (see _follower_objective for why leverage
+        cannot be a free coordinate).
         Uses beta_H and A_eff (combined L+H revenue coefficient).
         """
-        log_K, phi_L, lev_L = params_vec
+        log_K, phi_L = params_vec
         K_L = np.exp(log_K)
 
         # Bound checks (log_K bounds match base_model's (-15, 15))
         if log_K < -15 or log_K > 15:
             return 1e20
-        if phi_L <= 0.01 or phi_L >= 0.99 or lev_L < 0 or lev_L > 0.95:
+        if phi_L <= 0.01 or phi_L >= 0.99:
             return 1e20
 
         p = self.params
         beta = p.beta_H
+        lev_L = self.leverage
 
         # Revenue coefficient as monopolist
         a_eff = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
@@ -761,36 +886,37 @@ class DuopolyModel:
     ) -> tuple[float, float, float, float]:
         """Solve leader's problem ignoring preemption (monopolist trigger).
 
+        The leader's (K, phi) maximizes the monopoly-phase option value;
+        with leverage = 0 this coincides with the single-firm optimum of
+        SingleFirmModel.optimal_trigger_capacity_phi (identical objectives).
+
         Returns:
-            (X_L_mono*, K_L*, phi_L*, lev_L*): Leader's monopolist solution.
+            (X_L_mono*, K_L*, phi_L*, lev_L): Leader's monopolist solution;
+            lev_L equals the exogenous leverage.
         """
-        cache_key = ("leader_mono_3d", regime)
+        cache_key = ("leader_mono", regime)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        # When leverage=0 (all-equity), fix leverage at 0
-        max_lev = min(self.leverage * 1.5 + 0.1, 0.95) if self.leverage > 0 else 0.0
+        lev_L = self.leverage
         best_val = 1e20
         best_params = None
 
-        lev_starts = [0.0] if max_lev == 0 else [0.0, self.leverage, max_lev * 0.7]
-
-        for log_K_init in [-2, 0, 2]:
-            for phi_init in [0.15, 0.30, 0.50]:
-                for lev_init in lev_starts:
-                    x0 = np.array([log_K_init, phi_init, lev_init])
-                    try:
-                        result = optimize.minimize(
-                            self._leader_objective_3d,
-                            x0,
-                            method="Nelder-Mead",
-                            options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
-                        )
-                        if result.fun < best_val:
-                            best_val = result.fun
-                            best_params = result.x
-                    except (ValueError, RuntimeError):
-                        continue
+        for log_K_init in [-6, -2, 0, 2]:
+            for phi_init in [0.15, 0.30, 0.50, 0.70]:
+                x0 = np.array([log_K_init, phi_init])
+                try:
+                    result = optimize.minimize(
+                        self._leader_objective,
+                        x0,
+                        method="Nelder-Mead",
+                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+                    )
+                    if result.fun < best_val:
+                        best_val = result.fun
+                        best_params = result.x
+                except (ValueError, RuntimeError):
+                    continue
 
         if best_params is None or best_val >= 1e19:
             msg = f"Leader optimization failed for regime={regime}"
@@ -798,7 +924,6 @@ class DuopolyModel:
 
         K_L = np.exp(best_params[0])
         phi_L = np.clip(best_params[1], 0.01, 0.99)
-        lev_L = np.clip(best_params[2], 0.0, max_lev)
 
         # Compute trigger using beta_H and A_eff
         p = self.params
@@ -865,38 +990,53 @@ class DuopolyModel:
         X_L_mono, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
         X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
 
-        # Find the preemption point by bisection
-        X_low = X_L_mono * 0.001
+        # Compute default boundaries
+        X_D_L = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
+        X_D_F = self.default_boundary(phi_F, K_F, phi_L, K_L, lev_F)
+
+        # Find the preemption point on (X_D, X_L^mono). The preemption
+        # trigger is the *first* up-crossing of L(X) - F(X) and must lie
+        # below the leader's unconstrained trigger X_L^mono. The gap
+        # eventually turns negative again at high demand because (K_L,
+        # phi_L) is held at the leader-role optimum rather than
+        # re-optimized for late entry; that second crossing lies outside
+        # the equilibrium path and the verification domain.
+        X_low = max(X_D_L, X_L_mono * 0.001)
         X_high = X_L_mono
 
-        gap_low = self._preemption_gap(X_low, regime)
-        gap_high = self._preemption_gap(X_high, regime)
-
-        if gap_low >= 0:
-            X_P = X_low
-        elif gap_high <= 0:
-            X_P = X_L_mono
-        else:
-            try:
-                X_P = optimize.brentq(
-                    self._preemption_gap,
-                    X_low,
-                    X_high,
-                    args=(regime,),
-                    xtol=1e-10,
-                )
-            except ValueError:
-                X_P = X_L_mono
-
-        # Verify single crossing on a grid
         grid = np.linspace(X_low, X_high, 500)
         gaps = np.array([self._preemption_gap(x, regime) for x in grid])
         sign_changes = np.sum(np.diff(np.sign(gaps)) != 0)
         single_crossing = bool(sign_changes == 1)
 
-        # Compute default boundaries
-        X_D_L = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
-        X_D_F = self.default_boundary(phi_F, K_F, phi_L, K_L, lev_F)
+        bracket_failed = False
+        if gaps[0] >= 0:
+            X_P = X_low
+            bracket_failed = True
+        elif sign_changes == 0:
+            X_P = X_L_mono
+            bracket_failed = True
+        else:
+            # Bracket the first sign change and refine with Brent's method
+            idx = int(np.argmax(np.diff(np.sign(gaps)) != 0))
+            try:
+                X_P = optimize.brentq(
+                    self._preemption_gap,
+                    grid[idx],
+                    grid[idx + 1],
+                    args=(regime,),
+                    xtol=1e-10,
+                )
+            except ValueError:
+                X_P = X_L_mono
+                bracket_failed = True
+        if bracket_failed:
+            logging.warning(
+                "Preemption bracket failed on (%.4g, %.4g); using fallback X_P=%.4g",
+                X_low,
+                X_high,
+                X_P,
+            )
 
         # Endogenous lambda with both firms invested
         lam_tilde = self.endogenous_lambda(phi_L, K_L, phi_F, K_F)

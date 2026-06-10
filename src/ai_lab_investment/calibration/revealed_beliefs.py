@@ -19,6 +19,8 @@ scaling curves, emergent capabilities), the revealed lambda contains
 information not available to outside observers.
 """
 
+from dataclasses import replace
+
 import numpy as np
 from scipy import optimize
 
@@ -65,8 +67,17 @@ class RevealedBeliefs:
 
         Uses the L-regime option value (which IS lambda-dependent) relative
         to the H-regime investment cost. The ratio F_L(X_ref) / I(K*_H)
-        is monotonically increasing in lambda and serves as the model's
-        prediction for investment intensity (CapEx/Revenue).
+        serves as the model's prediction for investment intensity
+        (CapEx/Revenue). It is increasing in lambda over most of the range
+        but is NOT globally monotone (the phi-aware variant is mildly
+        non-monotone at very low lambda), so callers rely on a
+        sign-change check rather than monotonicity.
+
+        X_ref is a normalization: F_L scales as X^beta_H, so the implied
+        lambda is sensitive to this choice. The default 0.01 places the
+        reference demand below all baseline triggers; results from this
+        intensity moment should be read as illustrative orderings, not
+        point identification (see the paper's calibration caveats).
 
         The H-regime optimal capacity K*_H and investment cost I(K*_H) are
         lambda-independent (they depend only on A_H, beta_H, and cost
@@ -118,7 +129,7 @@ class RevealedBeliefs:
             if g_lo * g_hi > 0:
                 return None
 
-            return optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6)
+            return float(optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6))
         except (ValueError, RuntimeError):
             return None
 
@@ -132,7 +143,8 @@ class RevealedBeliefs:
 
         Uses the L-regime option value F_L(X_ref) relative to the H-regime
         investment cost I(K*_H) as the model's prediction for investment
-        intensity. This ratio is monotonically increasing in lambda because:
+        intensity. This ratio is increasing in lambda over most of the
+        search range (see _model_intensity_at_lambda for caveats) because:
 
         - I(K*_H) is lambda-independent (H-regime quantities depend only on
           A_H = 1/(r - mu_H) and beta_H, neither involving lambda)
@@ -170,13 +182,73 @@ class RevealedBeliefs:
                 return None
             if g_lo * g_hi > 0:
                 return None
-            return optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6)
+            return float(optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6))
         except (ValueError, RuntimeError):
             return None
 
     # ------------------------------------------------------------------
     # Phi-aware inversion methods
     # ------------------------------------------------------------------
+
+    def infer_lambda_from_phi(
+        self,
+        phi_hat: float,
+        r: float | None = None,
+    ) -> float | None:
+        """Infer lambda from an observed training fraction (closed form).
+
+        Inverts the single-firm training-allocation FOC (Proposition 1):
+        phi* / (1 - phi*) = (lambda * A_H)^(1/(1-alpha)), so
+
+            lambda = (phi_hat / (1 - phi_hat))^(1 - alpha) * (r - mu_H).
+
+        This is the inversion quoted in the paper's calibration section.
+
+        Args:
+            phi_hat: Observed training fraction in (0, 1).
+            r: Discount rate (defaults to the calibration baseline;
+                pass a firm-specific WACC for archetype-level inversion).
+
+        Returns:
+            Implied lambda, or None if phi_hat or r is inadmissible.
+        """
+        if not 0.0 < phi_hat < 1.0:
+            return None
+        c = self.calibration
+        r_eff = c.r if r is None else r
+        if r_eff <= c.mu_H:
+            return None
+        return (phi_hat / (1.0 - phi_hat)) ** (1.0 - c.alpha) * (r_eff - c.mu_H)
+
+    def phi_inversion_band(
+        self,
+        firm: FirmData,
+        phi_uncertainty: float = 0.10,
+        use_firm_wacc: bool = False,
+    ) -> dict[str, float | None]:
+        """Implied-lambda band for a firm's training fraction +/- band.
+
+        Args:
+            firm: Firm data with observed training_fraction.
+            phi_uncertainty: Half-width of the phi_hat band.
+            use_firm_wacc: If True, invert at the firm's WACC instead of
+                the common baseline r (the implied lambda scales with
+                r - mu_H, so this choice matters).
+
+        Returns:
+            Dict with lambda at the point estimate and band endpoints.
+        """
+        phi_hat = firm.training_fraction
+        if not 0.0 < phi_hat < 1.0:
+            return {"lambda_mid": None, "lambda_lo": None, "lambda_hi": None}
+        r = firm.wacc if use_firm_wacc else None
+        lo = max(phi_hat - phi_uncertainty, 0.01)
+        hi = min(phi_hat + phi_uncertainty, 0.99)
+        return {
+            "lambda_mid": self.infer_lambda_from_phi(phi_hat, r=r),
+            "lambda_lo": self.infer_lambda_from_phi(lo, r=r),
+            "lambda_hi": self.infer_lambda_from_phi(hi, r=r),
+        }
 
     def _model_phi_intensity_at_lambda(
         self, lam: float, X_ref: float = 0.01
@@ -192,7 +264,7 @@ class RevealedBeliefs:
         try:
             params = self.calibration.to_model_params(lam=lam)
             model = SingleFirmModel(params)
-            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+            _X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
             I_K = model.investment_cost(K_star)
             F = model.option_value_with_phi(X_ref)
             if I_K <= 0:
@@ -206,7 +278,7 @@ class RevealedBeliefs:
         firm: FirmData,
         X_ref: float = 0.01,
         lam_bounds: tuple[float, float] = (0.001, 2.0),
-    ) -> dict[str, float | None]:
+    ) -> dict:
         """Infer lambda using the phi-aware model.
 
         Uses two moments when training_fraction is available:
@@ -243,8 +315,8 @@ class RevealedBeliefs:
             g_lo = gap(lam_bounds[0])
             g_hi = gap(lam_bounds[1])
             if abs(g_lo) <= 1e9 and abs(g_hi) <= 1e9 and g_lo * g_hi < 0:
-                lambda_implied = optimize.brentq(
-                    gap, lam_bounds[0], lam_bounds[1], xtol=1e-6
+                lambda_implied = float(
+                    optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6)
                 )
                 _, phi_model = self._model_phi_intensity_at_lambda(
                     lambda_implied, X_ref
@@ -284,6 +356,13 @@ class RevealedBeliefs:
             belief = self.infer_lambda_with_phi(firm, X_ref=X_ref)
             result.update(belief)
 
+            # Closed-form inversion of the training-fraction FOC (the
+            # inversion reported in the paper's calibration section)
+            band = self.phi_inversion_band(firm)
+            result["lambda_from_phi"] = band["lambda_mid"]
+            result["lambda_from_phi_lo"] = band["lambda_lo"]
+            result["lambda_from_phi_hi"] = band["lambda_hi"]
+
             # Also compute legacy single-moment inversion
             lam_legacy = self.infer_lambda_from_capex(firm, X_ref=X_ref)
             result["lambda_from_capex_legacy"] = lam_legacy
@@ -317,20 +396,9 @@ class RevealedBeliefs:
         implied_lambdas = np.full(n, np.nan)
 
         for i, val in enumerate(param_range):
-            calib = CalibrationData(
-                mu_L=self.calibration.mu_L,
-                mu_H=self.calibration.mu_H,
-                sigma=self.calibration.sigma,
-                alpha=self.calibration.alpha,
-                gamma=self.calibration.gamma,
-                c=self.calibration.c,
-                delta=self.calibration.delta,
-                r=self.calibration.r,
-                tau=self.calibration.tau,
-                lam=self.calibration.lam,
-                firms=self.calibration.firms,
-            )
-            setattr(calib, param_name, val)
+            # dataclasses.replace preserves every field (including lam_0,
+            # xi, eta) rather than silently resetting them to defaults
+            calib = replace(self.calibration, **{param_name: val})
             rb = RevealedBeliefs(calib)
             result = rb.infer_lambda_from_capex(firm, X_ref=X_ref)
             if result is not None:

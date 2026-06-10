@@ -25,6 +25,6 @@ Main entry: `index.qmd` (includes all sections). Sections: `_introduction.qmd`, 
 - β_L⁺ ≈ 3.01, β_H ≈ 1.55 (positive characteristic roots)
 - Assumption A3: (1−1/β_L⁺)/α ≈ 1.67 ≥ 1 → simplified F_L = C·X^{β_H} valid at baseline
 - φ̲ ≈ 0.18 (faith-based survival threshold), R ≈ 0.22
-- Baseline results: X* ≈ 0.0047, K* ≈ 0.0067, φ* ≈ 0.70 (single-firm); X_F ≈ 0.57, K_F ≈ 1.30, X_P ≈ 0.0082, X_H^mono ≈ 0.0163 (duopoly, ℓ=0)
-- Credit risk: spreads 170/259/312 bps at ℓ=0.05/0.20/0.70; 5-yr default (first-passage) 0.17%/0.57%/6.10% (at fixed demand level)
+- Baseline results: X* ≈ 0.0047, K* ≈ 0.0067, φ* ≈ 0.70 (single-firm); X_F ≈ 0.12, K_F ≈ 0.26, X_P ≈ 0.0027, X_L^mono = X* ≈ 0.0047, preemption discount X_P/X_L^mono ≈ 0.57 (duopoly, ℓ=0); φ is role-invariant (φ_L = φ_F = φ*)
+- Credit risk: spreads ≈0/12/41/97 bps at ℓ=0.05/0.20/0.40/0.70 (benchmark = r; recovery = inference liquidation value capped at c_D/r); 5-yr default (first-passage, L-regime drift) 0.63%/1.80%/4.85%/12.98% (at fixed demand level)
 - All results verified numerically; see `notebooks/model_derivation.ipynb` for SymPy derivations
