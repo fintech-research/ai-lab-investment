@@ -183,6 +183,13 @@ class VoiceoverScene(Scene):
         """Play narration for ``text`` over the animations in the block."""
         text = " ".join(text.split())  # normalize whitespace from indented strings
         wav_path, duration = self._ensure_tts().synthesize(text)
+        # After a cache-hit play(), manim leaves renderer.skip_animations True
+        # until the next play() resets it, and Scene.add_sound silently drops
+        # sounds while it is set — which would mute narration on re-renders.
+        # Reset it here with the same semantics as play().
+        self.renderer.skip_animations = getattr(
+            self.renderer, "_original_skipping_status", False
+        )
         self.add_sound(str(wav_path))
         tracker = VoiceoverTracker(
             scene=self, duration=duration, start_time=self.renderer.time

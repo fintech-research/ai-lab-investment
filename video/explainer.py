@@ -466,15 +466,11 @@ class E05OptionValue(PaperScene):
         ):
             self.play(Create(trig), FadeIn(trig_lab), run_time=1.2)
 
-        trigger_eq = (
-            MathTex(
-                r"X^* = \underbrace{\frac{\beta_H}{\beta_H - 1}}_{\approx\,2.8}"
-                r"\cdot \frac{\delta K/r + cK^{\gamma}}{A_{\text{eff}}}",
-                font_size=36,
-            )
-            .to_edge(DOWN, buff=0.35)
-            .shift(RIGHT * 3.2)
-        )
+        trigger_eq = MathTex(
+            r"X^* = \underbrace{\frac{\beta_H}{\beta_H - 1}}_{\approx\,2.8}"
+            r"\cdot \frac{\delta K/r + cK^{\gamma}}{A_{\text{eff}}}",
+            font_size=36,
+        ).move_to(a_eff)
         with self.voiceover(
             "And the trigger has a closed form: total costs over A effective,"
             " scaled up by an option premium. At baseline, that premium means"
@@ -482,6 +478,7 @@ class E05OptionValue(PaperScene):
             " level. Optimism enters through A effective: a higher lambda"
             " raises it, and pulls the trigger down."
         ):
+            self.play(FadeOut(a_eff), run_time=0.5)
             self.play(Write(trigger_eq), run_time=2.0)
         self.pause(0.5)
         self.clear_body()
@@ -895,31 +892,36 @@ class E11Takeaways(PaperScene):
 
         items = VGroup(
             Text(
-                "1.  One allocation links growth and survival:"
-                " the same GPUs fund the future or pay for the present.",
+                "1.  One allocation links growth and survival:\n"
+                "     the same GPUs fund the future or pay for the present.",
                 font_size=28,
+                line_spacing=0.9,
             ),
             Text(
-                "2.  Beliefs, not competition, set the training share"
-                " (φ* ≈ 0.70 at λ = 0.10).",
+                "2.  Beliefs, not competition, set the training share\n"
+                "     (φ* ≈ 0.70 at λ = 0.10).",
                 font_size=28,
+                line_spacing=0.9,
             ),
             Text(
                 "3.  Competition compresses timing: leaders invest ~43% early.",
                 font_size=28,
             ),
             Text(
-                "4.  Faith-based survival: training lowers the default boundary"
-                " — but is worthless to creditors.",
+                "4.  Faith-based survival: training lowers the default\n"
+                "     boundary — but is worthless to creditors.",
                 font_size=28,
+                line_spacing=0.9,
             ),
             Text(
                 "5.  Dario's dilemma: timidity costs value;"
                 " aggression costs tail risk.",
                 font_size=28,
             ),
-        ).arrange(DOWN, buff=0.45, aligned_edge=LEFT)
-        items.shift(DOWN * 0.3)
+        ).arrange(DOWN, buff=0.38, aligned_edge=LEFT)
+        if items.width > 12.4:
+            items.scale_to_fit_width(12.4)
+        items.move_to(DOWN * 0.35)
 
         narrations = [
             "If you remember one thing: in this industry, the option to grow"
