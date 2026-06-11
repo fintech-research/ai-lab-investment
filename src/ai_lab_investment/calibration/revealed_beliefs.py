@@ -14,6 +14,19 @@ Extended methodology with training-inference allocation:
   These jointly identify (lambda, phi) or, given observed phi, provide
   a tighter identification of lambda alone.
 
+Scope notes:
+  - The closed-form phi inversion (infer_lambda_from_phi) is the only
+    moment the paper relies on; the capex-intensity inversion is
+    illustrative (sensitive to the X_ref normalization and not globally
+    monotone at very low lambda).
+  - Leverage is carried through as descriptive metadata only; it does
+    not enter any inversion (the allocation FOC is leverage-free, and
+    the model treats leverage as exogenous).
+  - The H-regime investment trigger is lambda-independent (H is
+    absorbing), so no trigger-based inversion is possible; earlier
+    versions exposed one, which was vacuous by construction and has
+    been removed.
+
 If firms have private information about AI progress (internal benchmarks,
 scaling curves, emergent capabilities), the revealed lambda contains
 information not available to outside observers.
@@ -37,20 +50,6 @@ class RevealedBeliefs:
 
     def __init__(self, calibration: CalibrationData):
         self.calibration = calibration
-
-    def _model_trigger_at_lambda(self, lam: float, regime: str = "H") -> float:
-        """Compute the model's predicted trigger at a given lambda.
-
-        Returns X* for regime H (the trigger that matters for investment
-        timing decisions).
-        """
-        try:
-            params = self.calibration.to_model_params(lam=lam)
-            model = SingleFirmModel(params)
-            X_star, _ = model.optimal_trigger_and_capacity(regime)
-        except (ValueError, RuntimeError):
-            return np.inf
-        return X_star
 
     def _model_capacity_at_lambda(self, lam: float, regime: str = "H") -> float:
         """Compute the model's predicted capacity at a given lambda."""
@@ -94,44 +93,6 @@ class RevealedBeliefs:
             return F_L / I_K
         except (ValueError, RuntimeError):
             return np.inf
-
-    def infer_lambda_from_trigger(
-        self,
-        observed_trigger: float,
-        regime: str = "H",
-        lam_bounds: tuple[float, float] = (0.001, 2.0),
-    ) -> float | None:
-        """Infer lambda from an observed investment trigger.
-
-        Finds the lambda such that the model's predicted X* matches
-        the observed trigger.
-
-        Args:
-            observed_trigger: The demand level at which the firm invested.
-            regime: Demand regime.
-            lam_bounds: Search bounds for lambda.
-
-        Returns:
-            Implied lambda, or None if no solution found.
-        """
-
-        def gap(lam: float) -> float:
-            predicted = self._model_trigger_at_lambda(lam, regime)
-            return predicted - observed_trigger
-
-        try:
-            # Check that the gap changes sign across bounds
-            g_lo = gap(lam_bounds[0])
-            g_hi = gap(lam_bounds[1])
-
-            if np.isinf(g_lo) or np.isinf(g_hi):
-                return None
-            if g_lo * g_hi > 0:
-                return None
-
-            return float(optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6))
-        except (ValueError, RuntimeError):
-            return None
 
     def infer_lambda_from_capex(
         self,

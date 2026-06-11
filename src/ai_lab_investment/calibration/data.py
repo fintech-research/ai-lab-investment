@@ -25,7 +25,6 @@ class FirmData:
         revenue_2025: Estimated 2025 revenue ($B).
         capex_2024: Capital expenditure 2024 ($B).
         capex_2025: Estimated capital expenditure 2025 ($B).
-        gpu_count: Estimated GPU fleet size (thousands).
         leverage_ratio: Debt-to-total-capital ratio.
         wacc: Weighted average cost of capital estimate.
         training_fraction: Estimated fraction of compute allocated to
@@ -38,7 +37,6 @@ class FirmData:
     revenue_2025: float
     capex_2024: float
     capex_2025: float
-    gpu_count: float  # Thousands
     leverage_ratio: float
     wacc: float
     training_fraction: float = 0.0
@@ -122,7 +120,6 @@ def get_stylized_firms() -> list[FirmData]:
             revenue_2025=4.5,
             capex_2024=2.0,
             capex_2025=3.0,
-            gpu_count=50,
             leverage_ratio=0.05,
             wacc=0.15,
             training_fraction=0.55,
@@ -134,9 +131,10 @@ def get_stylized_firms() -> list[FirmData]:
             name="Firm B (OpenAI-like)",
             revenue_2024=3.7,
             revenue_2025=12.5,
-            capex_2024=3.8,
+            # ~$7B total 2024 cloud compute per Epoch AI (~$3B training,
+            # ~$2B research/experimentation, ~$1.8B inference)
+            capex_2024=7.0,
             capex_2025=12.0,
-            gpu_count=100,
             leverage_ratio=0.05,
             wacc=0.14,
             training_fraction=0.60,
@@ -150,7 +148,6 @@ def get_stylized_firms() -> list[FirmData]:
             revenue_2025=60.0,
             capex_2024=52.5,
             capex_2025=91.0,
-            gpu_count=250,
             leverage_ratio=0.10,
             wacc=0.10,
             training_fraction=0.35,
@@ -165,7 +162,6 @@ def get_stylized_firms() -> list[FirmData]:
             revenue_2025=0.5,
             capex_2024=2.6,
             capex_2025=10.0,
-            gpu_count=200,
             leverage_ratio=0.15,
             wacc=0.18,
             training_fraction=0.75,
@@ -189,14 +185,24 @@ def get_baseline_calibration() -> CalibrationData:
             "Anthropic: $0.9B collected 2024, $4-5B collected 2025 "
             "(SaaStr, Sacra). OpenAI: $3.7B 2024, $12-13B 2025 "
             "(CFO Sarah Friar, Jan 2026). Google Cloud: $43.2B "
-            "2024, $59-60B 2025 (Alphabet SEC 10-K). xAI: ~$200M+ "
-            "standalone 2025 (Bloomberg, Jan 2026)."
+            "2024, $59-60B 2025 (Alphabet SEC 10-K). xAI: ~$0.5B "
+            "annualized 2025 standalone AI revenue, from Bloomberg's "
+            "Q3 2025 figure of $107M roughly doubling quarter-on-quarter "
+            "(Jan 2026); ~$0.2B 2024 (press estimates, low confidence)."
         ),
         "capex": (
             "Alphabet CapEx from SEC 10-K: $52.5B 2024, $91.4B 2025. "
             "Anthropic cloud spend: $2.66B through Sep 2025 (press). "
-            "OpenAI Azure spend: $8.65B through Q3 2025 (The Information). "
+            "OpenAI: ~$7B total 2024 cloud compute (Epoch AI); "
+            "Azure spend $8.65B through Q3 2025 (The Information). "
             "xAI: ~$10B+ est. 2025 ($7.8B cash burn through Sep)."
+        ),
+        "leverage": (
+            "Round assumptions informed by qualitative evidence, not "
+            "measured debt-to-capital ratios: Anthropic effectively "
+            "all-equity; OpenAI $4B revolving credit facility (Oct 2024); "
+            "Alphabet modest net debt; xAI $5B+ secured notes and term "
+            "loans (2025)."
         ),
         "gpu_pricing": (
             "H100 ~$25-40K, B200 ~$30-35K (NVIDIA pricing, analyst). "

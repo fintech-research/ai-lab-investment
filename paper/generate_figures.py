@@ -73,6 +73,11 @@ def _save(create_fn, name: str) -> None:
 
     with plt.style.context(["seaborn-v0_8-talk", _TALK_OVERRIDES]):
         fig = create_fn()
+        # Talk-style fonts need a larger canvas than the paper figsize;
+        # without this, long axis labels are clipped in the PNGs.
+        width, height = fig.get_size_inches()
+        fig.set_size_inches(1.5 * width, 1.5 * height)
+        fig.tight_layout()
         fig.savefig(OUT / f"{name}.png")
         plt.close(fig)
 

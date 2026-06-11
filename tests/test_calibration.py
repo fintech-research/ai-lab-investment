@@ -64,45 +64,25 @@ class TestRevealedBeliefs:
         calib = get_baseline_calibration()
         return RevealedBeliefs(calib)
 
-    def test_model_trigger_at_lambda(self, rb):
-        """Model should produce positive trigger for valid lambda."""
-        X = rb._model_trigger_at_lambda(0.10)
-        assert X > 0
+    def test_higher_lambda_lower_phi_aware_trigger(self, rb):
+        """Higher lambda lowers the phi-aware investment trigger.
 
-    def test_higher_lambda_lower_trigger(self, rb):
-        """Higher lambda should lower the trigger (invest sooner)."""
-        X_lo = rb._model_trigger_at_lambda(0.05)
-        X_hi = rb._model_trigger_at_lambda(0.50)
-        # H-regime trigger doesn't depend directly on lambda
-        # But capacity might change. Just check both are valid.
-        assert X_lo > 0
-        assert X_hi > 0
-
-    def test_infer_lambda_from_trigger(self, rb):
-        """Lambda inversion from H-regime trigger.
-
-        Note: H-regime trigger X_H* doesn't depend on lambda (H is
-        absorbing, beta_H = f(sigma, mu_H, r)). So the inversion
-        may return the boundary value or None. This is correct behavior.
-        The real revealed-beliefs methodology uses investment intensity
-        (capex/revenue) which does depend on lambda through the option
-        value structure.
+        (The H-regime trigger is lambda-independent because H is
+        absorbing, which is why no trigger-based inversion exists; the
+        lambda-sensitive trigger is the full-model one.)
         """
-        true_lambda = 0.20
-        X_star = rb._model_trigger_at_lambda(true_lambda)
-        assert np.isfinite(X_star)
-        # The inversion may not recover lambda from H-trigger alone
-        recovered = rb.infer_lambda_from_trigger(X_star)
-        # Result should be None (no sign change) or a boundary value
-        # This is expected — the real inversion uses capex intensity
-        assert recovered is None or recovered >= 0
+        from ai_lab_investment.models.base_model import SingleFirmModel
 
-    def test_infer_returns_none_for_impossible(self, rb):
-        """Should return None for impossible trigger values."""
-        result = rb.infer_lambda_from_trigger(1e10)
-        # Very high trigger may not be achievable
-        # Result should be None or a very low lambda
-        assert result is None or result < 0.01
+        def trigger(lam):
+            params = rb.calibration.to_model_params(lam=lam)
+            X_star, _, _ = SingleFirmModel(params).optimal_trigger_capacity_phi()
+            return X_star
+
+        X_lo_lam = trigger(0.05)
+        X_hi_lam = trigger(0.50)
+        assert X_lo_lam > 0
+        assert X_hi_lam > 0
+        assert X_hi_lam < X_lo_lam
 
     def test_sensitivity_analysis_shape(self, rb):
         """Sensitivity analysis should return correct shape."""

@@ -177,9 +177,9 @@ class TestEndogenousLambda:
 
 class TestInstalledValues:
     def test_L_regime_value_positive(self, model):
-        """L-regime value should be positive for reasonable params."""
+        """L-regime value should be strictly positive for reasonable params."""
         V = model.installed_value_L(1.0, 0.3, 1.0, 0.3, 1.0)
-        assert -model.params.delta / model.params.r < V
+        assert V > 0
 
     def test_H_regime_value_positive(self, model):
         """H-regime value should be positive for sufficient X."""
@@ -509,10 +509,114 @@ class TestDefaultRisk:
             assert c_D / p.r + 1e-12 >= D
 
     def test_default_boundary_below_trigger(self, levered_model):
-        """Default boundary should be below investment trigger."""
+        """Default boundary is positive under leverage and below the trigger."""
         eq = levered_model.solve_preemption_equilibrium("H")
-        if eq["X_default_follower"] > 0:
-            assert eq["X_default_follower"] < eq["X_follower"]
+        assert eq["X_default_follower"] > 0
+        assert eq["X_default_follower"] < eq["X_follower"]
+
+    def test_faith_based_survival_at_optimal_phi(self):
+        """Proposition 2(ii): dX_D/dlambda < 0 at the optimal training
+        fraction (phi* well above the threshold phi_underbar)."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        p = ModelParameters()
+        _, K_star, phi_star = SingleFirmModel(p).optimal_trigger_capacity_phi()
+        h = 1e-4
+
+        def x_d(lam):
+            m = DuopolyModel(p.with_param(lam=lam), leverage=0.40)
+            return m.default_boundary(phi_star, K_star, 0.0, 0.0, 0.40)
+
+        dXD_dlam = (x_d(p.lam + h) - x_d(p.lam - h)) / (2 * h)
+        assert dXD_dlam < 0
+
+    def test_default_boundary_increasing_in_lambda_below_threshold(self):
+        """Below phi_underbar both channels push the same way: the
+        A_eff-channel turns positive (inference dominates) and the
+        beta-channel is always positive, so dX_D/dlambda > 0."""
+        p = ModelParameters()
+        phi_low = 0.05  # well below phi_underbar ~ 0.18
+        h = 1e-4
+
+        def x_d(lam):
+            m = DuopolyModel(p.with_param(lam=lam), leverage=0.40)
+            return m.default_boundary(phi_low, 1.0, 0.0, 0.0, 0.40)
+
+        dXD_dlam = (x_d(p.lam + h) - x_d(p.lam - h)) / (2 * h)
+        assert dXD_dlam > 0
+
+    def test_exact_threshold_phi_tilde_flips_dXD_dlambda(self):
+        """The closed-form exact threshold phi_tilde (both channels) is the
+        precise sign-flip point of dX_D/dlambda; phi_tilde > phi_underbar."""
+        p = ModelParameters()
+        d = DuopolyModel(p, leverage=0.40)
+        phi_tilde = d.faith_threshold_exact()
+        assert d.faith_threshold() < phi_tilde
+        assert abs(d.faith_threshold() - 0.180) < 0.005
+        assert abs(phi_tilde - 0.322) < 0.005  # baseline value
+
+        h = 1e-5
+
+        def dXD(phi):
+            def xd(lam):
+                m = DuopolyModel(p.with_param(lam=lam), leverage=0.40)
+                return m.default_boundary(phi, 1.0, 0.0, 0.0, 0.40)
+
+            return (xd(p.lam + h) - xd(p.lam - h)) / (2 * h)
+
+        assert dXD(phi_tilde - 0.002) > 0
+        assert dXD(phi_tilde + 0.002) < 0
+
+    def test_faith_based_survival_reverses_at_low_lambda(self):
+        """At very pessimistic beliefs the optimal allocation falls below
+        the exact threshold (phi*(lambda) < phi_tilde(lambda) for
+        lambda < lambda_bar ~ 0.034 at baseline), so dX_D/dlambda > 0 at
+        the optimum -- the refinement delivered by the closed form."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        p0 = ModelParameters()
+        h = 1e-5
+        # dXD_sign > 0 (boundary rising in lambda) iff phi* < phi_tilde
+        for lam, dXD_sign in [(0.02, 1), (0.05, -1)]:
+            pl = p0.with_param(lam=lam)
+            _, K, phi = SingleFirmModel(pl).optimal_trigger_capacity_phi()
+            d = DuopolyModel(pl, leverage=0.40)
+            phi_tilde = d.faith_threshold_exact()
+            assert np.sign(phi - phi_tilde) == -dXD_sign
+
+            def xd(la, phi=phi, K=K):
+                m = DuopolyModel(p0.with_param(lam=la), leverage=0.40)
+                return m.default_boundary(phi, K, 0.0, 0.0, 0.40)
+
+            dXD = (xd(lam + h) - xd(lam - h)) / (2 * h)
+            assert np.sign(dXD) == dXD_sign
+
+    def test_phi_underbar_closed_form_is_aeff_lambda_threshold(self):
+        """Eq phi-underbar: at phi = phi_underbar (symmetric duopoly),
+        dA_eff/dlambda = 0; above it positive, below it negative."""
+        p = ModelParameters()
+        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
+        phi_underbar = R / (1.0 + R)
+        assert abs(phi_underbar - 0.180) < 0.005  # paper value
+
+        K = 1.0
+        h = 1e-5
+
+        def a_eff(phi, lam):
+            m = DuopolyModel(p.with_param(lam=lam))
+            # Symmetric duopoly: equal capacities and training fractions
+            return m._effective_revenue_coeff(phi, K, phi, K)
+
+        for phi, expected_sign in [
+            (phi_underbar, 0),
+            (phi_underbar + 0.05, 1),
+            (phi_underbar - 0.05, -1),
+        ]:
+            dA = (a_eff(phi, p.lam + h) - a_eff(phi, p.lam - h)) / (2 * h)
+            if expected_sign == 0:
+                assert abs(dA) < 1e-6
+            else:
+                assert np.sign(dA) == expected_sign
 
 
 # ------------------------------------------------------------------
@@ -571,8 +675,8 @@ class TestComparativeStatics:
         """In all valid solutions, leader trigger < follower trigger."""
         stats = model.comparative_statics("sigma", np.linspace(0.25, 0.45, 5))
         valid = stats["has_solution"]
-        if valid.sum() > 0:
-            assert np.all(stats["X_leader"][valid] <= stats["X_follower"][valid])
+        assert valid.sum() > 0
+        assert np.all(stats["X_leader"][valid] <= stats["X_follower"][valid])
 
 
 # ------------------------------------------------------------------
@@ -654,3 +758,92 @@ class TestCoupledDefaultBoundary:
 
     def test_no_debt_returns_zero(self, model):
         assert model.default_boundary_coupled(0.7, 1.0, 0.7, 1.0) == 0.0
+
+    def test_scalar_reduction_satisfies_both_boundary_conditions(self, default_params):
+        """The Brent root of the scalar equation must satisfy value matching
+        AND smooth pasting of the coupled system (the elimination of the
+        homogeneous coefficient is exact)."""
+        m = DuopolyModel(
+            default_params, leverage=0.4, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi_i, K_i, phi_j, K_j = 0.70, 1.0, 0.70, 1.0
+        X_D = m.default_boundary_coupled(phi_i, K_i, phi_j, K_j)
+        terms = m._coupled_boundary_terms(phi_i, K_i, phi_j, K_j, 0.4)
+        assert terms is not None
+        a_eff, N, C_2, b_L, b_H = terms
+        # Recover the homogeneous coefficient from smooth pasting, then
+        # check value matching holds.
+        A_neg = -(a_eff + C_2 * b_H * X_D ** (b_H - 1.0)) * X_D ** (1.0 - b_L) / b_L
+        E = a_eff * X_D - N + C_2 * X_D**b_H + A_neg * X_D**b_L
+        E_prime = (
+            a_eff + C_2 * b_H * X_D ** (b_H - 1.0) + A_neg * b_L * X_D ** (b_L - 1.0)
+        )
+        assert abs(E) < 1e-12
+        assert abs(E_prime) < 1e-9
+
+    def test_linear_bias_approximates_exact_bias(self, default_params):
+        """The closed-form first-order kappa is within 0.5pp of the exact
+        relative bias (X_D0 - X_D_coupled)/X_D0, both ~3% at baseline."""
+        m = DuopolyModel(
+            default_params, leverage=0.4, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi_i, K_i, phi_j, K_j = 0.70, 1.0, 0.70, 1.0
+        X_D0 = m.default_boundary(phi_i, K_i, phi_j, K_j)
+        X_Dc = m.default_boundary_coupled(phi_i, K_i, phi_j, K_j)
+        exact_bias = (X_D0 - X_Dc) / X_D0
+        kappa = m.coupled_boundary_bias_linear(phi_i, K_i, phi_j, K_j)
+        assert 0.02 < exact_bias < 0.05
+        assert kappa > 0
+        assert abs(kappa - exact_bias) < 0.005
+
+
+class TestFollowerScalarReduction:
+    """The follower's problem separates at a common training fraction:
+    A_eff,F = g(phi) * K^{2 alpha}/(K^alpha + K_L^alpha), so K_F solves a
+    scalar FOC with effective elasticity alpha*(2 - s_F)."""
+
+    def test_matches_nelder_mead(self, default_params):
+        """Scalar reduction agrees with the 2-D optimizer (both leverages)."""
+        for lev in [0.0, 0.40]:
+            m = DuopolyModel(
+                default_params, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30
+            )
+            _, K_L, phi_L, _ = m.solve_leader_monopolist()
+            X_nm, K_nm, phi_nm, _ = m.solve_follower(K_L, phi_L)
+            X_sc, K_sc, phi_sc, _ = m.solve_follower_scalar(K_L, phi_L)
+            assert abs(K_sc / K_nm - 1.0) < 1e-6
+            assert abs(X_sc / X_nm - 1.0) < 1e-6
+            assert abs(phi_sc - phi_nm) < 1e-4
+
+    def test_allocation_foc_exact_at_common_phi(self, default_params):
+        """Role invariance is exact: at phi_F = phi_L = phi*, the follower's
+        allocation FOC is zero even under asymmetric capacities, because
+        the common factor s(2 - s) cancels across regimes."""
+        from ai_lab_investment.models.base_model import SingleFirmModel
+
+        _, K_L, phi_star = SingleFirmModel(
+            default_params
+        ).optimal_trigger_capacity_phi()
+        m = DuopolyModel(default_params, leverage=0.0)
+        K_F = 40.0 * K_L  # strongly asymmetric capacities
+        h = 1e-7
+        dA = (
+            m._effective_revenue_coeff(phi_star + h, K_F, phi_star, K_L)
+            - m._effective_revenue_coeff(phi_star - h, K_F, phi_star, K_L)
+        ) / (2 * h)
+        A = m._effective_revenue_coeff(phi_star, K_F, phi_star, K_L)
+        assert abs(dA / A) < 1e-5
+
+    def test_requires_tullock(self, default_params):
+        m = DuopolyModel(default_params, leverage=0.0, contest="fixed_pie")
+        with pytest.raises(RuntimeError, match="Tullock"):
+            m.solve_follower_scalar(0.01, 0.70)
+
+    def test_single_crossing_at_zero_leverage(self, default_params):
+        """Supporting check for the analytical uniqueness result: the
+        preemption gap has exactly one up-crossing at ell = 0 across
+        lambda values (gap is strictly concave there)."""
+        for lam in [0.05, 0.10, 0.20]:
+            m = DuopolyModel(default_params.with_param(lam=lam), leverage=0.0)
+            eq = m.solve_preemption_equilibrium("H")
+            assert eq["single_crossing"] is True

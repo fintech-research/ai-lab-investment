@@ -146,9 +146,12 @@ def create_comparative_statics() -> plt.Figure:
 
     p = ModelParameters()
 
+    # Grids are restricted to the (A2)-admissible windows at baseline
+    # (sigma in ~(0.19, 0.39), alpha in ~(0.36, 0.53), gamma > ~1.13);
+    # outside them no interior trigger/capacity exists.
     panels = [
-        ("sigma", np.linspace(0.18, 0.32, 40), r"Volatility $\sigma$"),
-        ("alpha", np.linspace(0.30, 0.45, 40), r"Revenue elasticity $\alpha$"),
+        ("sigma", np.linspace(0.20, 0.32, 40), r"Volatility $\sigma$"),
+        ("alpha", np.linspace(0.37, 0.45, 40), r"Revenue elasticity $\alpha$"),
         ("gamma", np.linspace(1.2, 2.0, 40), r"Cost convexity $\gamma$"),
         ("delta", np.linspace(0.01, 0.08, 40), r"Operating cost $\delta$"),
     ]
@@ -217,7 +220,7 @@ def create_lambda_option_value() -> plt.Figure:
             model = SingleFirmModel(p)
             F_L_vals[i] = model.option_value_L(X_ref)
             F_H_vals[i] = model.option_value_H(X_ref)
-            C_vals[i] = model._particular_solution_coeff()
+            C_vals[i] = model.particular_solution_coeff()
         except (ValueError, RuntimeError):
             continue
 
@@ -313,7 +316,7 @@ def create_default_boundaries() -> plt.Figure:
 
     ax.set_xlabel("Leverage (D/I)")
     ax.set_ylabel(r"Demand level $X$")
-    ax.legend(loc="lower right", framealpha=0.9, fontsize="small")
+    ax.legend(loc="upper left", framealpha=0.9, fontsize="small")
     fig.tight_layout()
     return fig
 
@@ -373,7 +376,9 @@ def create_competition_effect() -> plt.Figure:
     from ..models.parameters import ModelParameters
 
     p = ModelParameters()
-    sigmas = np.linspace(0.18, 0.30, 30)
+    # The interior-capacity condition (A2) requires beta_H < 1/(1-alpha),
+    # i.e. sigma > ~0.19 at the baseline WACC; start the grid at 0.20.
+    sigmas = np.linspace(0.20, 0.30, 30)
 
     mono_trig = np.full_like(sigmas, np.nan)
     leader_trig = np.full_like(sigmas, np.nan)
@@ -388,7 +393,7 @@ def create_competition_effect() -> plt.Figure:
         except (ValueError, RuntimeError):
             pass
 
-    fig, ax = plt.subplots(1, 1, figsize=(HALF_W, 3.2))
+    fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
 
     v_m = ~np.isnan(mono_trig)
     v_l = ~np.isnan(leader_trig)
@@ -403,7 +408,32 @@ def create_competition_effect() -> plt.Figure:
     )
     ax.set_xlabel(r"Volatility $\sigma$")
     ax.set_ylabel(r"Investment trigger $X^*$")
-    ax.legend(loc="upper left", fontsize="small", framealpha=0.95)
+
+    # Preemption discount on the right axis, so the ratio claims in the
+    # text are directly readable from the figure.
+    v_r = v_m & v_l
+    ax2 = ax.twinx()
+    ax2.plot(
+        sigmas[v_r],
+        leader_trig[v_r] / mono_trig[v_r],
+        ":",
+        color="0.55",
+        linewidth=1.2,
+        label=r"$X_P / X_L^{\mathrm{mono}}$ (right axis)",
+    )
+    ax2.set_ylabel(r"Preemption discount $X_P / X_L^{\mathrm{mono}}$")
+    ax2.set_ylim(0.0, 1.0)
+    ax2.spines["right"].set_visible(True)
+
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(
+        lines1 + lines2,
+        labels1 + labels2,
+        loc="upper left",
+        fontsize="small",
+        framealpha=0.95,
+    )
 
     fig.tight_layout()
     return fig
@@ -529,29 +559,18 @@ def create_lambda_timeline() -> plt.Figure:
 def create_growth_decomposition() -> plt.Figure:
     """Two-panel: value decomposition and capacity gap fraction.
 
-    Uses the phi-aware model (optimal_trigger_capacity_phi,
-    installed_value_with_phi) matching Phase 1 corrections.
+    Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
+    uses the phi-aware model (optimal_trigger_capacity_phi,
+    installed_value_with_phi).
     """
-    from ..models.base_model import SingleFirmModel
-    from ..models.parameters import ModelParameters
+    from ..models import ModelParameters, ValuationAnalysis
 
-    p = ModelParameters()
-    model = SingleFirmModel(p)
-    X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
-
+    va = ValuationAnalysis(ModelParameters())
     K_fracs = np.linspace(0.01, 1.5, 40)
-    assets = np.full_like(K_fracs, np.nan)
-    counterfactual = np.full_like(K_fracs, np.nan)
-
-    X_eval = 1.5 * X_star
-    V_optimal = model.installed_value_with_phi(X_eval, phi_star, K_star, "L")
-    I_optimal = model.investment_cost(K_star)
-    npv_optimal = V_optimal - I_optimal
-
-    for i, kr in enumerate(K_fracs):
-        K_inst = kr * K_star
-        assets[i] = model.installed_value_with_phi(X_eval, phi_star, K_inst, "L")
-        counterfactual[i] = max(npv_optimal - assets[i], 0)
+    decomp = va.capacity_gap_decomposition(K_fracs, demand_multiple=1.5)
+    assets = decomp["assets_in_place"]
+    counterfactual = decomp["capacity_gap"]
+    growth_frac = decomp["gap_fraction"]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
@@ -572,8 +591,6 @@ def create_growth_decomposition() -> plt.Figure:
     ax1.legend(loc="upper left", fontsize="small", framealpha=0.95)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
-    total = assets + counterfactual
-    growth_frac = np.where(total > 0, counterfactual / total * 100, 0)
     ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
     ax2.set_xlabel(r"Installed capacity $K / K^*$")
     ax2.set_ylabel("Capacity gap fraction (%)")
@@ -637,7 +654,9 @@ def create_investment_dilemma() -> plt.Figure:
     ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
     ax.legend(loc="upper center", framealpha=0.9)
     ax.set_xlim(0, 0.5)
-    ax.set_ylim(0, 28)
+    # Dynamic upper limit so the steep underinvestment branch is not clipped
+    y_max = np.nanmax([np.nanmax(losses_unlev_arr), np.nanmax(losses_lev_arr)])
+    ax.set_ylim(0, 1.1 * y_max)
 
     ax.annotate(
         "Underinvestment\n(conservative)",

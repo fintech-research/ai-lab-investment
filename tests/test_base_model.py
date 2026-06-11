@@ -122,12 +122,19 @@ class TestRegimeL:
         assert model.option_value_L(0.1) > model.option_value_L(0.05)
 
     def test_with_high_alpha_has_L_trigger(self):
-        """With sufficiently high alpha, regime L has an interior trigger."""
+        """With sufficiently high alpha, regime L has an interior trigger.
+
+        This fixture exists precisely to exercise the two-term F_L branch;
+        if parameter drift ever removes the interior trigger, the test must
+        fail loudly rather than skip.
+        """
         # Both regimes need phi in (1/gamma, 1). High alpha + low vol works.
         p = ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma=0.12)
         m = SingleFirmModel(p)
-        if not m.has_interior_trigger("L"):
-            pytest.skip("No interior trigger in L for these parameters")
+        assert m.has_interior_trigger("L"), (
+            "High-alpha fixture must produce an interior L-trigger; "
+            "the two-term F_L branch would otherwise go untested"
+        )
         X_L, K_L = m.optimal_trigger_and_capacity("L")
         assert X_L > 0
         assert K_L > 0
@@ -209,13 +216,19 @@ class TestEffectiveRevenueCoeff:
         a_eff = model._effective_revenue_coeff_single(0.5, 1.0)
         assert a_eff > 0
 
-    def test_phi_zero_only_inference(self, model):
-        """phi=0.01 should give mostly inference revenue."""
-        a_eff_low = model._effective_revenue_coeff_single(0.01, 1.0)
-        a_eff_high = model._effective_revenue_coeff_single(0.99, 1.0)
-        # Both should be positive
-        assert a_eff_low > 0
-        assert a_eff_high > 0
+    def test_phi_limits_match_paper_nesting(self, model):
+        """eq-a-eff nesting: phi -> 0 leaves only the inference term,
+        phi -> 1 leaves only the lambda-weighted H-regime term."""
+        p = model.params
+        K = 1.0
+        denom_L = p.r - p.mu_L + p.lam
+
+        a_eff_phi0 = model._effective_revenue_coeff_single(0.0, K)
+        assert abs(a_eff_phi0 - K**p.alpha / denom_L) < 1e-12
+
+        a_eff_phi1 = model._effective_revenue_coeff_single(1.0, K)
+        expected_phi1 = p.lam / denom_L * K**p.alpha * p.A_H
+        assert abs(a_eff_phi1 - expected_phi1) < 1e-12
 
     def test_no_switching_only_inference(self):
         """With lam=0, A_eff reduces to inference-only L-regime value."""
@@ -335,6 +348,26 @@ class TestProposition1ClosedForm:
         ) ** (1.0 / (p.gamma - 1.0))
         _, K_num, _ = model.optimal_trigger_capacity_phi()
         assert abs(K_num - K_closed) / K_closed < 1e-4
+
+    def test_raises_outside_A2_admissible_region(self):
+        """When (A2)'s upper bound fails (alpha*beta_H <= beta_H - 1), the
+        option-value factor diverges as K -> 0 and there is no interior
+        optimum; the solver must refuse rather than return a boundary
+        artifact (regression: it previously returned K* ~ 1e-322)."""
+        for kwargs in [{"r": 0.15}, {"sigma": 0.18}]:
+            p = ModelParameters(**kwargs)
+            m = SingleFirmModel(p)
+            with pytest.raises(RuntimeError, match="A2"):
+                m.optimal_trigger_capacity_phi()
+
+    def test_duopoly_leader_raises_outside_A2(self):
+        """The duopoly leader-monopolist problem inherits the same
+        interior-capacity condition."""
+        from ai_lab_investment.models.duopoly import DuopolyModel
+
+        duo = DuopolyModel(ModelParameters(r=0.15), leverage=0.0)
+        with pytest.raises(RuntimeError, match="A2"):
+            duo.solve_leader_monopolist()
 
     def test_K_star_independent_of_phi(self, model):
         """The optimal capacity is the same at any fixed training fraction
