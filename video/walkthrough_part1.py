@@ -98,7 +98,10 @@ class P1S01Title(PaperScene):
 
         agenda = VGroup(
             Text("1.  Regime-switching demand", font_size=28),
-            Text("2.  Risk adjustment: what r, mu, sigma mean", font_size=28),
+            MathTex(
+                r"\text{2.\ \ Risk adjustment: what } r,\ \mu,\ \sigma \text{ mean}",
+                font_size=28,
+            ),
             Text("3.  Technology: convex costs, operating costs", font_size=28),
             Text("4.  Training versus inference", font_size=28),
             Text("5.  Toolkit: perpetuity, characteristic roots, HJB", font_size=28),
@@ -319,8 +322,9 @@ class P1S03RiskAdjustment(PaperScene):
         ):
             self.play(FadeIn(r4, shift=RIGHT * 0.2), run_time=1.2)
 
-        takeaway = Text(
-            "Risk is priced once: in the wedge r - mu, never in the cash flows.",
+        takeaway = MathTex(
+            r"\text{Risk is priced once: in the wedge } r - \mu"
+            r"\text{, never in the cash flows.}",
             font_size=27,
             color=C_OPTION,
         ).to_edge(DOWN, buff=0.45)
@@ -436,13 +440,13 @@ class P1S04Technology(PaperScene):
             r"dK_t = 0 \quad \text{after installation}", font_size=36
         ).next_to(flow, DOWN, buff=0.55)
         contrast = VGroup(
-            Text(
-                "delta K is a perpetual flow cost, not a decay rate",
+            MathTex(
+                r"\delta K \text{ is a perpetual flow cost, not a decay rate}",
                 font_size=26,
                 color=C_COST,
             ),
-            Text(
-                "capacity K never depreciates in the model",
+            MathTex(
+                r"\text{capacity } K \text{ never depreciates in the model}",
                 font_size=26,
                 color=C_TEXT,
             ),
@@ -552,8 +556,8 @@ class P1S05Allocation(PaperScene):
         ):
             self.play(Write(rev_h), FadeIn(tag_h), run_time=1.5)
 
-        asym = Text(
-            "phi = 0: maximal revenue today, zero revenue in H",
+        asym = MathTex(
+            r"\phi = 0\text{: maximal revenue today, zero revenue in } H",
             font_size=25,
             color=C_TEXT,
         ).to_edge(DOWN, buff=0.45)
@@ -610,8 +614,8 @@ class P1S05Allocation(PaperScene):
             self.play(FadeIn(distinct[0]), run_time=0.8)
             self.play(FadeIn(distinct[1]), run_time=0.8)
 
-        fixed = Text(
-            "phi is chosen at investment time and fixed thereafter",
+        fixed = MathTex(
+            r"\phi \text{ is chosen at investment time and fixed thereafter}",
             font_size=24,
             color=C_FAINT,
         ).to_edge(DOWN, buff=0.5)
@@ -954,8 +958,9 @@ class P1S08RegimeHJB(PaperScene):
             self.play(Write(l4), run_time=1.5)
 
         box_disc = highlight(l4[1], color=C_OPTION)
-        note_disc = Text(
-            "effective discount r + lambda: regime L 'ends' at rate lambda",
+        note_disc = MathTex(
+            r"\text{effective discount } r + \lambda"
+            r"\text{: regime } L \text{ `ends' at rate } \lambda",
             font_size=24,
             color=C_OPTION,
         ).to_edge(DOWN, buff=1.05)
@@ -969,8 +974,9 @@ class P1S08RegimeHJB(PaperScene):
             self.play(Create(box_disc), FadeIn(note_disc), run_time=1.2)
 
         box_force = highlight(l4[2], color=C_H)
-        note_force = Text(
-            "coupling lambda F_H: the switch pays the H-regime value",
+        note_force = MathTex(
+            r"\text{coupling } \lambda F_H"
+            r"\text{: the switch pays the } H\text{-regime value}",
             font_size=24,
             color=C_H,
         ).next_to(note_disc, DOWN, buff=0.2)
@@ -1160,10 +1166,18 @@ class P1S10Recap(PaperScene):
             weight="BOLD",
         ).shift(UP * 1.0)
         bullets = VGroup(
-            Text("installed values V_H and V_L, and A_eff", font_size=26),
-            Text("the H-regime option and smooth pasting", font_size=26),
-            Text(
-                "Proposition 1: trigger X*, capacity K*, training fraction phi*",
+            MathTex(
+                r"\text{installed values } V_H \text{ and } V_L"
+                r"\text{, and } A_{\text{eff}}",
+                font_size=26,
+            ),
+            MathTex(
+                r"\text{the } H\text{-regime option and smooth pasting}",
+                font_size=26,
+            ),
+            MathTex(
+                r"\text{Proposition 1: trigger } X^*\text{, capacity } K^*"
+                r"\text{, training fraction } \phi^*",
                 font_size=26,
             ),
         ).arrange(DOWN, buff=0.32, aligned_edge=LEFT)

@@ -420,8 +420,9 @@ class P4S04ContestProperties(PaperScene):
         self.pause(0.4)
         self.clear_body()
 
-        lab_c = Text(
-            "(c)  regularity when alpha < 1  (Skaperdas 1996)",
+        lab_c = MathTex(
+            r"\text{(c)\quad regularity when } \alpha < 1"
+            r"\ \ \text{(Skaperdas 1996)}",
             font_size=26,
             color=C_OPTION,
         )
@@ -909,8 +910,9 @@ class P4S08OneWayCoupling(PaperScene):
         kappa = duo.coupled_boundary_bias_linear(*args)
         exact_bias = (x_d0 - x_dc) / x_d0
 
-        q = Text(
-            "We replaced E_H by its perpetuity component. What did we drop?",
+        q = MathTex(
+            r"\text{We replaced } E_H"
+            r"\text{ by its perpetuity component. What did we drop?}",
             font_size=28,
             color=C_TEXT,
         ).to_edge(UP, buff=1.4)
@@ -1093,9 +1095,10 @@ class P4S08OneWayCoupling(PaperScene):
         ):
             self.play(Write(nums), run_time=1.6)
 
-        concl = Text(
-            "single-boundary formula overstates X_D by ~3%:"
-            " conservative for faith-based survival",
+        concl = MathTex(
+            r"\text{single-boundary formula overstates } X_D"
+            r"\text{ by } \sim 3\%"
+            r"\text{: conservative for faith-based survival}",
             font_size=26,
             color=C_DEFAULT,
         ).next_to(nums, DOWN, buff=0.6)
@@ -1267,8 +1270,9 @@ class P4S10FaithCondition(PaperScene):
         phi_under = duo.faith_threshold()
         r_val = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
 
-        head = Text(
-            "symmetric shares: s_L = s_H = s  (symmetric capacities, or monopoly)",
+        head = MathTex(
+            r"\text{symmetric shares: } s_L = s_H = s"
+            r"\ \ \text{(symmetric capacities, or monopoly)}",
             font_size=26,
             color=C_FAINT,
         ).to_edge(UP, buff=1.4)
@@ -1814,9 +1818,9 @@ class P4S14SubstitutionAndRival(PaperScene):
         iso = ax.plot_line_graph(
             np.array(levs), np.array(phis), line_color=C_OPTION, add_vertex_dots=False
         )
-        iso_lab = Text("iso-X_D locus", font_size=24, color=C_OPTION).move_to(
-            ax.coords_to_point(0.155, 0.55)
-        )
+        iso_lab = MathTex(
+            r"\text{iso-}X_D\text{ locus}", font_size=24, color=C_OPTION
+        ).move_to(ax.coords_to_point(0.155, 0.55))
         ceil = DashedLine(
             ax.coords_to_point(0.08, 0.70),
             ax.coords_to_point(0.34, 0.70),
@@ -2008,13 +2012,17 @@ class P4S15EquityDebt(PaperScene):
             self.play(Indicate(rec[0], color=C_OPTION), run_time=1.4)
 
         faces = VGroup(
-            Text(
-                "training raises A_eff  ->  lower X_D  ->  fewer defaults",
+            MathTex(
+                r"\text{training raises } A_{\text{eff}}"
+                r"\;\Rightarrow\; \text{lower } X_D"
+                r"\;\Rightarrow\; \text{fewer defaults}",
                 font_size=27,
                 color=C_H,
             ),
-            Text(
-                "training shrinks Lambda  ->  lower recovery  ->  higher LGD",
+            MathTex(
+                r"\text{training shrinks } \Lambda"
+                r"\;\Rightarrow\; \text{lower recovery}"
+                r"\;\Rightarrow\; \text{higher LGD}",
                 font_size=27,
                 color=C_DEFAULT,
             ),
@@ -2156,26 +2164,29 @@ class P4S17Close(PaperScene):
         self.set_header("What we proved", kicker="PART 4 - CLOSE")
 
         items = VGroup(
-            Text(
-                "(i)    X_D rises with leverage and the coupon rate",
+            MathTex(
+                r"\text{(i)\quad } X_D"
+                r"\text{ rises with leverage and the coupon rate}",
                 font_size=27,
             ),
-            Text(
-                "(ii)   faith-based survival: X_D falls with lambda"
-                " iff phi > phi-tilde ~ 0.32",
+            MathTex(
+                r"\text{(ii)\quad faith-based survival: } X_D"
+                r"\text{ falls with } \lambda"
+                r"\text{ iff } \phi > \tilde{\phi} \approx 0.32",
                 font_size=27,
             ),
-            Text(
-                "(iii)  leverage-training substitution below phi*"
-                " (mechanical, not causal)",
+            MathTex(
+                r"\text{(iii)\quad leverage-training substitution below } \phi^*"
+                r"\ \ \text{(mechanical, not causal)}",
                 font_size=27,
             ),
-            Text(
-                "(iv)   stronger rivals raise X_D",
+            MathTex(
+                r"\text{(iv)\quad stronger rivals raise } X_D",
                 font_size=27,
             ),
-            Text(
-                "+ the single-boundary formula overstates X_D by ~3%: conservative",
+            MathTex(
+                r"\text{+ the single-boundary formula overstates } X_D"
+                r"\text{ by } \sim 3\%\text{: conservative}",
                 font_size=27,
                 color=C_FAINT,
             ),
@@ -2204,9 +2215,9 @@ class P4S17Close(PaperScene):
 
         teaser = VGroup(
             Text("Next: Part 5", font_size=34, weight="BOLD", color=C_OPTION),
-            Text(
-                "the preemption equilibrium and Proposition 3:"
-                " existence and uniqueness of X_P,",
+            MathTex(
+                r"\text{the preemption equilibrium and Proposition 3:"
+                r" existence and uniqueness of } X_P,",
                 font_size=26,
                 color=C_TEXT,
             ),

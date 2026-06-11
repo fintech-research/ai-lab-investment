@@ -99,9 +99,10 @@ class P5S01Title(PaperScene):
             self.play(FadeIn(sub), run_time=0.8)
 
         recap = VGroup(
-            Text(
-                "So far: single-firm trigger, capacity, and phi (Prop. 1);",
-                font_size=26,
+            MathTex(
+                r"\text{So far: single-firm trigger, capacity, and }"
+                r" \phi \text{ (Prop. 1);}",
+                font_size=28,
                 color=C_TEXT,
             ),
             Text(
@@ -178,9 +179,10 @@ class P5S02Game(PaperScene):
         ):
             self.play(FadeIn(obs), FadeIn(obs2), run_time=1.2)
 
-        lineage = Text(
-            "Fudenberg-Tirole (1985)  ->  Pawlina-Kort (2006), Huisman-Kort (2015)",
-            font_size=24,
+        lineage = MathTex(
+            r"\text{Fudenberg-Tirole (1985)} \;\to\;"
+            r" \text{Pawlina-Kort (2006), Huisman-Kort (2015)}",
+            font_size=26,
             color=C_FAINT,
         ).next_to(obs2, DOWN, buff=0.5)
         with self.voiceover(
@@ -191,21 +193,23 @@ class P5S02Game(PaperScene):
             self.play(FadeIn(lineage), run_time=1.0)
 
         box1 = RoundedRectangle(corner_radius=0.15, width=4.6, height=1.1, color=C_H)
-        t1 = Text(
-            "1. follower best response\n(K_F, phi_F, X_F)",
-            font_size=22,
-            color=C_TEXT,
-            line_spacing=0.9,
-        ).move_to(box1)
+        t1 = VGroup(
+            MathTex(r"\text{1. follower best response}", font_size=26, color=C_TEXT),
+            MathTex(r"(K_F,\ \phi_F,\ X_F)", font_size=26, color=C_TEXT),
+        )
+        t1.arrange(DOWN, buff=0.12).move_to(box1)
         box2 = RoundedRectangle(
             corner_radius=0.15, width=4.6, height=1.1, color=C_OPTION
         )
-        t2 = Text(
-            "2. leader trigger from\nrent equalization L(X_P) = F(X_P)",
-            font_size=22,
-            color=C_TEXT,
-            line_spacing=0.9,
-        ).move_to(box2)
+        t2 = VGroup(
+            MathTex(r"\text{2. leader trigger from}", font_size=26, color=C_TEXT),
+            MathTex(
+                r"\text{rent equalization } L(X_P) = F(X_P)",
+                font_size=26,
+                color=C_TEXT,
+            ),
+        )
+        t2.arrange(DOWN, buff=0.12).move_to(box2)
         g1 = VGroup(box1, t1)
         g2 = VGroup(box2, t2)
         VGroup(g1, g2).arrange(RIGHT, buff=1.2).to_edge(DOWN, buff=0.6)
@@ -237,10 +241,10 @@ class P5S02Game(PaperScene):
             r"X_F^* \;>\; X_L",
             font_size=36,
         ).next_to(cond1, DOWN, buff=0.6)
-        note = Text(
-            "both verified numerically for every parameterization"
-            " (incl. leverage and phi)",
-            font_size=24,
+        note = MathTex(
+            r"\text{both verified numerically for every parameterization"
+            r" (incl. leverage and } \phi\text{)}",
+            font_size=26,
             color=C_FAINT,
         ).next_to(cond2, DOWN, buff=0.5)
         with self.voiceover(
@@ -252,9 +256,10 @@ class P5S02Game(PaperScene):
             self.play(Write(cond2), run_time=1.0)
             self.play(FadeIn(note), run_time=0.8)
 
-        closing = Text(
-            "richer strategy space -> richer payoffs, same preemption logic",
-            font_size=26,
+        closing = MathTex(
+            r"\text{richer strategy space} \;\to\;"
+            r" \text{richer payoffs, same preemption logic}",
+            font_size=28,
             color=C_TEXT,
         ).next_to(note, DOWN, buff=0.6)
         with self.voiceover(
@@ -393,8 +398,9 @@ class P5S04Separable(PaperScene):
     def construct(self):
         self.set_header("Separable reduction of the follower", kicker="5.3 APPENDIX B")
 
-        intro = Text(
-            "evaluate the contest at a common training fraction phi_F = phi_L = phi",
+        intro = MathTex(
+            r"\text{evaluate the contest at a common training fraction }"
+            r" \phi_F = \phi_L = \phi",
             font_size=28,
             color=C_TEXT,
         ).shift(UP * 1.9)
@@ -641,10 +647,11 @@ class P5S05CapacityFOC(PaperScene):
             font_size=36,
         ).next_to(bdef, DOWN, buff=0.55)
         bracket[1].set_color(C_OPTION)
-        mono = Text(
-            "s_F increasing in K;  K b'/b rises from 1 (linear term)"
-            " to gamma (convex term)",
-            font_size=24,
+        mono = MathTex(
+            r"s_F \text{ increasing in } K;\quad K b'/b"
+            r" \text{ rises from } 1 \text{ (linear term) to }"
+            r" \gamma \text{ (convex term)}",
+            font_size=25,
             color=C_FAINT,
         ).next_to(bracket, DOWN, buff=0.35)
         with self.voiceover(
@@ -718,13 +725,20 @@ class P5S05CapacityFOC(PaperScene):
         ):
             self.play(Write(nums), run_time=1.6)
 
-        wellposed = Text(
-            "the 2-alpha small-K elasticity keeps the follower's problem"
-            " well posed\neven where the single-firm problem (A2) degenerates",
-            font_size=24,
-            color=C_FAINT,
-            line_spacing=1.0,
-        ).next_to(nums, DOWN, buff=0.6)
+        wellposed = VGroup(
+            MathTex(
+                r"\text{the } 2\alpha \text{ small-}K\text{ elasticity keeps"
+                r" the follower's problem well posed}",
+                font_size=25,
+                color=C_FAINT,
+            ),
+            MathTex(
+                r"\text{even where the single-firm problem (A2) degenerates}",
+                font_size=25,
+                color=C_FAINT,
+            ),
+        )
+        wellposed.arrange(DOWN, buff=0.15).next_to(nums, DOWN, buff=0.6)
         with self.voiceover(
             "And because the small-K elasticity is doubled, this condition"
             " is weaker than A two's upper bound: the follower stays well"
@@ -821,10 +835,11 @@ class P5S06Leader(PaperScene):
                 font_size=28,
                 color=C_COST,
             ),
-            Text(
-                "re-optimizing scale for entry at X_P < X_L^mono would give"
-                " smaller capacity",
-                font_size=24,
+            MathTex(
+                r"\text{re-optimizing scale for entry at }"
+                r" X_P < X_L^{\mathrm{mono}}"
+                r" \text{ would give smaller capacity}",
+                font_size=26,
                 color=C_TEXT,
             ),
             Text(
@@ -855,10 +870,10 @@ class P5S06Leader(PaperScene):
         ):
             self.play(FadeIn(why), run_time=1.0)
 
-        uncond = Text(
-            "X_F is computed in the unconditional A_eff framework"
-            " (not regime-contingent)",
-            font_size=24,
+        uncond = MathTex(
+            r"X_F \text{ is computed in the unconditional }"
+            r" A_{\text{eff}} \text{ framework (not regime-contingent)}",
+            font_size=26,
             color=C_FAINT,
         ).next_to(why, DOWN, buff=0.45)
         with self.voiceover(
@@ -974,8 +989,9 @@ class P5S08RentEqualization(PaperScene):
     def construct(self):
         self.set_header("Rent equalization", kicker="5.7 THE PREEMPTION TRIGGER")
 
-        sym = Text(
-            "common beliefs (same lambda), symmetric equilibrium: both want to lead",
+        sym = MathTex(
+            r"\text{common beliefs (same } \lambda \text{),"
+            r" symmetric equilibrium: both want to lead}",
             font_size=28,
             color=C_TEXT,
         ).shift(UP * 2.0)
@@ -1074,10 +1090,10 @@ class P5S08RentEqualization(PaperScene):
             )
             self.play(Create(xm_line), FadeIn(xm_lab), run_time=1.0)
 
-        note = Text(
-            "cross-sectional variation = comparative statics in lambda,"
-            " not equilibrium mixing",
-            font_size=24,
+        note = MathTex(
+            r"\text{cross-sectional variation = comparative statics in }"
+            r" \lambda \text{, not equilibrium mixing}",
+            font_size=26,
             color=C_FAINT,
         ).to_edge(DOWN, buff=0.12)
         with self.voiceover(
@@ -1123,20 +1139,21 @@ class P5S09Existence(PaperScene):
             self.play(Write(defs), run_time=1.8)
 
         props = VGroup(
-            Text(
-                "L continuous; increasing for X > X_D"
-                " (linear L-revenue + positive option term)",
-                font_size=24,
+            MathTex(
+                r"L \text{ continuous; increasing for } X > X_D"
+                r" \text{ (linear L-revenue + positive option term)}",
+                font_size=25,
                 color=C_TEXT,
             ),
-            Text(
-                "for X <= X_D: default, E_L = 0, so L = -(1-l) I(K_L) < 0",
-                font_size=24,
+            MathTex(
+                r"\text{for } X \leq X_D\text{: default, } E_L = 0"
+                r"\text{, so } L = -(1-\ell)\, I(K_L) < 0",
+                font_size=25,
                 color=C_TEXT,
             ),
-            Text(
-                "F continuous, increasing, convex (beta_H > 1)",
-                font_size=24,
+            MathTex(
+                r"F \text{ continuous, increasing, convex } (\beta_H > 1)",
+                font_size=25,
                 color=C_TEXT,
             ),
         ).arrange(DOWN, buff=0.25, aligned_edge=LEFT)
@@ -1193,10 +1210,10 @@ class P5S09Existence(PaperScene):
             self.play(Write(b1), run_time=1.4)
             self.play(FadeIn(why1), run_time=1.0)
 
-        why2 = Text(
-            "while F reflects only a diluted duopoly payoff, discounted"
-            " all the way from X_F",
-            font_size=24,
+        why2 = MathTex(
+            r"\text{while } F \text{ reflects only a diluted duopoly payoff,"
+            r" discounted all the way from } X_F",
+            font_size=26,
             color=C_FAINT,
         ).next_to(why1, DOWN, buff=0.35)
         with self.voiceover(
@@ -1228,10 +1245,11 @@ class P5S10Uniqueness(PaperScene):
     def construct(self):
         self.set_header("Proposition 3(i): uniqueness", kicker="5.8 PROOF")
 
-        intro = Text(
-            "Huisman-Kort: L roughly affine, F convex with F(0) > L(0)"
-            " => at most one up-crossing",
-            font_size=24,
+        intro = MathTex(
+            r"\text{Huisman-Kort: } L \text{ roughly affine, } F"
+            r" \text{ convex with } F(0) > L(0)"
+            r" \;\Rightarrow\; \text{at most one up-crossing}",
+            font_size=26,
             color=C_TEXT,
         ).shift(UP * 2.0)
         with self.voiceover(
@@ -1378,10 +1396,11 @@ class P5S10Uniqueness(PaperScene):
         ):
             self.play(Write(lev_note), run_time=1.6)
 
-        comp_note = Text(
-            "ell > 0: 500-point grid on (X_D, X_L^mono); exactly one"
-            " up-crossing, all parameterizations",
-            font_size=24,
+        comp_note = MathTex(
+            r"\ell > 0\text{: 500-point grid on }"
+            r" (X_D,\, X_L^{\mathrm{mono}})\text{; exactly one"
+            r" up-crossing, all parameterizations}",
+            font_size=25,
             color=C_FAINT,
         ).next_to(lev_note, UP, buff=0.25)
         with self.voiceover(
@@ -1594,21 +1613,22 @@ class P5S11RoleInvariance(PaperScene):
         self.clear_body()
 
         exact = VGroup(
-            Text(
-                "exact critical point for ANY (K_F, K_L) -- not just to first order",
-                font_size=27,
+            MathTex(
+                r"\text{exact critical point for ANY } (K_F,\, K_L)"
+                r" \text{ -- not just to first order}",
+                font_size=28,
                 color=C_TEXT,
             ),
-            Text(
-                "global optimality: computational -- phi_F = phi_L = phi*"
-                " to 4+ decimals",
-                font_size=27,
+            MathTex(
+                r"\text{global optimality: computational -- }"
+                r" \phi_F = \phi_L = \phi^* \text{ to 4+ decimals}",
+                font_size=28,
                 color=C_TEXT,
             ),
-            Text(
-                "across the full calibration sweep"
-                " (sigma, mu_H, alpha, gamma, lambda, ell)",
-                font_size=24,
+            MathTex(
+                r"\text{across the full calibration sweep }"
+                r" (\sigma,\, \mu_H,\, \alpha,\, \gamma,\, \lambda,\, \ell)",
+                font_size=25,
                 color=C_FAINT,
             ),
         ).arrange(DOWN, buff=0.3, aligned_edge=LEFT)
@@ -1724,10 +1744,11 @@ class P5S12Numericals(PaperScene):
         ):
             self.play(Write(r5), run_time=2.0)
 
-        spread = Text(
-            "Leland spread is monotone in X_P/X_D  =>  entry spread weakly"
-            " increasing in lambda",
-            font_size=26,
+        spread = MathTex(
+            r"\text{Leland spread is monotone in } X_P/X_D"
+            r" \;\Rightarrow\; \text{entry spread weakly"
+            r" increasing in } \lambda",
+            font_size=28,
             color=C_DEFAULT,
         ).next_to(r5, DOWN, buff=0.65)
         with self.voiceover(
@@ -1836,10 +1857,11 @@ class P5S13CompetitionEffect(PaperScene):
         ):
             self.play(FadeIn(base_dot, scale=2), FadeIn(base_lab), run_time=1.0)
 
-        a2_note = Text(
-            "grid starts at sigma = 0.20: (A2) needs beta_H < 1/(1-alpha),"
-            " binding at sigma ~ 0.19",
-            font_size=23,
+        a2_note = MathTex(
+            r"\text{grid starts at } \sigma = 0.20\text{: (A2) needs }"
+            r" \beta_H < 1/(1-\alpha)\text{, binding at }"
+            r" \sigma \approx 0.19",
+            font_size=24,
             color=C_FAINT,
         ).to_edge(DOWN, buff=0.25)
         with self.voiceover(
@@ -1866,16 +1888,18 @@ class P5S14Close(PaperScene):
     def construct(self):
         summary = VGroup(
             Text("Proposition 3, fully dissected:", font_size=32, weight="BOLD"),
-            Text(
-                "existence: analytical (IVT)   |   uniqueness: analytical"
-                " at ell = 0, computational beyond",
-                font_size=25,
+            MathTex(
+                r"\text{existence: analytical (IVT)} \;\;\big|\;\;"
+                r" \text{uniqueness: analytical at } \ell = 0"
+                r"\text{, computational beyond}",
+                font_size=27,
                 color=C_TEXT,
             ),
-            Text(
-                "role invariance: exact s(2-s) cancellation   |  "
-                " (iii)-(v): numerical findings",
-                font_size=25,
+            MathTex(
+                r"\text{role invariance: exact } s(2-s)"
+                r" \text{ cancellation} \;\;\big|\;\;"
+                r" \text{(iii)-(v): numerical findings}",
+                font_size=27,
                 color=C_TEXT,
             ),
         ).arrange(DOWN, buff=0.4)

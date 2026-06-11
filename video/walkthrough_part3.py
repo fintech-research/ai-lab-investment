@@ -149,14 +149,18 @@ class P3S02Recap(PaperScene):
             self.play(Write(steps), run_time=2.0)
 
         agenda = VGroup(
-            Text(
-                "1.  The L-regime ODE that justifies the option value",
-                font_size=27,
+            MathTex(
+                r"\text{1.  The $L$-regime ODE that justifies the option value}",
+                font_size=30,
             ),
-            Text("2.  Why A_1 = 0 exactly, not approximately", font_size=27),
-            Text(
-                "3.  The interior optimal phi and its comparative statics",
-                font_size=27,
+            MathTex(
+                r"\text{2.  Why } A_1 = 0 \text{ exactly, not approximately}",
+                font_size=30,
+            ),
+            MathTex(
+                r"\text{3.  The interior optimal } \phi"
+                r"\text{ and its comparative statics}",
+                font_size=30,
             ),
         ).arrange(DOWN, buff=0.35, aligned_edge=LEFT)
         agenda.next_to(steps, DOWN, buff=0.8)
@@ -208,11 +212,18 @@ class P3S03HJB(PaperScene):
             self.play(Write(bellman), run_time=1.4)
 
         branch1 = VGroup(
-            Text("with prob. lambda dt:  regime switches to H", font_size=24),
+            MathTex(
+                r"\text{with prob. } \lambda\,dt\text{:  regime switches to } H",
+                font_size=26,
+            ),
             eq(r"F_L(X) \;\longrightarrow\; F_H(X)", font_size=34, color=C_H),
         ).arrange(DOWN, buff=0.2, aligned_edge=LEFT)
         branch2 = VGroup(
-            Text("with prob. 1 - lambda dt:  stay in L, X diffuses", font_size=24),
+            MathTex(
+                r"\text{with prob. } 1 - \lambda\,dt\text{:  stay in } L"
+                r"\text{, } X \text{ diffuses}",
+                font_size=26,
+            ),
             eq(
                 r"\mathbb{E}[dF_L \mid \text{no switch}] = \Bigl(\mu_L X F_L'"
                 r" + \tfrac{1}{2}\sigma^2 X^2 F_L''\Bigr)dt",
@@ -350,9 +361,9 @@ class P3S04EulerODE(PaperScene):
 
         b1 = highlight(ode[1], color=C_OPTION)
         n1 = (
-            Text(
-                "effective discount r + lambda = 0.12 + 0.10 = 0.22",
-                font_size=24,
+            MathTex(
+                r"\text{effective discount } r + \lambda = 0.12 + 0.10 = 0.22",
+                font_size=26,
                 color=C_OPTION,
             )
             .next_to(ode, DOWN, buff=0.65)
@@ -368,9 +379,9 @@ class P3S04EulerODE(PaperScene):
             self.play(Create(b1), FadeIn(n1), run_time=1.2)
 
         b2 = highlight(ode[2], color=C_H)
-        n2 = Text(
-            "forcing term: arrival of the H-regime option",
-            font_size=24,
+        n2 = MathTex(
+            r"\text{forcing term: arrival of the $H$-regime option}",
+            font_size=26,
             color=C_H,
         ).next_to(n1, DOWN, buff=0.35, aligned_edge=LEFT)
         with self.voiceover(
@@ -682,14 +693,15 @@ class P3S07SimplifiedForm(PaperScene):
             self.play(Write(gen), run_time=1.4)
 
         roles = VGroup(
-            Text(
-                "C X^beta_H : value of the expected regime switch",
-                font_size=26,
+            MathTex(
+                r"C X^{\beta_H}\text{: value of the expected regime switch}",
+                font_size=28,
                 color=C_OPTION,
             ),
-            Text(
-                "A_1 X^beta_L+ : the autonomous L-regime investment option",
-                font_size=26,
+            MathTex(
+                r"A_1 X^{\beta_L^+}\text{: the autonomous $L$-regime"
+                r" investment option}",
+                font_size=28,
                 color=C_COST,
             ),
         ).arrange(DOWN, buff=0.3, aligned_edge=LEFT)
@@ -733,9 +745,10 @@ class P3S07SimplifiedForm(PaperScene):
         ):
             self.play(Write(a3num), run_time=1.4)
 
-        claim = Text(
-            "Claim: under (A3), A_1 = 0 exactly -- proof in two steps",
-            font_size=28,
+        claim = MathTex(
+            r"\text{Claim: under (A3), } A_1 = 0"
+            r"\text{ exactly --- proof in two steps}",
+            font_size=30,
             color=C_TEXT,
         ).next_to(a3num, DOWN, buff=0.55)
         with self.voiceover(
@@ -781,9 +794,10 @@ class P3S08RuleOutPositive(PaperScene):
         ):
             self.play(Write(cond), run_time=1.6)
 
-        concl1 = Text(
-            "=> at every K, L-revenue falls short: no finite exercise boundary in L",
-            font_size=26,
+        concl1 = MathTex(
+            r"\Rightarrow\;\text{at every } K\text{, $L$-revenue falls"
+            r" short: no finite exercise boundary in } L",
+            font_size=28,
             color=C_L,
         ).next_to(cond, DOWN, buff=0.4)
         with self.voiceover(
@@ -1057,10 +1071,10 @@ class P3S10TriggerConsistency(PaperScene):
             self.play(Write(vm), run_time=1.2)
             self.play(Write(sp), run_time=1.2)
 
-        worry = Text(
-            "C is already pinned by the ODE: two equations, ONE unknown X*."
-            "  Overdetermined?",
-            font_size=26,
+        worry = MathTex(
+            r"\text{$C$ is already pinned by the ODE: two equations,"
+            r" ONE unknown } X^*\text{.  Overdetermined?}",
+            font_size=28,
             color=C_DEMAND,
         ).next_to(sp, DOWN, buff=0.45)
         with self.voiceover(
@@ -1214,10 +1228,11 @@ class P3S11PhiLemma(PaperScene):
         ):
             self.play(Indicate(inada, color=C_TRAIN), run_time=1.2)
 
-        ivt = Text(
-            "derivative continuous on (0,1), +inf at 0, -inf at 1"
-            "  =>  IVT: phi* exists in (0,1)",
-            font_size=25,
+        ivt = MathTex(
+            r"\text{derivative continuous on } (0,1)\text{, } +\infty"
+            r"\text{ at } 0\text{, } -\infty\text{ at } 1"
+            r"\;\;\Rightarrow\;\;\text{IVT: } \phi^*\text{ exists in } (0,1)",
+            font_size=27,
             color=C_TEXT,
         ).next_to(inada, DOWN, buff=0.45)
         with self.voiceover(
@@ -1402,10 +1417,10 @@ class P3S12ComparativeStatics(PaperScene):
         ):
             self.play(Create(box), run_time=0.9)
 
-        concl = Text(
-            "Training intensity reveals beliefs (lambda, mu_H),"
-            " not current conditions (mu_L).",
-            font_size=27,
+        concl = MathTex(
+            r"\text{Training intensity reveals beliefs } (\lambda, \mu_H)"
+            r"\text{, not current conditions } (\mu_L)\text{.}",
+            font_size=29,
             color=C_TRAIN,
         ).next_to(s3, DOWN, buff=0.6)
         with self.voiceover(
@@ -1474,7 +1489,9 @@ class P3S13LambdaChannels(PaperScene):
         ax2 = clean_axes(
             x_range=[0, 0.82], y_range=[0, 38], width=5.4, height=3.6
         ).shift(RIGHT * 3.4 + DOWN * 0.9)
-        t1 = Text("F_L(X = 0.01)", font_size=24, color=C_L).next_to(ax1, UP, buff=0.25)
+        t1 = MathTex(r"F_L(X = 0.01)", font_size=26, color=C_L).next_to(
+            ax1, UP, buff=0.25
+        )
         t2 = Text("coefficient C", font_size=24, color=C_OPTION).next_to(
             ax2, UP, buff=0.25
         )
@@ -1554,26 +1571,30 @@ class P3S14Close(PaperScene):
         self.set_header("What we proved today", kicker="PART 3 RECAP")
 
         items = VGroup(
-            Text(
-                "1.  HJB in L  ->  forced Euler ODE with discount r + lambda",
-                font_size=28,
+            MathTex(
+                r"\text{1.  HJB in } L \;\to\; \text{forced Euler ODE"
+                r" with discount } r + \lambda",
+                font_size=30,
             ),
-            Text(
-                "2.  C = -lambda B_H / Q_L(beta_H) > 0, pinned by the ODE alone",
-                font_size=28,
+            MathTex(
+                r"\text{2.  } C = -\lambda B_H / Q_L(\beta_H) > 0"
+                r"\text{, pinned by the ODE alone}",
+                font_size=30,
             ),
-            Text(
-                "3.  Under (A3), A_1 = 0 exactly: F_L = C X^beta_H",
-                font_size=28,
+            MathTex(
+                r"\text{3.  Under (A3), } A_1 = 0\text{ exactly: }"
+                r" F_L = C X^{\beta_H}",
+                font_size=30,
             ),
-            Text(
-                "4.  VM + SP consistent: one unknown X*, the trigger formula",
-                font_size=28,
+            MathTex(
+                r"\text{4.  VM + SP consistent: one unknown } X^*"
+                r"\text{, the trigger formula}",
+                font_size=30,
             ),
-            Text(
-                "5.  phi* interior, unique, increasing in lambda and mu_H,"
-                " independent of mu_L",
-                font_size=28,
+            MathTex(
+                r"\text{5.  } \phi^*\text{ interior, unique, increasing in }"
+                r" \lambda\text{ and } \mu_H\text{, independent of } \mu_L",
+                font_size=30,
             ),
         ).arrange(DOWN, buff=0.42, aligned_edge=LEFT)
         items.shift(DOWN * 0.2)

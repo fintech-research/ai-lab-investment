@@ -191,7 +191,10 @@ class P6S02Recap(PaperScene):
             Text("1. Calibrate the primitives", font_size=26),
             Text("2. Four firm archetypes and their training fractions", font_size=26),
             Text("3. Invert the FOC: implied AI-timeline beliefs", font_size=26),
-            Text("4. Baseline magnitudes and what lambda means", font_size=26),
+            MathTex(
+                r"\text{4. Baseline magnitudes and what } \lambda \text{ means}",
+                font_size=26,
+            ),
             Text("5. Value decomposition and credit risk", font_size=26),
             Text("6. Dario's dilemma, robustness, predictions", font_size=26),
         ).arrange(DOWN, buff=0.38, aligned_edge=LEFT)
@@ -235,8 +238,9 @@ class P6S03Calibration(PaperScene):
                 font_size=24,
                 color=C_FAINT,
             ),
-            Text(
-                "Caveat 2: training fractions phi-hat are uncertain, +/- 0.10.",
+            MathTex(
+                r"\text{Caveat 2: training fractions } \hat\phi"
+                r" \text{ are uncertain, } \pm 0.10.",
                 font_size=24,
                 color=C_FAINT,
             ),
@@ -477,8 +481,8 @@ class P6S04Archetypes(PaperScene):
         self.pause(0.3)
         self.clear_body()
 
-        src_title = Text(
-            "Where do the phi-hats come from?", font_size=28, weight="BOLD"
+        src_title = MathTex(
+            r"\textbf{Where do the } \hat\phi\textbf{'s come from?}", font_size=28
         ).shift(UP * 1.9)
         sources = VGroup(
             Text(
@@ -491,12 +495,20 @@ class P6S04Archetypes(PaperScene):
                 " $1.8B inference",
                 font_size=23,
             ),
-            Text("    -> combined R&D share ~71% of compute.", font_size=23),
-            Text(
-                "3. Deloitte trajectory: two-thirds training -> parity (2025)",
+            MathTex(
+                r"\quad \to \text{ combined R\&D share} \approx 71\%"
+                r" \text{ of compute.}",
                 font_size=23,
             ),
-            Text("    -> two-thirds inference (2026).", font_size=23),
+            MathTex(
+                r"\text{3. Deloitte trajectory: two-thirds training}"
+                r" \to \text{parity (2025)}",
+                font_size=23,
+            ),
+            MathTex(
+                r"\quad \to \text{ two-thirds inference (2026).}",
+                font_size=23,
+            ),
         ).arrange(DOWN, buff=0.32, aligned_edge=LEFT)
         sources.next_to(src_title, DOWN, buff=0.5).shift(LEFT * 0.4)
 
@@ -879,10 +891,10 @@ class P6S07LambdaTimeline(PaperScene):
             ax2.coords_to_point(0.10, 1 - np.exp(-0.5)), color=C_DEMAND, radius=0.07
         )
         d2 = Dot(ax2.coords_to_point(0.50, 1 - np.exp(-2.5)), color=C_COST, radius=0.07)
-        n1 = Text("0.10 -> 39%", font_size=21, color=C_DEMAND).next_to(
+        n1 = MathTex(r"0.10 \to 39\%", font_size=21, color=C_DEMAND).next_to(
             d1, DOWN + RIGHT, buff=0.12
         )
-        n2 = Text("0.50 -> 92%", font_size=21, color=C_COST).next_to(
+        n2 = MathTex(r"0.50 \to 92\%", font_size=21, color=C_COST).next_to(
             d2, DOWN + RIGHT, buff=0.12
         )
 
@@ -1038,19 +1050,21 @@ class P6S09CreditSpreads(PaperScene):
             self.play(Indicate(spread_eq, color=C_DEFAULT), run_time=1.2)
 
         channels = VGroup(
-            Text(
-                "phi raises A_eff -> lower X_D -> lower default probability",
+            MathTex(
+                r"\phi \text{ raises } A_{\text{eff}} \to \text{lower } X_D"
+                r" \to \text{lower default probability}",
                 font_size=23,
                 color=C_H,
             ),
-            Text(
-                "phi shrinks the inference business -> higher loss given default",
+            MathTex(
+                r"\phi \text{ shrinks the inference business}"
+                r" \to \text{higher loss given default}",
                 font_size=23,
                 color=C_COST,
             ),
-            Text(
-                "At baseline the LGD channel mildly dominates:"
-                " spreads mildly increase in phi.",
+            MathTex(
+                r"\text{At baseline the LGD channel mildly dominates:"
+                r" spreads mildly increase in } \phi.",
                 font_size=23,
                 color=C_TEXT,
             ),
@@ -1186,14 +1200,15 @@ class P6S10DefaultRisk(PaperScene):
             self.play(Indicate(formula[0][14:], color=C_DEFAULT), run_time=1.2)
 
         caveats = VGroup(
-            Text(
-                "Upper bound: ignores the rescuing switch to H before hitting X_D.",
+            MathTex(
+                r"\text{Upper bound: ignores the rescuing switch to H"
+                r" before hitting } X_D.",
                 font_size=22,
                 color=C_FAINT,
             ),
-            Text(
-                "Risk-neutral: mu_L is risk-adjusted; physical default"
-                " probability is lower.",
+            MathTex(
+                r"\text{Risk-neutral: } \mu_L \text{ is risk-adjusted;"
+                r" physical default probability is lower.}",
                 font_size=22,
                 color=C_FAINT,
             ),
@@ -1346,13 +1361,15 @@ class P6S11DilemmaSetup(PaperScene):
         self.clear_body()
 
         ch = VGroup(
-            Text(
-                "Capacity channel: ZERO asymmetry (K* independent of lambda, Prop. 1)",
+            MathTex(
+                r"\text{Capacity channel: ZERO asymmetry (} K^*"
+                r" \text{ independent of } \lambda \text{, Prop. 1)}",
                 font_size=23,
                 color=C_FAINT,
             ),
-            Text(
-                "Timing channel: (X0/X*)^beta approximately symmetric",
+            MathTex(
+                r"\text{Timing channel: } (X_0/X^*)^{\beta}"
+                r" \text{ approximately symmetric}",
                 font_size=23,
                 color=C_FAINT,
             ),
@@ -1361,14 +1378,16 @@ class P6S11DilemmaSetup(PaperScene):
                 font_size=25,
                 color=C_TRAIN,
             ),
-            Text(
-                "  - H-term is ~70% of A_eff at baseline:"
-                " under-training kills the main value source",
+            MathTex(
+                r"\quad \text{- H-term is } \approx 70\% \text{ of }"
+                r" A_{\text{eff}} \text{ at baseline:"
+                r" under-training kills the main value source}",
                 font_size=22,
             ),
-            Text(
-                "  - phi*(lambda) is concave (elasticity < 1, decreasing):"
-                " distortions amplify on the pessimistic side",
+            MathTex(
+                r"\quad \text{- } \phi^*(\lambda) \text{ is concave"
+                r" (elasticity} < 1 \text{, decreasing):"
+                r" distortions amplify on the pessimistic side}",
                 font_size=22,
             ),
         ).arrange(DOWN, buff=0.35, aligned_edge=LEFT)
@@ -1456,9 +1475,9 @@ class P6S12DilemmaNumbers(PaperScene):
             self.play(Create(c_lev), FadeIn(leg), run_time=1.2)
 
         d_cons = Dot(ax.coords_to_point(0.02, losses[0]), color=C_COST, radius=0.07)
-        n_cons = Text("-26%  (phi ~ 0.14)", font_size=21, color=C_COST).next_to(
-            d_cons, UP + RIGHT, buff=0.1
-        )
+        n_cons = MathTex(
+            r"-26\% \;\; (\phi \approx 0.14)", font_size=21, color=C_COST
+        ).next_to(d_cons, UP + RIGHT, buff=0.1)
         d_aggr = Dot(ax.coords_to_point(0.20, losses[6]), color=C_H, radius=0.07)
         n_aggr = Text("-6%", font_size=21, color=C_H).next_to(
             d_aggr, UP + LEFT, buff=0.1
@@ -1513,8 +1532,9 @@ class P6S12DilemmaNumbers(PaperScene):
 
         duo = VGroup(
             Text("Duopoly amplification (Appendix E):", font_size=25),
-            Text(
-                "conservative: 26% -> 38%      aggressive: 6% -> 17%",
+            MathTex(
+                r"\text{conservative: } 26\% \to 38\%"
+                r" \qquad \text{aggressive: } 6\% \to 17\%",
                 font_size=24,
                 color=C_H,
             ),
@@ -1689,15 +1709,20 @@ class P6S14Robustness(PaperScene):
         self.clear_body()
 
         dyn = VGroup(
-            Text("2. Two-period dynamic phi", font_size=24, color=C_TRAIN),
-            Text(
-                "phi_1 ~ static phi* (0.70 -> 0.76 across adjustment costs)",
+            MathTex(r"\text{2. Two-period dynamic } \phi", font_size=24, color=C_TRAIN),
+            MathTex(
+                r"\phi_1 \approx \text{static } \phi^*"
+                r" \;\; (0.70 \to 0.76 \text{ across adjustment costs})",
                 font_size=22,
             ),
-            Text("value gain of reallocation: 1.6% free -> 0.3% costly", font_size=22),
-            Text(
-                "threshold phi-underbar 0.18 unchanged;"
-                " static model slightly overstates initial phi",
+            MathTex(
+                r"\text{value gain of reallocation: } 1.6\% \text{ free}"
+                r" \to 0.3\% \text{ costly}",
+                font_size=22,
+            ),
+            MathTex(
+                r"\text{threshold } \underline{\phi} = 0.18 \text{ unchanged;"
+                r" static model slightly overstates initial } \phi",
                 font_size=22,
             ),
         ).arrange(DOWN, buff=0.32, aligned_edge=LEFT)
@@ -1721,8 +1746,9 @@ class P6S14Robustness(PaperScene):
             self.play(FadeIn(dyn[2]), FadeIn(dyn[3]), run_time=1.0)
 
         three = (
-            Text(
-                "3. Three-regime extension (L -> M -> H): qualitatively unchanged.",
+            MathTex(
+                r"\text{3. Three-regime extension (L} \to \text{M} \to"
+                r" \text{H): qualitatively unchanged.}",
                 font_size=23,
                 color=C_FAINT,
             )
@@ -1745,14 +1771,15 @@ class P6S15Predictions(PaperScene):
         self.set_header("What the data could say", kicker="6.11  TESTABLE PREDICTIONS")
 
         preds = VGroup(
-            Text(
-                "1. Two faces of credit risk: high phi-hat -> fewer defaults,"
-                " larger loss given default",
+            MathTex(
+                r"\text{1. Two faces of credit risk: high } \hat{\phi}"
+                r" \to \text{fewer defaults, larger loss given default}",
                 font_size=23,
             ),
-            Text(
-                "2. Training-beta: high phi-hat -> higher equity beta"
-                " (more growth-option value)",
+            MathTex(
+                r"\text{2. Training-}\beta\text{: high } \hat{\phi}"
+                r" \to \text{higher equity } \beta"
+                r" \text{ (more growth-option value)}",
                 font_size=23,
             ),
             Text(
@@ -1760,9 +1787,9 @@ class P6S15Predictions(PaperScene):
                 " valuations more than good",
                 font_size=23,
             ),
-            Text(
-                "4. Role-invariant allocation: beliefs explain phi-hat;"
-                " order of entry does not",
+            MathTex(
+                r"\text{4. Role-invariant allocation: beliefs explain }"
+                r" \hat{\phi} \text{; order of entry does not}",
                 font_size=23,
             ),
         ).arrange(DOWN, buff=0.4, aligned_edge=LEFT)
@@ -1796,8 +1823,10 @@ class P6S15Predictions(PaperScene):
 
         lims = VGroup(
             Text("Limitations to keep in mind:", font_size=24, color=C_COST),
-            Text(
-                "static phi  |  extreme regime-revenue split  |  Tullock reduced form",
+            MathTex(
+                r"\text{static } \phi \;\;|\;\;"
+                r" \text{extreme regime-revenue split} \;\;|\;\;"
+                r" \text{Tullock reduced form}",
                 font_size=22,
                 color=C_FAINT,
             ),
@@ -1830,11 +1859,17 @@ class P6S16Close(PaperScene):
                 Text("Method", font_size=20, color=C_FAINT),
             ],
             [
-                Text("Prop. 1: K*, phi*, comparative statics", font_size=21),
+                MathTex(
+                    r"\text{Prop. 1: } K^*, \phi^*\text{, comparative statics}",
+                    font_size=21,
+                ),
                 Text("closed form / implicit function", font_size=21, color=C_H),
             ],
             [
-                Text("Prop. 2(i)-(ii): X_D, faith thresholds", font_size=21),
+                MathTex(
+                    r"\text{Prop. 2(i)-(ii): } X_D\text{, faith thresholds}",
+                    font_size=21,
+                ),
                 Text("closed form", font_size=21, color=C_H),
             ],
             [
@@ -1842,7 +1877,10 @@ class P6S16Close(PaperScene):
                 Text("analytical", font_size=21, color=C_H),
             ],
             [
-                Text("Prop. 3(i): X_P exists / unique", font_size=21),
+                MathTex(
+                    r"\text{Prop. 3(i): } X_P \text{ exists / unique}",
+                    font_size=21,
+                ),
                 Text(
                     "analytical; uniqueness comp. if levered",
                     font_size=21,
@@ -1850,7 +1888,10 @@ class P6S16Close(PaperScene):
                 ),
             ],
             [
-                Text("Prop. 3(ii): role invariance of phi", font_size=21),
+                MathTex(
+                    r"\text{Prop. 3(ii): role invariance of } \phi",
+                    font_size=21,
+                ),
                 Text(
                     "exact critical pt; global opt. comp.", font_size=21, color=C_OPTION
                 ),

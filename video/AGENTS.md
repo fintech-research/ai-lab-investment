@@ -38,6 +38,13 @@ locally generated Kokoro voiceovers (issue #98). Global rules: `@../AGENTS.md`.
   "A effective", "X star" — never LaTeX or unicode math in narration text.
   Spell out comparisons ("phi greater than phi bar"). The voice is
   `af_bella` (do not change without updating cached audio).
+- **On-screen math must be `MathTex`, never `Text`.** `Text()` is rendered
+  by Pango, not LaTeX: `X_D`, `K^alpha`, `phi`, `lambda`, `A_eff`, `K*`
+  show up literally (underscores, carets, spelled-out Greek). Any string
+  containing subscripts, superscripts, Greek letters, or symbol names goes
+  in `MathTex`, wrapping prose fragments in `\text{...}` (e.g.,
+  `MathTex(r"\text{training raises } A_{\text{eff}}")`). Plain-English
+  rule for narration, MathTex rule for the screen — do not mix them up.
 - Voiceover audio is cached in `video/media/voiceovers/` keyed by
   (voice, speed, lang, text); editing narration text regenerates only the
   changed segments.

@@ -87,8 +87,9 @@ class P2S01Title(PaperScene):
 
         agenda = (
             VGroup(
-                Text(
-                    "1. Installed values V_H and V_L, and A effective",
+                MathTex(
+                    r"\text{1. Installed values } V_H \text{ and } V_L"
+                    r"\text{, and } A_{\text{eff}}",
                     font_size=26,
                     color=C_TEXT,
                 ),
@@ -132,8 +133,9 @@ class P2S02Recap(PaperScene):
             r"X_0=X\right] = \frac{X}{r-\mu}",
             font_size=36,
         )
-        perp_note = Text(
-            "growing perpetuity (GBM with drift mu, requires r > mu)",
+        perp_note = MathTex(
+            r"\text{growing perpetuity (GBM with drift } \mu"
+            r"\text{, requires } r > \mu)",
             font_size=22,
             color=C_FAINT,
         )
@@ -715,8 +717,8 @@ class P2S07OptionH(PaperScene):
         ):
             self.play(Write(sp), run_time=1.6)
 
-        note = Text(
-            "next: divide the two conditions to solve for X*",
+        note = MathTex(
+            r"\text{next: divide the two conditions to solve for } X^*",
             font_size=24,
             color=C_OPTION,
         ).next_to(sp, DOWN, buff=0.8)
@@ -865,8 +867,9 @@ class P2S09OptionFigure(PaperScene):
             ax.x_axis, RIGHT, buff=0.2
         )
 
-        sub = Text(
-            "H-regime sub-problem (phi = 1), model code, baseline parameters",
+        sub = MathTex(
+            r"\text{H-regime sub-problem } (\phi = 1)"
+            r"\text{, model code, baseline parameters}",
             font_size=22,
             color=C_FAINT,
         ).to_edge(UP, buff=1.25)
@@ -971,8 +974,9 @@ class P2S10ProofSteps12(PaperScene):
             setup.to_edge(UP, buff=1.35)
             self.play(Write(setup), run_time=1.6)
 
-        cav = Text(
-            "uses F_L = C X^(beta_H) under (A3); exactness proved in Part 3",
+        cav = MathTex(
+            r"\text{uses } F_L = C X^{\beta_H}"
+            r"\text{ under (A3); exactness proved in Part 3}",
             font_size=22,
             color=C_FAINT,
         ).next_to(setup, DOWN, buff=0.35)
@@ -1281,13 +1285,20 @@ class P2S12ProofStep4(PaperScene):
         ):
             self.play(Write(num), run_time=1.4)
 
-        indep = Text(
-            "K* contains no phi and no lambda:\n"
-            "g(phi) cancelled, and beta_H solves the H-regime equation only",
-            font_size=24,
-            color=C_TRAIN,
-            line_spacing=1.1,
-        ).next_to(num, DOWN, buff=0.4)
+        indep = VGroup(
+            MathTex(
+                r"K^* \text{ contains no } \phi \text{ and no } \lambda\text{:}",
+                font_size=24,
+                color=C_TRAIN,
+            ),
+            MathTex(
+                r"g(\phi) \text{ cancelled, and } \beta_H"
+                r" \text{ solves the H-regime equation only}",
+                font_size=24,
+                color=C_TRAIN,
+            ),
+        ).arrange(DOWN, buff=0.18)
+        indep.next_to(num, DOWN, buff=0.4)
         with self.voiceover(
             "And note what is absent: K star contains no phi, because g of"
             " phi cancelled, and no lambda, because beta H solves the"
@@ -1360,18 +1371,21 @@ class P2S13CompStatics(PaperScene):
 
         self.clear_body()
         rows = VGroup(
-            Text(
-                "alpha up   ->  trigger up, capacity up (less diminishing returns)",
+            MathTex(
+                r"\alpha \uparrow \;\to\; \text{trigger up, capacity up"
+                r" (less diminishing returns)}",
                 font_size=26,
                 color=C_TEXT,
             ),
-            Text(
-                "gamma up   ->  trigger non-monotone, capacity down (convex costs)",
+            MathTex(
+                r"\gamma \uparrow \;\to\; \text{trigger non-monotone,"
+                r" capacity down (convex costs)}",
                 font_size=26,
                 color=C_TEXT,
             ),
-            Text(
-                "delta up   ->  trigger up, capacity up (via the K* formula)",
+            MathTex(
+                r"\delta \uparrow \;\to\; \text{trigger up, capacity up"
+                r" (via the } K^* \text{ formula)}",
                 font_size=26,
                 color=C_TEXT,
             ),
@@ -1404,14 +1418,19 @@ class P2S14Next(PaperScene):
         self.set_header("Where we are", kicker="NEXT")
 
         done = VGroup(
-            Text("done: V_H, V_L, A_eff derived in full", font_size=28, color=C_H),
+            MathTex(
+                r"\text{done: } V_H\text{, } V_L\text{, } A_{\text{eff}}"
+                r" \text{ derived in full}",
+                font_size=28,
+                color=C_H,
+            ),
             Text(
                 "done: H-regime option, trigger, option premium",
                 font_size=28,
                 color=C_H,
             ),
-            Text(
-                "done: Proposition 1, Steps 1-4: closed-form K*",
+            MathTex(
+                r"\text{done: Proposition 1, Steps 1-4: closed-form } K^*",
                 font_size=28,
                 color=C_H,
             ),
@@ -1427,13 +1446,15 @@ class P2S14Next(PaperScene):
 
         nxt = VGroup(
             Text("Part 3: the L-regime option value ODE", font_size=28, color=C_OPTION),
-            Text(
-                "exactness of A_1 = 0 under (A3)  (Step 5b)",
+            MathTex(
+                r"\text{exactness of } A_1 = 0 \text{ under (A3)}"
+                r" \quad \text{(Step 5b)}",
                 font_size=28,
                 color=C_OPTION,
             ),
-            Text(
-                "interior phi* and its comparative statics  (Steps 5-6)",
+            MathTex(
+                r"\text{interior } \phi^* \text{ and its comparative statics}"
+                r" \quad \text{(Steps 5-6)}",
                 font_size=28,
                 color=C_OPTION,
             ),
