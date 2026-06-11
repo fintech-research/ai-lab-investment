@@ -393,7 +393,7 @@ def create_competition_effect() -> plt.Figure:
         except (ValueError, RuntimeError):
             pass
 
-    fig, ax = plt.subplots(1, 1, figsize=(HALF_W, 3.2))
+    fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
 
     v_m = ~np.isnan(mono_trig)
     v_l = ~np.isnan(leader_trig)
