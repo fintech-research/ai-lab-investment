@@ -912,9 +912,8 @@ class ValuationAnalysis:
         except (ValueError, RuntimeError):
             return {"error": "Tullock equilibrium failed"}
 
-        # Faith-based survival threshold
-        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
-        phi_underbar = R / (1.0 + R)
+        # Faith-based survival threshold (A_eff-channel, eq-phi-underbar)
+        phi_underbar = duo_tullock.faith_threshold()
 
         # Dario dilemma asymmetry ratio under Tullock
         dd_cons = self.dario_dilemma(0.10, 0.02)

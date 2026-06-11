@@ -1213,7 +1213,10 @@ than the naive break-even condition.\footnote{The default boundary uses
   \(\partial A_{\text{eff},i}/\partial \lambda > 0\), which depends on
   the ratio of H-regime to L-regime revenue terms but not on the level
   of \(\lambda\) itself, since \(\lambda\) appears symmetrically in the
-  numerator and denominator of \(A_{\text{eff},i}\) at the threshold.}
+  numerator and denominator of \(A_{\text{eff},i}\) at the threshold.
+  The exact net threshold \(\tilde{\phi}\)
+  (Equation~\ref{eq-phi-tilde}), which also absorbs the markup channel,
+  does depend on \(\lambda\); see Proposition 2(ii).}
 
 Crucially, \(A_{\text{eff},i}\) includes the H-regime continuation value
 through the \(\lambda\) term. This creates a \emph{faith-based survival}
@@ -1238,9 +1241,10 @@ Here, the growth option value is endogenously controlled by \(\phi\),
 and raising \(\phi\) simultaneously reduces current inference
 revenue---creating a genuine trade-off between solvency through future
 continuation value and solvency through current cash flow. The
-faith-based survival condition (Equation~\ref{eq-phi-underbar} below)
-characterizes precisely when the continuation-value channel dominates
-the cash-flow sacrifice.
+faith-based survival thresholds (Equation~\ref{eq-phi-underbar} and
+Equation~\ref{eq-phi-tilde} below) characterize precisely when the
+continuation-value channel operates and when it dominates the cash-flow
+sacrifice and the markup channel outright.
 
 \textbf{Proposition 2} (Endogenous default with faith-based survival;
 leveraged duopoly). \emph{For a levered firm in the duopoly with fixed
@@ -1250,30 +1254,47 @@ boundary \(X_D\) has the following properties:}
 \emph{(i) \(X_D\) is increasing in leverage \(\ell\) and the coupon rate
 \(c_d\).}
 
-\emph{(ii) \(X_D\) is decreasing in \(\lambda\), provided the
-faith-based survival condition holds: the H-regime continuation value
-contributes sufficiently to \(A_{\text{eff},i}\), which requires
-\(\phi_i\) to exceed a threshold \(\underline{\phi}\). The condition
-characterizes \(\partial A_{\text{eff},i}/\partial \lambda > 0\) in
-closed form; a second, opposing channel operates through the markup
-factor (higher \(\lambda\) raises the effective discount rate and pushes
-\(\beta_s^-/(\beta_s^- - 1)\) toward one), and the dominance of the
-\(A_{\text{eff}}\)-channel is verified numerically across all
-calibration parameterizations (see the proof in Appendix A). In the
-symmetric duopoly (\(s_i^L = s_i^H = 1/2\), equal \(K\)), the threshold
-has a closed-form expression:}
+\emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
+training allocation is sufficiently high, and the characterization is
+fully closed-form in the symmetric-shares case (\(s_i^L = s_i^H\), as
+under symmetric capacities or monopoly). Two channels operate. The
+\(A_{\text{eff}}\)-channel (higher \(\lambda\) raises the weight on the
+H-regime continuation value, lowering \(X_D\)) is positive if and only
+if \(\phi_i\) exceeds}
 \begin{equation}\protect\phantomsection\label{eq-phi-underbar}{
 \underline{\phi} = \frac{R}{1 + R}, \quad R \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
-}\end{equation} \emph{For the baseline calibration (\(r = 0.12\),
-\(\mu_H = 0.06\), \(\mu_L = 0.01\), \(\alpha = 0.40\)),
-\(R = (0.06/0.11)^{2.5} \approx 0.22\) and
-\(\underline{\phi} \approx 0.18\). Note that \(\underline{\phi}\) is
-increasing in \(\alpha\) (with less concavity in the revenue function, a
-larger training allocation is needed for the H-regime term to dominate),
-decreasing in \(\mu_H - \mu_L\) (a larger regime-switch growth premium
-amplifies the H-regime term, lowering the threshold), and increasing in
-\(r\) (higher discounting reduces the present value of the continuation
-opportunity).}
+}\end{equation} \emph{An opposing markup channel operates through the
+discount root: higher \(\lambda\) raises the effective discount rate and
+pushes \(\beta_s^-/(\beta_s^- - 1)\) toward one, raising \(X_D\).
+Because the \(A_{\text{eff}}\)-channel semi-elasticity is linear in the
+L-regime flow and H-regime continuation terms, the net condition
+\(\partial X_D / \partial \lambda < 0\) also solves in closed form: it
+holds if and only if \(\phi_i\) exceeds the exact threshold}
+\begin{equation}\protect\phantomsection\label{eq-phi-tilde}{
+\tilde{\phi} = \frac{\tilde{R}}{1 + \tilde{R}}, \quad \tilde{R} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
+}\end{equation} \emph{where \(\Delta = r - \mu_L + \lambda\) and
+\(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_s^-(\beta_s^- - 1)D] > 0\)
+is the markup-channel semi-elasticity, with
+\(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\) (Appendix A
+states the mild regularity condition). The exact threshold nests
+\(\underline{\phi}\) as the \(m \to 0\) limit and satisfies
+\(\tilde{\phi} > \underline{\phi}\). For the baseline calibration
+(\(r = 0.12\), \(\mu_H = 0.06\), \(\mu_L = 0.01\), \(\alpha = 0.40\)),
+\(R = (0.06/0.11)^{2.5} \approx 0.22\),
+\(\underline{\phi} \approx 0.18\), and \(\tilde{\phi} \approx 0.32\);
+the optimal allocation \(\phi^* \approx 0.70\) exceeds both, so
+faith-based survival holds at the optimum. Unlike \(\underline{\phi}\),
+\(\tilde{\phi}\) depends on \(\lambda\): at the baseline calibration
+\(\phi^*(\lambda) > \tilde{\phi}(\lambda)\) if and only if
+\(\lambda \gtrsim 0.034\), so for sufficiently pessimistic beliefs the
+optimal allocation is too inference-heavy for the continuation-value
+channel to dominate, and \(X_D\) is locally increasing in \(\lambda\) at
+the optimum. Note that \(\underline{\phi}\) is increasing in \(\alpha\)
+(with less concavity in the revenue function, a larger training
+allocation is needed for the H-regime term to dominate), decreasing in
+\(\mu_H - \mu_L\) (a larger regime-switch growth premium amplifies the
+H-regime term, lowering the threshold), and increasing in \(r\) (higher
+discounting reduces the present value of the continuation opportunity).}
 
 \emph{(iii) For a given capacity \(K\) and training fraction \(\phi_i\)
 below the interior maximizer of \(A_{\text{eff},i}(\cdot)\), there
@@ -1487,30 +1508,36 @@ preemption.
 and default risk; symmetric duopoly). \emph{In the symmetric duopoly
 with leverage \(\ell\):}
 
-\emph{(i) (Existence: Analytical; Uniqueness: Computational) A
-preemption trigger \(X_P \in (0, X_L^{\text{mono}})\) exists such that
-\(L(X_P) = F(X_P)\), where \(L(X) = E_L(X) - (1-\ell)I(K_L)\) is the
-leader's NPV of entering at state \(X\), \(F(X)\) is the follower's
-option value, and \(X_L^{\text{mono}}\) is the leader's unconstrained
-(monopoly) trigger. Existence follows from continuity and the boundary
-conditions \(L(0) < F(0)\) and
-\(L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})\) (Appendix A). Uniqueness
-of the up-crossing on \((X_D, X_L^{\text{mono}})\) is verified
-computationally across all parameterizations; no case of multiple
-up-crossings was found (Appendix B).}
+\emph{(i) (Existence: Analytical; Uniqueness: Analytical for
+\(\ell = 0\), computational for \(\ell > 0\)) A preemption trigger
+\(X_P \in (0, X_L^{\text{mono}})\) exists such that \(L(X_P) = F(X_P)\),
+where \(L(X) = E_L(X) - (1-\ell)I(K_L)\) is the leader's NPV of entering
+at state \(X\), \(F(X)\) is the follower's option value, and
+\(X_L^{\text{mono}}\) is the leader's unconstrained (monopoly) trigger.
+Existence follows from continuity and the boundary conditions
+\(L(0) < F(0)\) and \(L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})\)
+(Appendix A). At zero leverage the gap \(L(X) - F(X)\) is strictly
+concave on \((0, X_F)\) and negative at the origin, so the up-crossing
+is unique analytically (Appendix A); under leverage the default-option
+term breaks global concavity near \(X_D\), and uniqueness is verified
+computationally across all parameterizations, with no case of multiple
+up-crossings found (Appendix B).}
 
-\emph{(ii) (Computational regularity) The training fraction is invariant
-to competitive role: \(\phi_L^* = \phi_F^* = \phi^*\), the single-firm
-optimum of Proposition 1, to numerical precision across all
-calibration-relevant parameterizations. The mechanism is a fixed-point
-property of the regime-specific contest structure: when both firms
-choose the same \(\phi\), their relative capacities are identical in the
-two regimes, so the L-regime and H-regime contest shares coincide
-(\(s_i^L = s_i^H\)) and scale both components of \(A_{\text{eff},i}\)
-equally---the share terms then cancel from the allocation first-order
-condition, which reduces to the single-firm condition
-\(w_H/w_L = \lambda/(r - \mu_H)\). Training allocation is pinned down by
-beliefs and technology, not by market position.}
+\emph{(ii) (Analytical fixed point; global optimality computational) The
+training fraction is invariant to competitive role:
+\(\phi_L^* = \phi_F^* = \phi^*\), the single-firm optimum of Proposition
+1. The invariance is an exact fixed-point property of the
+regime-specific contest structure: when both firms choose the same
+\(\phi\), their relative capacities are identical in the two regimes, so
+the L-regime and H-regime contest shares coincide
+(\(s_i^L = s_i^H = s_i\)), and the marginal contest revenue in each
+regime factorizes with the common multiplier \(s_i(2 - s_i)\)---which
+cancels exactly from the allocation first-order condition, leaving the
+single-firm condition \(w_H/w_L = \lambda/(r - \mu_H)\) (Appendix A).
+Hence \(\phi^*\) is an exact critical point of the follower's allocation
+problem for any capacities; that it is the global maximizer is verified
+computationally. Training allocation is pinned down by beliefs and
+technology, not by market position.}
 
 \emph{(iii) (Numerical finding) Higher \(\lambda\) (more optimistic
 beliefs) increases \(\phi^*\) for both firms and lowers the preemption
@@ -1572,11 +1599,13 @@ values.}
 
 \end{figure}%
 
-Propositions 1 and 2 are fully analytical; Proposition 3 combines an
-analytical existence proof with computational verification of uniqueness
-and numerical comparative statics. Table~\ref{tbl-result-taxonomy} in
-the Appendix provides a detailed classification of the analytical status
-of each result.
+Propositions 1 and 2 are fully analytical; Proposition 3 combines
+analytical existence, zero-leverage uniqueness, and an exact allocation
+fixed point with computational verification of the remaining properties
+(leveraged uniqueness, global optimality of the allocation, and the
+comparative statics). Table~\ref{tbl-result-taxonomy} in the Appendix
+provides a detailed classification of the analytical status of each
+result.
 
 \section{Quantitative Calibration}\label{sec-calibration}
 
@@ -1960,10 +1989,10 @@ preempting at \(X_P \approx 0.0027\). The large difference in scale
 between the leader (\(K^* \approx 0.0067\)) and the follower
 (\(K_F \approx 0.26\)) arises for two reinforcing reasons: the
 follower's contest share rises with its own capacity, so the effective
-elasticity of revenue to capacity exceeds \(\alpha\) and supports a
-larger optimal scale; and the follower optimally delays entry to a
-demand level roughly 44 times the preemption trigger, where the larger
-commitment is justified.
+elasticity of revenue to capacity exceeds \(\alpha\) (exactly
+\(\alpha(2 - s_F)\); Appendix B) and supports a larger optimal scale;
+and the follower optimally delays entry to a demand level roughly 44
+times the preemption trigger, where the larger commitment is justified.
 
 The model is normalized by \(c = 1\) (investment cost scale), so
 absolute levels of \(K\) and \(X\) are not directly interpretable as
@@ -3245,21 +3274,49 @@ the markup \(M\) toward 1 from below (since \(\beta_s^- < 0\) implies
 \(M \in (0,1)\)) (\(dM/d\lambda = 1/[(\beta_s^- - 1)^2 D] > 0\), where
 \(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\)). The
 \(A_{\text{eff}}\)-channel is negative under
-Equation~\ref{eq-faith-condition}. At the baseline calibration,
-evaluated at the optimal training fraction (\(\phi^* \approx 0.70\)),
-the \(\beta\)-channel is approximately one-third of the
-\(A_{\text{eff}}\)-channel in absolute magnitude, so the net effect is
-negative; the relative size of the \(\beta\)-channel grows as \(\phi\)
-falls toward \(\underline{\phi}\) (where the \(A_{\text{eff}}\)-channel
-vanishes by construction), so the net sign claim in part (ii) requires
-\(\phi\) comfortably above the threshold, not merely above it. The
-\(A_{\text{eff}}\)-channel dominates whenever \(\mu_H - \mu_L\) is
-sufficiently large (the H-regime drift premium amplifies
-\(\partial A_{\text{eff}}/\partial \lambda\)), which holds at the
-optimal allocation across all calibration parameterizations. The result
-\(\partial X_D / \partial \lambda < 0\) at \(\phi = \phi^*\) is verified
-numerically for all \((\sigma, \mu_H, \alpha, \gamma, \lambda, \ell)\)
-in the calibration ranges.
+Equation~\ref{eq-faith-condition}.
+
+\emph{Exact net threshold.} The net sign resolves in closed form. In log
+form,
+\(\partial \ln X_D / \partial \lambda = m - \partial \ln A_{\text{eff},i} / \partial \lambda\),
+where the markup semi-elasticity is
+\(m \equiv (\mathrm{d}M/\mathrm{d}\lambda)/M = 1/[\beta_s^-(\beta_s^- - 1)D] > 0\),
+and, from the derivative above, \[
+\frac{\partial \ln A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(a + \lambda b)\,\Delta}, \qquad \Delta \equiv r - \mu_L + \lambda.
+\] The condition \(\partial X_D / \partial \lambda < 0\) is therefore
+\(b(r - \mu_L) - a > m(a + \lambda b)\Delta\), which is \emph{linear} in
+\((a, b)\) and rearranges to \[
+\frac{b}{a} > \frac{1 + m\Delta}{(r - \mu_L) - m\lambda\Delta},
+\] provided the regularity condition \((r - \mu_L) > m\lambda\Delta\)
+holds (it does throughout the calibration ranges; if it fails, no
+allocation can deliver \(\partial X_D/\partial\lambda < 0\)). With
+symmetric shares, \(b/a = (\phi/(1-\phi))^\alpha / (r - \mu_H)\), giving
+the exact threshold \(\tilde{\phi}\) of Equation~\ref{eq-phi-tilde}.
+Since \(m > 0\), \(\tilde{R} > R\) and
+\(\tilde{\phi} > \underline{\phi}\); as \(m \to 0\) (no markup channel),
+\(\tilde{\phi} \to \underline{\phi}\). At the baseline calibration
+\(m \approx 0.77\) and \(\tilde{\phi} \approx 0.32\), between
+\(\underline{\phi} \approx 0.18\) and \(\phi^* \approx 0.70\); the
+numerically measured \(\beta\)-channel is about one-third of the
+\(A_{\text{eff}}\)-channel at \(\phi^*\), consistent with the closed
+form. The sign flip of \(\partial X_D/\partial \lambda\) at
+\(\tilde{\phi}\) is verified by finite differences as a regression test.
+
+\emph{Sign at the optimal allocation.} Because \(\tilde{\phi}\) depends
+on \(\lambda\) while \(\phi^*(\lambda)\) is increasing in \(\lambda\)
+(Proposition 1), the comparison
+\(\phi^*(\lambda) \gtrless \tilde{\phi}(\lambda)\) determines the sign
+of \(\partial X_D/\partial \lambda\) at the optimum. At the baseline
+calibration the two cross at \(\bar{\lambda} \approx 0.034\): for
+\(\lambda > \bar{\lambda}\) (including the baseline \(\lambda = 0.10\)
+and the full range used in Proposition 3(v)), \(\phi^* > \tilde{\phi}\)
+and the default boundary falls with optimism; for
+\(\lambda < \bar{\lambda}\), the optimal allocation is too
+inference-heavy and \(X_D\) is locally \emph{increasing} in \(\lambda\)
+at the optimum---a refinement that the closed form makes visible and
+that finite-difference checks confirm (e.g., at \(\lambda = 0.02\),
+\(\phi^* \approx 0.14 < \tilde{\phi} \approx 0.27\) and
+\(\partial X_D/\partial\lambda > 0\)).
 
 \emph{(iii) Leverage-training substitution.} Write the default boundary
 as \(X_D = \Psi(\ell) / A_{\text{eff},i}(\phi_i)\), where
@@ -3343,78 +3400,87 @@ parameterization tested.
 By the intermediate value theorem, there exists
 \(X_P \in (0, X_L^{\text{mono}})\) such that \(L(X_P) = F(X_P)\).
 
-\emph{Uniqueness of \(X_P\) (Computational).} In the standard
-\citet{huisman2015strategic} framework, uniqueness follows from single
-crossing: the leader value \(L(X)\) crosses the follower value \(F(X)\)
-exactly once from below. In their model, \(L(X)\) is approximately
-affine in \(X\) (installed revenue minus costs) while
-\(F(X) \propto X^{\beta}\) (where \(\beta > 1\) is the positive
-characteristic root of the standard GBM problem) is strictly convex with
-\(F(0) = 0 > L(0)\), yielding at most one up-crossing.
+\emph{Uniqueness of \(X_P\) (Analytical for \(\ell = 0\); computational
+for \(\ell > 0\)).} In the standard \citet{huisman2015strategic}
+framework, uniqueness follows from single crossing: the leader value
+\(L(X)\) crosses the follower value \(F(X)\) exactly once from below. In
+their model, \(L(X)\) is approximately affine in \(X\) (installed
+revenue minus costs) while \(F(X) \propto X^{\beta}\) (where
+\(\beta > 1\) is the positive characteristic root of the standard GBM
+problem) is strictly convex with \(F(0) = 0 > L(0)\), yielding at most
+one up-crossing.
 
-The enriched payoff environment of this paper introduces additional
-features---capacity choice, training allocation, leverage with default,
-and regime switching---that modify the value function shapes beyond the
-standard framework. In particular: (a) the default kink at \(X_D\)
-introduces a non-smooth point in \(L(X)\); (b) the training allocation
-creates an additional channel through which the leader value depends on
-\(X\); and (c) the regime-switching option adds power-function terms
-(proportional to \(X^{\beta_H}\)) to both \(L(X)\) and \(F(X)\),
-contributing positive curvature. Providing analytical sufficient
-conditions for single crossing in this enriched environment would
-require establishing shape properties of the leader value function that
-depend on the interaction of all model features simultaneously.
+At zero leverage the same logic delivers an exact proof in the present
+model. On \((0, X_F)\) the gap admits the closed form \[
+L(X) - F(X) = A_{\text{eff}}^{\text{mono}}\,X - \left[\frac{\delta K_L}{r} + I(K_L)\right] - E\,X^{\beta_H}, \qquad E = \frac{V^{\text{mono}}(X_F) - V^{\text{duo}}(X_F)}{X_F^{\beta_H}} + B_F > 0,
+\] where the first two terms are the leader's unlevered NPV of entering,
+the \(E X^{\beta_H}\) term collects the (positive) follower-entry
+dilution and the follower's option coefficient, and \(E > 0\) because
+the monopoly value exceeds the duopoly value at follower entry and
+\(B_F > 0\). The gap is strictly concave (its second derivative is
+\(-E\beta_H(\beta_H - 1)X^{\beta_H - 2} < 0\)) and negative at
+\(X = 0\). A strictly concave function that starts negative crosses zero
+from below at most once, so the up-crossing on
+\((0, X_L^{\text{mono}})\)---which exists by the boundary conditions
+above---is unique. \(\square\)
 
-Instead, uniqueness is verified computationally: at each
-parameterization, \(L(X) - F(X)\) is evaluated on a grid of 500 points
-over \((X_D, X_L^{\text{mono}})\) and exactly one up-crossing is
+With leverage, the default-option term (proportional to
+\(X^{\beta_s^-}\) with \(\beta_s^- < 0\)) enters \(L(X)\) with a
+positive coefficient and is strictly convex, breaking global concavity
+in a neighborhood of \(X_D\); the default kink at \(X_D\) also
+introduces a non-smooth point. Providing analytical sufficient
+conditions for single crossing in the levered case would require
+bounding the convex default-option curvature against the concave
+dilution term over the verification domain.
+
+For \(\ell > 0\), uniqueness is therefore verified computationally: at
+each parameterization, \(L(X) - F(X)\) is evaluated on a grid of 500
+points over \((X_D, X_L^{\text{mono}})\) and exactly one up-crossing is
 confirmed (see Appendix B for details). No case of multiple up-crossings
-was found across all parameterizations tested, including those with
-leverage and training allocation. As in the standard preemption
-literature, the gap \(L - F\) eventually turns negative again at demand
-levels far above the equilibrium path---here because \((K_L, \phi_L)\)
-is held at the monopoly-phase optimum, which is too small a scale for
-entry at very high demand---but this second (down-)crossing lies well
-above \(X_L^{\text{mono}}\) on the region where rent equalization is
-moot: for any \(X > X_P\), each firm strictly prefers leading, so
-investment occurs at \(X_P\) and the high-demand region is never reached
-without entry having occurred.
+was found across all parameterizations tested. As in the standard
+preemption literature, the gap \(L - F\) eventually turns negative again
+at demand levels far above the equilibrium path---here because
+\((K_L, \phi_L)\) is held at the monopoly-phase optimum, which is too
+small a scale for entry at very high demand---but this second
+(down-)crossing lies well above \(X_L^{\text{mono}}\) on the region
+where rent equalization is moot: for any \(X > X_P\), each firm strictly
+prefers leading, so investment occurs at \(X_P\) and the high-demand
+region is never reached without entry having occurred.
 
-\emph{Part (ii): Role-invariance of the training fraction (Computational
-regularity with analytical motivation).} The following argument
-identifies the mechanism; the equality itself is verified
-computationally.
+\emph{Part (ii): Role-invariance of the training fraction (Analytical
+critical point; global optimality computational).}
 
 For the leader, the result is immediate from the solution convention:
 the leader's \((K_L, \phi_L)\) solves the monopoly-phase problem, in
 which \(s_L^L = s_L^H = 1\) and the allocation FOC is exactly
 Proposition 1's, so \(\phi_L^* = \phi^*\).
 
-For the follower, the allocation FOC includes contest-share terms: the
-L-regime revenue is \(X \cdot [(1-\phi_F)K_F]^\alpha \cdot s_F^L\) with
-\(s_F^L\) decreasing in \(\phi_F\) (less inference capacity), and the
-H-regime revenue is \(X \cdot (\phi_F K_F)^\alpha \cdot s_F^H\) with
-\(s_F^H\) increasing in \(\phi_F\) (more training compute). The key
-observation is a fixed-point property: when the follower chooses the
-same training fraction as the leader (\(\phi_F = \phi_L = \phi\)), the
-ratio of inference capacities equals the ratio of training capacities
-(\(K_F/K_L\) in both cases), so the two contest shares coincide,
-\(s_F^L = s_F^H \equiv s_F\). The common share then multiplies
-\emph{both} components of \(A_{\text{eff},F}\), leaving the allocation
-FOC---which depends only on the ratio of marginal values,
-\(w_H/w_L = \lambda/(r - \mu_H)\)---unchanged from the single-firm
-problem. The single-firm optimum \(\phi^*\) therefore remains a critical
-point of the follower's problem, and the share-derivative terms (which
-would push \(\phi_F\) away from \(\phi^*\)) cancel to first order at the
-symmetric allocation: the L-share loss from training and the H-share
-gain enter with weights proportional to the same regime values whose
-ratio pins \(\phi^*\).
-
-Computationally, \(\phi_F^* = \phi_L^* = \phi^*\) holds to at least four
-decimal places across the full parameter space used in the calibration
-(varying \(\sigma\), \(\mu_H\), \(\alpha\), \(\gamma\), \(\lambda\), and
-\(\ell\) over their calibration ranges); no parameterization with an
-economically meaningful gap between the two was found. The duration of
+For the follower, the cancellation is exact, by the following
+factorization. Write the Tullock contest payoff over the regime-relevant
+capacity measure \(u\) (with rival measure \(\bar{u}\) fixed) as
+\(f(u) = u^{2\alpha} / (u^\alpha + \bar{u}^\alpha)\). Differentiating,
+\[
+f'(u) = \alpha\, u^{\alpha - 1}\, s\,(2 - s), \qquad s = \frac{u^\alpha}{u^\alpha + \bar{u}^\alpha}:
+\] the marginal contest revenue is the standalone marginal revenue
+\(\alpha u^{\alpha-1}\) scaled by the common multiplier \(s(2-s)\). When
+\(\phi_F = \phi_L = \phi\), the regime-relevant capacity ratios coincide
+across regimes (\(u/\bar{u} = K_F/K_L\) for inference and training
+alike), so the share \(s\)---and hence the multiplier \(s(2-s)\)---is
+the \emph{same} in the L-regime and H-regime terms of the follower's
+allocation FOC: \[
+\frac{\partial A_{\text{eff},F}}{\partial \phi_F}\bigg|_{\phi_F = \phi_L = \phi} = \alpha K_F^\alpha\, s\,(2 - s)\,\bigl[-w_L (1-\phi)^{\alpha-1} + w_H \phi^{\alpha-1}\bigr].
+\] The multiplier cancels, leaving exactly the single-firm condition of
+Proposition 1, Step 5, whose unique zero is \(\phi^*\). Hence \(\phi^*\)
+is an exact critical point of the follower's allocation problem for
+\emph{any} capacity pair \((K_F, K_L)\), not merely to first order. (The
+same factorization underlies the scalar reduction of the follower's
+capacity problem in Appendix B.) What remains computational is global
+optimality: that this critical point is the follower's global maximizer
+is confirmed numerically---\(\phi_F^* = \phi_L^* = \phi^*\) holds to at
+least four decimal places across the full parameter space used in the
+calibration (varying \(\sigma\), \(\mu_H\), \(\alpha\), \(\gamma\),
+\(\lambda\), and \(\ell\) over their calibration ranges), with no
+parameterization showing an economically meaningful gap. The duration of
 the monopoly phase is substantial---\(X_F^*/X_P \approx 44\)--\(46\) at
 baseline, roughly invariant to leverage---but it operates on the
 \emph{timing} margin (part iii), not the allocation margin. \(\square\)
@@ -3553,19 +3619,19 @@ Proposition 1 & Optimal \(K^*, \phi^*\); interiority and uniqueness of
 Closed-form / implicit function & Assumption 1 \\
 Proposition 2(i) & Default boundary increasing in leverage and coupon &
 Closed-form & Assumption 1 \\
-Proposition 2(ii) & Faith-based survival; closed-form
-\(\underline{\phi}\); \(A_{\text{eff}}\)-channel dominance over
-\(\beta\)-channel & Closed-form threshold; channel dominance verified
-numerically & Assumption 1; calibration ranges \\
+Proposition 2(ii) & Faith-based survival; closed-form thresholds
+\(\underline{\phi}\) (\(A_{\text{eff}}\)-channel) and \(\tilde{\phi}\)
+(exact, both channels) & Closed-form & Assumption 1; symmetric shares \\
 Proposition 2(iii)--(iv) & Leverage-training substitution; rival
 capacity effect & Analytical (mechanical) & Assumption 1 \\
 Proposition 3(i) & Existence of \(X_P\) & Analytical (IVT) & Assumption
 1 \\
 Proposition 3(i) & Uniqueness of \(X_P\) (single up-crossing) &
-Computational verification & All parameterizations tested \\
+Analytical (\(\ell = 0\), strict concavity); computational
+(\(\ell > 0\)) & Assumption 1; all parameterizations tested \\
 Proposition 3(ii) & Role-invariance: \(\phi_L^* = \phi_F^* = \phi^*\) &
-Computational regularity with analytical motivation & All calibration
-parameterizations \\
+Analytical critical point (exact factorization); global optimality
+computational & Assumption 1; all calibration parameterizations \\
 Proposition 3(iii)--(v) & Comparative statics of preemption equilibrium
 & Numerical & All calibration parameterizations \\
 Numerical Finding 1 & Dario's dilemma & Numerical & All
@@ -3634,10 +3700,53 @@ Leland form
 whose default-option term forces an additional particular solution
 \(C_2 X^{\beta_H^-}\) in the L-regime equity ODE; value-matching and
 smooth-pasting at the boundary then determine \(X_D\) jointly with the
-homogeneous coefficient. At baseline, the closed-form boundary exceeds
-the coupled-system boundary by approximately 3\% uniformly across
-leverage levels, in the conservative direction (the formula slightly
-overstates default risk).
+homogeneous coefficient \(A_-\). Because \(A_-\) enters both boundary
+conditions linearly, the combination
+\(\beta_L^- E(X_D) - X_D E'(X_D) = 0\) eliminates it exactly, reducing
+the coupled system to a single equation, \[
+A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{c_D + \delta K}{r},
+\] whose economically relevant root (the continuation of the
+single-boundary root as \(C_2 \to 0\)) is computed by Brent's method. A
+first-order expansion in the small coefficient \(C_2\) around the
+single-boundary root \(X_D^0\) gives the closed-form relative bias \[
+\frac{X_D^0 - X_D}{X_D^0} \;\approx\; \kappa = \frac{C_2\,(\beta_L^- - \beta_H^-)\,(X_D^0)^{\beta_H^- - 1}}{A_{\text{eff}}\,(\beta_L^- - 1)} > 0,
+\] positive because \(C_2 < 0\) at calibration values---so the direction
+of the bias (the single-boundary formula overstates default risk)
+follows analytically, not only numerically. At baseline the exact
+relative bias is 3.1\% and the first-order \(\kappa\) is 2.9\%, uniform
+across leverage levels; the closed-form boundary exceeds the
+coupled-system boundary by approximately 3\% throughout, in the
+conservative direction.
+
+\textbf{Separable reduction of the follower problem.} At a common
+training fraction \(\phi_F = \phi_L = \phi\), the Tullock denominators
+factor---\([(1-\phi)K_F]^\alpha + [(1-\phi)K_L]^\alpha = (1-\phi)^\alpha (K_F^\alpha + K_L^\alpha)\),
+and likewise for the training measure---so the follower's effective
+revenue coefficient separates exactly as in Proposition 1: \[
+A_{\text{eff},F} = g(\phi) \cdot \frac{K_F^{2\alpha}}{K_F^\alpha + K_L^\alpha},
+\] with \(g(\phi) = w_L (1-\phi)^\alpha + w_H \phi^\alpha\). The
+allocation FOC is then exactly the single-firm condition (the
+role-invariance of Proposition 3(ii)), and the capacity FOC reduces to a
+single equation with \emph{effective revenue elasticity}
+\(\alpha(2 - s_F)\), where
+\(s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)\): \[
+\alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, b(K_F) = (\beta_H - 1)\, K_F\, b'(K_F),
+\] where \(b(K) = \delta K / r + c[1 - \ell(1 - c_d/r)]K^\gamma\) is the
+leverage-adjusted total cost. The left-hand bracket
+\(\alpha\beta_H(2 - s_F) - (\beta_H - 1)Kb'/b\) is strictly decreasing
+in \(K\) (\(s_F\) is increasing and \(Kb'/b\) rises from 1 to
+\(\gamma\)), so the interior optimum is \emph{unique} whenever
+\((\beta_H - 1)/(2\alpha\beta_H) < 1\) and
+\((\beta_H - 1)/(\alpha\beta_H) > 1/\gamma\). The first condition is
+weaker than (A2)'s upper bound because the follower's small-\(K\)
+elasticity is \(2\alpha\) (share gains compound the standalone revenue
+gain), so the follower's problem remains well-posed in part of the
+region where the single-firm problem degenerates. The scalar solution
+agrees with the two-dimensional Nelder-Mead optimizer to a relative
+tolerance of \(10^{-6}\) at baseline (with and without leverage), which
+is enforced as a regression test; the elasticity wedge
+\(\alpha(2 - s_F) > \alpha\) is the analytical source of the large
+follower scale (\(K_F \gg K_L\)) noted in Section~\ref{sec-calibration}.
 
 \textbf{Assumption (A3) boundary.} The L-regime insufficiency condition
 (A3) requires \((1 - 1/\beta_L^+)/\alpha \geq 1\). At the baseline

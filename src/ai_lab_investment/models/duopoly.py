@@ -428,35 +428,89 @@ class DuopolyModel:
         its own boundary X_D^H; the L-regime equity ODE is forced by
         lambda * E_H, giving particular terms A_eff X - N + C_2 X^{beta_H^-}
         plus the homogeneous A_neg X^{beta_L^-}. Value matching and smooth
-        pasting at X_D pin (A_neg, X_D) jointly. The single-boundary
-        formula in default_boundary() replaces E_H with its perpetuity,
-        omitting the (positive) H-regime default option D_H X^{beta_H^-};
-        it therefore understates continuation value and weakly overstates
-        X_D (about 3% at baseline).
+        pasting at X_D pin (A_neg, X_D) jointly.
+
+        Scalar reduction: the homogeneous coefficient enters both boundary
+        conditions linearly, so the combination beta_L^- * E(X_D)
+        - X_D * E'(X_D) = 0 eliminates A_neg exactly, leaving one equation
+
+            Phi(X) = A_eff (beta_L^- - 1) X - beta_L^- N
+                     + C_2 (beta_L^- - beta_H^-) X^{beta_H^-} = 0,
+
+        solved by Brent's method. The single-boundary formula in
+        default_boundary() is the C_2 = 0 root; since C_2 < 0 at
+        calibration values, the coupled boundary lies below it (about 3%
+        at baseline; see coupled_boundary_bias_linear for the closed-form
+        first-order bias).
         """
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
             return 0.0
 
-        p = self.params
         c_D = self.coupon_payment(K_i, lev)
         if c_D <= 0:
             return 0.0
 
+        terms = self._coupled_boundary_terms(phi_i, K_i, phi_j, K_j, lev)
+        if terms is None:
+            # No H-regime revenue: the coupled system degenerates to the
+            # single-boundary case.
+            return self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        a_eff, N, C_2, beta_L_neg, beta_H_neg = terms
+        if a_eff <= 0:
+            return np.inf
+
+        def gap(X: float) -> float:
+            return (
+                a_eff * (beta_L_neg - 1.0) * X
+                - beta_L_neg * N
+                + C_2 * (beta_L_neg - beta_H_neg) * X**beta_H_neg
+            )
+
+        X_D0 = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        # Phi is hump-shaped (-> -inf at both 0 and infinity) with at most
+        # two roots. The economically relevant boundary is the right root,
+        # which converges to the single-boundary X_D0 as C_2 -> 0; the
+        # left root is an artifact of the X^{beta_H^-} term near zero.
+        # Bracket from the hump maximum (closed form from Phi'(X_m) = 0).
+        hump_coef = beta_H_neg * C_2 * (beta_L_neg - beta_H_neg)
+        if hump_coef == 0.0:
+            return X_D0
+        X_m = (-a_eff * (beta_L_neg - 1.0) / hump_coef) ** (1.0 / (beta_H_neg - 1.0))
+        hi = max(100.0 * X_D0, 10.0 * X_m)
+        if gap(X_m) <= 0 or gap(hi) >= 0:
+            logging.warning(
+                "Coupled default boundary bracket failed; "
+                "returning single-boundary formula"
+            )
+            return X_D0
+        return float(optimize.brentq(gap, X_m, hi, xtol=1e-14))
+
+    def _coupled_boundary_terms(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        lev: float,
+    ) -> tuple[float, float, float, float, float] | None:
+        """Common ingredients of the coupled default-boundary system.
+
+        Returns (a_eff, N, C_2, beta_L_neg, beta_H_neg), or None when the
+        firm has no H-regime revenue (phi_i * K_i <= 0).
+        """
+        p = self.params
+        c_D = self.coupon_payment(K_i, lev)
         is_monopolist = K_j <= 0
         s_H = 1.0 if is_monopolist else self.contest_share_H(phi_i, K_i, phi_j, K_j)
         a_eff = self._effective_revenue_coeff(
             phi_i, K_i, phi_j, K_j, monopolist=is_monopolist
         )
-        if a_eff <= 0:
-            return np.inf
 
         N = (c_D + p.delta * K_i) / p.r
         tr_cap = phi_i * K_i
         if tr_cap <= 0:
-            # No H-regime revenue: the coupled system degenerates to the
-            # single-boundary case.
-            return self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+            return None
         A_prime = p.A_H * tr_cap**p.alpha * s_H
 
         # H-regime Leland boundary and default-option coefficient
@@ -472,30 +526,94 @@ class DuopolyModel:
             - (p.r + lam_tilde)
         )
         C_2 = -lam_tilde * D_H / Q_L
+        return a_eff, N, C_2, beta_L_neg, beta_H_neg
 
-        X_D_guess = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+    def coupled_boundary_bias_linear(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        leverage: float | None = None,
+    ) -> float:
+        """Closed-form first-order relative bias of the single boundary.
 
-        def system(v: np.ndarray) -> list[float]:
-            log_X_D, A_neg = v
-            X_D = np.exp(log_X_D)
-            E = a_eff * X_D - N + C_2 * X_D**beta_H_neg + A_neg * X_D**beta_L_neg
-            E_prime = (
-                a_eff
-                + C_2 * beta_H_neg * X_D ** (beta_H_neg - 1.0)
-                + A_neg * beta_L_neg * X_D ** (beta_L_neg - 1.0)
-            )
-            return [E, E_prime * X_D]
+        Expanding the scalar coupled-boundary equation around the
+        single-boundary root X_D^0 in the small coefficient C_2 gives
 
-        sol, _, ier, _ = optimize.fsolve(
-            system, [np.log(X_D_guess), 0.0], full_output=True
+            (X_D^0 - X_D) / X_D^0
+            ~ kappa = C_2 (beta_L^- - beta_H^-) (X_D^0)^{beta_H^- - 1}
+                      / [A_eff (beta_L^- - 1)],
+
+        the analytical counterpart of the ~3% overstatement reported in
+        the paper. Returns kappa (positive when the single-boundary
+        formula overstates the coupled boundary). Returns 0.0 when the
+        firm is unlevered or has no H-regime revenue.
+        """
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0 or self.coupon_payment(K_i, lev) <= 0:
+            return 0.0
+        terms = self._coupled_boundary_terms(phi_i, K_i, phi_j, K_j, lev)
+        if terms is None:
+            return 0.0
+        a_eff, _N, C_2, beta_L_neg, beta_H_neg = terms
+        if a_eff <= 0:
+            return 0.0
+        X_D0 = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        return float(
+            C_2
+            * (beta_L_neg - beta_H_neg)
+            * X_D0 ** (beta_H_neg - 1.0)
+            / (a_eff * (beta_L_neg - 1.0))
         )
-        if ier != 1:
-            logging.warning(
-                "Coupled default boundary failed to converge; "
-                "returning single-boundary formula"
-            )
-            return X_D_guess
-        return float(np.exp(sol[0]))
+
+    def faith_threshold(self) -> float:
+        """A_eff-channel threshold phi_underbar (paper eq-phi-underbar).
+
+        In the symmetric-shares case, dA_eff/dlambda > 0 iff phi exceeds
+        phi_underbar = R / (1 + R), R = ((r - mu_H)/(r - mu_L))^(1/alpha).
+        Independent of lambda.
+        """
+        p = self.params
+        R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
+        return R / (1.0 + R)
+
+    def faith_threshold_exact(self, lam: float | None = None) -> float:
+        """Exact faith-based survival threshold phi_tilde (both channels).
+
+        The full derivative of the default boundary decomposes as
+        d ln X_D / d lambda = M'/M - A_eff'/A_eff (markup channel minus
+        revenue channel). Since A_eff'/A_eff = [b(r - mu_L) - a] /
+        [(a + lambda b) Delta] is linear in the L-flow a and the
+        H-continuation b, the net condition d X_D / d lambda < 0 solves in
+        closed form for the symmetric-shares case:
+
+            phi > phi_tilde = R~ / (1 + R~),
+            R~ = [(r - mu_H)(1 + m Delta)
+                  / ((r - mu_L) - m lambda Delta)]^(1/alpha),
+            m  = M'/M = 1 / [beta_s^- (beta_s^- - 1) D],
+            D  = sqrt((mu_L - sigma^2/2)^2 + 2 sigma^2 (r + lambda)),
+            Delta = r - mu_L + lambda.
+
+        Nests phi_underbar as the m -> 0 (no markup channel) limit, and
+        phi_tilde > phi_underbar whenever m > 0. Unlike phi_underbar,
+        phi_tilde depends on lambda. Requires the regularity condition
+        (r - mu_L) > m * lambda * Delta (always satisfied at calibration
+        values); if violated, X_D is increasing in lambda for every phi
+        and the threshold does not exist (returns 1.0).
+        """
+        p = self.params
+        lam_eff = p.lam if lam is None else lam
+        b_ = p.mu_L - 0.5 * p.sigma**2
+        D = np.sqrt(b_**2 + 2.0 * p.sigma**2 * (p.r + lam_eff))
+        beta_neg = (-b_ - D) / p.sigma**2
+        m = 1.0 / (beta_neg * (beta_neg - 1.0) * D)
+        delta_eff = p.r - p.mu_L + lam_eff
+        denom = (p.r - p.mu_L) - m * lam_eff * delta_eff
+        if denom <= 0:
+            return 1.0
+        R_tilde = ((p.r - p.mu_H) * (1.0 + m * delta_eff) / denom) ** (1.0 / p.alpha)
+        return R_tilde / (1.0 + R_tilde)
 
     def _negative_root(self, regime: str, lam_tilde: float = 0.0) -> float:
         """Negative root of the characteristic equation.
@@ -798,6 +916,78 @@ class DuopolyModel:
 
         self._cache[cache_key] = (X_F, K_F, phi_F, lev_F)
         return X_F, K_F, phi_F, lev_F
+
+    def solve_follower_scalar(
+        self,
+        K_L: float,
+        phi_L: float,
+    ) -> tuple[float, float, float, float]:
+        """Follower solution via the separable scalar reduction.
+
+        Verification counterpart to solve_follower(). At a common training
+        fraction phi_F = phi_L = phi, the Tullock contest denominators
+        factor: [(1-phi)K_F]^alpha + [(1-phi)K_L]^alpha
+        = (1-phi)^alpha (K_F^alpha + K_L^alpha), and likewise for the
+        H-regime, so
+
+            A_eff,F = g(phi) * K_F^{2 alpha} / (K_F^alpha + K_L^alpha),
+
+        the same g(phi)-times-capacity-term separability as Proposition 1.
+        The allocation FOC is then exactly the single-firm condition
+        (phi_F = phi*, role invariance), and the capacity FOC reduces to a
+        single equation in K_F with effective revenue elasticity
+        alpha * (2 - s_F(K_F)), where s_F = K_F^alpha/(K_F^alpha+K_L^alpha):
+
+            alpha beta_H (2 - s_F(K)) b(K) = (beta_H - 1) K b'(K).
+
+        The bracket alpha*beta_H*(2 - s_F) - (beta_H - 1) K b'/b is
+        strictly decreasing in K (s_F increasing, K b'/b increasing from 1
+        to gamma), so the interior optimum is unique whenever
+        (beta_H - 1)/(2 alpha beta_H) < 1 (small-K interiority; weaker
+        than (A2)'s upper bound because the small-K elasticity is
+        2 alpha) and (beta_H - 1)/(alpha beta_H) > 1/gamma (large-K
+        interiority, the same lower bound as (A2)).
+
+        Only valid for the Tullock contest with phi_F = phi_L.
+
+        Returns:
+            (X_F*, K_F*, phi_F*, lev_F) with phi_F* = phi_L.
+        """
+        if self.contest != "tullock":
+            msg = "Scalar follower reduction requires the Tullock contest"
+            raise RuntimeError(msg)
+
+        p = self.params
+        beta = p.beta_H
+        lev_F = self.leverage
+
+        # Interiority conditions for the follower's scalar problem
+        small_k = (beta - 1.0) / (2.0 * p.alpha * beta)
+        large_k = (beta - 1.0) / (p.alpha * beta)
+        if not (small_k < 1.0 and large_k > 1.0 / p.gamma):
+            msg = (
+                f"No interior follower optimum: need "
+                f"(beta_H-1)/(2 alpha beta_H) = {small_k:.3f} < 1 and "
+                f"(beta_H-1)/(alpha beta_H) = {large_k:.3f} > "
+                f"1/gamma = {1 / p.gamma:.3f}"
+            )
+            raise RuntimeError(msg)
+
+        # Leverage-adjusted capital cost has the same K-powers as b(K)
+        c_tilde = p.c * (1.0 - lev_F * (1.0 - self.coupon_rate / p.r))
+
+        def foc_bracket(log_K: float) -> float:
+            K = np.exp(log_K)
+            s_F = K**p.alpha / (K**p.alpha + K_L**p.alpha)
+            b_val = p.delta * K / p.r + c_tilde * K**p.gamma
+            Kb_prime = p.delta * K / p.r + p.gamma * c_tilde * K**p.gamma
+            return p.alpha * beta * (2.0 - s_F) - (beta - 1.0) * Kb_prime / b_val
+
+        # Strictly decreasing bracket: positive at small K, negative at
+        # large K under the interiority conditions above.
+        K_F = float(np.exp(optimize.brentq(foc_bracket, -15.0, 15.0, xtol=1e-12)))
+        X_F = self._follower_trigger(K_F, phi_L, K_L, phi_L, lev_F)
+        return X_F, K_F, phi_L, lev_F
 
     # ------------------------------------------------------------------
     # Leader's problem
