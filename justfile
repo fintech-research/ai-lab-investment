@@ -92,3 +92,26 @@ update-deps:
 run-pipeline:
     @echo "🚀 Running analysis pipeline"
     uv run python -m ai_lab_investment
+
+# Install video dependencies (manim + kokoro-onnx) and download TTS model files
+video-setup:
+    @echo "🚀 Installing video dependency group"
+    uv sync --group video
+    just video-models
+
+# Download Kokoro TTS model files (~340 MB) into video/models/
+video-models:
+    @echo "🚀 Downloading Kokoro ONNX model files"
+    mkdir -p video/models
+    [ -f video/models/kokoro-v1.0.onnx ] || curl -L -o video/models/kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+    [ -f video/models/voices-v1.0.bin ] || curl -L -o video/models/voices-v1.0.bin https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+
+# Render the short explainer video (quality: l, m, h, k)
+render-explainer quality="h":
+    @echo "🚀 Rendering explainer video"
+    uv run python video/render.py explainer --quality {{quality}}
+
+# Render the full derivation/proof walkthrough series (quality: l, m, h, k)
+render-walkthrough quality="h":
+    @echo "🚀 Rendering walkthrough series"
+    uv run python video/render.py walkthrough_part1 walkthrough_part2 walkthrough_part3 walkthrough_part4 walkthrough_part5 walkthrough_part6 --quality {{quality}}

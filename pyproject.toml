@@ -32,6 +32,11 @@ Repository = "https://github.com/vgreg/ai-lab-investment"
 Documentation = "https://vgreg.github.io/ai-lab-investment/"
 
 [dependency-groups]
+video = [
+    "manim>=0.20.1",
+    "kokoro-onnx>=0.5.0",
+    "soundfile>=0.13.1",
+]
 dev = [
     "pytest>=7.2.0",
     "pre-commit>=2.20.0",
@@ -54,6 +59,11 @@ build-backend = "hatchling.build"
 
 python = "./.venv"
 python-version = "3.13"
+
+[tool.ty.src]
+# video/ needs the optional `video` dependency group (manim, kokoro-onnx),
+# which is not installed in the default dev environment.
+exclude = ["video/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

@@ -226,3 +226,8 @@ _freeze/
 
 outputs/
 results/
+
+# Video build artifacts
+video/models/
+video/media/
+video/output/

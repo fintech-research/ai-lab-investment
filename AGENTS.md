@@ -50,3 +50,4 @@ All figure logic lives in `src/ai_lab_investment/figures/paper.py` (11 `create_*
 - Paper writing and figures: `@paper/AGENTS.md`
 - Slides: `@slides/AGENTS.md`
 - Source code: `@src/AGENTS.md`
+- Explainer videos (Manim + Kokoro voiceover): `@video/AGENTS.md`
