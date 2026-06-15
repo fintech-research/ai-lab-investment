@@ -208,7 +208,11 @@ def create_lambda_option_value() -> plt.Figure:
     from ..models.parameters import ModelParameters
 
     lam_vals = np.linspace(0.01, 0.80, 60)
-    X_ref = 0.01
+    # Evaluate below the (lambda-independent) H-regime trigger X_H* ~ 0.0028 so
+    # that both F_L and F_H are option values: above X_H* the H firm has already
+    # invested and F_H(X) becomes installed NPV, which F_L = C*X^{beta_H} (the
+    # extrapolated option form) overshoots, producing a spurious crossing.
+    X_ref = 0.002
 
     F_L_vals = np.full_like(lam_vals, np.nan)
     F_H_vals = np.full_like(lam_vals, np.nan)

@@ -203,7 +203,7 @@ Panel (a) shows that $F_L(X)$ increases concavely in $\lambda$: firms with highe
 The dashed line shows the post-adoption option value $F_H(X)$, which is independent of $\lambda$; for sufficiently high $\lambda$, the pre-adoption value $F_L$ approaches $F_H$ as the expected switch time shrinks to zero.
 Panel (b) plots the particular-solution coefficient $C$, which captures the additional value from regime switching; it increases monotonically in $\lambda$, confirming that the mechanism operates through the continuation value channel.
 
-![Effect of regime-switch arrival rate $\lambda$ on pre-adoption option value. (a) Option value $F_L(X)$ in regime $L$ (solid) and $F_H(X)$ in regime $H$ (dashed, independent of $\lambda$), evaluated at $X = 0.01$. (b) Particular-solution coefficient $C$ capturing the value of the regime-switch option. Higher $\lambda$ raises $F_L$ toward $F_H$ by increasing the expected value of the switching opportunity.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
+![Effect of regime-switch arrival rate $\lambda$ on pre-adoption option value. (a) Option value $F_L(X)$ in regime $L$ (solid) and $F_H(X)$ in regime $H$ (dashed, independent of $\lambda$), evaluated at $X = 0.002$. (b) Particular-solution coefficient $C$ capturing the value of the regime-switch option. Higher $\lambda$ raises $F_L$ toward $F_H$ by increasing the expected value of the switching opportunity.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
 
 ### Duopoly with Default Risk {#sec-duopoly}
 
