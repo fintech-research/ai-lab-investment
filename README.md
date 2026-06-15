@@ -64,10 +64,10 @@ Some commonly used commands include:
 The paper's closed-form results are independently machine-checked in [Lean 4](https://lean-lang.org/) against [Mathlib](https://github.com/leanprover-community/mathlib4). The Lean package lives in [`lean/`](lean/README.md) and verifies, with kernel-checked, `sorry`-free proofs:
 
 - **The Euler ODE** — that the power solution `X^β` solves the homogeneous Hamilton–Jacobi–Bellman ODE **iff** `β` solves the characteristic equation `Q(β)=0` (tying the roots to the actual ODE, not just an asserted quadratic).
-- **Proposition 1** — the investment trigger `X* = β/(β-1)·b/A` and the NPV `b/(β-1)`; the closed-form optimal capacity `K*` and its independence from `φ`; and the optimal training fraction `φ*` (existence, uniqueness, and comparative statics: increasing in `λ` and `μ_H`, independent of `μ_L`).
+- **Proposition 1** — the investment trigger `X* = β/(β-1)·b/A` and the NPV `b/(β-1)`; the capacity first-order condition and its closed-form solution `K*`, independent of `φ`; and the training fraction `φ*` reduced to its unique interior critical point in closed form, with comparative statics (increasing in `λ` and `μ_H`, independent of `μ_L`).
 - **Characteristic roots** — the quadratic roots, the positive root exceeding 1 (`β_H>1`, `β_L⁺>1`), the negative root (`β_s⁻<0`), the ordering `β_L⁺ > β_H`, and the Leland markup factor in `(0,1)`.
 - **Proposition 2** — the quotient-rule derivative `∂A_eff/∂λ`, the faith-based-survival condition and threshold `φ̲ = R/(1+R)`, and the default boundary increasing in leverage and rival capacity.
-- **Proposition 3 (duopoly)** — the Tullock contest-share scale-invariance behind role-invariance, the separable reduction of the follower coefficient, the contest-derivative factorization, and the existence and (zero-leverage) single-crossing uniqueness of the preemption trigger `X_P`.
+- **Proposition 3 (duopoly)** — the Tullock contest-share scale-invariance behind role-invariance, the separable reduction of the follower coefficient, the contest-derivative factorization, and the generic intermediate-value existence and strict-concavity single-crossing lemmas underlying the preemption trigger `X_P` (conditional on the continuity, endpoint-sign, and zero-leverage concavity hypotheses the paper supplies).
 
 Each theorem holds for all admissible parameter values (not just the baseline calibration) and depends only on Lean's standard axioms. To reproduce:
 
