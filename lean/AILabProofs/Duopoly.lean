@@ -79,6 +79,51 @@ theorem preemption_exists {L F : ℝ → ℝ} {a b : ℝ} (hab : a ≤ b)
   have : L X - F X = 0 := hXeq
   linarith
 
+/-- **Single-crossing uniqueness** (Proposition 3(i), zero-leverage case).  A
+continuous, *strictly concave* function with `G a < 0 < G b` has a **unique** zero
+in `(a, b)`.  At `ℓ = 0` the leader–follower gap `L(X) - F(X)` is linear minus the
+convex `X^{β_H}` term, hence strictly concave; with `G(0) < 0` this gives the
+unique up-crossing that pins the preemption trigger `X_P`. -/
+theorem unique_crossing {G : ℝ → ℝ} {a b : ℝ} (hab : a < b)
+    (hcont : ContinuousOn G (Set.Icc a b))
+    (hconc : StrictConcaveOn ℝ (Set.Icc a b) G)
+    (hGa : G a < 0) (hGb : 0 < G b) :
+    ∃! x, x ∈ Set.Ioo a b ∧ G x = 0 := by
+  -- Two zeros `p < q < b` are impossible: strict concavity forces `G q > 0`.
+  have key : ∀ p q : ℝ, a < p → p < q → q < b → G p = 0 → G q ≠ 0 := by
+    intro p q hap hpq hqb hGp hGq
+    have hbp : 0 < b - p := by linarith
+    have hbpne : b - p ≠ 0 := ne_of_gt hbp
+    set w := (b - q) / (b - p) with hwdef
+    have hw0 : 0 < w := by rw [hwdef]; exact div_pos (by linarith) hbp
+    have hwlt1 : w < 1 := by rw [hwdef, div_lt_one hbp]; linarith
+    have hw1 : 0 < 1 - w := by linarith
+    have hsum : w + (1 - w) = 1 := by ring
+    have hcomb : w * p + (1 - w) * b = q := by rw [hwdef]; field_simp; ring
+    have hpmem : p ∈ Set.Icc a b := ⟨hap.le, by linarith⟩
+    have hbmem : b ∈ Set.Icc a b := ⟨by linarith, le_refl b⟩
+    have hstrict := hconc.2 hpmem hbmem (ne_of_lt (by linarith : p < b)) hw0 hw1 hsum
+    simp only [smul_eq_mul] at hstrict
+    rw [hcomb, hGp, hGq] at hstrict
+    nlinarith [mul_pos hw1 hGb, hstrict]
+  -- Existence via the intermediate value theorem.
+  have h0 : (0 : ℝ) ∈ Set.Icc (G a) (G b) := ⟨hGa.le, hGb.le⟩
+  obtain ⟨x, hxmem, hxeq⟩ := intermediate_value_Icc hab.le hcont h0
+  have hxa : a < x := by
+    rcases eq_or_lt_of_le hxmem.1 with h | h
+    · exfalso; rw [← h] at hxeq; linarith
+    · exact h
+  have hxb : x < b := by
+    rcases eq_or_lt_of_le hxmem.2 with h | h
+    · exfalso; rw [h] at hxeq; linarith
+    · exact h
+  refine ⟨x, ⟨⟨hxa, hxb⟩, hxeq⟩, ?_⟩
+  rintro y ⟨⟨hya, hyb⟩, hyeq⟩
+  rcases lt_trichotomy y x with h | h | h
+  · exact absurd hxeq (key y x hya h hxb hyeq)
+  · exact h
+  · exact absurd hyeq (key x y hxa h hyb hxeq)
+
 /-- **Tullock contest derivative factorization** (Proposition 3(ii)).  For the
 contest payoff `f(u) = u^{2α}/(u^α + c)` (rival measure `c = ū^α` fixed), the
 marginal revenue factors as `f'(u) = α u^{α-1}·s(2-s)`, the standalone marginal

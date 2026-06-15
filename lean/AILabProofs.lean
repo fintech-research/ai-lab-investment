@@ -1,4 +1,5 @@
 import AILabProofs.Basic
+import AILabProofs.EulerODE
 import AILabProofs.Proposition1
 import AILabProofs.CharacteristicRoots
 import AILabProofs.Proposition2
