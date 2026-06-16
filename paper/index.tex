@@ -175,7 +175,7 @@ on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{June 15, 2026}
+\date{June 16, 2026}
 
 \begin{document}
 \maketitle
@@ -209,10 +209,12 @@ The race to build artificial intelligence infrastructure is the defining
 capital allocation event of the 2020s. The leading AI laboratories and
 their compute partners committed over \$200 billion in 2024 alone, with
 combined capital expenditure projected to reach \$660--690 billion in
-2026 \citep{palmer2026amazon, alphabet2025q4, microsoft2026q2}. OpenAI's
-Stargate joint venture with SoftBank, Oracle, and MGX alone commits up
-to \$500 billion in U.S. AI infrastructure through 2029, with an initial
-deployment of \$100 billion \citep{openai2025stargate}.\footnote{The
+2026.\footnote{\url{https://www.cnbc.com/2026/02/05/why-amazons-ceo-is-confident-with-200-billion-spending-plan.html};
+  \url{https://www.sec.gov/Archives/edgar/data/1652044/000165204426000012/googexhibit991q42025.htm};
+  \url{https://www.microsoft.com/en-us/investor/earnings/fy-2026-q2/press-release-webcast}.}
+OpenAI's Stargate joint venture with SoftBank, Oracle, and MGX alone
+commits up to \$500 billion in U.S. AI infrastructure through 2029, with
+an initial deployment of \$100 billion.\footnote{\url{https://openai.com/index/announcing-the-stargate-project/}.}\footnote{The
   centrality of compute to AI capability has made it a focal point for
   governance: governments and firms increasingly use compute allocation,
   monitoring, and export controls as levers for AI safety and industrial
@@ -246,22 +248,23 @@ that create adjustment costs when reallocating compute between training
 and inference, even though the underlying GPU hardware is physically
 fungible. Executives frame the risk calculus in starkly asymmetric
 terms. Alphabet CEO Sundar Pichai has argued that ``the risk of
-underinvesting is dramatically greater than the risk of overinvesting''
-\citep{pichai2024risk}, while Nvidia CEO Jensen Huang contends that
-agentic AI and reasoning require ``easily 100x more'' compute than
-anticipated just one year prior \citep{huang2025scaling}. The prize
-these investments target is variously called ``transformative AI'' or
+underinvesting is dramatically greater than the risk of
+overinvesting,''\footnote{Alphabet Q2 2024 earnings call, July 2024.}
+while Nvidia CEO Jensen Huang contends that agentic AI and reasoning
+require ``easily 100x more'' compute than anticipated just one year
+prior.\footnote{Nvidia GTC 2025 keynote, March 2025.} The prize these
+investments target is variously called ``transformative AI'' or
 ``Artificial General Intelligence'' (AGI): a step change in model
 capability sufficient to automate a broad range of cognitive tasks and
 generate sustained, qualitatively higher demand for compute
 \citep{amodei2024machines}. Executive timeline estimates for this event
 range from ``superintelligence in a few thousand days''
 \citep{altman2024intelligence}, 2026--2027 \citep{amodei2024machines},
-and ``AGI in 2026'' \citep{musk2026agi} to ``not with current
-architectures'' \citep{lecun2025autoregressive}. This dispersion in
-beliefs is precisely what makes the investment problem so acute: firms
-must commit irreversible capital based on profoundly different priors
-about the future.
+and ``AGI in 2026''\footnote{\url{https://x.com/elonmusk/status/2025124840806514916}.}
+to ``not with current architectures.''\footnote{\url{https://www.pymnts.com/artificial-intelligence-2/2025/meta-large-language-models-will-not-get-to-human-level-intelligence/}.}
+This dispersion in beliefs is precisely what makes the investment
+problem so acute: firms must commit irreversible capital based on
+profoundly different priors about the future.
 
 The central question is how a firm should time, size, and allocate an
 irreversible capacity investment when the return to that capacity
@@ -559,13 +562,15 @@ permanently shifts demand to a higher trajectory.\footnote{The
   dispersion in executive timeline estimates maps directly to
   heterogeneity in \(\lambda\). \citet{amodei2024machines} predicts AI
   ``smarter than a Nobel Prize winner'' as early as 2026, implying
-  \(\lambda \approx 0.30\)--\(0.50\); \citet{hassabis2025breakthroughs}
-  gives roughly 50\% probability by the end of the decade
-  (\(\lambda \approx 0.10\)--\(0.15\)); and \citet{nadella2025formula}
-  proposes an economic test---developed-world GDP growth of 10\%---that
-  implicitly pushes the threshold further out. These differences in
-  \(\lambda\) drive the heterogeneity in investment behavior analyzed in
-  Section~\ref{sec-valuation}.}
+  \(\lambda \approx 0.30\)--\(0.50\); Demis Hassabis gives roughly 50\%
+  probability by the end of the decade
+  (\(\lambda \approx 0.10\)--\(0.15\);
+  \url{https://www.cnbc.com/2025/03/17/human-level-ai-will-be-here-in-5-to-10-years-deepmind-ceo-says.html});
+  and Satya Nadella proposes an economic test---developed-world GDP
+  growth of 10\%---that implicitly pushes the threshold further out
+  (\url{https://www.geekwire.com/2025/microsoft-ceo-satya-nadella-has-a-formula-to-gauge-the-long-term-success-of-ai-investments/}).
+  These differences in \(\lambda\) drive the heterogeneity in investment
+  behavior analyzed in Section~\ref{sec-valuation}.}
 
 The high regime \(H\) is absorbing: once the economy transitions, it
 remains in \(H\) permanently. This asymmetric regime structure captures
@@ -575,15 +580,15 @@ demonstrated, do not disappear.
 I assume \(\mu_H > \mu_L\) (higher growth in the high regime). For the
 model to have well-defined present values, I require
 \(r > \mu_H > \mu_L\), where \(r\) is the discount rate and \(\mu_s\) is
-the risk-adjusted growth rate.\footnote{Following \citet[Chapter
-  4]{dixit1994investment}, all valuation is conducted under a single
-  \emph{risk-adjusted} (certainty-equivalent) framework. The discount
-  rate \(r\) is the firm's weighted average cost of capital (WACC),
-  which embeds the equity risk premium and the cost of debt. The growth
-  rates \(\mu_L\) and \(\mu_H\) are the physical-measure expected growth
-  rates of demand \emph{minus} an appropriate risk premium, so that
-  discounting the expected cash flow at rate \(r\) yields the correct
-  present value. The volatility \(\sigma\) is the same under the
+the risk-adjusted growth rate.\footnote{\label{fn:wacc}Following
+  \citet[Chapter 4]{dixit1994investment}, all valuation is conducted
+  under a single \emph{risk-adjusted} (certainty-equivalent) framework.
+  The discount rate \(r\) is the firm's weighted average cost of capital
+  (WACC), which embeds the equity risk premium and the cost of debt. The
+  growth rates \(\mu_L\) and \(\mu_H\) are the physical-measure expected
+  growth rates of demand \emph{minus} an appropriate risk premium, so
+  that discounting the expected cash flow at rate \(r\) yields the
+  correct present value. The volatility \(\sigma\) is the same under the
   physical and risk-adjusted measures (by Girsanov's theorem).
   Equivalently, one can interpret the model as working under a
   risk-neutral measure \(\mathbb{Q}\) with drift
@@ -678,9 +683,10 @@ and personnel expenses.\footnote{This is distinct from \emph{economic
   efficiency gains can devalue installed infrastructure independently of
   hardware cycles.}
 
-Table~\ref{tbl-parameters} and Table~\ref{tbl-notation} in the Appendix
-summarize all model parameters and key notation; the calibration
-rationale for each value is discussed in Section~\ref{sec-calibration}.
+Table~\ref{tbl-parameters} and Table~\ref{tbl-notation} in the Internet
+Appendix summarize all model parameters and key notation; the
+calibration rationale for each value is discussed in
+Section~\ref{sec-calibration}.
 
 \subsection{Single-Firm Benchmark}\label{sec-single-firm}
 
@@ -816,9 +822,9 @@ differentiable in \(\phi \in (0,1)\) for fixed \(K > 0\).}
 \emph{All four conditions are satisfied at the baseline calibration
 (\(\beta_L^+ \approx 3.01\), \((1 - 1/\beta_L^+)/\alpha \approx 1.67\))
 and verified numerically at all parameter values used in the paper.
-Appendix B provides the full boundary analysis, including sensitivity of
-(A2) and (A3) to archetype-specific WACCs and the treatment when (A3)
-fails.}
+Internet Appendix B provides the full boundary analysis, including
+sensitivity of (A2) and (A3) to archetype-specific WACCs and the
+treatment when (A3) fails.}
 
 \textbf{Proposition 1} (Optimal capacity and training fraction;
 single-firm benchmark). \emph{The firm jointly chooses capacity \(K^*\)
@@ -830,10 +836,10 @@ Note that \(K^*\) is independent of \(\phi\): the effective revenue
 coefficient takes the form \(A_{\text{eff}} = g(\phi) \cdot K^\alpha\)
 (both in the pure H-regime and under regime switching), so the
 \(\phi\)-dependent factor cancels in the first-order condition for \(K\)
-(see Appendix A, Step 4). The optimal \(\phi^*\) is then determined
-separately by maximizing \(A_{\text{eff}}\) over \(\phi\), and the joint
-optimum \((K^*, \phi^*)\) yields the investment trigger via smooth
-pasting.}
+(see Internet Appendix A, Step 4). The optimal \(\phi^*\) is then
+determined separately by maximizing \(A_{\text{eff}}\) over \(\phi\),
+and the joint optimum \((K^*, \phi^*)\) yields the investment trigger
+via smooth pasting.}
 
 \emph{When the firm operates in the L-regime with the possibility of a
 regime switch and the simplified option value
@@ -856,16 +862,16 @@ inference revenue and the regime-switching discount symmetrically
 through the common factor \(1/(r - \mu_L + \lambda)\), leaving the ratio
 \(w_H/w_L = \lambda / (r - \mu_H)\) unchanged.}
 
-\emph{Proof.} The joint optimization over \((K, \phi)\) is in Appendix
-A. Interiority of \(\phi^*\) follows from the Inada conditions:
+\emph{Proof.} The joint optimization over \((K, \phi)\) is in Internet
+Appendix A. Interiority of \(\phi^*\) follows from the Inada conditions:
 \(\partial A_{\text{eff}}/\partial \phi \to +\infty\) as
 \(\phi \to 0^+\) and
 \(\partial A_{\text{eff}}/\partial \phi \to -\infty\) as
 \(\phi \to 1^-\) (since \(\alpha \in (0,1)\)). Uniqueness follows from
-strict concavity of \(A_{\text{eff}}\) in \(\phi\) (see Appendix A, Step
-5, for the second-derivative argument). The comparative statics follow
-from implicit differentiation of the first-order condition; see Appendix
-A, Steps 5--6. \(\square\)
+strict concavity of \(A_{\text{eff}}\) in \(\phi\) (see Internet
+Appendix A, Step 5, for the second-derivative argument). The comparative
+statics follow from implicit differentiation of the first-order
+condition; see Internet Appendix A, Steps 5--6. \(\square\)
 
 In the duopoly (Section~\ref{sec-duopoly}), the contest shares \(s_i^L\)
 and \(s_i^H\) depend on own capacity \(K_i\), so the exact separability
@@ -971,7 +977,7 @@ justify irreversible investment at any finite trigger. An option that is
 never exercised has zero value, so \(A_1 = 0\) exactly. The formal
 argument, including the consistency check that the two boundary
 conditions at \(X^*\) are not overdetermined when \(C\) is
-predetermined, is given in Appendix A (Step 5b of the Proof of
+predetermined, is given in Internet Appendix A (Step 5b of the Proof of
 Proposition 1). For the baseline calibration, the option premium ratio
 exceeds unity (\(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \approx 1.67\);
 Assumption 1, condition A3), so this simplification is valid and the
@@ -987,10 +993,10 @@ coefficient \(A_{\text{eff}}\) that combines both regimes. Note that
 Equation~\ref{eq-trigger-phi} is an implicit equation:
 \(A_{\text{eff}}(\phi^*, K^*)\) itself depends on the optimal policy, so
 the trigger is determined jointly with \((K^*, \phi^*)\) through the
-system of first-order conditions (Appendix A). The option premium
-\(\beta_H / (\beta_H - 1) > 1\) still applies, reflecting the value of
-waiting, but the relevant revenue metric now accounts for both L-regime
-inference earnings and the expected H-regime training prize.
+system of first-order conditions (Internet Appendix A). The option
+premium \(\beta_H / (\beta_H - 1) > 1\) still applies, reflecting the
+value of waiting, but the relevant revenue metric now accounts for both
+L-regime inference earnings and the expected H-regime training prize.
 
 \textbf{Remark 1} (Role of \(\lambda\)). \emph{The arrival rate
 \(\lambda\) has two effects on investment timing and allocation. First,
@@ -1057,15 +1063,15 @@ essential feature of AI compute competition: firms' revenues depend on
 (enterprises, developers) allocate workloads to providers based on
 relative performance and availability.\footnote{A Cournot
   specification---in which firms choose quantities and price clears a
-  downward-sloping demand curve---would be an alternative. Appendix E
-  argues that the main qualitative results (interior \(\phi^*\),
-  faith-based survival, preemption) do not hinge on the Tullock form,
-  and quantifies the role of its revenue-expansion property directly by
-  re-solving the equilibrium under a fixed-pie variant; the Tullock form
-  is more tractable for the training-inference allocation problem
-  because it cleanly separates the capacity and share effects.} In the
-L-regime, firms compete over \emph{inference capacity}:
-\begin{equation}\protect\phantomsection\label{eq-contest-L}{
+  downward-sloping demand curve---would be an alternative. Internet
+  Appendix E argues that the main qualitative results (interior
+  \(\phi^*\), faith-based survival, preemption) do not hinge on the
+  Tullock form, and quantifies the role of its revenue-expansion
+  property directly by re-solving the equilibrium under a fixed-pie
+  variant; the Tullock form is more tractable for the training-inference
+  allocation problem because it cleanly separates the capacity and share
+  effects.} In the L-regime, firms compete over \emph{inference
+capacity}: \begin{equation}\protect\phantomsection\label{eq-contest-L}{
 \pi_i^L(X, \mathbf{K}, \boldsymbol{\phi}) = X \cdot \frac{[(1-\phi_i)K_i]^{2\alpha}}{[(1-\phi_i)K_i]^\alpha + [(1-\phi_j)K_j]^\alpha},
 }\end{equation} which I write equivalently as
 \(\pi_i^L = X \cdot [(1-\phi_i)K_i]^\alpha \cdot s_i^L\), where
@@ -1111,16 +1117,16 @@ asymmetry means that the leader's gain from capacity dominance partly
 reflects pie expansion, not just share theft; this could amplify
 preemption incentives and leader-follower value gaps beyond what a
 fixed-pie specification would deliver. A Cournot specification would
-avoid this feature at the cost of additional complexity. Appendix E
-quantifies the role of revenue expansion directly by re-solving the
-equilibrium under a fixed-pie variant (same Tullock shares, no
-expansion), finding that the training fraction and the faith-based
-survival threshold are unchanged and only the preemption discount moves
-modestly; it also discusses why the qualitative mechanisms---interior
-\(\phi^*\), faith-based survival, and the Dario's dilemma
-asymmetry---carry over to Cournot competition, since each operates
-through the composition of \(A_{\text{eff}}\) rather than the contest
-functional form. The training fraction \(\phi\) introduces a new
+avoid this feature at the cost of additional complexity. Internet
+Appendix E quantifies the role of revenue expansion directly by
+re-solving the equilibrium under a fixed-pie variant (same Tullock
+shares, no expansion), finding that the training fraction and the
+faith-based survival threshold are unchanged and only the preemption
+discount moves modestly; it also discusses why the qualitative
+mechanisms---interior \(\phi^*\), faith-based survival, and the Dario's
+dilemma asymmetry---carry over to Cournot competition, since each
+operates through the composition of \(A_{\text{eff}}\) rather than the
+contest functional form. The training fraction \(\phi\) introduces a new
 strategic dimension: a firm's choice of \(\phi\) affects its competitive
 position \emph{differently} in each regime, creating a trade-off between
 L-regime and H-regime market share.
@@ -1205,9 +1211,9 @@ than the naive break-even condition.\footnote{The default boundary uses
   \emph{overstates} the default boundary; solving the coupled system
   (using the closed-form \(E_H\) and matching value and slope at
   \(X_D\)) shows the overstatement is approximately 3\% at the baseline
-  calibration, uniformly across leverage levels (Appendix B). The
-  approximation therefore errs on the side of overstating default risk.
-  The faith-based survival threshold \(\underline{\phi}\)
+  calibration, uniformly across leverage levels (Internet Appendix B).
+  The approximation therefore errs on the side of overstating default
+  risk. The faith-based survival threshold \(\underline{\phi}\)
   (Equation~\ref{eq-phi-underbar}) is independent of \(\lambda\): it
   characterizes the condition
   \(\partial A_{\text{eff},i}/\partial \lambda > 0\), which depends on
@@ -1229,10 +1235,10 @@ the equity value at any demand level. As noted above, the unconditional
 approximately 3\% at baseline relative to the fully coupled
 regime-switching default model, a bias that runs against the faith-based
 survival mechanism and is therefore conservative (see the preceding
-footnote and Appendix B for details). Conversely, a firm that allocates
-entirely to inference (\(\phi_i = 0\)) receives no H-regime upside,
-faces a higher default boundary, and is more vulnerable to demand
-downturns.
+footnote and Internet Appendix B for details). Conversely, a firm that
+allocates entirely to inference (\(\phi_i = 0\)) receives no H-regime
+upside, faces a higher default boundary, and is more vulnerable to
+demand downturns.
 
 The mechanism differs from the standard result that growth options lower
 default boundaries in Leland-type models. In models with exogenous
@@ -1275,9 +1281,9 @@ holds if and only if \(\phi_i\) exceeds the exact threshold}
 }\end{equation} \emph{where \(\Delta = r - \mu_L + \lambda\) and
 \(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_s^-(\beta_s^- - 1)D] > 0\)
 is the markup-channel semi-elasticity, with
-\(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\) (Appendix A
-states the mild regularity condition). The exact threshold nests
-\(\underline{\phi}\) as the \(m \to 0\) limit and satisfies
+\(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\) (Internet
+Appendix A states the mild regularity condition). The exact threshold
+nests \(\underline{\phi}\) as the \(m \to 0\) limit and satisfies
 \(\tilde{\phi} > \underline{\phi}\). For the baseline calibration
 (\(r = 0.12\), \(\mu_H = 0.06\), \(\mu_L = 0.01\), \(\alpha = 0.40\)),
 \(R = (0.06/0.11)^{2.5} \approx 0.22\),
@@ -1516,12 +1522,12 @@ at state \(X\), \(F(X)\) is the follower's option value, and
 \(X_L^{\text{mono}}\) is the leader's unconstrained (monopoly) trigger.
 Existence follows from continuity and the boundary conditions
 \(L(0) < F(0)\) and \(L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})\)
-(Appendix A). At zero leverage the gap \(L(X) - F(X)\) is strictly
-concave on \((0, X_F)\) and negative at the origin, so the up-crossing
-is unique analytically (Appendix A); under leverage the default-option
-term breaks global concavity near \(X_D\), and uniqueness is verified
-computationally across all parameterizations, with no case of multiple
-up-crossings found (Appendix B).}
+(Internet Appendix A). At zero leverage the gap \(L(X) - F(X)\) is
+strictly concave on \((0, X_F)\) and negative at the origin, so the
+up-crossing is unique analytically (Internet Appendix A); under leverage
+the default-option term breaks global concavity near \(X_D\), and
+uniqueness is verified computationally across all parameterizations,
+with no case of multiple up-crossings found (Internet Appendix B).}
 
 \emph{(ii) (Analytical fixed point; global optimality computational) The
 training fraction is invariant to competitive role:
@@ -1533,11 +1539,11 @@ the L-regime and H-regime contest shares coincide
 (\(s_i^L = s_i^H = s_i\)), and the marginal contest revenue in each
 regime factorizes with the common multiplier \(s_i(2 - s_i)\)---which
 cancels exactly from the allocation first-order condition, leaving the
-single-firm condition \(w_H/w_L = \lambda/(r - \mu_H)\) (Appendix A).
-Hence \(\phi^*\) is an exact critical point of the follower's allocation
-problem for any capacities; that it is the global maximizer is verified
-computationally. Training allocation is pinned down by beliefs and
-technology, not by market position.}
+single-firm condition \(w_H/w_L = \lambda/(r - \mu_H)\) (Internet
+Appendix A). Hence \(\phi^*\) is an exact critical point of the
+follower's allocation problem for any capacities; that it is the global
+maximizer is verified computationally. Training allocation is pinned
+down by beliefs and technology, not by market position.}
 
 \emph{(iii) (Numerical finding) Higher \(\lambda\) (more optimistic
 beliefs) increases \(\phi^*\) for both firms and lowers the preemption
@@ -1569,9 +1575,9 @@ the leader's delay disproportionately---the ratio
 starts at \(\sigma = 0.20\) because the interior-capacity condition (A2)
 requires \(\beta_H < 1/(1-\alpha)\), which at the baseline WACC bounds
 the admissible volatility from below at \(\sigma \approx 0.19\); below
-that bound the capacity problem has no interior optimum (Appendix B). At
-baseline (\(\sigma = 0.25\)), preemption cuts the leader's trigger by
-roughly \(43\%\) relative to the monopolist
+that bound the capacity problem has no interior optimum (Internet
+Appendix B). At baseline (\(\sigma = 0.25\)), preemption cuts the
+leader's trigger by roughly \(43\%\) relative to the monopolist
 (\(X_P/X_L^{\text{mono}} \approx 0.57\)). In this solution, competition
 affects \emph{timing} rather than \emph{scale}: the leader installs the
 monopoly-phase optimal capacity by construction (see the discussion
@@ -1594,8 +1600,8 @@ dotted line (right axis) plots the preemption discount
 \(X_P / X_L^{\text{mono}}\), which falls from approximately \(0.64\) at
 \(\sigma = 0.20\) to \(0.54\) at \(\sigma = 0.30\). The grid starts at
 \(\sigma = 0.20\), just above the admissibility bound of condition (A2)
-(Appendix B). Zero-leverage duopoly; other parameters at baseline
-values.}
+(Internet Appendix B). Zero-leverage duopoly; other parameters at
+baseline values.}
 
 \end{figure}%
 
@@ -1603,9 +1609,9 @@ Propositions 1 and 2 are fully analytical; Proposition 3 combines
 analytical existence, zero-leverage uniqueness, and an exact allocation
 fixed point with computational verification of the remaining properties
 (leveraged uniqueness, global optimality of the allocation, and the
-comparative statics). Table~\ref{tbl-result-taxonomy} in the Appendix
-provides a detailed classification of the analytical status of each
-result.
+comparative statics). Table~\ref{tbl-result-taxonomy} in the Internet
+Appendix provides a detailed classification of the analytical status of
+each result.
 
 \section{Quantitative Calibration}\label{sec-calibration}
 
@@ -1620,17 +1626,16 @@ tractable approximation to financial distress risk; it fits public-debt
 issuers better than VC-backed labs, though the qualitative predictions
 apply across financing structures (see Section~\ref{sec-discussion}). As
 AI labs mature, the Leland setting is becoming more literal: OpenAI
-secured a \$4B revolving credit facility in October 2024
-\citep{openai2024credit}, xAI arranged \$5B+ in secured notes and term
-loans, and hyperscalers issued \$121B in bonds in 2025 alone. Second,
-the training fractions \(\hat{\phi}\) are inferred from incomplete data
-and carry substantial uncertainty (\(\pm 0.10\)). The calibration
-proceeds in three steps: I first set the demand process parameters, then
-the technology and cost parameters, and finally the financial
-parameters.
+secured a \$4B revolving credit facility in October 2024,\footnote{\url{https://www.cnbc.com/2024/10/03/openai-gets-4-billion-revolving-credit-line-on-top-of-latest-funding.html}.}
+xAI arranged \$5B+ in secured notes and term loans, and hyperscalers
+issued \$121B in bonds in 2025 alone. Second, the training fractions
+\(\hat{\phi}\) are inferred from incomplete data and carry substantial
+uncertainty (\(\pm 0.10\)). The calibration proceeds in three steps: I
+first set the demand process parameters, then the technology and cost
+parameters, and finally the financial parameters.
 
-Table~\ref{tbl-parameters} in the Appendix summarizes the calibration
-status of each parameter.
+Table~\ref{tbl-parameters} in the Internet Appendix summarizes the
+calibration status of each parameter.
 
 \subsection{Demand Process}\label{demand-process}
 
@@ -1657,29 +1662,28 @@ regime switch of 10 years. This baseline represents a moderate prior,
 intended to approximate the marginal investor's belief rather than any
 particular executive's view. It is more conservative than the beliefs
 implied by \citet{amodei2024machines}
-(\(\lambda \approx 0.30\)--\(0.50\)) or
-\citet{hassabis2025breakthroughs} (\(\lambda \approx 0.10\)--\(0.15\)),
-and the dispersion across these views is precisely what generates the
-cross-sectional variation in investment behavior analyzed in
-Section~\ref{sec-valuation}.
+(\(\lambda \approx 0.30\)--\(0.50\)) or Hassabis
+(\(\lambda \approx 0.10\)--\(0.15\)), and the dispersion across these
+views is precisely what generates the cross-sectional variation in
+investment behavior analyzed in Section~\ref{sec-valuation}.
 
 The baseline discount rate is \(r = 0.12\), the risk-adjusted WACC for a
 representative frontier AI lab. As discussed in Section~\ref{sec-model}
-(Footnote 12), \(r\) is the WACC and \(\mu_s\) is the risk-adjusted
-growth rate (the physical drift minus an appropriate risk premium, so
-that discounting expected cash flows at \(r\) yields the correct present
-value); all valuation uses this reduced-form framework throughout. The
-baseline exceeds typical corporate WACCs because frontier AI labs carry
-substantial technology risk and are typically high-growth with elevated
-cost of equity; \citet{damodaran2025wacc} industry estimates give WACCs
-of 7.2\% for computer software and 10.8\% for semiconductors, and
-CAPM-based estimates for private AI labs with market betas of 1.5--2.5
-yield a cost of equity of approximately 10.5--15.0\%. The analytical
-results and figures in Section~\ref{sec-model} use \(r = 0.12\)
-throughout; these illustrate model properties at a representative WACC
-and do not correspond to any specific firm archetype. The firm-specific
-WACCs in Table~\ref{tbl-firms} (ranging from 0.10 to 0.18) enter the
-sensitivity analysis.
+({Footnote \ref{fn:wacc}}), \(r\) is the WACC and \(\mu_s\) is the
+risk-adjusted growth rate (the physical drift minus an appropriate risk
+premium, so that discounting expected cash flows at \(r\) yields the
+correct present value); all valuation uses this reduced-form framework
+throughout. The baseline exceeds typical corporate WACCs because
+frontier AI labs carry substantial technology risk and are typically
+high-growth with elevated cost of equity; industry estimates give WACCs
+of 7.2\% for computer software and 10.8\% for semiconductors,\footnote{\url{https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/wacc.htm}.}
+and CAPM-based estimates for private AI labs with market betas of
+1.5--2.5 yield a cost of equity of approximately 10.5--15.0\%. The
+analytical results and figures in Section~\ref{sec-model} use
+\(r = 0.12\) throughout; these illustrate model properties at a
+representative WACC and do not correspond to any specific firm
+archetype. The firm-specific WACCs in Table~\ref{tbl-firms} (ranging
+from 0.10 to 0.18) enter the sensitivity analysis.
 
 \subsection{Technology Parameters}\label{technology-parameters}
 
@@ -1700,14 +1704,15 @@ interior-capacity condition (A2) requires
 \(\alpha = 0.40\) lies fairly close to that bound. This proximity does
 not drive the results---the archetype-level analysis uses full numerical
 optimization over \((\log K, \phi)\), which does not rely on (A2)
-(Appendix B), and the sensitivity range \(\alpha \in [0.20, 0.60]\)
-spans both sides of the closed-form regime---but readers should be aware
-that the closed-form \(K^*\) of Proposition 1 requires it. The cost
-function \(I(K) = cK^\gamma\) with convexity \(\gamma = 1.50\) captures
-increasing marginal costs from power constraints, supply chain
-bottlenecks (particularly for advanced GPUs), and site preparation
-costs; I normalize the unit cost \(c = 1.0\), so all monetary values are
-interpreted relative to this normalization.
+(Internet Appendix B), and the sensitivity range
+\(\alpha \in [0.20, 0.60]\) spans both sides of the closed-form
+regime---but readers should be aware that the closed-form \(K^*\) of
+Proposition 1 requires it. The cost function \(I(K) = cK^\gamma\) with
+convexity \(\gamma = 1.50\) captures increasing marginal costs from
+power constraints, supply chain bottlenecks (particularly for advanced
+GPUs), and site preparation costs; I normalize the unit cost
+\(c = 1.0\), so all monetary values are interpreted relative to this
+normalization.
 
 The operating cost rate \(\delta = 0.03\) represents the ongoing cost of
 maintaining installed capacity---power, cooling, maintenance, and
@@ -1748,9 +1753,9 @@ parameters.
 CapEx includes cloud compute commitments (Anthropic, OpenAI) and total
 infrastructure spending (Google, xAI). Training fractions estimated from
 executive statements \citep{amodei2026dwarkesh}, the Epoch AI compute
-analysis \citep{epoch2025openai}, and Deloitte TMT Predictions
-\citep{deloitte2026tmt}. All figures are order-of-magnitude composites,
-not precise calibrations.}\label{tbl-firms}\tabularnewline
+analysis, and Deloitte's TMT Predictions 2026. All figures are
+order-of-magnitude composites, not precise
+calibrations.}\label{tbl-firms}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Parameter
@@ -1801,27 +1806,28 @@ compute commitments, primarily on AWS (\$2.66B through September 2025)
 and Google Cloud TPUs. For the OpenAI-like archetype, 2024 revenue of
 \$3.7B and 2025 revenue of \$12.5B follow the CFO's January 2026
 disclosure (\$20B ARR at year-end); CapEx of \$12B reflects Azure
-inference and training spend, which \citet{epoch2025openai} decompose as
-approximately \$3B training, \$2B research/experimentation, and \$1.8B
-inference for 2024 alone. For the Google-like archetype, revenue is
-Google Cloud revenue (\$43.2B in 2024, growing 37--39\% to \$59--60B in
-2025 per the Alphabet SEC filing), not Alphabet-wide revenue (\$403B);
-CapEx is total Alphabet capital expenditure (\$91.4B in 2025),
-approximately 60\% to servers and 40\% to data centers and networking.
-The resulting CapEx/Revenue ratio of 1.52\(\times\) intentionally uses
-consolidated CapEx as the numerator because the majority of Alphabet's
-infrastructure spending supports AI workloads across all products, not
-only the Cloud segment; a segment-level ratio using only
-Cloud-attributed CapEx would be lower (approximately 0.5--0.7\(\times\))
-but would understate the total AI infrastructure investment that the
-model's capacity \(K\) represents. For the xAI-like
-archetype,\footnote{This illustration relies on xAI figures from before
-  the firm's acquisition by SpaceX, announced in February 2026 at a
-  combined valuation of \$1.25 trillion \citep{reuters2026spacex}; the
-  archetype is calibrated to xAI as a standalone frontier lab as of Q4
-  2025--Q1 2026.} revenue reflects standalone AI-related revenue (Grok
-API and subscriptions); Bloomberg reported Q3 2025 revenue of \$107M,
-roughly doubled quarter-on-quarter. The March 2025 merger with X
+inference and training spend, which Epoch AI decomposes as approximately
+\$3B training, \$2B research/experimentation, and \$1.8B inference for
+2024 alone.\footnote{\url{https://epoch.ai/data-insights/openai-compute-spend}.}
+For the Google-like archetype, revenue is Google Cloud revenue (\$43.2B
+in 2024, growing 37--39\% to \$59--60B in 2025 per the Alphabet SEC
+filing), not Alphabet-wide revenue (\$403B); CapEx is total Alphabet
+capital expenditure (\$91.4B in 2025), approximately 60\% to servers and
+40\% to data centers and networking. The resulting CapEx/Revenue ratio
+of 1.52\(\times\) intentionally uses consolidated CapEx as the numerator
+because the majority of Alphabet's infrastructure spending supports AI
+workloads across all products, not only the Cloud segment; a
+segment-level ratio using only Cloud-attributed CapEx would be lower
+(approximately 0.5--0.7\(\times\)) but would understate the total AI
+infrastructure investment that the model's capacity \(K\) represents.
+For the xAI-like archetype,\footnote{This illustration relies on xAI
+  figures from before the firm's acquisition by SpaceX, announced in
+  February 2026 at a combined valuation of \$1.25 trillion
+  (\url{https://www.reuters.com/business/musks-spacex-merge-with-xai-combined-valuation-125-trillion-bloomberg-news-2026-02-02/});
+  the archetype is calibrated to xAI as a standalone frontier lab as of
+  Q4 2025--Q1 2026.} revenue reflects standalone AI-related revenue
+(Grok API and subscriptions); Bloomberg reported Q3 2025 revenue of
+\$107M, roughly doubled quarter-on-quarter. The March 2025 merger with X
 complicates attribution, but standalone AI figures best match the
 model's scope. The same sector-specific revenue concept applies to all
 archetypes: revenue from AI-related activities, not diversified
@@ -1845,30 +1851,29 @@ that ``it's not gonna be 10\%, it's not gonna be 90\%.'' Microsoft's CFO
 described Azure AI revenue as ``primarily inference and post-training
 workloads.'' Jensen Huang estimated that inference workloads would
 require ``easily 100 times more'' compute than anticipated, with
-inference already exceeding 40\% of AI revenue by late 2025
-\citep{huang2025scaling}.
+inference already exceeding 40\% of AI revenue by late 2025.
 
 \emph{Firm-specific data.} The only company-level decomposition with
-primary documentation is Epoch AI's analysis of OpenAI's 2024 compute
-\citep{epoch2025openai}: of approximately \$7B in total cloud compute,
-roughly \$3B went to training, \$2B to research and experimentation, and
-\$1.8B to inference. Combined R\&D (training plus research) was
-approximately 71\%, inference approximately 26\%. The key finding is
-that ``the majority of OpenAI's R\&D compute was likely allocated to
-research and experimental training runs, rather than the final training
-runs of released models''---the model's \(\hat{\phi}\) subsumes both.
+primary documentation is Epoch AI's analysis of OpenAI's 2024 compute:
+of approximately \$7B in total cloud compute, roughly \$3B went to
+training, \$2B to research and experimentation, and \$1.8B to inference.
+Combined R\&D (training plus research) was approximately 71\%, inference
+approximately 26\%. The key finding is that ``the majority of OpenAI's
+R\&D compute was likely allocated to research and experimental training
+runs, rather than the final training runs of released models''---the
+model's \(\hat{\phi}\) subsumes both.
 
-\emph{Industry trajectory.} Deloitte's TMT Predictions 2026
-\citep{deloitte2026tmt} estimates that the industry-wide split shifted
-from roughly two-thirds training to parity (approximately 50/50) in
-2025, and is projected to reach two-thirds inference by 2026, driven by
-expanding user bases, reasoning models using 10--100 times more compute
-per query, and enterprise adoption at scale.
+\emph{Industry trajectory.} Deloitte's TMT Predictions 2026 estimates
+that the industry-wide split shifted from roughly two-thirds training to
+parity (approximately 50/50) in 2025, and is projected to reach
+two-thirds inference by 2026, driven by expanding user bases, reasoning
+models using 10--100 times more compute per query, and enterprise
+adoption at scale.\footnote{\url{https://www.deloitte.com/us/en/insights/industry/technology/technology-media-and-telecom-predictions.html}.}
 
 The xAI-like compute racer allocates the most to training
 (\(\hat{\phi} = 0.75\)), consistent with its strategy of dedicating
 owned compute (the Colossus supercluster) to frontier model training
-while outsourcing inference to cloud providers \citep{musk2026colossus}.
+while outsourcing inference to cloud providers.\footnote{\url{https://x.com/elonmusk/status/1947701807389515912}.}
 The Google-like hyperscaler allocates the least (\(\hat{\phi} = 0.35\)),
 reflecting its need to serve inference to billions of users across
 Search, Gmail, and YouTube; Google's seventh-generation Ironwood TPU is
@@ -1912,11 +1917,11 @@ An important caveat: the boundary between ``training'' and ``inference''
 is blurring. Inference-time scaling---chain-of-thought reasoning,
 search-augmented generation, and agentic workflows---uses inference
 hardware to produce capability improvements that were previously
-achievable only through training \citep{brown2024inference}. The model
-treats \(\hat{\phi}\) as a fixed allocation at investment time; in
-practice, firms dynamically reallocate GPUs between training and
-inference on timescales of weeks (see Section~\ref{sec-discussion} for
-the direction of bias from this simplification).
+achievable only through training.\footnote{\url{https://x.com/polynoamial/status/1834280425457426689}.}
+The model treats \(\hat{\phi}\) as a fixed allocation at investment
+time; in practice, firms dynamically reallocate GPUs between training
+and inference on timescales of weeks (see Section~\ref{sec-discussion}
+for the direction of bias from this simplification).
 
 Figure~\ref{fig-firm-comparison} provides a visual summary of the
 calibration targets. Panel (a) shows the capital expenditure to revenue
@@ -1967,15 +1972,16 @@ secured notes, data center ABS), leverage ratios will rise toward the
 Leland framework's domain.\footnote{The leverage ratios in
   Table~\ref{tbl-firms} are round assumptions informed by qualitative
   evidence---Anthropic is effectively all-equity; OpenAI secured a \$4B
-  revolving credit facility \citep{openai2024credit}; Alphabet carries
-  modest net debt; xAI arranged \$5B+ in secured notes and term loans
-  \citep{bloomberg2026xai}---rather than measured market-value
-  debt-to-capital ratios, which none of the private archetypes
-  publishes. They should be read with the same order-of-magnitude caveat
-  as the other firm-level inputs.} Third, training fractions vary by
-approximately a factor of two across firm types (0.35 to 0.75),
-reflecting fundamentally different business models and beliefs about
-where the returns to AI compute investment will be highest.
+  revolving credit facility; Alphabet carries modest net debt; xAI
+  arranged \$5B+ in secured notes and term loans
+  (\url{https://www.bloomberg.com/news/articles/2026-01-09/musk-s-xai-reports-higher-quarterly-loss-plans-to-power-optimus})---rather
+  than measured market-value debt-to-capital ratios, which none of the
+  private archetypes publishes. They should be read with the same
+  order-of-magnitude caveat as the other firm-level inputs.} Third,
+training fractions vary by approximately a factor of two across firm
+types (0.35 to 0.75), reflecting fundamentally different business models
+and beliefs about where the returns to AI compute investment will be
+highest.
 
 \subsection{Baseline Results}\label{baseline-results}
 
@@ -1995,9 +2001,10 @@ between the leader (\(K^* \approx 0.0067\)) and the follower
 (\(K_F \approx 0.26\)) arises for two reinforcing reasons: the
 follower's contest share rises with its own capacity, so the effective
 elasticity of revenue to capacity exceeds \(\alpha\) (exactly
-\(\alpha(2 - s_F)\); Appendix B) and supports a larger optimal scale;
-and the follower optimally delays entry to a demand level roughly 44
-times the preemption trigger, where the larger commitment is justified.
+\(\alpha(2 - s_F)\); Internet Appendix B) and supports a larger optimal
+scale; and the follower optimally delays entry to a demand level roughly
+44 times the preemption trigger, where the larger commitment is
+justified.
 
 The model is normalized by \(c = 1\) (investment cost scale), so
 absolute levels of \(K\) and \(X\) are not directly interpretable as
@@ -2030,15 +2037,15 @@ competitive position.
 \subsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
 The following comparative statics are robust across the calibration
-range; Table~\ref{tbl-elasticities} in the Appendix reports elasticities
-at the baseline. The investment trigger, capacity, and training fraction
-are sensitive to several key parameters. Higher volatility \(\sigma\)
-increases the option value of waiting, raising the investment
-trigger---the standard real options result that uncertainty raises the
-value of flexibility; for frontier AI labs, this means that higher
-uncertainty about future demand justifies more cautious investment
-timing, even as firms rush to build. A higher discount rate \(r\)
-reduces the present value of future cash flows through
+range; Table~\ref{tbl-elasticities} in the Internet Appendix reports
+elasticities at the baseline. The investment trigger, capacity, and
+training fraction are sensitive to several key parameters. Higher
+volatility \(\sigma\) increases the option value of waiting, raising the
+investment trigger---the standard real options result that uncertainty
+raises the value of flexibility; for frontier AI labs, this means that
+higher uncertainty about future demand justifies more cautious
+investment timing, even as firms rush to build. A higher discount rate
+\(r\) reduces the present value of future cash flows through
 \(A_{\text{eff}}\), but also raises the characteristic root \(\beta_H\),
 lowering the option premium ratio \(\beta_H/(\beta_H - 1)\); at
 baseline, the latter effect dominates, so the net effect is to lower
@@ -2473,9 +2480,9 @@ distinction the single-firm model does not fully capture.
 The single-firm formalization isolates the belief-mismatch channel in
 its cleanest form, but the motivating narrative (and the paper's duopoly
 model) emphasizes competitive preemption as a key forcing function. In
-the duopoly extension (Appendix E), a conservative firm faces an
-additional strategic penalty: by investing later and allocating less to
-training, it cedes the leader position to a well-calibrated rival,
+the duopoly extension (Internet Appendix E), a conservative firm faces
+an additional strategic penalty: by investing later and allocating less
+to training, it cedes the leader position to a well-calibrated rival,
 forfeiting the monopoly-phase rents that drive the preemption
 equilibrium (Proposition 3). This competitive channel amplifies the
 underinvestment cost from 26\% (single-firm) to 38\% (duopoly), while
@@ -2687,10 +2694,10 @@ overinvestment would narrow but persist, because the dominant
 channel---the destruction of H-regime option value from
 under-training---operates through the \emph{level} of training
 investment, not its adjustability. A two-period numerical illustration
-(Appendix E, Table~\ref{tbl-dynamic-phi}) confirms these qualitative
-predictions: the initial allocation \(\phi_1\) is close to the static
-optimum \(\phi^* \approx 0.70\) across all adjustment costs, the value
-gain from dynamic reallocation is modest (1.6\% under free
+(Internet Appendix E, Table~\ref{tbl-dynamic-phi}) confirms these
+qualitative predictions: the initial allocation \(\phi_1\) is close to
+the static optimum \(\phi^* \approx 0.70\) across all adjustment costs,
+the value gain from dynamic reallocation is modest (1.6\% under free
 reallocation), and the faith-based survival threshold
 \(\underline{\phi} \approx 0.18\) is unchanged. A full dynamic treatment
 (modeling \(\phi_t\) as a continuous control in the HJB equation) is
@@ -2703,9 +2710,9 @@ fraction \(\phi\) at investment time---a reasonable first approximation
 for large-scale capacity decisions with multi-year planning horizons,
 but limiting given the emergence of \emph{inference-time scaling}
 (chain-of-thought reasoning, search-augmented generation) that blurs the
-boundary between training and inference \citep{brown2024inference}. A
-dynamic extension in which \(\phi\) responds to realized demand would
-enrich the model; I leave this for future work.
+boundary between training and inference. A dynamic extension in which
+\(\phi\) responds to realized demand would enrich the model; I leave
+this for future work.
 
 The regime-specific revenue structure---inference in \(L\), training in
 \(H\)---is deliberately extreme, chosen to generate a clean
@@ -2752,8 +2759,8 @@ Section~\ref{sec-duopoly}), but it does not capture the market-growing
 effect of AI adoption where investment expands total addressable demand.
 This biases the model toward stronger competition effects relative to a
 setting where investment expands the pie. A Cournot specification would
-avoid this limitation at the cost of additional complexity (see Appendix
-E).
+avoid this limitation at the cost of additional complexity (see Internet
+Appendix E).
 
 All valuation uses a reduced-form risk-adjusted framework (see the
 footnote in Section~\ref{sec-model} defining \(r\) and \(\mu_s\)),
@@ -2831,15 +2838,15 @@ The model necessarily abstracts from several dimensions of the full
 decision space that executives navigate. It does not capture talent
 constraints, safety and alignment objectives, geopolitical competition
 from actors like DeepSeek \citep{deepseek2025r1}, or the ongoing debate
-about whether pre-training scaling has reached its limits
-\citep{hu2024scaling}. It treats the training fraction as fixed at
-investment time, whereas dynamic reallocation and inference-time scaling
-\citep{brown2024inference} create a richer optimization. And it does not
-address the \$600 billion revenue gap between AI infrastructure spending
-and current AI revenue \citep{cahn2024gap} that may discipline the
-investment race through financial markets before any technological
-resolution occurs. These omissions define the frontier for extending the
-framework developed here.
+about whether pre-training scaling has reached its limits.\footnote{\url{https://www.reuters.com/technology/artificial-intelligence/openai-rivals-seek-new-path-smarter-ai-current-methods-hit-limitations-2024-11-11/}.}
+It treats the training fraction as fixed at investment time, whereas
+dynamic reallocation and inference-time scaling create a richer
+optimization. And it does not address the \$600 billion revenue gap
+between AI infrastructure spending and current AI revenue
+\citep{cahn2024gap} that may discipline the investment race through
+financial markets before any technological resolution occurs. These
+omissions define the frontier for extending the framework developed
+here.
 
 Several directions for future research are promising. Dynamic learning
 models in which firms update their beliefs about \(\lambda\) in response
@@ -2868,8 +2875,38 @@ careful econometric treatment is needed beyond the scope of this paper.
 \newpage
 \clearpage
 
-\section*{Appendix}\label{appendix}
-\addcontentsline{toc}{section}{Appendix}
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\begingroup
+\raggedright
+
+\renewcommand{\bibsection}{}
+\bibliography{references.bib}
+
+\endgroup
+
+\clearpage
+\thispagestyle{empty}
+\begin{center}
+\vspace*{0.18\textheight}
+{\Large\bfseries Internet Appendix for}\\[1.2em]
+{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
+{\large Vincent Grégoire}\\[0.5em]
+{\normalsize HEC Montréal}\\[3em]
+{\large\itshape Not intended for publication}
+\end{center}
+\clearpage
+\setcounter{page}{1}
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\setcounter{equation}{0}
+\renewcommand{\thetable}{IA\arabic{table}}
+\renewcommand{\thefigure}{IA\arabic{figure}}
+\renewcommand{\theequation}{IA\arabic{equation}}
+
+\section*{Internet Appendix}\label{internet-appendix}
+\addcontentsline{toc}{section}{Internet Appendix}
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.0800}}
@@ -2992,8 +3029,8 @@ training) & Derived (choices) \\
 \subsection*{A. Proofs}\label{a.-proofs}
 \addcontentsline{toc}{subsection}{A. Proofs}
 
-The closed-form results in this appendix have been independently
-verified with the Lean 4 proof assistant\footnote{\url{https://lean-lang.org/}}
+The closed-form results in this Internet Appendix have been
+independently verified with the Lean 4 proof assistant\footnote{\url{https://lean-lang.org/}}
 and its mathematical library Mathlib. The machine-checked formalization
 covers the algebraic and single-variable-calculus content of
 Propositions 1--3: the investment trigger Equation~\ref{eq-trigger-phi},
@@ -3034,9 +3071,10 @@ that the candidate value functions are optimal, are not formalized, nor
 is the analytical sub-argument for the exactness of \(A_1 = 0\) under
 (A3). Results that are numerical in nature, the magnitude of
 \(\tilde{\phi}\) and the coupled-ODE and Dario's-dilemma computations
-(Appendix B), are likewise not formalized. The Lean validation package,
-together with the code reproducing the numerical results, is available
-on request and will be made publicly available upon publication.
+(Internet Appendix B), are likewise not formalized. The Lean validation
+package, together with the code reproducing the numerical results, is
+available on request and will be made publicly available upon
+publication.
 
 \subsubsection*{Proof of Proposition 1}\label{proof-of-proposition-1}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 1}
@@ -3193,8 +3231,8 @@ X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{ef
 depends only on the value-matching/smooth-pasting ratio, not on the
 level of that coefficient, which value-matching at \(X^*\) then
 determines. Under the unconditional-\(A_{\text{eff}}\) convention
-(Appendix B), the option is priced with this smooth-fit coefficient
-rather than with the forced-ODE particular value \(C\) of
+(Internet Appendix B), the option is priced with this smooth-fit
+coefficient rather than with the forced-ODE particular value \(C\) of
 Equation~\ref{eq-particular-C}, leaving Equation~\ref{eq-trigger-phi}
 unchanged. \(\square\)
 
@@ -3262,10 +3300,10 @@ with \(C_2 = -\lambda D_H / Q_L(\beta_H^-)\), and value-matching plus
 smooth-pasting at \(X_D\) then determine the boundary jointly with the
 homogeneous coefficient. At the baseline calibration the closed-form
 boundary exceeds the coupled-system boundary by approximately 3\%,
-uniformly across leverage levels (Appendix B). The approximation
-therefore errs against the faith-based survival mechanism---it makes the
-levered firm look slightly riskier than it is---and is conservative for
-the credit-risk conclusions.
+uniformly across leverage levels (Internet Appendix B). The
+approximation therefore errs against the faith-based survival
+mechanism---it makes the levered firm look slightly riskier than it
+is---and is conservative for the credit-risk conclusions.
 
 In the L-regime, the going-concern equity
 \(\hat{E}(X) \equiv E(X) + (1-\ell)I(K)\) satisfies an ODE analogous to
@@ -3492,12 +3530,12 @@ dilution term over the verification domain.
 For \(\ell > 0\), uniqueness is therefore verified computationally: at
 each parameterization, \(L(X) - F(X)\) is evaluated on a grid of 500
 points over \((X_D, X_L^{\text{mono}})\) and exactly one up-crossing is
-confirmed (see Appendix B for details). No case of multiple up-crossings
-was found across all parameterizations tested. As in the standard
-preemption literature, the gap \(L - F\) eventually turns negative again
-at demand levels far above the equilibrium path---here because
-\((K_L, \phi_L)\) is held at the monopoly-phase optimum, which is too
-small a scale for entry at very high demand---but this second
+confirmed (see Internet Appendix B for details). No case of multiple
+up-crossings was found across all parameterizations tested. As in the
+standard preemption literature, the gap \(L - F\) eventually turns
+negative again at demand levels far above the equilibrium path---here
+because \((K_L, \phi_L)\) is held at the monopoly-phase optimum, which
+is too small a scale for entry at very high demand---but this second
 (down-)crossing lies well above \(X_L^{\text{mono}}\) on the region
 where rent equalization is moot: for any \(X > X_P\), each firm strictly
 prefers leading, so investment occurs at \(X_P\) and the high-demand
@@ -3530,16 +3568,17 @@ Proposition 1, Step 5, whose unique zero is \(\phi^*\). Hence \(\phi^*\)
 is an exact critical point of the follower's allocation problem for
 \emph{any} capacity pair \((K_F, K_L)\), not merely to first order. (The
 same factorization underlies the scalar reduction of the follower's
-capacity problem in Appendix B.) What remains computational is global
-optimality: that this critical point is the follower's global maximizer
-is confirmed numerically---\(\phi_F^* = \phi_L^* = \phi^*\) holds to at
-least four decimal places across the full parameter space used in the
-calibration (varying \(\sigma\), \(\mu_H\), \(\alpha\), \(\gamma\),
-\(\lambda\), and \(\ell\) over their calibration ranges), with no
-parameterization showing an economically meaningful gap. The duration of
-the monopoly phase is substantial---\(X_F^*/X_P \approx 44\)--\(46\) at
-baseline, roughly invariant to leverage---but it operates on the
-\emph{timing} margin (part iii), not the allocation margin. \(\square\)
+capacity problem in Internet Appendix B.) What remains computational is
+global optimality: that this critical point is the follower's global
+maximizer is confirmed numerically---\(\phi_F^* = \phi_L^* = \phi^*\)
+holds to at least four decimal places across the full parameter space
+used in the calibration (varying \(\sigma\), \(\mu_H\), \(\alpha\),
+\(\gamma\), \(\lambda\), and \(\ell\) over their calibration ranges),
+with no parameterization showing an economically meaningful gap. The
+duration of the monopoly phase is
+substantial---\(X_F^*/X_P \approx 44\)--\(46\) at baseline, roughly
+invariant to leverage---but it operates on the \emph{timing} margin
+(part iii), not the allocation margin. \(\square\)
 
 \emph{Part (v): Distance to default at entry decreasing in \(\lambda\)
 (computational result).} Higher \(\lambda\) lowers the preemption
@@ -3628,6 +3667,8 @@ probability under overinvestment (\(\lambda_{\text{invest}} = 0.50\),
 underinvestment barely raises default risk, because the conservative
 firm enters at a higher (safer) trigger with less capacity and lower
 coupon. \(\square\)
+
+\newpage
 
 Table~\ref{tbl-result-taxonomy} summarizes the analytical status of each
 result.
@@ -3849,6 +3890,8 @@ is why Figure~\ref{fig-competition-effect} plots
 \(\sigma \in [0.20, 0.30]\) and why the sensitivity and verification
 sweeps are restricted to these ranges.
 
+\newpage
+
 \textbf{Baseline results summary.} Table~\ref{tbl-baseline-results}
 reports the computed optimal policy and admissibility checks at baseline
 parameters.
@@ -3901,6 +3944,8 @@ satisfied) \\
 \(\underline{\phi}\) & 0.18 & Faith-based survival threshold \\
 \end{longtable}
 
+\newpage
+
 \subsection*{C. Calibration Details and Data
 Sources}\label{c.-calibration-details-and-data-sources}
 \addcontentsline{toc}{subsection}{C. Calibration Details and Data
@@ -3931,25 +3976,22 @@ Source
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Revenue (2024--2025) & Alphabet 10-K \citep{alphabet2025q4}; OpenAI CFO
-disclosure \citep{friar2026openairevenue}; Anthropic ARR
-\citep{markman2026anthropic}; xAI \citep{bloomberg2026xai} \\
-Capital expenditure & Alphabet 10-K \citep{alphabet2025q4}; OpenAI Azure
-spend \citep{theinformation2025openai}; Anthropic cloud commitments
-(AWS, GCP); xAI \citep{bloomberg2026xai} \\
+Revenue (2024--2025) & Alphabet 10-K; OpenAI CFO disclosure;\footnote{\url{https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/}.}
+Anthropic ARR;\footnote{\url{https://www.forbes.com/sites/jonmarkman/2026/02/13/anthropic-the-380-billion-powerhouse-hiding-in-plain-sight/}.}
+xAI \\
+Capital expenditure & Alphabet 10-K; OpenAI Azure spend;\footnote{\url{https://finance.yahoo.com/news/leaked-documents-shed-light-much-004741535.html}.}
+Anthropic cloud commitments (AWS, GCP); xAI \\
 Training fraction (\(\hat{\phi}\)) & \citet{amodei2026dwarkesh}
-(\$\sim\$50/50); \citet{epoch2025openai} (OpenAI 2024 breakdown);
-\citet{deloitte2026tmt} (industry trajectory) \\
-Leverage ratios & Anthropic: effectively all-equity; OpenAI
-\citep{openai2024credit}; Google \citep{alphabet2025q4}; xAI: \$5B+
-secured debt \citep{bloomberg2026xai} \\
-WACC & \citet{damodaran2025wacc} industry estimates; CAPM with
-\(\beta = 1.5\)--\(2.5\) for private labs \\
-Demand growth (\(\mu\)) & Cloud revenue growth rates: Google Cloud +37\%
-\citep{alphabet2025q4}, AWS +24\% \citep{palmer2026amazon}, Azure +39\%
-\citep{microsoft2026q2} \\
+(\$\sim\$50/50); Epoch AI (OpenAI 2024 breakdown); Deloitte (industry
+trajectory) \\
+Leverage ratios & Anthropic: effectively all-equity; OpenAI; Google;
+xAI: \$5B+ secured debt \\
+WACC & Damodaran industry estimates; CAPM with \(\beta = 1.5\)--\(2.5\)
+for private labs \\
+Demand growth (\(\mu\)) & Cloud revenue growth rates: Google Cloud
++37\%, AWS +24\%, Azure +39\% \\
 Demand volatility (\(\sigma\)) & Quarterly revenue volatility of cloud
-providers \citep{alphabet2025q4, palmer2026amazon, microsoft2026q2} \\
+providers \\
 Operating cost rate (\(\delta\)) & Industry estimates: annual operating
 cost \$\approx\$30--40\% of hardware CapEx; hyperscaler PPA rates
 \$0.03--0.06/kWh \\
@@ -4050,10 +4092,10 @@ I assess robustness along three dimensions:
 Assumption 1 where the interior capacity optimum exists, and re-compute
 all results. The truncation binds for \(\sigma\), \(\alpha\), and \(r\),
 whose full \(\pm 25\%\) ranges partially violate condition (A2)
-(Appendix B reports the admissible windows); within the admissible
-region, the qualitative findings are robust: the asymmetry of Dario's
-dilemma, the large capacity gap fraction, and the faith-based survival
-mechanism are preserved across all parameter perturbations.
+(Internet Appendix B reports the admissible windows); within the
+admissible region, the qualitative findings are robust: the asymmetry of
+Dario's dilemma, the large capacity gap fraction, and the faith-based
+survival mechanism are preserved across all parameter perturbations.
 
 \textbf{Alternative contest functions.} The Tullock contest is a reduced
 form, so it is natural to ask which results depend on it. The main
@@ -4271,20 +4313,6 @@ cost, confirming the single-firm finding.
 qualitatively change the results. The two-regime model captures the
 essential feature: binary uncertainty about whether AI will be
 transformative.
-
-\newpage
-\clearpage
-
-\section*{References}\label{references}
-\addcontentsline{toc}{section}{References}
-
-\begingroup
-\raggedright
-
-\renewcommand{\bibsection}{}
-\bibliography{references.bib}
-
-\endgroup
 
 
 

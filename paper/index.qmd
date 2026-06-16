@@ -49,11 +49,6 @@ thanks: "I thank Armand Jr Brunelle, Tolga Cenesizogly, Joshua Gans, Charles Mar
 \newpage
 \clearpage
 
-{{< include _appendix.qmd >}}
-
-\newpage
-\clearpage
-
 ## References {.unnumbered}
 
 \begingroup
@@ -61,3 +56,5 @@ thanks: "I thank Armand Jr Brunelle, Tolga Cenesizogly, Joshua Gans, Charles Mar
 ::: {#refs}
 :::
 \endgroup
+
+{{< include _appendix.qmd >}}
