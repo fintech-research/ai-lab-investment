@@ -1,4 +1,25 @@
-## Appendix {.unnumbered}
+```{=latex}
+\clearpage
+\thispagestyle{empty}
+\begin{center}
+\vspace*{0.18\textheight}
+{\Large\bfseries Internet Appendix for}\\[1.2em]
+{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
+{\large Vincent Grégoire}\\[0.5em]
+{\normalsize HEC Montréal}\\[3em]
+{\large\itshape Not intended for publication}
+\end{center}
+\clearpage
+\setcounter{page}{1}
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\setcounter{equation}{0}
+\renewcommand{\thetable}{IA\arabic{table}}
+\renewcommand{\thefigure}{IA\arabic{figure}}
+\renewcommand{\theequation}{IA\arabic{equation}}
+```
+
+## Internet Appendix {.unnumbered}
 
 | Symbol | Parameter | Baseline | Target / Source | Status |
 |:------:|:----------|:--------:|:----------------|:------:|
@@ -36,7 +57,7 @@
 
 ### A. Proofs {.unnumbered}
 
-The closed-form results in this appendix have been independently verified with the Lean 4 proof assistant^[<https://lean-lang.org/>] and its mathematical library Mathlib. The machine-checked formalization covers the algebraic and single-variable-calculus content of Propositions 1--3: the investment trigger @eq-trigger-phi, the net present value at the trigger, and the capacity first-order condition and its closed-form solution $K^*$, independent of the training fraction (Proposition 1, Steps 1--4); the reduction of the training-fraction first-order condition to the unique interior critical point $\phi^*$ in closed form, together with its comparative statics (Proposition 1, Steps 5--6); the reduction of the homogeneous Euler ODE to the characteristic equation @eq-beta-H (a power solution $X^\beta$ solves the ODE if and only if $Q(\beta) = 0$) and the sign, magnitude, and ordering of its roots, namely $\beta_H > 1$, $\beta_s^- < 0$, and $\beta_L^+ > \beta_H$; the quotient-rule derivative $\partial A_{\text{eff}}/\partial \lambda$, the faith-based survival condition, the threshold @eq-phi-underbar, the monotonicity of the default boundary in leverage and rival capacity, and, for the exact net threshold $\tilde{\phi}$, the markup channel's monotonicity in $\lambda$ together with the net-condition rearrangement (Proposition 2); and, for the duopoly, the scale-invariance of the Tullock contest share that underlies role-invariance, the separable reduction of the follower's revenue coefficient, the contest-derivative factorization, and the generic intermediate-value existence and strict-concavity single-crossing lemmas underlying the preemption trigger $X_P$, conditional on the continuity, endpoint-sign, and (zero-leverage) concavity hypotheses the paper supplies (Proposition 3). Each theorem is proved in full, with no unproved placeholders, depends only on the proof assistant's standard logical axioms, and is stated for arbitrary admissible parameters rather than the baseline calibration alone. The scope is the algebra and calculus *downstream* of the optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE (@eq-hjb-L) and the value-matching and smooth-pasting conditions are taken as given; conditional on them, the verification establishes the reduction to the characteristic equation, the closed forms, the first-order conditions, and the comparative statics that follow. The stochastic-calculus derivation of the HJB equation itself, and the optimal-stopping argument that the candidate value functions are optimal, are not formalized, nor is the analytical sub-argument for the exactness of $A_1 = 0$ under (A3). Results that are numerical in nature, the magnitude of $\tilde{\phi}$ and the coupled-ODE and Dario's-dilemma computations (Appendix B), are likewise not formalized. The Lean validation package, together with the code reproducing the numerical results, is available on request and will be made publicly available upon publication.
+The closed-form results in this Internet Appendix have been independently verified with the Lean 4 proof assistant^[<https://lean-lang.org/>] and its mathematical library Mathlib. The machine-checked formalization covers the algebraic and single-variable-calculus content of Propositions 1--3: the investment trigger @eq-trigger-phi, the net present value at the trigger, and the capacity first-order condition and its closed-form solution $K^*$, independent of the training fraction (Proposition 1, Steps 1--4); the reduction of the training-fraction first-order condition to the unique interior critical point $\phi^*$ in closed form, together with its comparative statics (Proposition 1, Steps 5--6); the reduction of the homogeneous Euler ODE to the characteristic equation @eq-beta-H (a power solution $X^\beta$ solves the ODE if and only if $Q(\beta) = 0$) and the sign, magnitude, and ordering of its roots, namely $\beta_H > 1$, $\beta_s^- < 0$, and $\beta_L^+ > \beta_H$; the quotient-rule derivative $\partial A_{\text{eff}}/\partial \lambda$, the faith-based survival condition, the threshold @eq-phi-underbar, the monotonicity of the default boundary in leverage and rival capacity, and, for the exact net threshold $\tilde{\phi}$, the markup channel's monotonicity in $\lambda$ together with the net-condition rearrangement (Proposition 2); and, for the duopoly, the scale-invariance of the Tullock contest share that underlies role-invariance, the separable reduction of the follower's revenue coefficient, the contest-derivative factorization, and the generic intermediate-value existence and strict-concavity single-crossing lemmas underlying the preemption trigger $X_P$, conditional on the continuity, endpoint-sign, and (zero-leverage) concavity hypotheses the paper supplies (Proposition 3). Each theorem is proved in full, with no unproved placeholders, depends only on the proof assistant's standard logical axioms, and is stated for arbitrary admissible parameters rather than the baseline calibration alone. The scope is the algebra and calculus *downstream* of the optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE (@eq-hjb-L) and the value-matching and smooth-pasting conditions are taken as given; conditional on them, the verification establishes the reduction to the characteristic equation, the closed forms, the first-order conditions, and the comparative statics that follow. The stochastic-calculus derivation of the HJB equation itself, and the optimal-stopping argument that the candidate value functions are optimal, are not formalized, nor is the analytical sub-argument for the exactness of $A_1 = 0$ under (A3). Results that are numerical in nature, the magnitude of $\tilde{\phi}$ and the coupled-ODE and Dario's-dilemma computations (Internet Appendix B), are likewise not formalized. The Lean validation package, together with the code reproducing the numerical results, is available on request and will be made publicly available upon publication.
 
 #### Proof of Proposition 1 {.unnumbered}
 
@@ -109,7 +130,7 @@ With $A_1 = 0$, dividing value-matching by smooth-pasting at the investment trig
 $$
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{eff}}(\phi^*, K^*)},
 $$
-confirming @eq-trigger-phi. The trigger therefore depends only on the value-matching/smooth-pasting ratio, not on the level of that coefficient, which value-matching at $X^*$ then determines. Under the unconditional-$A_{\text{eff}}$ convention (Appendix B), the option is priced with this smooth-fit coefficient rather than with the forced-ODE particular value $C$ of @eq-particular-C, leaving @eq-trigger-phi unchanged. $\square$
+confirming @eq-trigger-phi. The trigger therefore depends only on the value-matching/smooth-pasting ratio, not on the level of that coefficient, which value-matching at $X^*$ then determines. Under the unconditional-$A_{\text{eff}}$ convention (Internet Appendix B), the option is priced with this smooth-fit coefficient rather than with the forced-ODE particular value $C$ of @eq-particular-C, leaving @eq-trigger-phi unchanged. $\square$
 
 At the baseline calibration, $\beta_L^+ \approx 3.01$ gives $\Phi_L \approx 1.67 \gg 1$, so (A3) holds with wide margin.
 
@@ -132,7 +153,7 @@ Second, replacing $E_H$ with its perpetuity component:
 $$
 E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - c_D/r - \delta K_i/r,
 $$
-the L-regime equity ODE yields a particular solution with coefficient $A_{\text{eff},i}$, and Leland's smooth-pasting gives the default boundary below in closed form. The omitted term $D_H X^{\beta_H^-}$ is the (positive) value of the H-regime default option, so the perpetuity approximation understates the H-regime continuation value and the closed-form boundary weakly *overstates* $X_D$. The magnitude of the bias is computed by solving the coupled system exactly: substituting the closed-form $E_H$ (including $D_H X^{\beta_H^-}$) into the L-regime ODE yields an additional particular term $C_2 X^{\beta_H^-}$ with $C_2 = -\lambda D_H / Q_L(\beta_H^-)$, and value-matching plus smooth-pasting at $X_D$ then determine the boundary jointly with the homogeneous coefficient. At the baseline calibration the closed-form boundary exceeds the coupled-system boundary by approximately 3\%, uniformly across leverage levels (Appendix B). The approximation therefore errs against the faith-based survival mechanism---it makes the levered firm look slightly riskier than it is---and is conservative for the credit-risk conclusions.
+the L-regime equity ODE yields a particular solution with coefficient $A_{\text{eff},i}$, and Leland's smooth-pasting gives the default boundary below in closed form. The omitted term $D_H X^{\beta_H^-}$ is the (positive) value of the H-regime default option, so the perpetuity approximation understates the H-regime continuation value and the closed-form boundary weakly *overstates* $X_D$. The magnitude of the bias is computed by solving the coupled system exactly: substituting the closed-form $E_H$ (including $D_H X^{\beta_H^-}$) into the L-regime ODE yields an additional particular term $C_2 X^{\beta_H^-}$ with $C_2 = -\lambda D_H / Q_L(\beta_H^-)$, and value-matching plus smooth-pasting at $X_D$ then determine the boundary jointly with the homogeneous coefficient. At the baseline calibration the closed-form boundary exceeds the coupled-system boundary by approximately 3\%, uniformly across leverage levels (Internet Appendix B). The approximation therefore errs against the faith-based survival mechanism---it makes the levered firm look slightly riskier than it is---and is conservative for the credit-risk conclusions.
 
 In the L-regime, the going-concern equity $\hat{E}(X) \equiv E(X) + (1-\ell)I(K)$ satisfies an ODE analogous to @eq-hjb-L, with the firm defaulting when $\hat{E}(X_D) = 0$ and $\hat{E}'(X_D) = 0$ (smooth pasting).
 The resulting default boundary is:
@@ -214,7 +235,7 @@ where the first two terms are the leader's unlevered NPV of entering, the $E X^{
 
 With leverage, the default-option term (proportional to $X^{\beta_s^-}$ with $\beta_s^- < 0$) enters $L(X)$ with a positive coefficient and is strictly convex, breaking global concavity in a neighborhood of $X_D$; the default kink at $X_D$ also introduces a non-smooth point. Providing analytical sufficient conditions for single crossing in the levered case would require bounding the convex default-option curvature against the concave dilution term over the verification domain.
 
-For $\ell > 0$, uniqueness is therefore verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_L^{\text{mono}})$ and exactly one up-crossing is confirmed (see Appendix B for details). No case of multiple up-crossings was found across all parameterizations tested. As in the standard preemption literature, the gap $L - F$ eventually turns negative again at demand levels far above the equilibrium path---here because $(K_L, \phi_L)$ is held at the monopoly-phase optimum, which is too small a scale for entry at very high demand---but this second (down-)crossing lies well above $X_L^{\text{mono}}$ on the region where rent equalization is moot: for any $X > X_P$, each firm strictly prefers leading, so investment occurs at $X_P$ and the high-demand region is never reached without entry having occurred.
+For $\ell > 0$, uniqueness is therefore verified computationally: at each parameterization, $L(X) - F(X)$ is evaluated on a grid of 500 points over $(X_D, X_L^{\text{mono}})$ and exactly one up-crossing is confirmed (see Internet Appendix B for details). No case of multiple up-crossings was found across all parameterizations tested. As in the standard preemption literature, the gap $L - F$ eventually turns negative again at demand levels far above the equilibrium path---here because $(K_L, \phi_L)$ is held at the monopoly-phase optimum, which is too small a scale for entry at very high demand---but this second (down-)crossing lies well above $X_L^{\text{mono}}$ on the region where rent equalization is moot: for any $X > X_P$, each firm strictly prefers leading, so investment occurs at $X_P$ and the high-demand region is never reached without entry having occurred.
 
 *Part (ii): Role-invariance of the training fraction (Analytical critical point; global optimality computational).*
 
@@ -228,7 +249,7 @@ the marginal contest revenue is the standalone marginal revenue $\alpha u^{\alph
 $$
 \frac{\partial A_{\text{eff},F}}{\partial \phi_F}\bigg|_{\phi_F = \phi_L = \phi} = \alpha K_F^\alpha\, s\,(2 - s)\,\bigl[-w_L (1-\phi)^{\alpha-1} + w_H \phi^{\alpha-1}\bigr].
 $$
-The multiplier cancels, leaving exactly the single-firm condition of Proposition 1, Step 5, whose unique zero is $\phi^*$. Hence $\phi^*$ is an exact critical point of the follower's allocation problem for *any* capacity pair $(K_F, K_L)$, not merely to first order. (The same factorization underlies the scalar reduction of the follower's capacity problem in Appendix B.) What remains computational is global optimality: that this critical point is the follower's global maximizer is confirmed numerically---$\phi_F^* = \phi_L^* = \phi^*$ holds to at least four decimal places across the full parameter space used in the calibration (varying $\sigma$, $\mu_H$, $\alpha$, $\gamma$, $\lambda$, and $\ell$ over their calibration ranges), with no parameterization showing an economically meaningful gap. The duration of the monopoly phase is substantial---$X_F^*/X_P \approx 44$--$46$ at baseline, roughly invariant to leverage---but it operates on the *timing* margin (part iii), not the allocation margin. $\square$
+The multiplier cancels, leaving exactly the single-firm condition of Proposition 1, Step 5, whose unique zero is $\phi^*$. Hence $\phi^*$ is an exact critical point of the follower's allocation problem for *any* capacity pair $(K_F, K_L)$, not merely to first order. (The same factorization underlies the scalar reduction of the follower's capacity problem in Internet Appendix B.) What remains computational is global optimality: that this critical point is the follower's global maximizer is confirmed numerically---$\phi_F^* = \phi_L^* = \phi^*$ holds to at least four decimal places across the full parameter space used in the calibration (varying $\sigma$, $\mu_H$, $\alpha$, $\gamma$, $\lambda$, and $\ell$ over their calibration ranges), with no parameterization showing an economically meaningful gap. The duration of the monopoly phase is substantial---$X_F^*/X_P \approx 44$--$46$ at baseline, roughly invariant to leverage---but it operates on the *timing* margin (part iii), not the allocation margin. $\square$
 
 *Part (v): Distance to default at entry decreasing in $\lambda$ (computational result).* Higher $\lambda$ lowers the preemption trigger $X_P$ (from part iii) and also lowers the default boundary $X_D$ (faith-based survival, Proposition 2(ii)); the trigger effect dominates, so the ratio $X_P / X_D$ falls with $\lambda$ (from $\approx 2.8$ at $\lambda = 0.05$ to $\approx 2.6$ at $\lambda = 0.20$ at baseline leverage $\ell = 0.40$). A more optimistic leader therefore enters closer to its default boundary, and the Leland credit spread at entry---monotonically decreasing in $X_P/X_D$---is weakly increasing in $\lambda$. This is verified numerically across the full parameter space. $\square$
 
@@ -333,13 +354,13 @@ The calibration uses data from the following sources:
 
 | Parameter | Source |
 |:----------|:-------|
-| Revenue (2024--2025) | Alphabet 10-K [@alphabet2025q4]; OpenAI CFO disclosure [@friar2026openairevenue]; Anthropic ARR [@markman2026anthropic]; xAI [@bloomberg2026xai] |
-| Capital expenditure | Alphabet 10-K [@alphabet2025q4]; OpenAI Azure spend [@theinformation2025openai]; Anthropic cloud commitments (AWS, GCP); xAI [@bloomberg2026xai] |
-| Training fraction ($\hat{\phi}$) | @amodei2026dwarkesh ($\sim$50/50); @epoch2025openai (OpenAI 2024 breakdown); @deloitte2026tmt (industry trajectory) |
-| Leverage ratios | Anthropic: effectively all-equity; OpenAI [@openai2024credit]; Google [@alphabet2025q4]; xAI: \$5B+ secured debt [@bloomberg2026xai] |
-| WACC | @damodaran2025wacc industry estimates; CAPM with $\beta = 1.5$--$2.5$ for private labs |
-| Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\% [@alphabet2025q4], AWS +24\% [@palmer2026amazon], Azure +39\% [@microsoft2026q2] |
-| Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers [@alphabet2025q4; @palmer2026amazon; @microsoft2026q2] |
+| Revenue (2024--2025) | Alphabet 10-K; OpenAI CFO disclosure;^[Sarah Friar, "A Business That Scales with the Value of Intelligence," OpenAI, January 18, 2026, \url{https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/}.] Anthropic ARR;^[Jon Markman, "Anthropic: The \$380 Billion Powerhouse Hiding in Plain Sight," Forbes, February 13, 2026, \url{https://www.forbes.com/sites/jonmarkman/2026/02/13/anthropic-the-380-billion-powerhouse-hiding-in-plain-sight/}.] xAI |
+| Capital expenditure | Alphabet 10-K; OpenAI Azure spend;^[``Leaked Documents Shed Light into How Much OpenAI Pays Microsoft,'' The Information, 2025, \url{https://finance.yahoo.com/news/leaked-documents-shed-light-much-004741535.html}.] Anthropic cloud commitments (AWS, GCP); xAI |
+| Training fraction ($\hat{\phi}$) | @amodei2026dwarkesh ($\sim$50/50); Epoch AI (OpenAI 2024 breakdown); Deloitte (industry trajectory) |
+| Leverage ratios | Anthropic: effectively all-equity; OpenAI; Google; xAI: \$5B+ secured debt |
+| WACC | Damodaran industry estimates; CAPM with $\beta = 1.5$--$2.5$ for private labs |
+| Demand growth ($\mu$) | Cloud revenue growth rates: Google Cloud +37\%, AWS +24\%, Azure +39\% |
+| Demand volatility ($\sigma$) | Quarterly revenue volatility of cloud providers |
 | Operating cost rate ($\delta$) | Industry estimates: annual operating cost $\approx$30--40\% of hardware CapEx; hyperscaler PPA rates \$0.03--0.06/kWh |
 
 : Data sources for calibration parameters. {#tbl-sources tbl-colwidths="[35,65]"}
@@ -372,7 +393,7 @@ I assess robustness along three dimensions:
 
 **Parameter sensitivity.**
 I vary each calibration parameter by $\pm 25\%$ from the baseline, truncated to the admissible region of Assumption 1 where the interior capacity optimum exists, and re-compute all results.
-The truncation binds for $\sigma$, $\alpha$, and $r$, whose full $\pm 25\%$ ranges partially violate condition (A2) (Appendix B reports the admissible windows); within the admissible region, the qualitative findings are robust: the asymmetry of Dario's dilemma, the large capacity gap fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
+The truncation binds for $\sigma$, $\alpha$, and $r$, whose full $\pm 25\%$ ranges partially violate condition (A2) (Internet Appendix B reports the admissible windows); within the admissible region, the qualitative findings are robust: the asymmetry of Dario's dilemma, the large capacity gap fraction, and the faith-based survival mechanism are preserved across all parameter perturbations.
 
 **Alternative contest functions.**
 The Tullock contest is a reduced form, so it is natural to ask which results depend on it.
