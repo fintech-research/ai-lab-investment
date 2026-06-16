@@ -273,6 +273,8 @@ Since the training allocation channel dominates, $W'''(\lambda_{\text{true}}) > 
 
 *Case $\ell > 0$ (leveraged).* Leverage amplifies the asymmetry through the default channel: overinvestment raises $K^*$ and over-training raises $\phi^*$, which together push the default boundary closer to the operating region (higher coupon from larger investment, lower L-regime revenue from excessive training). This introduces an additional convex loss absent in the underinvestment case. The amplification is verified numerically. However, the tail-risk asymmetry runs in the *opposite direction*: the 5-year default probability under overinvestment ($\lambda_{\text{invest}} = 0.50$, $\ell = 0.40$) is nearly eight times the baseline, while underinvestment barely raises default risk, because the conservative firm enters at a higher (safer) trigger with less capacity and lower coupon. $\square$
 
+\newpage
+
 @tbl-result-taxonomy summarizes the analytical status of each result.
 
 | Result | Economic statement | Method | Domain |
@@ -325,6 +327,8 @@ where $b(K) = \delta K / r + c[1 - \ell(1 - c_d/r)]K^\gamma$ is the leverage-adj
 
 **Assumption (A2) at archetype-specific WACCs.** The option premium condition (A2), $1/\gamma < (\beta_H - 1)/(\alpha\beta_H) < 1$, depends on $r$ through $\beta_H$. At the baseline $r = 0.12$, (A2) holds comfortably ($(\beta_H - 1)/(\alpha\beta_H) \approx 0.89$). The hyperscaler ($r = 0.10$) also satisfies (A2) ($\approx 0.70 > 1/\gamma \approx 0.67$). At higher WACCs, (A2) fails via the upper bound: the platform ($r = 0.14$), the frontier lab ($r = 0.15$), and the compute racer ($r = 0.18$) all yield $(\beta_H - 1)/(\alpha\beta_H) > 1$. When the upper bound fails, the capacity problem has no interior optimum: the option-value factor $A_{\text{eff}}^{\beta_H} / b(K)^{\beta_H - 1}$ behaves as $K^{\alpha\beta_H - (\beta_H - 1)}$ for small $K$, and the exponent turns negative, so the factor diverges as $K \to 0$ and an unconstrained optimizer degenerates toward zero scale. The solvers therefore verify (A2) and raise an error rather than report a boundary artifact. Archetype-specific WACCs accordingly enter the analysis only through channels that do not require the capacity optimum---the closed-form training-allocation inversion $\lambda = (\hat{\phi}/(1-\hat{\phi}))^{1-\alpha}(r - \mu_H)$ in @sec-calibration, which is capacity-free---while all trigger and capacity results are reported at the baseline WACC. Both bounds of (A2) delimit an admissible window for each parameter at the baseline values of the others: the upper bound ($\beta_H < 1/(1-\alpha)$, whose violation causes the $K \to 0$ degeneracy above) binds at low $\sigma$, low $\alpha$, and high $r$, while the lower bound ($1/\gamma < (\beta_H-1)/(\alpha\beta_H)$, whose violation makes the option-value factor diverge as $K \to \infty$) binds at high $\sigma$, high $\alpha$, and low $\gamma$. At baseline the admissible windows are approximately $\sigma \in (0.19, 0.39)$, $\alpha \in (0.36, 0.53)$, $\gamma > 1.13$, and $r < 0.135$, which is why @fig-competition-effect plots $\sigma \in [0.20, 0.30]$ and why the sensitivity and verification sweeps are restricted to these ranges.
 
+\newpage
+
 **Baseline results summary.** @tbl-baseline-results reports the computed optimal policy and admissibility checks at baseline parameters.
 
 | Quantity | Value | Notes |
@@ -347,6 +351,8 @@ where $b(K) = \delta K / r + c[1 - \ell(1 - c_d/r)]K^\gamma$ is the leverage-adj
 | $\underline{\phi}$ | 0.18 | Faith-based survival threshold |
 
 : Baseline parameters, computed optimal policy, and admissibility verification. {#tbl-baseline-results tbl-colwidths="[40,15,45]"}
+
+\newpage
 
 ### C. Calibration Details and Data Sources {.unnumbered}
 
