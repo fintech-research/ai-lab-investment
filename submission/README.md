@@ -2,7 +2,7 @@
 
 Documents supporting journal submission of *Investing in Artificial General Intelligence*.
 
-- `cover-letter.md` — generic letter to the editor; replace the `[bracketed]` fields and optionally add a journal-specific fit paragraph before each submission.
+- `cover-letter.md` — letter to the editor, currently targeted at Management Science (addressed generically to "Dear Editor"); swap the journal name and fit paragraph to retarget.
 - `ai-disclosure.md` — declaration of generative AI use: a short-form Elsevier-style statement (to be inserted in the manuscript before the references for Elsevier targets) and a detailed long-form disclosure.
 
 ## Target journal ladder (decided 2026-07-03)
