@@ -175,7 +175,7 @@ on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{June 16, 2026}
+\date{July 3, 2026}
 
 \begin{document}
 \maketitle
@@ -375,26 +375,22 @@ contribution.
 \textbf{Real options and capacity choice.} The foundation rests on
 \citet{mcdonald1986value} for optimal timing of irreversible investment
 and \citet{pindyck1988irreversible} for capacity choice.\footnote{Other
-  foundational contributions include \citet{brennan1985evaluating},
-  \citet{bernanke1983irreversibility}, \citet{majd1987time},
-  \citet{barilan1996investment}, and \citet{abeleberly1996optimal} on
-  costly reversibility.} \citet{guo2005investment} model demand with
-regime-dependent drift and volatility, showing large investment jumps
-upon favorable regime arrival; \citet{decamps2006irreversible} study
-irreversible investment with alternative projects under regime
-switching, using a two-regime structure with an absorbing state that is
-close to the present paper's \(L \to H\) transition. The key difference
-is that their framework does not include strategic interaction,
-training-inference allocation, or default risk.\footnote{\citet{bloom2009impact}
-  develops time-varying volatility shocks; \citet{bloom2007uncertainty}
-  provide firm-level validation; \citet{jovanovic2005general} document
-  S-curve diffusion for general-purpose technologies.}
+  foundational contributions include \citet{brennan1985evaluating} and
+  \citet{bernanke1983irreversibility}.} \citet{guo2005investment} model
+demand with regime-dependent drift and volatility, showing large
+investment jumps upon favorable regime arrival;
+\citet{decamps2006irreversible} study irreversible investment with
+alternative projects under regime switching, using a two-regime
+structure with an absorbing state that is close to the present paper's
+\(L \to H\) transition. The key difference is that their framework does
+not include strategic interaction, training-inference allocation, or
+default risk.\footnote{\citet{bloom2009impact} develops time-varying
+  volatility shocks; \citet{jovanovic2005general} document S-curve
+  diffusion for general-purpose technologies.}
 
 \textbf{Strategic investment.} \citet{grenadier2002option} shows that
 competition drastically erodes the option value of waiting.\footnote{See
-  also \citet{grenadier1996strategic} on development cascades,
-  \citet{back2009open} on closed-loop strategies,
-  \citet{weeds2002strategic} on R\&D delay, and
+  also \citet{weeds2002strategic} on R\&D delay and
   \citet{fudenberg1985preemption} for game-theoretic foundations.}
 \citet{huisman2015strategic} is the closest strategic investment paper
 in which they study a duopoly with joint timing and capacity choice. I
@@ -420,53 +416,45 @@ analysis.
 
 \textbf{R\&D races and arms race dynamics.} The investment dynamics in
 this paper also connect to the literature on patent races and R\&D
-competition. \citet{loury1979market} and \citet{lee1980market} model
-firms choosing R\&D intensity to accelerate a stochastic Poisson
-breakthrough, showing that competition leads to socially excessive
-duplication of effort. \citet{reinganum1981dynamic} and
-\citet{reinganum1982strategic} extend the framework to asymmetric firms,
-demonstrating that the frontrunner invests more aggressively---analogous
-to the leader's earlier entry in the preemption equilibrium of
-Proposition 3. \citet{harris1985patent} and \citet{harris1987racing}
-model R\&D as a race with position-dependent investment incentives,
-producing a ``discouragement effect'' for lagging firms that echoes the
-follower's delayed entry in the duopoly equilibrium; notably, in the
-present model the \emph{allocation} margin is immune to this
-discouragement (Proposition 3(ii))---position affects when firms invest,
-not how they split capacity. \citet{grossman1986optimal} study
-simultaneous timing and scale choices in R\&D competition under
-uncertainty, combining elements of the capacity and timing decisions
-modeled here. The key departure from this literature is the dual role of
-capacity: in standard R\&D races, investment during the race is pure
-cost with no concurrent revenue, whereas here, installed capacity
-generates inference revenue pre-AGI and training quality determines
-competitive position post-AGI, creating the allocation trade-off that is
-absent from existing race models.
+competition. \citet{loury1979market} models firms choosing R\&D
+intensity to accelerate a stochastic Poisson breakthrough, showing that
+competition leads to socially excessive duplication of effort.
+\citet{reinganum1982strategic} extends the framework to asymmetric
+firms, demonstrating that the frontrunner invests more
+aggressively---analogous to the leader's earlier entry in the preemption
+equilibrium of Proposition 3. \citet{harris1987racing} model R\&D as a
+race with position-dependent investment incentives, producing a
+``discouragement effect'' for lagging firms that echoes the follower's
+delayed entry in the duopoly equilibrium; notably, in the present model
+the \emph{allocation} margin is immune to this discouragement
+(Proposition 3(ii))---position affects when firms invest, not how they
+split capacity. \citet{grossman1986optimal} study simultaneous timing
+and scale choices in R\&D competition under uncertainty, combining
+elements of the capacity and timing decisions modeled here. The key
+departure from this literature is the dual role of capacity: in standard
+R\&D races, investment during the race is pure cost with no concurrent
+revenue, whereas here, installed capacity generates inference revenue
+pre-AGI and training quality determines competitive position post-AGI,
+creating the allocation trade-off that is absent from existing race
+models.
 
 \textbf{Structural credit risk and investment-financing interactions.}
 The default mechanism builds on \citet{merton1974pricing} and
-\citet{leland1994corporate}.\footnote{\citet{blackcox1976valuing} and
-  \citet{goldstein2001ebit} extend to first-passage and dynamic
-  settings.} The most closely related papers combining investment and
-default are \citet{hackbarth2014capital} (real options with endogenous
-default and product market competition) and \citet{kumar2018optimal}
-(joint leverage and irreversible capacity choice, showing they are
-substitutes).\footnote{\citet{sundaresan2015dynamic} model growth
-  options with default risk; \citet{bolton2011unified} and
-  \citet{bolton2019investment} model financial constraints;
-  \citet{morellec2004can} studies endogenous investment and capital
-  structure; \citet{strebulaev2007tests} develops dynamic capital
-  structure with infrequent adjustment; \citet{hennessy2004tobin},
-  \citet{mauer1994interactions}, \citet{childs2005interactions}, and
-  \citet{miao2005optimal} further develop financing-investment
-  interactions.} The present model integrates endogenous default into
-the strategic capacity-choice game, building on
-\citet{hackbarth2012corporate} for the investment-financing framework.
-The Leland default framework is most natural for public-debt issuers;
-for the VC-backed archetypes in the calibration, ``default'' should be
-interpreted broadly as financial distress (failed funding round,
-liquidity crisis), consistent with \citet{gornall2020squaring} on the
-gap between VC valuations and the underlying economics of startup
+\citet{leland1994corporate}.\footnote{\citet{blackcox1976valuing} extend
+  to a first-passage setting.} The most closely related papers combining
+investment and default are \citet{hackbarth2014capital} (real options
+with endogenous default and product market competition) and
+\citet{kumar2018optimal} (joint leverage and irreversible capacity
+choice, showing they are substitutes).\footnote{\citet{sundaresan2015dynamic}
+  model growth options with default risk; \citet{bolton2019investment}
+  model financial constraints on investment.} The present model
+integrates endogenous default into the strategic capacity-choice game,
+building on \citet{hackbarth2012corporate} for the investment-financing
+framework. The Leland default framework is most natural for public-debt
+issuers; for the VC-backed archetypes in the calibration, ``default''
+should be interpreted broadly as financial distress (failed funding
+round, liquidity crisis), consistent with \citet{gornall2020squaring} on
+the gap between VC valuations and the underlying economics of startup
 financing.
 
 \textbf{AI economics and scaling laws.} AI training exhibits power-law
@@ -478,13 +466,12 @@ a prediction technology, connecting inference demand to economic value
 creation. On the training-inference allocation,
 \citet{akcigit2018growth} study exploitation versus exploration
 R\&D---the closest analog, but in a multi-product firm rather than a
-compute allocation setting.\footnote{\citet{berk1999optimal} and
-  \citet{carlson2004corporate} develop growth option decompositions that
-  motivate the value decomposition in Section~\ref{sec-valuation}.
-  \citet{katz1986technology} and \citet{farrell1986installed} study
-  technology adoption with network externalities and installed-base
-  inertia. \citet{babina2024artificial} and
-  \citet{eisfeldt2024generative} provide empirical context on AI
+compute allocation setting.\footnote{\citet{berk1999optimal} develop
+  growth option decompositions that motivate the value decomposition in
+  Section~\ref{sec-valuation}. \citet{katz1986technology} and
+  \citet{farrell1986installed} study technology adoption with network
+  externalities and installed-base inertia. \citet{babina2024artificial}
+  and \citet{eisfeldt2024generative} provide empirical context on AI
   investment and valuations; these papers could in principle discipline
   certain calibration inputs (e.g., AI firm betas, investment
   intensities), though the rapidly evolving nature of the sector limits
@@ -496,8 +483,7 @@ the demand process and discount rate as given---and therefore
 complements these general equilibrium analyses by providing a
 micro-founded model of the firm-level investment and allocation
 decisions that aggregate into the industry dynamics these papers
-study.\footnote{\citet{dellaseta2012optimal} combine real options with
-  learning curves; \citet{novymarx2007operating} shows that operating
+study.\footnote{\citet{novymarx2007operating} shows that operating
   leverage amplifies systematic risk, relevant to the operating cost
   parameter \(\delta\).}
 
