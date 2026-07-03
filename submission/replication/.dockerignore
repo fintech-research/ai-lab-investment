@@ -1,0 +1,12 @@
+# Only lean/ and verify.sh are needed to build the image. Keep the context
+# small and, critically, never ship a host-built .lake/ (its compiled artifacts
+# are platform-specific and would clobber the in-image build).
+**/.lake/
+.git/
+_stage/
+replication-package.zip
+equations.pdf
+equations.aux
+equations.log
+equations.out
+README.md
