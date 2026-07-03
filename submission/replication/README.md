@@ -18,6 +18,7 @@ paper's equations, which is what `equations.tex` is for (see below).
 | `lean/` | The Lean 4 project (`AILabProofs`). Seven source files under `lean/AILabProofs/`, one per cluster of results. |
 | `lean/README.md` | The complete theorem-by-theorem map from Lean names to paper propositions and equation labels, plus the precise scope (what is and is not formalized). |
 | `equations.tex` | Every display equation of the paper and the Internet Appendix, in source order, each with its introducing prose and its equation label (e.g. `eq-trigger-phi`). Auto-generated from the manuscript source, so it cannot drift from the paper. |
+| `Dockerfile`, `verify.sh` | A self-contained verification environment: build the image and it installs Lean, downloads the prebuilt Mathlib, and kernel-checks every proof; running it prints the axiom report. Needs only Docker on the host (see [How to execute it](#how-to-execute-it)). |
 
 ## What is verified
 
@@ -82,6 +83,25 @@ A suggested prompt:
 
 ## How to execute it
 
+### Option A — Docker (recommended; nothing to install but Docker)
+
+From the package root (the directory containing the `Dockerfile` and `lean/`):
+
+```bash
+docker build -t ail-proofs .   # installs Lean, downloads prebuilt Mathlib,
+                               # and kernel-checks every proof
+docker run --rm ail-proofs      # prints the axiom report for the headline theorems
+```
+
+The build downloads the prebuilt Mathlib (~2–3 GB) and then compiles the
+proofs; it takes a few minutes on a fast connection. **A successful `docker
+build` is itself the verification** — the build fails if any proof is broken.
+The `docker run` step re-confirms the build and prints, for one headline
+theorem per source file, the axioms it depends on (expected: `propext`,
+`Classical.choice`, `Quot.sound` only — no `sorryAx`).
+
+### Option B — Native (Lean toolchain on the host)
+
 Requires [`elan`](https://github.com/leanprover/elan), the Lean toolchain
 manager (the toolchain version is pinned in `lean/lean-toolchain`):
 
@@ -104,6 +124,9 @@ To confirm a theorem is `sorry`-free and uses only standard axioms:
 printf 'import AILabProofs\n#print axioms AILab.alloc_foc_closed_form\n' | lake env lean --stdin
 # 'AILab.alloc_foc_closed_form' depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
+
+The same axiom report for every headline theorem, plus a `sorry` scan, is
+produced by `bash verify.sh` (this is what the Docker image runs).
 
 ---
 

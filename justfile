@@ -124,7 +124,8 @@ build-replication-package:
     rm -rf submission/replication/_stage
     mkdir -p submission/replication/_stage
     cp submission/replication/README.md submission/replication/equations.tex submission/replication/equations.pdf submission/replication/_stage/
+    cp submission/replication/Dockerfile submission/replication/verify.sh submission/replication/.dockerignore submission/replication/_stage/
     rsync -a --exclude '.lake' lean submission/replication/_stage/
-    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf lean
+    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf Dockerfile verify.sh .dockerignore lean
     rm -rf submission/replication/_stage
     @echo "✅ wrote submission/replication/replication-package.zip"
