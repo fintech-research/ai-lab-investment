@@ -27,6 +27,8 @@ format:
     biblio-style: econometrica
     template-partials:
       - title.tex
+    include-before-body:
+      - keywords.tex
     include-in-header:
       text: |
         \setkomafont{disposition}{\rmfamily\bfseries}

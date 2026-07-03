@@ -24,12 +24,14 @@ abstract: |
   An asymmetric dilemma arises: conservative underinvestment is costlier in expected value, but aggressive overinvestment carries substantially higher tail default risk.
   Calibration to four AI lab archetypes illustrates how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
 keywords:
+  - artificial intelligence
+  - AGI investment
   - real options
-  - AI infrastructure
-  - regime switching
+  - irreversible capacity investment
   - training-inference allocation
   - duopoly preemption
   - default risk
+  - AI scaling laws
 thanks: "I thank Armand Jr Brunelle, Tolga Cenesizogly, Joshua Gans, Charles Martineau, and Piotr Orłowski for helpful comments. AI assistance was used extensively in writing this paper; the code for the project and details on the use of AI tools are available at \\url{https://github.com/fintech-research/ai-lab-investment}. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
 
