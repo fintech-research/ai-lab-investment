@@ -12,9 +12,13 @@ Rules for working in `src/ai_lab_investment/`. Global rules are in `@../AGENTS.m
 
 **`symbolic_duopoly.py`** — verification/documentation module using SymPy. Not called in the pipeline. Used to verify that `base_model.py` and `duopoly.py` implement the correct ODE solution.
 
+**`calibration/`** — `data.py` holds the four stylized firm archetypes (`get_stylized_firms()`: Anthropic-, OpenAI-, Google-, xAI-like) and the baseline calibration; `revealed_beliefs.py` infers implied λ from observed investment. Revealed beliefs appear in the slides and the paper's conclusion (future work), not as a paper section.
+
 ## IMPORTANT: Figure Generation
 
 `figures/paper.py` is the single source of truth for all paper figures (11 `create_*` functions). Never add model computations elsewhere.
+
+The other `figures/` modules produce exploratory output for the Hydra pipeline (`phase1.py`, `phase2.py`, `phase4.py`, `phase5.py`) and write to `RESULTS_DIR`. They do **not** feed the paper — do not edit them when a paper figure needs to change.
 
 ## Key Analytical Parameters
 
@@ -22,7 +26,9 @@ At baseline: β_L⁺ ≈ 3.01 (positive root of L-regime ODE with discount r+λ)
 
 ## Testing
 
-Tests are in `tests/` (6 files, one per module). Run with `just test`. `assert` statements allowed in tests.
+Tests are in `tests/` (6 files, one per module; ~230 tests). Run with `just test`. `assert` statements allowed in tests. Several tests pin paper numbers (e.g. `TestAppendixERobustness` in `test_valuation.py` checks the Internet Appendix E tables) — if a model change moves those numbers, update the paper text and the test together.
+
+The closed-form algebra these modules implement is independently machine-checked in Lean (`../lean/`, see `lean/README.md`). Changing a closed form means checking the corresponding Lean theorem too.
 
 ## Code Style
 

@@ -4,13 +4,21 @@ Rules for working in the `paper/` directory. Global rules are in `@../AGENTS.md`
 
 ## Writing Style
 
-- **No bold paragraph headings.** `**Bold text.**` as a pseudo-heading is forbidden. Use `###`/`####` for subdivisions, or just start the paragraph.
-- Concise, formal prose. Top finance journal style (JF, RFS, Econometrica). No filler.
+- **No bold paragraph headings in the main body.** In `_introduction.qmd`, `_calibration.qmd`, `_valuation.qmd`, `_discussion.qmd`, and `_conclusion.qmd`, `**Bold text.**` as a pseudo-heading is forbidden — use `###`/`####` for subdivisions, or just start the paragraph. Run-in bold labels *are* the established convention in `_model.qmd`'s preemption-equilibrium derivation and throughout `_appendix.qmd` (proof steps, verification blocks, robustness exercises); match the surrounding file there rather than converting them.
+- Concise, formal prose. Top finance/management journal style (current target ladder starts at Management Science; see `../submission/README.md`). No filler.
 - Equations: use Quarto cross-references `@eq-name`, figures `@fig-name`, tables `@tbl-name`.
 
 ## Paper Structure
 
-Main entry: `index.qmd` (includes all sections). Sections: `_introduction.qmd`, `_model.qmd`, `_calibration.qmd`, `_valuation.qmd`, `_discussion.qmd`, `_conclusion.qmd`, `_appendix.qmd`, `_literature.qmd`. Bibliography: `references.bib`.
+Main entry: `index.qmd` (includes all sections, then references, then `_appendix.qmd`). Sections: `_introduction.qmd` (which itself includes `_literature.qmd`), `_model.qmd`, `_calibration.qmd`, `_valuation.qmd`, `_discussion.qmd`, `_conclusion.qmd`, `_appendix.qmd`. Bibliography: `references.bib`; style files `econometrica.bst`, `title.tex`, `keywords.tex`; render config `_quarto.yaml`.
+
+`_appendix.qmd` is the **Internet Appendix** — always refer to it that way in prose ("Internet Appendix A", not "Appendix A"). Its sections: A. Proofs (Propositions 1–3 plus Numerical Finding 1, Dario's dilemma) and the result-taxonomy table; B. Numerical Verification Methods; C. Calibration Details and Data Sources; D. Parameter Sensitivity; E. Robustness (parameter sensitivity, Cournot discussion + quantified fixed-pie contest, dynamic φ reallocation, duopoly Dario's dilemma, alternative regime structure).
+
+Results are labeled by method: Propositions 1–3 for analytical results, **Numerical Finding 1** for Dario's dilemma. Do not promote a numerical finding to a proposition; `@tbl-result-taxonomy` in Internet Appendix A records the analytical status of each result and must stay in sync.
+
+## Proof Verification
+
+The closed-form algebra of Propositions 1–3 is machine-checked in Lean 4/Mathlib (`../lean/`), and Internet Appendix A opens with a paragraph describing exactly what is and is not formalized. If you change a closed form, a first-order condition, or a comparative static, check whether the corresponding Lean theorem and that scope paragraph need updating (`lean/README.md` maps theorems to paper results).
 
 ## IMPORTANT: Figures
 

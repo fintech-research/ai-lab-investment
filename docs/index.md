@@ -19,11 +19,11 @@ src/ai_lab_investment/
 │   ├── data.py              # FirmData, CalibrationData dataclasses
 │   └── revealed_beliefs.py  # RevealedBeliefs inversion algorithm
 ├── figures/                 # Publication-quality figure generation
+│   ├── paper.py             # All paper figures (source of truth)
 │   ├── phase1.py            # Single-firm comparative statics
 │   ├── phase2.py            # Duopoly equilibrium and default
 │   ├── phase4.py            # Calibration and revealed beliefs
-│   ├── phase5.py            # Valuation and Dario's dilemma
-│   └── phi_allocation.py    # Training-inference allocation plots
+│   └── phase5.py            # Valuation and Dario's dilemma
 ├── tables/                  # Table generation
 ├── data/                    # Data loading utilities
 └── utils/
