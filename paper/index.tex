@@ -175,7 +175,7 @@ on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{July 3, 2026}
+\date{July 25, 2026}
 
 \begin{document}
 \maketitle
@@ -808,10 +808,11 @@ interior capacity solution in regime \(H\).}
 
 \emph{(A3) The L-regime insufficiency condition
 \((1 - 1/\beta_L^+)/\alpha \geq 1\) holds, where \(\beta_L^+\) is the
-positive root of the L-regime characteristic equation, ensuring that the
-simplified option value \(F_L = C \cdot X^{\beta_H}\) applies. This
-means that L-regime revenue alone would not justify investment; the firm
-may still invest while in regime \(L\), but only because the combined
+positive root of the L-regime characteristic equation; this is the
+condition under which the paper adopts the simplified option value
+\(F_L \propto X^{\beta_H}\) (Section~\ref{sec-conventions}). This means
+that L-regime revenue alone would not justify investment; the firm may
+still invest while in regime \(L\), but only because the combined
 effective revenue coefficient \(A_{\text{eff}}\)---which includes the
 H-regime prospect---makes the investment worthwhile.}
 
@@ -841,9 +842,10 @@ and the joint optimum \((K^*, \phi^*)\) yields the investment trigger
 via smooth pasting.}
 
 \emph{When the firm operates in the L-regime with the possibility of a
-regime switch and the simplified option value
-\(F_L = C \cdot X^{\beta_H}\) applies (Assumption 1, condition A3), it
-jointly optimizes \((K^*, \phi^*)\) to maximize the option value
+regime switch and the option is priced with the simplified form
+\(F_L \propto X^{\beta_H}\) (Assumption 1, condition A3;
+Section~\ref{sec-conventions}), it jointly optimizes \((K^*, \phi^*)\)
+to maximize the option value
 \(F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}\),
 where \(A_{\text{eff}}\) is defined in Equation~\ref{eq-a-eff}. The
 optimal training fraction \(\phi^*\) is interior (strictly between 0 and
@@ -956,33 +958,55 @@ eliminates the negative root) yields:
 F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
 }\end{equation}
 
-\textbf{When does the simplified form \(F_L = C \cdot X^{\beta_H}\)
-apply?} The particular-solution coefficient \(C\) is fully determined by
-the ODE's forcing structure (Equation~\ref{eq-particular-C}). The
-homogeneous coefficient \(A_1\), by contrast, would be determined by
-value-matching and smooth-pasting at a standalone L-regime investment
-trigger. When no such trigger exists---specifically, when the option
-premium ratio \((1 - 1/\beta_L^+)/\alpha \geq 1\), so that L-regime
-revenue by itself is insufficient to justify investment---\(A_1 = 0\)
-because there is no L-regime exercise boundary to pin it down. The
-remaining boundary conditions (value-matching and smooth-pasting at the
-investment trigger driven by the combined \(A_{\text{eff}}\)) then
-determine the trigger \(X^*\), with \(C\) already known from the ODE.
-This is not an approximation but an exact consequence of Assumption
-(A3): the homogeneous term \(A_1 X^{\beta_L^+}\) represents the
-autonomous L-regime investment option, and under (A3) this option is
-never exercised because L-regime revenue alone is insufficient to
-justify irreversible investment at any finite trigger. An option that is
-never exercised has zero value, so \(A_1 = 0\) exactly. The formal
-argument, including the consistency check that the two boundary
-conditions at \(X^*\) are not overdetermined when \(C\) is
-predetermined, is given in Internet Appendix A (Step 5b of the Proof of
-Proposition 1). For the baseline calibration, the option premium ratio
-exceeds unity (\(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \approx 1.67\);
-Assumption 1, condition A3), so this simplification is valid and the
-option value derives entirely from the expected regime switch.
+\textbf{The simplified form \(F_L \propto X^{\beta_H}\): what is exact
+and what is convention.} Two qualifications delimit the pure power form,
+and it is useful to keep them separate.
 
-When the simplified form applies, the investment trigger for the joint
+First, the forcing term in Equation~\ref{eq-hjb-L} is the H-regime
+\emph{option} value \(B_H X^{\beta_H}\), which is the correct
+post-switch continuation value only below the H-regime trigger. For
+\(X > X_H^*\) a switch to \(H\) is followed by immediate exercise, so
+the forcing term is the exercised value
+\(V_H(X, K_H^*, \phi_H^*) - I(K_H^*)\) and the exact continuation value
+solves a piecewise problem, with the two branches matched in value and
+slope at \(X_H^*\). The particular solution \(C \cdot X^{\beta_H}\) of
+Equation~\ref{eq-particular-C} is therefore the exact solution of the
+forced ODE on \((0, X_H^*)\) only; above \(X_H^*\) the pure power form
+extends it rather than solving the exact forcing problem. At the
+baseline calibration the L-regime trigger lies above the H-regime
+trigger (\(X^* \approx 0.0047\) against \(X_H^* \approx 0.0028\)), so
+the interval \((X_H^*, X^*)\) falls in this extended region.
+
+Second, the homogeneous coefficient \(A_1\) would be determined by
+value-matching and smooth-pasting at a standalone L-regime investment
+trigger. Assumption (A3)---the option premium ratio
+\(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \geq 1\), which holds with wide
+margin at the baseline calibration (\(\Phi_L \approx 1.67\))---states
+that L-regime revenue by itself would not justify investment at any
+scale, so the standalone L-regime problem has no interior optimal scale
+to pin \(A_1\) down. It does not by itself imply \(A_1 = 0\): the firm
+does exercise while in regime \(L\), and Internet Appendix A (Step 5b of
+the Proof of Proposition 1) shows that the exact homogeneous coefficient
+is non-negative, and strictly positive whenever exercise before the
+switch is strictly optimal.
+
+Setting \(A_1 = 0\) is therefore a solution convention rather than a
+consequence of (A3), and it is the convention adopted throughout the
+paper. Under it, the pre-investment option value keeps the pure power
+form \(F_L(X) \propto X^{\beta_H}\) on the whole continuation region
+\((0, X^*)\)---equivalently, waiting in regime \(L\) is discounted with
+the H-regime exponent \(\beta_H\) rather than with a regime-switching
+first-passage factor mixing \(X^{\beta_L^+}\) and \(X^{\beta_H}\)---and
+the level of the coefficient is fixed by value-matching at \(X^*\)
+rather than by the forced-ODE value Equation~\ref{eq-particular-C}. This
+is the same \emph{unconditional-\(A_{\text{eff}}\) convention} that
+governs the default boundary and the preemption game below; it is
+collected with the model's other solution conventions in
+Section~\ref{sec-conventions} and stated precisely in Internet Appendix
+A (Step 5b), which also reports the size of the resulting coefficient
+gap at the baseline calibration.
+
+Under this convention, the investment trigger for the joint
 \((K^*, \phi^*)\) optimization satisfies:
 \begin{equation}\protect\phantomsection\label{eq-trigger-phi}{
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
@@ -1611,6 +1635,63 @@ fixed point with computational verification of the remaining properties
 comparative statics). Table~\ref{tbl-result-taxonomy} in the Internet
 Appendix provides a detailed classification of the analytical status of
 each result.
+
+\subsection{Solution conventions and
+approximations}\label{sec-conventions}
+
+The closed forms above rest on three solution conventions, collected
+here so that a reader can track which objects are exact and which are
+not.
+
+\textbf{Unconditional-\(A_{\text{eff}}\) discounting.} All option-like
+L-regime payoffs are valued with the H-regime exponent \(\beta_H\) and
+the unconditional effective revenue coefficient \(A_{\text{eff}}\)
+(Equation~\ref{eq-a-eff}) rather than with regime-contingent value
+functions. Concretely: the pre-investment option takes the pure power
+form \(F_L(X) \propto X^{\beta_H}\) with its level set by value-matching
+at the trigger (the \(A_1 = 0\) convention of
+Section~\ref{sec-single-firm}); the exercise payoff is the L-regime
+installed value Equation~\ref{eq-installed-value-L} whatever regime
+prevails at exercise; the follower's option value is likewise
+proportional to \(X^{\beta_H}\); and the leader's monopoly-phase value
+discounts the revenue drop at follower entry with the factor
+\((X/X_F)^{\beta_H}\). The convention delivers
+Equation~\ref{eq-trigger-phi} and Equation~\ref{eq-default-boundary} and
+is used for every trigger in the paper, including the valuation
+exercises of Section~\ref{sec-valuation}. It is a restriction on what
+the model prices rather than an approximation with a small, signed
+error: the exact object is a piecewise free-boundary problem with
+regime-contingent triggers, which I do not solve. Internet Appendix A
+(Step 5b) states the convention precisely, reports the gap between the
+smooth-fit and forced-ODE coefficients at baseline, and shows that the
+convention understates the pre-investment option value at low demand
+levels, though the induced effect on the trigger itself is not signed;
+Internet Appendix B records how the convention is applied in the
+preemption game.
+
+\textbf{Leader's scale in the duopoly.} The leader's capacity and
+training fraction solve the \emph{monopoly-phase} problem, so
+\((K_L, \phi_L)\) coincides with the single-firm optimum of Proposition
+1 (see the discussion following Proposition 1). Re-optimizing scale for
+entry at the preemption trigger would imply somewhat smaller capacity;
+the convention keeps the leader's policy directly comparable to
+Proposition 1 and does not affect the rent-equalization logic that pins
+down \(X_P\).
+
+\textbf{Single-boundary default.} The default boundary
+Equation~\ref{eq-default-boundary} replaces the H-regime equity value by
+its perpetuity component, collapsing the coupled pair \((X_D^L, X_D^H)\)
+into a single boundary. Unlike the first convention, this one is an
+approximation whose bias is signed and quantified: it overstates \(X_D\)
+by approximately 3\% at baseline, uniformly across leverage levels, and
+therefore errs against the faith-based survival mechanism (Internet
+Appendix B). A smaller related approximation omits the default-option
+term from the follower's entry payoff; it is worth at most about 1.5\%
+of the default claim at the highest leverage considered and vanishes at
+zero leverage.
+
+Propositions 1--3 are exact statements about the model these conventions
+define.
 
 \section{Quantitative Calibration}\label{sec-calibration}
 
@@ -3066,22 +3147,24 @@ conditional on them, the verification establishes the reduction to the
 characteristic equation, the closed forms, the first-order conditions,
 and the comparative statics that follow. The stochastic-calculus
 derivation of the HJB equation itself, and the optimal-stopping argument
-that the candidate value functions are optimal, are not formalized, nor
-is the analytical sub-argument for the exactness of \(A_1 = 0\) under
-(A3). Results that are numerical in nature, the magnitude of
-\(\tilde{\phi}\) and the coupled-ODE and Dario's-dilemma computations
-(Internet Appendix B), are likewise not formalized. The Lean validation
-package, together with the code reproducing the numerical results, is
-available on request and will be made publicly available upon
-publication.
+that the candidate value functions are optimal, are not formalized; nor
+is the pure-power (\(A_1 = 0\)) form of the L-regime option value, which
+is a solution convention rather than a theorem (Step 5b below and
+Section~\ref{sec-conventions}). Results that are numerical in nature,
+the magnitude of \(\tilde{\phi}\) and the coupled-ODE and
+Dario's-dilemma computations (Internet Appendix B), are likewise not
+formalized. The Lean validation package, together with the code
+reproducing the numerical results, is available on request and will be
+made publicly available upon publication.
 
 \subsubsection*{Proof of Proposition 1}\label{proof-of-proposition-1}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 1}
 
 \emph{Maintained assumptions.} The proof requires Assumption 1, in
 particular conditions (A2)--(A4). It applies in the parameter region
-where the simplified option value \(F_L(X) = C \cdot X^{\beta_H}\) is
-valid (condition A3). The firm maximizes the option value
+where the paper adopts the simplified option value
+\(F_L \propto X^{\beta_H}\) (condition A3; see Step 5b and
+Section~\ref{sec-conventions}). The firm maximizes the option value
 \(F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}\) by choosing
 \(X^*\), \(K\), and \(\phi\) jointly.
 
@@ -3171,7 +3254,7 @@ uniqueness.
 \] which uniquely determines \(\phi^*\) as an increasing function of
 \(w_H / w_L\). \(\square\)
 
-\emph{Step 5b: Exactness of \(A_1 = 0\) under (A3).}
+\emph{Step 5b: The pure-power form of \(F_L\) (solution convention).}
 
 The general L-regime option value
 \(F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H}\)
@@ -3182,58 +3265,82 @@ root of the homogeneous L-regime switching ODE (effective discount
 \(\lambda B_H X^{\beta_H}\)), and a particular component
 \(C X^{\beta_H}\), driven by the forcing term \(\lambda F_H(X)\), with
 coefficient \(C = -\lambda B_H / Q_L(\beta_H)\) determined by the ODE
-(Equation~\ref{eq-particular-C}).
+(Equation~\ref{eq-particular-C}). The coefficient is positive:
+evaluating \(Q_L\) at the H-regime root gives
+\(Q_L(\beta_H) = (\mu_L - \mu_H)\beta_H - \lambda < 0\), which also
+places \(\beta_H\) strictly below the larger root \(\beta_L^+\), since
+\(Q_L\) is an upward parabola. Two qualifications bear on this
+decomposition; the second is the substantive one.
 
-The homogeneous term represents the autonomous L-regime investment
-option: the value the firm would derive from investing based on L-regime
-revenue alone. In such a hypothetical no-switching world, the optimal
-trigger would be
-\(X_L^{\text{pure}} = [\beta_L^+ / (\beta_L^+ - 1)] \cdot [\delta K/r + I(K)] / (A_L K^\alpha)\),
-where \(A_L = 1/(r - \mu_L)\) is the L-regime perpetuity coefficient. An
-interior capacity optimum for this standalone problem requires the
-option premium ratio to satisfy
+\emph{Range of validity of the forcing term.} The forcing term
+\(\lambda F_H(X)\) takes the option form \(\lambda B_H X^{\beta_H}\)
+only for \(X < X_H^*\). For \(X > X_H^*\) a switch to the high regime is
+followed by immediate exercise, so the correct forcing term is
+\(\lambda [V_H(X, K_H^*, \phi_H^*) - I(K_H^*)]\), which is affine in
+\(X\), and the exact continuation value solves a piecewise problem with
+value and slope matched at \(X_H^*\). Accordingly,
+Equation~\ref{eq-particular-C} is the exact particular solution on
+\((0, X_H^*)\); on \((X_H^*, X^*)\) the pure power form extends it. At
+the baseline calibration \(X^* \approx 0.0047\) exceeds
+\(X_H^* \approx 0.0028\), so this interval is non-empty.
+
+\emph{Sign of the homogeneous coefficient.} The homogeneous term is the
+value of being able to exercise \emph{before} the regime switch, using
+the combined revenue coefficient. Assumption (A3) does not eliminate it.
+What (A3) rules out is an interior optimal \emph{scale} for the
+standalone, no-switching L-regime problem: at a fixed capacity \(K\)
+that problem has the finite trigger
+\(X_L^{\text{pure}}(K) = [\beta_L^+/(\beta_L^+ - 1)] \cdot [\delta K/r + I(K)]/(A_L K^\alpha)\)
+with \(A_L = 1/(r - \mu_L)\), and an interior optimum over \(K\)
+requires the option premium ratio
 \(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha < 1\) (the L-regime analogue of
 condition (A2): the marginal value of capacity, \(\alpha\), must be
 large enough relative to the markup-adjusted payout share
 \(1 - 1/\beta_L^+\)). Assumption (A3) imposes the opposite,
-\(\Phi_L \geq 1\), so the standalone L-regime investment problem has no
-finite interior optimum: at every capacity level, the markup-adjusted
-L-regime revenue falls short of what is needed to justify exercise, and
-the firm would wait indefinitely. The admissible solution requires
-\(A_1 = 0\), which I establish by ruling out both signs. If \(A_1 > 0\):
-since \(\beta_L^+ > \beta_H\) (because \(\beta_H\) solves the H-regime
-characteristic equation, evaluating \(Q_L\) at \(\beta_H\) gives
-\(Q_L(\beta_H) = (\mu_L - \mu_H)\beta_H - \lambda < 0\); as \(Q_L\) is
-an upward parabola, \(\beta_H\) lies strictly below its larger root
-\(\beta_L^+\)), the homogeneous component \(A_1 X^{\beta_L^+}\)
-dominates the particular solution \(C X^{\beta_H}\) for large \(X\). The
-option value \(F_L(X) \sim A_1 X^{\beta_L^+}\) therefore eventually
-exceeds any investment NPV, implying the existence of a finite L-regime
-exercise boundary---contradicting Assumption (A3). If \(A_1 < 0\): then
-\(F_L(X) = A_1 X^{\beta_L^+} + C X^{\beta_H} < C X^{\beta_H}\) for all
-\(X > 0\), meaning the option value lies strictly below its
-regime-switching component. But the firm can always replicate at least
-\(C X^{\beta_H}\) by following the pure switching strategy (wait for the
-H-regime arrival and invest at the H-regime trigger): the value of this
-strategy solves the same forced ODE, the boundary condition at \(X = 0\)
-eliminates the negative homogeneous root, and the absence of any
-L-regime exercise boundary, combined with the no-bubble growth
-condition, eliminates the positive homogeneous root---leaving exactly
-\(C X^{\beta_H}\). Hence \(F_L(X) \geq C X^{\beta_H}\) by optimality.
-Therefore \(A_1 = 0\).
+\(\Phi_L \geq 1\), so no scale of a purely L-regime project is worth
+building; it does not follow that the coefficient on the homogeneous
+root vanishes. A lower bound in fact signs it the other way. The firm
+can always follow the pure switching strategy---never exercise in regime
+\(L\), wait for the H-regime arrival, and then hold the H-regime
+option---whose value solves the same forced ODE with \(F(0) = 0\) and no
+L-regime exercise boundary, so that the no-bubble growth condition
+eliminates the positive homogeneous root and leaves exactly
+\(C X^{\beta_H}\) on \((0, X_H^*)\). Optimality then gives
+\(F_L(X) \geq C X^{\beta_H}\), that is, \(A_1 \geq 0\), with strict
+inequality whenever exercising while still in regime \(L\) is strictly
+optimal with positive probability---precisely the case the paper
+studies, since the firm's trigger \(X^*\) is finite and is reached from
+the low regime. The exact homogeneous coefficient is therefore strictly
+positive, and \(A_1 = 0\) cannot be derived from (A3).
 
-With \(A_1 = 0\), dividing value-matching by smooth-pasting at the
-investment trigger \(X^*\) eliminates the coefficient on \(X^{\beta_H}\)
-and yields: \[
+\emph{The convention.} I nonetheless impose \(A_1 = 0\), and price the
+pre-investment option with the pure power form
+\(F_L(X) \propto X^{\beta_H}\) on the whole continuation region
+\((0, X^*)\). This is the unconditional-\(A_{\text{eff}}\) convention of
+Section~\ref{sec-conventions}: option-like L-regime payoffs are
+discounted with the H-regime exponent \(\beta_H\) rather than with a
+regime-switching first-passage factor mixing \(X^{\beta_L^+}\) and
+\(X^{\beta_H}\), and the exercise payoff is the unconditional L-regime
+installed value. With a single power in the continuation region,
+dividing value-matching by smooth-pasting at the investment trigger
+\(X^*\) eliminates the coefficient and yields: \[
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{eff}}(\phi^*, K^*)},
-\] confirming Equation~\ref{eq-trigger-phi}. The trigger therefore
-depends only on the value-matching/smooth-pasting ratio, not on the
-level of that coefficient, which value-matching at \(X^*\) then
-determines. Under the unconditional-\(A_{\text{eff}}\) convention
-(Internet Appendix B), the option is priced with this smooth-fit
-coefficient rather than with the forced-ODE particular value \(C\) of
-Equation~\ref{eq-particular-C}, leaving Equation~\ref{eq-trigger-phi}
-unchanged. \(\square\)
+\] confirming Equation~\ref{eq-trigger-phi}. The trigger depends only on
+the value-matching/smooth-pasting ratio, not on the level of the
+coefficient, which value-matching at \(X^*\) then determines; the two
+boundary conditions therefore pin down the trigger and the level
+jointly, and the system is exactly determined. The price of the
+convention is that this smooth-fit level differs from the forced-ODE
+value \(C\) of Equation~\ref{eq-particular-C}: at the baseline
+calibration the smooth-fit coefficient is
+\([V(X^*, K^*, \phi^*) - I(K^*)]/(X^*)^{\beta_H} \approx 16.5\) against
+\(C \approx 21.1\). Since the exact problem satisfies
+\(F_L(X) \geq C X^{\beta_H}\), the convention understates the
+pre-investment option value at demand levels below \(X_H^*\), by at
+least this margin at baseline; the induced effect on the trigger and on
+the optimal policy is not signed by that comparison. Propositions 1--3
+are exact statements about the model so defined; I do not solve the
+piecewise free-boundary problem described above. \(\square\)
 
 At the baseline calibration, \(\beta_L^+ \approx 3.01\) gives
 \(\Phi_L \approx 1.67 \gg 1\), so (A3) holds with wide margin.
@@ -3682,8 +3789,13 @@ an explicit expression; ``implicit function'' indicates an analytically
 characterized equation solved numerically; ``computational
 verification'' indicates a property verified on a grid across all
 parameterizations; ``numerical'' indicates optimization-based
-computation with no closed-form
-expression.}\label{tbl-result-taxonomy}\tabularnewline
+computation with no closed-form expression. All rows are statements
+about the model defined by the solution conventions of
+Section~\ref{sec-conventions}---in particular the
+unconditional-\(A_{\text{eff}}\) discounting convention (Step 5b above),
+which underlies every trigger in the paper, and the single-boundary
+default reduction used in Proposition
+2.}\label{tbl-result-taxonomy}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Result
@@ -3711,8 +3823,9 @@ Domain
 \bottomrule\noalign{}
 \endlastfoot
 Proposition 1 & Optimal \(K^*, \phi^*\); interiority and uniqueness of
-\(\phi^*\); comparative statics in \(\lambda\), \((r-\mu_L)^{-1}\) &
-Closed-form / implicit function & Assumption 1 \\
+\(\phi^*\); comparative statics in \(\lambda\), \((r-\mu_H)^{-1}\) &
+Closed-form / implicit function, given the pure-power convention &
+Assumption 1; unconditional-\(A_{\text{eff}}\) convention \\
 Proposition 2(i) & Default boundary increasing in leverage and coupon &
 Closed-form & Assumption 1 \\
 Proposition 2(ii) & Faith-based survival; closed-form thresholds
@@ -3774,15 +3887,16 @@ the unconditional \(A_{\text{eff}}\) framework, all option-like terms in
 the L-regime are valued with the H-regime exponent \(\beta_H\): the
 follower's option is \(B_F X^{\beta_H}\), and the leader's
 monopoly-phase value subtracts the present value of the revenue drop at
-follower entry using the factor \((X/X_F)^{\beta_H}\). Under Assumption
-(A3) the pre-switch option value has the pure power form
-\(C X^{\beta_H}\) (Proof of Proposition 1, Step 5b), so this convention
-prices state-contingent payoffs consistently with the model's own option
-valuation, rather than with a first-passage factor
-\((X/X_F)^{\beta_L^+}\) that would condition on no regime switch
-occurring before entry. A second, related approximation is that the
-follower's trigger is obtained from smooth pasting on the linear entry
-payoff \(A_{\text{eff}} X - [\text{total cost}]\), omitting the (small)
+follower entry using the factor \((X/X_F)^{\beta_H}\). Under the
+pure-power convention adopted in the Proof of Proposition 1 (Step 5b),
+the pre-switch option value has the pure power form
+\(F_L \propto X^{\beta_H}\), so this convention prices state-contingent
+payoffs consistently with the model's own option valuation, rather than
+with a first-passage factor \((X/X_F)^{\beta_L^+}\) that would condition
+on no regime switch occurring before entry. A second, related
+approximation is that the follower's trigger is obtained from smooth
+pasting on the linear entry payoff
+\(A_{\text{eff}} X - [\text{total cost}]\), omitting the (small)
 default-option term in the levered entry payoff; the omitted term is at
 most about 1.5\% of the default claim at the highest leverage considered
 (\((X_F/X_D)^{\beta_s^-} \approx 0.015\) at \(\ell = 0.65\)) and

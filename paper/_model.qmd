@@ -120,7 +120,7 @@ The figure illustrates the core real options result: for $X < X_H^*$, the firm s
 
 *(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$.*
 
-*(A3) The L-regime insufficiency condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of the L-regime characteristic equation, ensuring that the simplified option value $F_L = C \cdot X^{\beta_H}$ applies. This means that L-regime revenue alone would not justify investment; the firm may still invest while in regime $L$, but only because the combined effective revenue coefficient $A_{\text{eff}}$---which includes the H-regime prospect---makes the investment worthwhile.*
+*(A3) The L-regime insufficiency condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of the L-regime characteristic equation; this is the condition under which the paper adopts the simplified option value $F_L \propto X^{\beta_H}$ (@sec-conventions). This means that L-regime revenue alone would not justify investment; the firm may still invest while in regime $L$, but only because the combined effective revenue coefficient $A_{\text{eff}}$---which includes the H-regime prospect---makes the investment worthwhile.*
 
 *(A4) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
 
@@ -133,7 +133,7 @@ K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H 
 $$
 *provided $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$. Note that $K^*$ is independent of $\phi$: the effective revenue coefficient takes the form $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ (both in the pure H-regime and under regime switching), so the $\phi$-dependent factor cancels in the first-order condition for $K$ (see Internet Appendix A, Step 4). The optimal $\phi^*$ is then determined separately by maximizing $A_{\text{eff}}$ over $\phi$, and the joint optimum $(K^*, \phi^*)$ yields the investment trigger via smooth pasting.*
 
-*When the firm operates in the L-regime with the possibility of a regime switch and the simplified option value $F_L = C \cdot X^{\beta_H}$ applies (Assumption 1, condition A3), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
+*When the firm operates in the L-regime with the possibility of a regime switch and the option is priced with the simplified form $F_L \propto X^{\beta_H}$ (Assumption 1, condition A3; @sec-conventions), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
 
 *(i) $\phi^*$ is increasing in $\lambda$: more optimistic beliefs about the arrival of transformative AI shift allocation toward training.*
 
@@ -179,15 +179,23 @@ $$
 F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
 $$ {#eq-option-L-general}
 
-**When does the simplified form $F_L = C \cdot X^{\beta_H}$ apply?**
-The particular-solution coefficient $C$ is fully determined by the ODE's forcing structure (@eq-particular-C).
-The homogeneous coefficient $A_1$, by contrast, would be determined by value-matching and smooth-pasting at a standalone L-regime investment trigger.
-When no such trigger exists---specifically, when the option premium ratio $(1 - 1/\beta_L^+)/\alpha \geq 1$, so that L-regime revenue by itself is insufficient to justify investment---$A_1 = 0$ because there is no L-regime exercise boundary to pin it down.
-The remaining boundary conditions (value-matching and smooth-pasting at the investment trigger driven by the combined $A_{\text{eff}}$) then determine the trigger $X^*$, with $C$ already known from the ODE.
-This is not an approximation but an exact consequence of Assumption (A3): the homogeneous term $A_1 X^{\beta_L^+}$ represents the autonomous L-regime investment option, and under (A3) this option is never exercised because L-regime revenue alone is insufficient to justify irreversible investment at any finite trigger. An option that is never exercised has zero value, so $A_1 = 0$ exactly. The formal argument, including the consistency check that the two boundary conditions at $X^*$ are not overdetermined when $C$ is predetermined, is given in Internet Appendix A (Step 5b of the Proof of Proposition 1).
-For the baseline calibration, the option premium ratio exceeds unity ($\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \approx 1.67$; Assumption 1, condition A3), so this simplification is valid and the option value derives entirely from the expected regime switch.
+**The simplified form $F_L \propto X^{\beta_H}$: what is exact and what is convention.**
+Two qualifications delimit the pure power form, and it is useful to keep them separate.
 
-When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
+First, the forcing term in @eq-hjb-L is the H-regime *option* value $B_H X^{\beta_H}$, which is the correct post-switch continuation value only below the H-regime trigger.
+For $X > X_H^*$ a switch to $H$ is followed by immediate exercise, so the forcing term is the exercised value $V_H(X, K_H^*, \phi_H^*) - I(K_H^*)$ and the exact continuation value solves a piecewise problem, with the two branches matched in value and slope at $X_H^*$.
+The particular solution $C \cdot X^{\beta_H}$ of @eq-particular-C is therefore the exact solution of the forced ODE on $(0, X_H^*)$ only; above $X_H^*$ the pure power form extends it rather than solving the exact forcing problem.
+At the baseline calibration the L-regime trigger lies above the H-regime trigger ($X^* \approx 0.0047$ against $X_H^* \approx 0.0028$), so the interval $(X_H^*, X^*)$ falls in this extended region.
+
+Second, the homogeneous coefficient $A_1$ would be determined by value-matching and smooth-pasting at a standalone L-regime investment trigger.
+Assumption (A3)---the option premium ratio $\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \geq 1$, which holds with wide margin at the baseline calibration ($\Phi_L \approx 1.67$)---states that L-regime revenue by itself would not justify investment at any scale, so the standalone L-regime problem has no interior optimal scale to pin $A_1$ down.
+It does not by itself imply $A_1 = 0$: the firm does exercise while in regime $L$, and Internet Appendix A (Step 5b of the Proof of Proposition 1) shows that the exact homogeneous coefficient is non-negative, and strictly positive whenever exercise before the switch is strictly optimal.
+
+Setting $A_1 = 0$ is therefore a solution convention rather than a consequence of (A3), and it is the convention adopted throughout the paper.
+Under it, the pre-investment option value keeps the pure power form $F_L(X) \propto X^{\beta_H}$ on the whole continuation region $(0, X^*)$---equivalently, waiting in regime $L$ is discounted with the H-regime exponent $\beta_H$ rather than with a regime-switching first-passage factor mixing $X^{\beta_L^+}$ and $X^{\beta_H}$---and the level of the coefficient is fixed by value-matching at $X^*$ rather than by the forced-ODE value @eq-particular-C.
+This is the same *unconditional-$A_{\text{eff}}$ convention* that governs the default boundary and the preemption game below; it is collected with the model's other solution conventions in @sec-conventions and stated precisely in Internet Appendix A (Step 5b), which also reports the size of the resulting coefficient gap at the baseline calibration.
+
+Under this convention, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 $$
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
 $$ {#eq-trigger-phi}
@@ -409,3 +417,25 @@ In this solution, competition affects *timing* rather than *scale*: the leader i
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. The dotted line (right axis) plots the preemption discount $X_P / X_L^{\text{mono}}$, which falls from approximately $0.64$ at $\sigma = 0.20$ to $0.54$ at $\sigma = 0.30$. The grid starts at $\sigma = 0.20$, just above the admissibility bound of condition (A2) (Internet Appendix B). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
 Propositions 1 and 2 are fully analytical; Proposition 3 combines analytical existence, zero-leverage uniqueness, and an exact allocation fixed point with computational verification of the remaining properties (leveraged uniqueness, global optimality of the allocation, and the comparative statics). @tbl-result-taxonomy in the Internet Appendix provides a detailed classification of the analytical status of each result.
+
+### Solution conventions and approximations {#sec-conventions}
+
+The closed forms above rest on three solution conventions, collected here so that a reader can track which objects are exact and which are not.
+
+**Unconditional-$A_{\text{eff}}$ discounting.**
+All option-like L-regime payoffs are valued with the H-regime exponent $\beta_H$ and the unconditional effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) rather than with regime-contingent value functions.
+Concretely: the pre-investment option takes the pure power form $F_L(X) \propto X^{\beta_H}$ with its level set by value-matching at the trigger (the $A_1 = 0$ convention of @sec-single-firm); the exercise payoff is the L-regime installed value @eq-installed-value-L whatever regime prevails at exercise; the follower's option value is likewise proportional to $X^{\beta_H}$; and the leader's monopoly-phase value discounts the revenue drop at follower entry with the factor $(X/X_F)^{\beta_H}$.
+The convention delivers @eq-trigger-phi and @eq-default-boundary and is used for every trigger in the paper, including the valuation exercises of @sec-valuation.
+It is a restriction on what the model prices rather than an approximation with a small, signed error: the exact object is a piecewise free-boundary problem with regime-contingent triggers, which I do not solve.
+Internet Appendix A (Step 5b) states the convention precisely, reports the gap between the smooth-fit and forced-ODE coefficients at baseline, and shows that the convention understates the pre-investment option value at low demand levels, though the induced effect on the trigger itself is not signed; Internet Appendix B records how the convention is applied in the preemption game.
+
+**Leader's scale in the duopoly.**
+The leader's capacity and training fraction solve the *monopoly-phase* problem, so $(K_L, \phi_L)$ coincides with the single-firm optimum of Proposition 1 (see the discussion following Proposition 1).
+Re-optimizing scale for entry at the preemption trigger would imply somewhat smaller capacity; the convention keeps the leader's policy directly comparable to Proposition 1 and does not affect the rent-equalization logic that pins down $X_P$.
+
+**Single-boundary default.**
+The default boundary @eq-default-boundary replaces the H-regime equity value by its perpetuity component, collapsing the coupled pair $(X_D^L, X_D^H)$ into a single boundary.
+Unlike the first convention, this one is an approximation whose bias is signed and quantified: it overstates $X_D$ by approximately 3\% at baseline, uniformly across leverage levels, and therefore errs against the faith-based survival mechanism (Internet Appendix B).
+A smaller related approximation omits the default-option term from the follower's entry payoff; it is worth at most about 1.5\% of the default claim at the highest leverage considered and vanishes at zero leverage.
+
+Propositions 1--3 are exact statements about the model these conventions define.
