@@ -1,15 +1,5 @@
 ```{=latex}
 \clearpage
-\thispagestyle{empty}
-\begin{center}
-\vspace*{0.18\textheight}
-{\Large\bfseries Internet Appendix for}\\[1.2em]
-{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
-{\large Vincent Grégoire}\\[0.5em]
-{\normalsize HEC Montréal}\\[3em]
-{\large\itshape Not intended for publication}
-\end{center}
-\clearpage
 \setcounter{page}{1}
 \setcounter{table}{0}
 \setcounter{figure}{0}

@@ -10,7 +10,11 @@ Rules for working in the `paper/` directory. Global rules are in `@../AGENTS.md`
 
 ## Paper Structure
 
-Main entry: `index.qmd` (includes all sections, then references, then `_appendix.qmd`). Sections: `_introduction.qmd` (which itself includes `_literature.qmd`), `_model.qmd`, `_calibration.qmd`, `_valuation.qmd`, `_discussion.qmd`, `_conclusion.qmd`, `_appendix.qmd`. Bibliography: `references.bib`; style files `econometrica.bst`, `title.tex`, `keywords.tex`; render config `_quarto.yaml`.
+Main entry: `index.qmd` (includes all sections, then references, then `_appendix-cover.qmd` + `_appendix.qmd`). Sections: `_introduction.qmd` (which itself includes `_literature.qmd`), `_model.qmd`, `_calibration.qmd`, `_valuation.qmd`, `_discussion.qmd`, `_conclusion.qmd`, `_appendix.qmd`. Bibliography: `references.bib`; style files `econometrica.bst`, `title.tex`, `keywords.tex`; render config `_quarto.yaml`.
+
+## Blind submission build
+
+`index-blind.qmd` is the double-anonymous copy used for Management Science (`just render-blind`; see `../submission/README.md`). It includes the *same* section files as `index.qmd` — **if you add or remove an include in one, do the same in the other** — but drops `authors`/`affiliations`/`thanks` and sets `linestretch: 1.5`. Its `title`, `abstract`, and `keywords` are duplicated from `index.qmd` (Quarto has no per-document metadata include); `tests/test_paper_metadata.py` fails if the two drift apart, if the keyword count leaves 3–5, or if `keywords.tex` stops matching. Profile selection lives in `_quarto.yaml` (`identified` = default, `blind`); `split_blind_pdf.py` cuts the rendered PDF into the manuscript and the e-companion at the `_appendix-cover.qmd` page.
 
 `_appendix.qmd` is the **Internet Appendix** — always refer to it that way in prose ("Internet Appendix A", not "Appendix A"). Its sections: A. Proofs (Propositions 1–3 plus Numerical Finding 1, Dario's dilemma) and the result-taxonomy table; B. Numerical Verification Methods; C. Calibration Details and Data Sources; D. Parameter Sensitivity; E. Robustness (parameter sensitivity, Cournot discussion + quantified fixed-pie contest, dynamic φ reallocation, duopoly Dario's dilemma, alternative regime structure).
 

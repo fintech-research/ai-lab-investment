@@ -1,6 +1,17 @@
 project:
   output-dir: _output
 
+# Two mutually exclusive render targets, selected by Quarto profile (the first
+# member of the group is the default). `identified` is the normal build
+# (`just render-paper`); `blind` is the double-anonymous submission build
+# (`just render-blind`). The render list has to be switched by profile rather
+# than by rendering `index-blind.qmd` directly: a file outside the project's
+# render list is treated as a standalone document and would silently lose this
+# file's format configuration.
+profile:
+  group:
+    - [identified, blind]
+
 number-sections: true
 
 bibliography: references.bib

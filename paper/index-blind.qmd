@@ -1,21 +1,29 @@
 ---
+# Double-anonymous (blind) manuscript for Management Science / INFORMS submission.
+#
+# This file mirrors `index.qmd` but omits `authors`, `affiliations`, and `thanks`
+# (no title page, no acknowledgments, no repository URL) and applies the
+# submission-only formatting (1.5 line spacing).
+#
+# The submission is two PDFs: the manuscript and a separate anonymous
+# e-companion holding the Internet Appendix. Because Quarto resolves
+# cross-references only within a single render, this file is rendered *whole*
+# (appendix included) and `split_blind_pdf.py` then cuts the resulting PDF at the
+# Internet Appendix cover page. That keeps every `@tbl-parameters` / `@eq-hjb-L`
+# style reference resolved in both artifacts. Run `just render-blind`.
+#
+# IMPORTANT: `title`, `abstract`, and `keywords` below are *content* and must stay
+# identical to `index.qmd`. Quarto has no per-document metadata include, so the
+# parity is enforced by `tests/test_paper_metadata.py` instead.
 title: "Investing in Artificial General Intelligence"
 date: today
 date-format: long
 format:
-  html:
-    output-file: ai_lab_investment.html
   pdf:
-    output-file: ai_lab_investment.pdf
+    output-file: ai_lab_investment_blind_full.pdf
     keep-tex: true
-authors:
-  - name: Vincent Grégoire
-    affil-id: 1
-    affiliation:
-      - ref: 1
-affiliations:
-  - id: 1
-    name: HEC Montréal
+    linestretch: 1.5
+    latex-clean: false
 abstract: |
   Frontier AI laboratories racing toward Artificial General Intelligence (AGI) face uncertain timing of transformative demand and must decide how much irreversible capacity to build and how to split it between inference (current revenue) and training (future capability).
   I develop a real-options model with regime switching, duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
@@ -29,7 +37,6 @@ keywords:
   - artificial intelligence
   - duopoly preemption
   - default risk
-thanks: "I thank Armand Jr Brunelle, Tolga Cenesizogly, Joshua Gans, Charles Martineau, and Piotr Orłowski for helpful comments. AI assistance was used extensively in writing this paper; the code for the project and details on the use of AI tools are available at \\url{https://github.com/fintech-research/ai-lab-investment}. Vincent Grégoire: HEC Montréal (vincent.gregoire@hec.ca)."
 ---
 
 

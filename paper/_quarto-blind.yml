@@ -1,0 +1,10 @@
+# Quarto profile for the double-anonymous submission build (`just render-blind`).
+#
+# `index-blind.qmd` must be a *project* render target, not a standalone input:
+# rendering it directly would bypass the format configuration in `_quarto.yaml`
+# (geometry, 11pt, natbib/econometrica, the title and keyword partials).
+# Blind-only formatting (1.5 line spacing, output file name) lives in the front
+# matter of `index-blind.qmd`.
+project:
+  render:
+    - index-blind.qmd

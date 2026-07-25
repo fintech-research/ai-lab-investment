@@ -1,0 +1,8 @@
+# Default profile: the identified build (`just render-paper`).
+# Everything except the double-anonymous submission document, which carries its
+# own profile (`_quarto-blind.yml`).
+project:
+  render:
+    - "*.qmd"
+    - "*.md"
+    - "!index-blind.qmd"

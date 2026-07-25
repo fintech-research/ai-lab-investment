@@ -71,6 +71,13 @@ render-paper:
     touch paper/index.qmd
     uv run quarto render paper
 
+# Build the double-anonymous submission PDFs (blind manuscript + e-companion)
+render-blind:
+    @echo "🚀 Building blind submission"
+    touch paper/index-blind.qmd
+    QUARTO_PROFILE=blind uv run quarto render paper
+    uv run python paper/split_blind_pdf.py
+
 # Build the slides
 render-slides:
     @echo "🚀 Building long-form slides"
