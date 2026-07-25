@@ -92,7 +92,8 @@ printf 'import AILabProofs\n#print axioms AILab.alloc_foc_closed_form\n' | lake 
   *and* uniqueness of the interior critical point), the pure-power (`A₁=0`) form of
   the L-regime option value — a solution convention rather than a theorem, see
   Step 5b of the Proof of Proposition 1 — and all numerical / coupled-ODE results
-  (Appendix B), including Numerical Finding 1.
+  (Appendix B), including the piecewise-stopping bias check and Numerical
+  Finding 1.
 - The reduction of the ODE to the characteristic equation is verified
   (`rpow_solves_euler_iff`), but the *derivation of the HJB equation itself* from
   stochastic-calculus primitives, and the optimal-stopping verification theorem

@@ -759,10 +759,10 @@ reflects the value of waiting.
 Figure~\ref{fig-option-value} depicts the option value \(F_H(X)\)
 alongside the net present value of immediate investment for the baseline
 calibration.\footnote{The H-regime illustrations
-  (Figure~\ref{fig-option-value} and
-  Figure~\ref{fig-comparative-statics}) solve the H-regime sub-problem
-  with revenue \(X K^\alpha\), i.e., all installed capacity treated as
-  productive training capacity (equivalently \(\phi = 1\) in
+  (Figure~\ref{fig-option-value}, Figure~\ref{fig-comparative-statics},
+  and Figure~\ref{fig-lambda-option-value} below) solve the H-regime
+  sub-problem with revenue \(X K^\alpha\), i.e., all installed capacity
+  treated as productive training capacity (equivalently \(\phi = 1\) in
   Equation~\ref{eq-revenue-H}). This is without loss of generality
   within the absorbing H-regime, where inference capacity generates no
   revenue and the standalone optimum is \(\phi = 1\). All quantitative
@@ -984,11 +984,16 @@ trigger. Assumption (A3)---the option premium ratio
 margin at the baseline calibration (\(\Phi_L \approx 1.67\))---states
 that L-regime revenue by itself would not justify investment at any
 scale, so the standalone L-regime problem has no interior optimal scale
-to pin \(A_1\) down. It does not by itself imply \(A_1 = 0\): the firm
-does exercise while in regime \(L\), and Internet Appendix A (Step 5b of
-the Proof of Proposition 1) shows that the exact homogeneous coefficient
-is non-negative, and strictly positive whenever exercise before the
-switch is strictly optimal.
+to pin \(A_1\) down. It does not by itself imply \(A_1 = 0\). Internet
+Appendix A (Step 5b of the Proof of Proposition 1) shows that the
+coefficient is not signed by the replication argument that suggests
+itself---the candidate bound \(F_L \geq C X^{\beta_H}\) fails, because
+the pure switching strategy faces the same piecewise forcing and is
+worth strictly less than \(C X^{\beta_H}\)---and that the exact
+coefficient, obtained by solving the piecewise problem numerically, is
+\emph{negative} at the baseline calibration. What is true is that
+exercising before the switch is worth something: \(A_1\) exceeds the
+corresponding coefficient of the pure switching strategy.
 
 Setting \(A_1 = 0\) is therefore a solution convention rather than a
 consequence of (A3), and it is the convention adopted throughout the
@@ -1004,7 +1009,8 @@ governs the default boundary and the preemption game below; it is
 collected with the model's other solution conventions in
 Section~\ref{sec-conventions} and stated precisely in Internet Appendix
 A (Step 5b), which also reports the size of the resulting coefficient
-gap at the baseline calibration.
+gap at the baseline calibration, while Internet Appendix B solves the
+exact piecewise problem and quantifies the bias of the convention.
 
 Under this convention, the investment trigger for the joint
 \((K^*, \phi^*)\) optimization satisfies:
@@ -1660,14 +1666,26 @@ Equation~\ref{eq-trigger-phi} and Equation~\ref{eq-default-boundary} and
 is used for every trigger in the paper, including the valuation
 exercises of Section~\ref{sec-valuation}. It is a restriction on what
 the model prices rather than an approximation with a small, signed
-error: the exact object is a piecewise free-boundary problem with
-regime-contingent triggers, which I do not solve. Internet Appendix A
-(Step 5b) states the convention precisely, reports the gap between the
-smooth-fit and forced-ODE coefficients at baseline, and shows that the
-convention understates the pre-investment option value at low demand
-levels, though the induced effect on the trigger itself is not signed;
-Internet Appendix B records how the convention is applied in the
-preemption game.
+error: the exact object is a piecewise free-boundary problem in which a
+regime switch above the H-regime trigger is followed by immediate
+exercise. Internet Appendix A (Step 5b) states the convention precisely
+and reports the gap between the smooth-fit and forced-ODE coefficients
+at baseline; Internet Appendix B solves the piecewise problem
+numerically and quantifies the bias. The displacement of levels is large
+and the displacement of value is small. At baseline the exact trigger
+lies 53\% above Equation~\ref{eq-trigger-phi} at the reduced-form
+policy---96\% above, with capacity 135\% larger, once \((K, \phi)\) are
+re-optimized inside the exact problem---while the value delivered by the
+reduced-form policy is within 2.6\% of the exact optimum and the
+training fraction \(\phi^*\) is numerically identical in the two
+problems. That value gap stays between 2.2\% and 4.7\% as \(\sigma\),
+\(\alpha\), \(\gamma\), and \(r\) are varied over their admissible
+ranges; it is larger, and the sign of the pricing error reverses, for
+\(\lambda \leq 0.02\). Triggers and capacities should accordingly be
+read as objects of the model these conventions define rather than as
+estimates of the exact stopping problem's optimum, while the allocation
+\(\phi^*\) and the value of the policy carry over. Internet Appendix B
+also records how the convention is applied in the preemption game.
 
 \textbf{Leader's scale in the duopoly.} The leader's capacity and
 training fraction solve the \emph{monopoly-phase} problem, so
@@ -2470,9 +2488,21 @@ a smaller net loss. This asymmetry implies that the cost of timidity
 exceeds the cost of boldness: a firm that under-invests in training
 foregoes the bulk of its option value, while a firm that over-invests in
 training sacrifices current revenue that is small relative to the
-H-regime payoff. However, the Amodei scenario---``I could buy \$1
-trillion of compute that starts at the end of 2027\ldots{} there's no
-hedge on Earth that could stop me from going bankrupt''
+H-regime payoff. The asymmetry is not an artifact of the pure-power
+discounting convention used to price the option
+(Section~\ref{sec-conventions}). Re-solving both belief types inside the
+exact piecewise stopping problem---each belief's policy obtained from
+its own exact free boundary, and both policies then valued exactly under
+the true arrival rate, with no \((X_0/X^*)^{\beta_H}\) timing
+factor---preserves the ranking and sharpens it: the conservative loss
+rises from 26\% to about 40\% and the aggressive loss falls from 6\% to
+about 0.5\%, so the ratio of the two losses widens from 4.7 to roughly
+80 (Internet Appendix B). The training fractions \(\phi^*(\lambda)\)
+that drive the asymmetry are identical in the two problems, which is why
+the mechanism survives intact; the headline percentages reported here
+are those of the reduced model. However, the Amodei scenario---``I could
+buy \$1 trillion of compute that starts at the end of 2027\ldots{}
+there's no hedge on Earth that could stop me from going bankrupt''
 \citep{amodei2026dwarkesh}---highlights a distinct risk not fully
 captured by this single-firm comparison: at much larger scale and with
 substantial leverage, the absolute losses from overinvestment can be
@@ -3151,11 +3181,11 @@ that the candidate value functions are optimal, are not formalized; nor
 is the pure-power (\(A_1 = 0\)) form of the L-regime option value, which
 is a solution convention rather than a theorem (Step 5b below and
 Section~\ref{sec-conventions}). Results that are numerical in nature,
-the magnitude of \(\tilde{\phi}\) and the coupled-ODE and
-Dario's-dilemma computations (Internet Appendix B), are likewise not
-formalized. The Lean validation package, together with the code
-reproducing the numerical results, is available on request and will be
-made publicly available upon publication.
+the magnitude of \(\tilde{\phi}\) and the coupled-ODE,
+piecewise-stopping, and Dario's-dilemma computations (Internet Appendix
+B), are likewise not formalized. The Lean validation package, together
+with the code reproducing the numerical results, is available on request
+and will be made publicly available upon publication.
 
 \subsubsection*{Proof of Proposition 1}\label{proof-of-proposition-1}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 1}
@@ -3299,19 +3329,33 @@ large enough relative to the markup-adjusted payout share
 \(1 - 1/\beta_L^+\)). Assumption (A3) imposes the opposite,
 \(\Phi_L \geq 1\), so no scale of a purely L-regime project is worth
 building; it does not follow that the coefficient on the homogeneous
-root vanishes. A lower bound in fact signs it the other way. The firm
-can always follow the pure switching strategy---never exercise in regime
-\(L\), wait for the H-regime arrival, and then hold the H-regime
-option---whose value solves the same forced ODE with \(F(0) = 0\) and no
-L-regime exercise boundary, so that the no-bubble growth condition
-eliminates the positive homogeneous root and leaves exactly
-\(C X^{\beta_H}\) on \((0, X_H^*)\). Optimality then gives
-\(F_L(X) \geq C X^{\beta_H}\), that is, \(A_1 \geq 0\), with strict
-inequality whenever exercising while still in regime \(L\) is strictly
-optimal with positive probability---precisely the case the paper
-studies, since the firm's trigger \(X^*\) is finite and is reached from
-the low regime. The exact homogeneous coefficient is therefore strictly
-positive, and \(A_1 = 0\) cannot be derived from (A3).
+root vanishes. Nor can the sign be settled by the replication argument
+that suggests itself, namely that the firm can always follow the pure
+switching strategy---never exercise in regime \(L\), wait for the
+H-regime arrival, and then hold the H-regime option---and that this
+strategy is worth \(C X^{\beta_H}\). It is not: the pure switching
+strategy faces the same piecewise forcing as every other strategy, so
+its value is \(A_w X^{\beta_L^+} + C X^{\beta_H}\) below \(X_H^*\) and
+\(D_w X^{\beta_L^-} + [\lambda a_H/(r + \lambda - \mu_L)] X - \lambda b_H/(r + \lambda)\)
+above it, with \((A_w, D_w)\) pinned by value and slope matching at
+\(X_H^*\) once the no-bubble condition removes \(X^{\beta_L^+}\) from
+the upper branch. Because the exercised H-regime payoff lies strictly
+below the extrapolated power \(B_H X^{\beta_H}\) for \(X > X_H^*\)---the
+two are tangent at \(X_H^*\) and the power is convex---the true forcing
+is dominated pointwise by the forcing Equation~\ref{eq-particular-C}
+assumes, and \(A_w < 0\): at the baseline calibration
+\(A_w \approx -1.18 \times 10^4\), so the pure switching value lies
+\emph{below} \(C X^{\beta_H}\) everywhere on \((0, X_H^*)\), by 10\% at
+\(X = X_H^*\). The valid statements are therefore that
+\(A_1 > A_w\)---exercising before the switch is worth something---and
+that \(C X^{\beta_H}\) is an upper, not a lower, bound on the exact
+continuation value below \(X_H^*\), the latter because the extrapolated
+forcing dominates the true one pointwise and, at the baseline
+calibration, the fictitious problem with that forcing has no finite
+exercise boundary at all (Internet Appendix B). Solving the exact
+piecewise problem numerically (Internet Appendix B) gives
+\(A_1 \approx -1.01 \times 10^4 < 0\) at baseline. Neither \(A_1 = 0\)
+nor \(A_1 \geq 0\) can be derived from (A3).
 
 \emph{The convention.} I nonetheless impose \(A_1 = 0\), and price the
 pre-investment option with the pure power form
@@ -3334,13 +3378,22 @@ convention is that this smooth-fit level differs from the forced-ODE
 value \(C\) of Equation~\ref{eq-particular-C}: at the baseline
 calibration the smooth-fit coefficient is
 \([V(X^*, K^*, \phi^*) - I(K^*)]/(X^*)^{\beta_H} \approx 16.5\) against
-\(C \approx 21.1\). Since the exact problem satisfies
-\(F_L(X) \geq C X^{\beta_H}\), the convention understates the
-pre-investment option value at demand levels below \(X_H^*\), by at
-least this margin at baseline; the induced effect on the trigger and on
-the optimal policy is not signed by that comparison. Propositions 1--3
-are exact statements about the model so defined; I do not solve the
-piecewise free-boundary problem described above. \(\square\)
+\(C \approx 21.1\). The direction of the resulting error is not implied
+by that comparison, and I therefore solve the piecewise free-boundary
+problem numerically and report the bias in Internet Appendix B. At the
+baseline calibration the exact continuation value exceeds the
+convention's smooth-fit value at every demand level while remaining
+below \(C X^{\beta_H}\), so the convention understates the
+pre-investment option value---by 19\% at \(X_0 = X^*/2\)---but the
+ordering is not general: it reverses for \(\lambda \leq 0.02\).
+Propositions 1--3 are exact statements about the model these conventions
+define. The verification exercise shows what transfers to the exact
+problem and what does not: the levels of \(X^*\) and \(K^*\) are
+properties of the reduced model rather than estimates of the exact
+optimum, whereas the training fraction \(\phi^*\) is numerically
+identical in the two problems and the value delivered by the
+reduced-form policy is within about 3\% of the exact optimum at
+baseline. \(\square\)
 
 At the baseline calibration, \(\beta_L^+ \approx 3.01\) gives
 \(\Phi_L \approx 1.67 \gg 1\), so (A3) holds with wide margin.
@@ -3927,6 +3980,86 @@ relative bias is 3.1\% and the first-order \(\kappa\) is 2.9\%, uniform
 across leverage levels; the closed-form boundary exceeds the
 coupled-system boundary by approximately 3\% throughout, in the
 conservative direction.
+
+\textbf{Piecewise low-regime stopping problem.} The pure-power
+convention for the pre-investment option (Proof of Proposition 1, Step
+5b) is verified against the exact piecewise free-boundary problem, in
+the same spirit as the coupled default boundary above. Below \(X_H^*\)
+the forcing term in Equation~\ref{eq-hjb-L} is the H-regime option value
+and the continuation value is \(A_1 X^{\beta_L^+} + C X^{\beta_H}\), the
+negative root being removed by \(F_L(0) = 0\). Above \(X_H^*\) a switch
+is followed by immediate exercise, so the forcing is affine,
+\(\lambda\,[a_H X - b_H]\) with \(a_H = A_H (K_H^*)^\alpha\) and
+\(b_H = \delta K_H^*/r + I(K_H^*)\), and the continuation value is \[
+D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda a_H}{r + \lambda - \mu_L}\,X - \frac{\lambda b_H}{r + \lambda}.
+\] Value and slope matching at \(X_H^*\), together with value matching
+and smooth pasting at the free boundary, determine
+\((A_1, D_1, D_2, X^*)\): the coefficients solve a linear system given
+\(X^*\), and the remaining slope condition at \(X_H^*\) is solved by
+Brent's method. When the resulting boundary falls below \(X_H^*\) the
+problem collapses to the single-region case, in which the pure-power
+forcing is exact. The solution is implemented in the replication package
+(module \texttt{piecewise\_option.py}) and cross-checked against an
+independent Brennan--Schwartz solution of the associated linear
+complementarity problem on a log-demand grid, which reproduces the free
+boundary to a relative \(10^{-4}\) and the value function to a relative
+\(10^{-9}\).
+
+At the baseline calibration, holding the reduced-form policy
+\((K^*, \phi^*)\) fixed, the exact trigger is \(0.00722\) against
+\(0.00472\) from Equation~\ref{eq-trigger-phi}, a difference of
+\(+52.9\%\), and the exact option value at \(X_0 = X^*/2\) exceeds the
+convention's value by \(19.1\%\). Re-optimizing \((K, \phi)\) inside the
+exact problem raises the trigger by \(96.1\%\) and capacity by
+\(134.6\%\) relative to the reduced model, and the value at \(X_0\) by
+\(20.5\%\); the training fraction \(\phi^*\) is unchanged to eight
+significant figures, since \(\phi\) maximizes \(A_{\text{eff}}\) at
+fixed \(K\) in both problems. Two further comparisons put these numbers
+in perspective. First, the convention's pricing formula understates the
+exact value of \emph{its own policy} by \(14.8\%\). Second, and more
+consequentially for the economics, following the reduced-form policy
+inside the exact problem delivers \(97.4\%\) of the exact optimum: the
+value loss of the convention, as opposed to the displacement of the
+trigger it implies, is \(2.64\%\) at baseline. The distinction matters
+for how the paper's results should be read: the \emph{levels} of \(X^*\)
+and \(K^*\) are properties of the reduced model and are not estimates of
+the exact optimum, whereas the value delivered by the policy and the
+allocation \(\phi^*\) are robust to the convention.
+
+Across the sensitivity ranges used above, the value loss of the
+reduced-form policy stays between \(2.2\%\) and \(4.7\%\) when
+\(\sigma\), \(\alpha\), \(\gamma\), and \(r\) are varied one at a time,
+while the trigger displacement ranges from \(+41\%\) to \(+128\%\) at
+the fixed policy. The arrival rate is the sensitive dimension. The
+convention's error changes sign at low \(\lambda\): for
+\(\lambda \leq 0.02\) the \(\beta_H\) discounting is too generous, so
+the convention \emph{overstates} the value of its own policy (by
+\(44\%\) at \(\lambda = 0.01\)) and delays too long (the exact trigger
+is \(32\%\) lower), and the value loss of the reduced-form policy rises
+to \(19\%\) at \(\lambda = 0.02\) and \(30\%\) at \(\lambda = 0.01\).
+For \(\lambda \geq 0.05\) the sign is the one reported at baseline and
+the value loss stays below \(3.1\%\) over \(\lambda \in [0.05, 0.50]\).
+The convention is therefore accurate in value terms in the region where
+the regime-switch prospect dominates the L-regime option---the region
+the paper studies---and least accurate under near-dismissal of
+transformative AI.
+
+Dario's dilemma (Numerical Finding 1) is re-checked in the same way.
+Each belief's policy is re-solved inside the exact problem under that
+belief, and both the correct and the mismatched policy are then valued
+exactly under \(\lambda_{\text{true}} = 0.10\) at the common reference
+demand, which replaces the reduced form's \((X_0/X^*)^{\beta_H}\) timing
+factor entirely. The asymmetry survives and widens: at
+\(\lambda_{\text{invest}} = 0.02\) the loss rises from \(26.2\%\) to
+\(39.8\%\), at \(\lambda_{\text{invest}} = 0.20\) it falls from
+\(5.6\%\) to \(0.5\%\), and at \(\lambda_{\text{invest}} = 0.50\) from
+\(22.6\%\) to \(2.6\%\), so the conservative-to-aggressive loss ratio at
+a mismatch of \(\pm 0.10\) widens from \(4.7\) to \(81\). The optimal
+training fractions coincide in the two problems at every belief, which
+is why the mechanism behind the finding is unaffected; the losses
+reported in Section~\ref{sec-valuation} are those of the reduced model,
+which understates the cost of pessimism and overstates the cost of
+optimism relative to the exact problem.
 
 \textbf{Separable reduction of the follower problem.} At a common
 training fraction \(\phi_F = \phi_L = \phi\), the Tullock denominators
