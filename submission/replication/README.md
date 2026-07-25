@@ -34,8 +34,10 @@ steps a referee would otherwise check by hand:
 - the faith-based-survival threshold and the default-boundary comparative
   statics (`Proposition2.lean`);
 - the duopoly role-invariance of the allocation, the follower's separable
-  reduction, and the existence and (zero-leverage) uniqueness of the
-  preemption trigger (`Duopoly.lean`).
+  reduction, and the generic intermediate-value existence and strict-concavity
+  single-crossing lemmas underlying the preemption trigger, conditional on the
+  continuity, endpoint-sign, and zero-leverage concavity hypotheses the paper
+  supplies (`Duopoly.lean`).
 
 Results are stated for abstract parameters under the paper's admissibility
 assumptions, so each theorem holds for *every* admissible parameter value,
@@ -44,7 +46,10 @@ not just the baseline calibration.
 **Not formalized** (see `lean/README.md` for the precise list): the derivation
 of the HJB equation from stochastic-calculus primitives and the
 optimal-stopping verification theorem (taken as the starting point, as in the
-paper's appendix), and all numerical results. Numerical results are
+paper's appendix), the pure-power (`A₁ = 0`) form of the low-regime option
+value — a solution convention rather than a theorem — the model-specific
+hypotheses of the preemption lemmas (endpoint signs, one of them verified
+computationally, and zero-leverage concavity), and all numerical results. Numerical results are
 reproducible from the public code repository:
 <https://github.com/fintech-research/ai-lab-investment/>.
 
