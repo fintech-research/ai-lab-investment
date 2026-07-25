@@ -273,16 +273,21 @@ class ValuationAnalysis:
     ) -> dict[str, Any]:
         """Quantify the cost of belief mismatches.
 
-        Uses the phi-aware model where lambda enters through A_eff,
-        so the optimal (X*, K*, phi*) all depend on lambda.
+        Uses the phi-aware model where lambda enters through A_eff, so
+        the optimal trigger X* and allocation phi* depend on lambda. The
+        optimal capacity K* does *not*: by Proposition 1 it is
+        independent of both lambda and phi, so belief mismatches distort
+        timing and allocation only, never scale (and hence never the
+        coupon, which is proportional to I(K*)).
 
         If a firm's true lambda (private belief) differs from the lambda
         it uses for investment decisions, what is the cost?
 
-        - Conservative (lambda_invest < lambda_true): invests too late,
-          misses revenue during the boom
+        - Conservative (lambda_invest < lambda_true): invests too late
+          and under-allocates to training, forgoing H-regime upside
         - Aggressive (lambda_invest > lambda_true): invests too early
-          and too much, risk of default in bad states
+          and over-allocates to training, sacrificing L-regime revenue
+          and raising default risk in bad states
 
         Args:
             lambda_true: True arrival rate (private belief).

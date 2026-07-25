@@ -272,7 +272,7 @@ class TestDarioDilemmaLeveraged:
 
 class TestDilemmaAsymmetry:
     def test_underinvestment_costlier_for_equal_mismatch(self, va):
-        """Numerical Finding 2: for the same |lambda_invest - lambda_true|,
+        """Numerical Finding 1: for the same |lambda_invest - lambda_true|,
         the conservative loss exceeds the aggressive loss."""
         for delta in [0.05, 0.08]:
             r_cons = va.dario_dilemma(0.10, 0.10 - delta)
