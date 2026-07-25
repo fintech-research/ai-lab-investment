@@ -1,5 +1,12 @@
 # Cover letter — Management Science
 
+*Editorial notes from the consolidated pre-submission review (2026-07-25) — flagged for the author's consideration; the letter text below is intentionally left unchanged:*
+
+- *The paragraph granting referees permission to upload the manuscript to ChatGPT/Claude sits in tension with Management Science's AI policy, which warns review-team members against uploading submitted manuscripts; an author-side invitation may put reviewers in conflict with journal procedure even though the paper is publicly posted.*
+- *The Lean paragraph's "existence and uniqueness of the preemption trigger" and "no unproven assumptions" state more than the paper's own Internet Appendix scope paragraph: the preemption lemmas are generic IVT/concavity results whose model-specific hypotheses (endpoint sign, ℓ = 0 concavity) are supplied numerically, and "no unproven assumptions" conflates "no Lean placeholders" with "no economic hypotheses." A referee who diffs the letter against the appendix will notice.*
+- *Leading with the "…in Four Days" blog title in the letter body may invite a desk-level prior of shallowness; the disclosure document and repository link could carry that reference instead.*
+- *Management Science asks that the cover letter include the manuscript's abstract; it is not currently included.*
+
 <!-- Currently targeted at Management Science (first journal on the ladder in
      submission/README.md). To retarget: update the salutation, journal name,
      and the fit paragraph. -->

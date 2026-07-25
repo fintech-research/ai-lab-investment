@@ -1,21 +1,26 @@
 # AGENTS.md — Investing in Artificial General Intelligence
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). Target: JF, RFS, or Econometrica.
+A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry).
+
+**Status:** manuscript and submission materials are drafted; the closed-form results are machine-checked in Lean. The target-journal ladder (Management Science first, then JFQA, Review of Finance, …) and the remaining pre-submission checklist live in `submission/README.md` — consult it before making claims about journal fit.
 
 ## Commands
 
-All commands use `just` (task runner) and `uv` (Python package manager).
+All commands use `just` (task runner) and `uv` (Python package manager). `just help` lists every recipe.
 
 - `just check` — lint, format, typecheck (pre-commit + ty)
 - `just test` — pytest with coverage
 - `just run-pipeline` — full analysis pipeline (`uv run python -m ai_lab_investment`)
 - `uv run pytest tests/test_file.py::test_name` — single test
+- `just render-paper` / `just render-slides` — Quarto builds (output in `_output/`)
+- `just build-replication-package` — referee-facing zip (Lean project + equation listing)
+- `cd lean && lake build` — kernel-check the Lean proofs (see `lean/README.md`)
 
 Use the Context7 MCP tool to look up library documentation before writing code.
 
 ## Architecture
 
-**Pipeline entry point:** `src/ai_lab_investment/__main__.py` → `pipeline.py` (Hydra, `conf/config.yaml`). Toggle steps via config flags; override via CLI (e.g., `data.download=true`).
+**Pipeline entry point:** `src/ai_lab_investment/__main__.py` → `pipeline.py` (Hydra, `conf/config.yaml`). The pipeline runs four exploratory phases (`phase1_base_model`, `phase2_duopoly`, `phase4_calibration`, `phase5_valuation`), each toggled by a `tasks.*` flag and overridable via CLI (e.g., `tasks.phase2_duopoly=false`). It writes to `RESULTS_DIR`; the *paper* figures are produced separately by `paper/generate_figures.py`.
 
 **Core model hierarchy:**
 `models/parameters.py` → `base_model.py` (single firm) → `duopoly.py` (2 firms) → `valuation.py` (credit risk, dilemma)
@@ -52,3 +57,10 @@ All figure logic lives in `src/ai_lab_investment/figures/paper.py` (11 `create_*
 - Source code: `@src/AGENTS.md`
 - Explainer videos (Manim + Kokoro voiceover): `@video/AGENTS.md`
 - Lean/Mathlib proof verification of the closed-form results: `lean/README.md`
+- Journal submission materials (cover letter, AI disclosure, replication package): `submission/README.md`
+
+## Other directories
+
+- `notebooks/model_derivation.ipynb` — SymPy derivations backing the propositions (8 sections + summary + completeness audit)
+- `references/` — literature review, data compendium, and background notes used for calibration
+- `docs/` — MkDocs site (`just docs`); `ai_workflow.md` — description of AI use in the project
