@@ -847,3 +847,121 @@ class TestFollowerScalarReduction:
             m = DuopolyModel(default_params.with_param(lam=lam), leverage=0.0)
             eq = m.solve_preemption_equilibrium("H")
             assert eq["single_crossing"] is True
+
+
+# ------------------------------------------------------------------
+# Equity convention: going-concern claim floored, entry NPV not
+# ------------------------------------------------------------------
+
+
+class TestEquityConvention:
+    """One equity convention across paper, proof, and code: limited
+    liability floors the *going-concern* claim E, and the object the
+    entry decision uses is E(X) - (1 - ell) I(K), which is negative near
+    the origin. That negativity is the L(0) < 0 = F(0) endpoint of the
+    Proposition 3(i) existence argument."""
+
+    def test_unlevered_entry_npv_negative_near_origin(self, model):
+        """At ell = 0, entry NPV -> -[delta K / r + I(K)] as X -> 0."""
+        p = model.params
+        phi, K = 0.70, 0.0067
+        limit = -(p.delta * K / p.r + model.investment_cost(K))
+        a_eff = model._effective_revenue_coeff(phi, K, 0.0, 0.0, monopolist=True)
+        for X in [0.0, 1e-12, 1e-9, 1e-6]:
+            npv = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
+            assert npv < 0
+            assert abs(npv - limit) <= a_eff * X + 1e-15
+
+    def test_levered_entry_npv_below_default_boundary(self, levered_model):
+        """Below X_D the going concern is worthless and the sunk equity
+        contribution is lost: entry NPV == -(1 - ell) I(K), exactly."""
+        phi, K, lev = 0.70, 1.0, 0.5
+        X_D = levered_model.default_boundary(phi, K, 0.0, 0.0, lev)
+        assert X_D > 0
+        expected = -(1.0 - lev) * levered_model.investment_cost(K)
+        for X in [1e-9, X_D * 0.5, X_D]:
+            npv = levered_model.equity_value(X, phi, K, 0.0, 0.0, lev)
+            assert abs(npv - expected) < 1e-12
+
+    def test_going_concern_continuous_and_zero_at_boundary(self, levered_model):
+        """E(X_D) = 0 by smooth pasting, so the limited-liability floor on
+        the going-concern claim is a guard that never binds above X_D."""
+        phi, K, lev = 0.70, 1.0, 0.5
+        X_D = levered_model.default_boundary(phi, K, 0.0, 0.0, lev)
+        contribution = (1.0 - lev) * levered_model.investment_cost(K)
+        for eps in [1e-8, 1e-6, 1e-4]:
+            npv = levered_model.equity_value(X_D * (1 + eps), phi, K, 0.0, 0.0, lev)
+            going_concern = npv + contribution
+            assert going_concern >= 0.0
+            assert going_concern < 1e-3 * contribution
+
+    def test_leader_value_negative_at_low_demand(self, model):
+        """L(X) < 0 = F(0) at low demand -- no clamp on the leader's NPV."""
+        eq = model.solve_preemption_equilibrium("H")
+        K_L, phi_L = eq["K_leader"], eq["phi_leader"]
+        for frac in [1e-4, 1e-2, 0.1]:
+            X = eq["X_leader_monopolist"] * frac
+            assert model._leader_value_at(X, K_L, phi_L, 0.0) < 0.0
+
+    def test_preemption_trigger_unaffected_by_convention(self, model):
+        """The floor never binds in the reported region: the equilibrium
+        trigger still sits where L and F are both strictly positive."""
+        eq = model.solve_preemption_equilibrium("H")
+        X_P = eq["X_leader"]
+        L = model._leader_value_at(X_P, eq["K_leader"], eq["phi_leader"], 0.0)
+        F = model.follower_option_value(X_P, eq["K_leader"], eq["phi_leader"], "H")
+        assert L > 0
+        assert abs(L - F) < 1e-10
+
+
+# ------------------------------------------------------------------
+# Leader-scale convention: sensitivity and scale asymmetry
+# ------------------------------------------------------------------
+
+
+class TestLeaderScaleConvention:
+    """Paper-pinned numbers for the leader-scale convention (Internet
+    Appendix B) and the leader-follower scale asymmetry (@sec-duopoly)."""
+
+    def test_reoptimized_leader_preemption_discount(self, default_params):
+        """Re-optimizing (K_L, phi_L) for entry roughly doubles the
+        preemption discount: 86% against the convention's 43%."""
+        m = DuopolyModel(default_params, leverage=0.0)
+        res = m.solve_preemption_reoptimized_leader(n_grid=24, x_low_factor=1e-2)
+
+        assert res["single_crossing"]
+        assert abs(res["preemption_discount_convention"] - 0.427) < 0.005
+        assert abs(res["preemption_discount"] - 0.861) < 0.005
+        assert abs(res["X_leader"] - 0.000657) < 5e-6
+        # Leader shrinks to about 6% of the monopoly-phase capacity.
+        assert abs(res["K_leader"] / res["K_leader_convention"] - 0.056) < 0.003
+        # Role invariance survives re-optimization.
+        assert abs(res["phi_leader"] - res["phi_leader_convention"]) < 1e-3
+        # The convention understates, never overstates, the discount.
+        assert res["preemption_discount"] > res["preemption_discount_convention"]
+
+    def test_scale_asymmetry_ratios(self, model):
+        """Paper numbers: K_F/K_L ~ 38, X_F/X_P ~ 44 at baseline."""
+        eq = model.solve_preemption_equilibrium("H")
+        assert abs(eq["K_follower"] / eq["K_leader"] - 38.48) < 0.05
+        assert abs(eq["X_follower"] / eq["X_leader"] - 43.95) < 0.05
+
+    def test_elasticity_wedge_reproduces_follower_capacity(self, model):
+        """The asymmetry is the elasticity wedge: substituting
+        alpha*(2 - s_F) for alpha in the Proposition 1 closed form for K*
+        reproduces K_F."""
+        p = model.params
+        eq = model.solve_preemption_equilibrium("H")
+        K_L, K_F, beta = eq["K_leader"], eq["K_follower"], p.beta_H
+        s_F = K_F**p.alpha / (K_F**p.alpha + K_L**p.alpha)
+        alpha_eff = p.alpha * (2.0 - s_F)
+        assert abs(s_F - 0.8115) < 5e-4
+        assert abs(alpha_eff - 0.4754) < 5e-4
+
+        def k_star(a):
+            num = p.delta * (a * beta - beta + 1.0)
+            den = p.r * p.c * (p.gamma * (beta - 1.0) - a * beta)
+            return (num / den) ** (1.0 / (p.gamma - 1.0))
+
+        assert abs(k_star(p.alpha) / K_L - 1.0) < 1e-6
+        assert abs(k_star(alpha_eff) / K_F - 1.0) < 1e-6

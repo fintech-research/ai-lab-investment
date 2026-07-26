@@ -144,8 +144,8 @@ $$
 In the duopoly (@sec-duopoly), the contest shares $s_i^L$ and $s_i^H$ depend on own capacity $K_i$, so the exact separability $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ that underlies the closed-form $K^*$ does not hold.
 The follower's optimal capacity is determined jointly with $\phi_F$ by numerical optimization.
 For the leader, I adopt the convention that capacity and training fraction solve the *monopoly-phase* problem---during which $s_L = 1$ and the Proposition 1 separability holds exactly---so the leader's $(K_L, \phi_L)$ coincides with the single-firm optimum.
-This is a solution convention rather than a result: re-optimizing scale for entry at the preemption trigger (which lies below the unconstrained trigger) would imply a somewhat smaller capacity, because earlier entry warrants smaller scale.
-The convention keeps the leader's policy directly comparable to Proposition 1 and does not affect the rent-equalization logic that pins the preemption trigger.
+This is a solution convention rather than a result: re-optimizing scale for entry at the preemption trigger (which lies below the unconstrained trigger) implies a substantially smaller capacity, because earlier entry warrants smaller scale.
+The convention keeps the leader's policy directly comparable to Proposition 1 and does not affect the rent-equalization logic that pins the preemption trigger, but the level of the trigger is sensitive to it; @sec-conventions collects the convention with the model's others and reports the sensitivity, which Internet Appendix B computes.
 
 @fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters.
 Panel (a) shows that higher volatility $\sigma$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
@@ -333,19 +333,21 @@ This compressed margin of safety is precisely the scenario Amodei describes: a f
 
 #### Equity and debt values
 
-Following the structural approach of @leland1994corporate, I define $E(X)$ as the *net present value of equity* at the moment of investment: the going-concern value of the equity claim minus the equity holders' initial capital contribution $(1 - \ell)I(K)$.
-This is the relevant object for the investment timing decision, since the firm invests when $E(X) \geq 0$.
-The going-concern equity value (market value of the equity claim after the investment is sunk) is $E(X) + (1 - \ell)I(K)$.
+Following the structural approach of @leland1994corporate, $E(X)$ denotes the *going-concern* equity value: the market value of the equity claim once the investment is sunk.
+The object relevant for the timing decision is the net present value of entering at $X$, $E(X) - (1-\ell)I(K)$, which subtracts the equity holders' initial capital contribution; the firm invests when that difference is non-negative.
+This is the single equity convention used throughout the paper, in the proofs, and in the code: limited liability floors the going-concern claim $E$, not the entry NPV.
+The contribution $(1-\ell)I(K)$ is sunk and is not refunded on default, so the entry NPV is strictly negative at low demand---the boundary condition the existence argument of Proposition 3(i) rests on.
 
 Above the default boundary:
 $$
-E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
-$$
+E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
+$$ {#eq-equity}
 where $A_{\text{eff},i}$ is the effective revenue coefficient from @eq-a-eff-duopoly and $\beta_s^- < 0$ is the negative characteristic root.
 The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$.
-The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the smooth-pasting conditions on the going-concern equity $E(X) + (1-\ell)I(K)$ pin the default boundary $X_D$ in @eq-default-boundary and are independent of the sunk equity contribution.
-At $X = X_D$, $E(X_D) = -(1-\ell)I(K) \leq 0$: the equity holders' sunk contribution is lost, but limited liability prevents negative payoffs, so equity is worth $\max\{E(X),\, 0\}$.
-Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$, treated as a perpetuity with no endogenous abandonment option.^[An unlevered firm with $\delta > 0$ could in principle shut down to avoid operating costs. The omission of this abandonment option is conservative (it slightly understates equity value) and quantitatively negligible because the firm invests at $X^*$ well above any potential abandonment threshold.]
+The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the value-matching and smooth-pasting conditions on $E$ pin the default boundary $X_D$ in @eq-default-boundary and are independent of the sunk equity contribution.
+At $X = X_D$, $E(X_D) = 0$ and the entry NPV equals $-(1-\ell)I(K) < 0$: equity holders walk away from a worthless claim, and their sunk contribution is lost.
+Below $X_D$ the same two values obtain, $E \equiv 0$ and entry NPV $\equiv -(1-\ell)I(K)$.
+Without debt ($\ell = 0$), $E(X) = A_{\text{eff},i}\, X - \delta K/r$ is the unlevered perpetuity, treated with no endogenous abandonment option, and the entry NPV is $A_{\text{eff},i}\, X - \delta K/r - I(K)$, which tends to $-[\delta K/r + I(K)] < 0$ as $X \to 0$.^[An unlevered firm with $\delta > 0$ could in principle shut down to avoid operating costs. The omission of this abandonment option is conservative (it slightly understates equity value) and quantitatively negligible because the firm invests at $X^*$ well above any potential abandonment threshold.]
 
 Debt value is:
 $$
@@ -365,12 +367,11 @@ Without the cap, a lightly levered firm---whose default boundary is driven by th
 
 #### Preemption equilibrium
 
-I solve for the subgame perfect equilibrium of the following investment timing game.
+I solve the following investment timing game by backward induction, under the solution conventions collected before Proposition 3; the object characterized is the equilibrium of the model those conventions define, a tractable benchmark rather than the subgame-perfect equilibrium of the unrestricted game.
 *Timing:* continuous; each firm chooses a stopping time (investment trigger), a capacity level, and a training fraction.
 *Strategy spaces:* firm $i$'s strategy is a triple $(X_i^*, K_i, \phi_i)$ specifying the demand threshold at which it invests, the capacity it installs, and the fraction allocated to training.
 *Observability:* investment is immediately and publicly observed (closed-loop information), so the follower conditions on the leader's realized $(K_L, \phi_L)$.
-*Solution concept:* I follow the preemption construction of @fudenberg1985preemption, extended to asymmetric capacity choice by @huisman2015strategic and @pawlina2006real.
-The equilibrium is solved by backward induction: the follower's optimal response is derived first, and the leader's trigger is then determined by rent equalization.
+*Solution concept:* I follow the preemption construction of @fudenberg1985preemption, extended to asymmetric capacity choice by @huisman2015strategic and @pawlina2006real: the follower's optimal response is derived first, and the leader's trigger is then determined by rent equalization.
 
 The key conditions from @huisman2015strategic that underwrite the preemption construction are: (i) the value of being the leader exceeds the value of simultaneous investment at the preemption trigger; (ii) the follower's optimal trigger exceeds the leader's.
 Both conditions are verified numerically for all parameterizations, including those with leverage and training allocation.
@@ -399,13 +400,18 @@ The leader must also account for the fact that the follower's entry dilutes the 
 The duopoly is solved under common beliefs: both firms share the same $\lambda$, and the equilibrium is symmetric.
 Cross-sectional variation in investment behavior (@sec-calibration, @sec-valuation) arises from comparative statics in $\lambda$ and other primitives across firm archetypes, not from equilibrium interaction among firms with different priors.
 In a symmetric equilibrium, both firms would like to be the leader.
-The preemption trigger $X_P$ is the demand level at which the leader's value equals the follower's option value: $L(X_P) = F(X_P)$.
+The preemption trigger $X_P$ is the demand level at which the leader's value equals the follower's option value: $L(X_P) = F(X_P)$, where $L(X) = E_L(X) - (1-\ell)I(K_L)$ is the leader's entry NPV in the equity convention just defined.
 At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
-**Proposition 3** (Preemption equilibrium with training allocation and default risk; symmetric duopoly).
-*In the symmetric duopoly with leverage $\ell$:*
+**Conventions maintained in the equilibrium.**
+The equilibrium characterized below is the equilibrium of the model defined by four solution conventions, not the subgame-perfect equilibrium of the unrestricted timing game; it is a tractable benchmark, and each convention is stated in full in @sec-conventions.
+Collected here, before the result that uses them: (i) *unconditional-$A_{\text{eff}}$ discounting*---every option-like L-regime payoff, including the follower's option value $F \propto X^{\beta_H}$, the follower's entry trigger $X_F$, and the leader's dilution factor $(X/X_F)^{\beta_H}$, is valued with the H-regime exponent $\beta_H$ and the unconditional coefficient $A_{\text{eff}}$ rather than with regime-contingent value functions, so the follower's trigger is not regime-contingent and its entry payoff omits the (small) default-option term; (ii) *the leader's scale*---$(K_L, \phi_L)$ is held at the monopoly-phase optimum of Proposition 1 rather than re-optimized for entry at $X_P$, which pins the level of $L(\cdot)$ against which rents are equalized; (iii) *single-boundary default*---@eq-default-boundary collapses the regime-contingent pair $(X_D^L, X_D^H)$ into one boundary, overstating $X_D$ by about 3\% at baseline; and (iv) *par debt issuance at an exogenous coupon*, so that leverage is a stress-test parameter rather than a financing choice.
+Conventions (i) and (ii) are the ones the preemption trigger is most sensitive to: Internet Appendix B re-solves the equilibrium with the leader's scale re-optimized for entry and reports how far $X_P$ moves.
 
-*(i) (Existence: Analytical; Uniqueness: Analytical for $\ell = 0$, computational for $\ell > 0$) A preemption trigger $X_P \in (0, X_L^{\text{mono}})$ exists such that $L(X_P) = F(X_P)$, where $L(X) = E_L(X) - (1-\ell)I(K_L)$ is the leader's NPV of entering at state $X$, $F(X)$ is the follower's option value, and $X_L^{\text{mono}}$ is the leader's unconstrained (monopoly) trigger. Existence follows from continuity and the boundary conditions $L(0) < F(0)$ and $L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})$ (Internet Appendix A). At zero leverage the gap $L(X) - F(X)$ is strictly concave on $(0, X_F)$ and negative at the origin, so the up-crossing is unique analytically (Internet Appendix A); under leverage the default-option term breaks global concavity near $X_D$, and uniqueness is verified computationally across all parameterizations, with no case of multiple up-crossings found (Internet Appendix B).*
+**Proposition 3** (Preemption equilibrium with training allocation and default risk; symmetric duopoly).
+*In the symmetric duopoly with leverage $\ell$, under the solution conventions of @sec-conventions:*
+
+*(i) (Existence: conditional analytical---intermediate value theorem, upper endpoint sign verified computationally; Uniqueness: Analytical for $\ell = 0$, computational for $\ell > 0$) A preemption trigger $X_P \in (0, X_L^{\text{mono}})$ exists such that $L(X_P) = F(X_P)$, where $L(X) = E_L(X) - (1-\ell)I(K_L)$ is the leader's NPV of entering at state $X$ with $E_L$ the going-concern equity value, $F(X)$ is the follower's option value, and $X_L^{\text{mono}}$ is the leader's unconstrained (monopoly) trigger. Existence follows from continuity and the boundary conditions $L(0) < F(0)$ and $L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})$ (Internet Appendix A); the lower-endpoint inequality is analytical---the sunk equity contribution makes $L(0) < 0 = F(0)$---while the upper-endpoint inequality is verified computationally at every parameterization tested, so existence is analytical conditional on that sign. At zero leverage the gap $L(X) - F(X)$ is strictly concave on $(0, X_F)$ and negative at the origin, so the up-crossing is unique analytically (Internet Appendix A); under leverage the default-option term breaks global concavity near $X_D$, and uniqueness is verified computationally across all parameterizations, with no case of multiple up-crossings found (Internet Appendix B).*
 
 *(ii) (Analytical fixed point; global optimality computational) The training fraction is invariant to competitive role: $\phi_L^* = \phi_F^* = \phi^*$, the single-firm optimum of Proposition 1. The invariance is an exact fixed-point property of the regime-specific contest structure: when both firms choose the same $\phi$, their relative capacities are identical in the two regimes, so the L-regime and H-regime contest shares coincide ($s_i^L = s_i^H = s_i$), and the marginal contest revenue in each regime factorizes with the common multiplier $s_i(2 - s_i)$---which cancels exactly from the allocation first-order condition, leaving the single-firm condition $w_H/w_L = \lambda/(r - \mu_H)$ (Internet Appendix A). Hence $\phi^*$ is an exact critical point of the follower's allocation problem for any capacities; that it is the global maximizer is verified computationally. Training allocation is pinned down by beliefs and technology, not by market position.*
 
@@ -419,11 +425,27 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 The leader invests strictly earlier than the monopolist for all volatility levels, and the gap widens with $\sigma$: as uncertainty increases, the option value of waiting rises for both, but the preemption incentive compresses the leader's delay disproportionately---the ratio $X_P/X_L^{\text{mono}}$ falls from approximately $0.64$ at $\sigma = 0.20$ to $0.54$ at $\sigma = 0.30$.
 The volatility grid starts at $\sigma = 0.20$ because the interior-capacity condition (A2) requires $\beta_H < 1/(1-\alpha)$, which at the baseline WACC bounds the admissible volatility from below at $\sigma \approx 0.19$; below that bound the capacity problem has no interior optimum (Internet Appendix B).
 At baseline ($\sigma = 0.25$), preemption cuts the leader's trigger by roughly $43\%$ relative to the monopolist ($X_P/X_L^{\text{mono}} \approx 0.57$).
+That number is conditional on the leader-scale convention, and strongly so: when the leader's $(K_L, \phi_L)$ is instead re-optimized for entry at the preemption point itself, the leader enters at a much smaller scale ($K_L$ falls to about $6\%$ of the monopoly-phase optimum), the rent from leading is correspondingly cheaper to seize, and the discount rises from $43\%$ to $86\%$ ($X_P/X_L^{\text{mono}} \approx 0.14$); the training fraction is unchanged at $\phi^* \approx 0.70$ and the follower still enters at roughly $47$ times the leader's trigger (Internet Appendix B).
+The convention therefore *understates* the preemption effect, and the direction of the sign---leader enters strictly earlier, more so as $\sigma$ rises---is robust to it, while the magnitude is not.
 In this solution, competition affects *timing* rather than *scale*: the leader installs the monopoly-phase optimal capacity by construction (see the discussion after Proposition 1), and the training fraction is role-invariant (Proposition 3(ii)).
 
 ![Competition effect: monopolist versus duopoly leader investment triggers as a function of volatility $\sigma$. The leader always invests at a lower trigger than the monopolist due to preemption, and the gap widens with uncertainty. The dotted line (right axis) plots the preemption discount $X_P / X_L^{\text{mono}}$, which falls from approximately $0.64$ at $\sigma = 0.20$ to $0.54$ at $\sigma = 0.30$. The grid starts at $\sigma = 0.20$, just above the admissibility bound of condition (A2) (Internet Appendix B). Zero-leverage duopoly; other parameters at baseline values.](figures/fig_competition_effect.pdf){#fig-competition-effect}
 
-Propositions 1 and 2 are fully analytical; Proposition 3 combines analytical existence, zero-leverage uniqueness, and an exact allocation fixed point with computational verification of the remaining properties (leveraged uniqueness, global optimality of the allocation, and the comparative statics). @tbl-result-taxonomy in the Internet Appendix provides a detailed classification of the analytical status of each result.
+**The leader--follower scale asymmetry.**
+The equilibrium is starkly asymmetric in scale as well as timing: at baseline the follower installs $K_F \approx 0.259$ against the leader's $K_L \approx 0.0067$---a factor of $38$---and enters at $X_F^* \approx 0.119$ against $X_P \approx 0.0027$, a factor of $44$.
+The asymmetry is not a numerical accident, and it is worth stating plainly what produces it.
+Mechanically, it is the *elasticity wedge*: the follower's revenue rises with its own capacity both directly and through its contest share, so its marginal revenue elasticity is $\alpha(2 - s_F)$ rather than the leader's $\alpha$, where $s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)$ is the follower's share (Internet Appendix B).
+At the baseline equilibrium $s_F \approx 0.81$, so the effective elasticity is $\alpha(2 - s_F) \approx 0.475$ against $\alpha = 0.40$---an increase of only $19\%$.
+The wedge is amplified into a factor of $38$ by the capacity first-order condition itself: substituting $\alpha(2 - s_F)$ for $\alpha$ in the closed form for $K^*$ of Proposition 1 reproduces $K_F$ exactly, and that closed form is highly elastic near the baseline, where $(\beta_H - 1)/(\alpha\beta_H) \approx 0.89$ sits close to the upper bound of condition (A2) at which $K^* \to 0$; the elasticity $\mathrm{d}\ln K^*/\mathrm{d}\ln\alpha \approx 24$ at baseline.
+A $19\%$ wedge in the effective elasticity therefore moves capacity by more than an order of magnitude, and the follower's later entry ($X_F^*/X_P \approx 44$) is the trigger consequence of that larger commitment.
+Two implications follow for how the duopoly should be read.
+First, the magnitude of the asymmetry is a joint property of the Tullock contest and the position of the baseline calibration relative to the (A2) boundary, not a robust prediction: it is the same near-degeneracy that makes the levels of $K^*$ and $X^*$ properties of the reduced model (@sec-conventions), and it moves substantially under the leader-scale convention (under re-optimization the ratio rises to about $170$, because the leader shrinks faster than the follower).
+Second, and substantively, the "leader" in this equilibrium is not the dominant incumbent of the AI-rivalry narrative.
+It is a small, early, preemptive commitment---a firm that builds a modest amount of capacity well before the market can justify it, purely to secure the monopoly-phase rent---while the "follower" is the firm that waits for demand to arrive and then builds at scale.
+That is a defensible reading of an industry in which early movers have committed comparatively small amounts of compute to stake a position and later entrants with deeper balance sheets have announced far larger build-outs; it is not a model of a leader that stays large.
+Any interpretation that maps the model's leader onto the largest observed AI lab is therefore misplaced, and the paper's claims about leadership concern the *timing* margin only.
+
+Propositions 1 and 2 are fully analytical; Proposition 3 combines conditional-analytical existence, zero-leverage uniqueness, and an exact allocation fixed point with computational verification of the remaining properties (leveraged uniqueness, global optimality of the allocation, and the comparative statics). @tbl-result-taxonomy in the Internet Appendix provides a detailed classification of the analytical status of each result.
 
 ### Solution conventions and approximations {#sec-conventions}
 
@@ -443,7 +465,10 @@ Internet Appendix B also records how the convention is applied in the preemption
 
 **Leader's scale in the duopoly.**
 The leader's capacity and training fraction solve the *monopoly-phase* problem, so $(K_L, \phi_L)$ coincides with the single-firm optimum of Proposition 1 (see the discussion following Proposition 1).
-Re-optimizing scale for entry at the preemption trigger would imply somewhat smaller capacity; the convention keeps the leader's policy directly comparable to Proposition 1 and does not affect the rent-equalization logic that pins down $X_P$.
+The convention keeps the leader's policy directly comparable to Proposition 1 and does not affect the rent-equalization *logic* that pins down $X_P$, but it does affect the level: because $X_P$ equalizes rents against an $L(\cdot)$ computed at this fixed scale, the preemption discount is quantitatively conditional on it.
+Re-optimizing $(K_L, \phi_L)$ for entry at the preemption point implies a much smaller leader---about $6\%$ of the monopoly-phase capacity---and a preemption discount of $86\%$ rather than $43\%$, with $\phi_L$ unchanged at $\phi^*$.
+Internet Appendix B reports the re-optimized equilibrium in full.
+The convention is therefore conservative for the paper's qualitative claim (preemption accelerates the leader's entry) and is not to be read as a magnitude.
 
 **Single-boundary default.**
 The default boundary @eq-default-boundary replaces the H-regime equity value by its perpetuity component, collapsing the coupled pair $(X_D^L, X_D^H)$ into a single boundary.
