@@ -195,7 +195,7 @@ class P6S02Recap(PaperScene):
                 r"\text{4. Baseline magnitudes and what } \lambda \text{ means}",
                 font_size=26,
             ),
-            Text("5. Value decomposition and credit risk", font_size=26),
+            Text("5. The scale-gap diagnostic and credit risk", font_size=26),
             Text("6. Dario's dilemma, robustness, predictions", font_size=26),
         ).arrange(DOWN, buff=0.38, aligned_edge=LEFT)
         steps.shift(DOWN * 0.5 + LEFT * 1.5)
@@ -207,7 +207,7 @@ class P6S02Recap(PaperScene):
             for s in steps[:3]:
                 self.play(FadeIn(s, shift=RIGHT * 0.3), run_time=0.7)
         with self.voiceover(
-            "Then the baseline magnitudes, the value decomposition and"
+            "Then the baseline magnitudes, the scale-gap diagnostic and"
             " credit risk numbers, and finally the quantitative anatomy of"
             " Dario's dilemma, the robustness checks, and the testable"
             " predictions."
@@ -919,7 +919,7 @@ class P6S07LambdaTimeline(PaperScene):
 
 class P6S08ValueDecomposition(PaperScene):
     def construct(self):
-        self.set_header("Where the value sits", kicker="6.6  VALUE DECOMPOSITION")
+        self.set_header("Distance to optimal scale", kicker="6.6  SCALE-GAP DIAGNOSTIC")
 
         aip = MathTex(
             r"V_{\text{AIP}} = A_{\text{eff}}(\phi, K_{\text{inst}})\,X"
@@ -967,7 +967,7 @@ class P6S08ValueDecomposition(PaperScene):
         xl = MathTex(r"K_{\text{inst}}/K^*", font_size=28, color=C_FAINT).next_to(
             ax.x_axis, RIGHT, buff=0.15
         )
-        yl = Text("gap share of value (%)", font_size=20, color=C_FAINT).next_to(
+        yl = Text("scale-gap index g (%)", font_size=20, color=C_FAINT).next_to(
             ax.y_axis, UP, buff=0.15
         )
         curve = ax.plot_line_graph(
@@ -985,7 +985,7 @@ class P6S08ValueDecomposition(PaperScene):
             fill_color=C_H,
             fill_opacity=0.15,
         )
-        band_lab = Text("typical lab: 30-60% of value", font_size=21, color=C_H)
+        band_lab = Text("index g: 25-50% over this range", font_size=21, color=C_H)
         band_lab.move_to(ax.coords_to_point(0.62, 62))
 
         with self.voiceover(
@@ -998,9 +998,12 @@ class P6S08ValueDecomposition(PaperScene):
             self.play(Create(ax), FadeIn(xl), FadeIn(yl), run_time=0.9)
             self.play(Create(curve), run_time=1.8)
         with self.voiceover(
-            "A typical frontier lab, with installed capacity at ten to"
-            " thirty percent of the model's optimum, carries thirty to"
-            " sixty percent of its value in the capacity gap."
+            "Over the range where installed capacity is ten to thirty"
+            " percent of the model's optimum, the index runs at roughly"
+            " twenty-five to fifty percent. Where an actual lab sits on"
+            " this axis is not identified: the cost scale is a"
+            " normalization, so only the shape of the curve is"
+            " interpretable."
         ):
             self.play(FadeIn(band), FadeIn(band_lab), run_time=1.0)
         with self.voiceover(
@@ -1011,15 +1014,16 @@ class P6S08ValueDecomposition(PaperScene):
             self.play(Indicate(curve, color=C_OPTION, scale_factor=1.02), run_time=1.0)
 
         imp = Text(
-            "Asset-pricing read: these equities should behave like growth stocks.",
+            "No pricing kernel here: the diagnostic implies no beta.",
             font_size=23,
             color=C_TEXT,
         ).to_edge(DOWN, buff=0.35)
         with self.voiceover(
-            "The asset-pricing implication: frontier lab equities should"
-            " behave like growth stocks, high beta, high volatility, high"
-            " discount-rate sensitivity, because most of their value is"
-            " distance to scale, not current operations."
+            "One caution: the model discounts every claim at a single"
+            " constant rate and has no pricing kernel, so this diagnostic"
+            " says nothing directly about betas or expected returns. The"
+            " training-beta link is a testable conjecture, not a result"
+            " derived here."
         ):
             self.play(FadeIn(imp), run_time=1.0)
         self.pause(0.4)
@@ -1805,9 +1809,11 @@ class P6S15Predictions(PaperScene):
         ):
             self.play(FadeIn(preds[0]), run_time=0.9)
         with self.voiceover(
-            "Second, a training-beta relationship: higher phi-hat means"
-            " more of the value is growth option, hence higher equity"
-            " beta."
+            "Second, a conjectured training-beta relationship: higher"
+            " phi-hat means more of the value sits in the H-regime"
+            " upside, which under an auxiliary assumption about the price"
+            " of risk implies a higher equity beta. The model itself has"
+            " no pricing kernel, so this one is a hypothesis to test."
         ):
             self.play(FadeIn(preds[1]), run_time=0.9)
         with self.voiceover(

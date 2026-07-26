@@ -534,11 +534,13 @@ creation. On the training-inference allocation,
 \citet{akcigit2018growth} study exploitation versus exploration
 R\&D---the closest analog, but in a multi-product firm rather than a
 compute allocation setting.\footnote{\citet{berk1999optimal} develop
-  growth option decompositions that motivate the value decomposition in
-  Section~\ref{sec-valuation}. \citet{katz1986technology} and
-  \citet{farrell1986installed} study technology adoption with network
-  externalities and installed-base inertia. \citet{babina2024artificial}
-  and \citet{eisfeldt2024generative} provide empirical context on AI
+  growth option decompositions that motivate the scale-gap diagnostic in
+  Section~\ref{sec-valuation}, which is a comparative-statics
+  normalization rather than a growth-option decomposition.
+  \citet{katz1986technology} and \citet{farrell1986installed} study
+  technology adoption with network externalities and installed-base
+  inertia. \citet{babina2024artificial} and
+  \citet{eisfeldt2024generative} provide empirical context on AI
   investment and valuations; these papers could in principle discipline
   certain calibration inputs (e.g., AI firm betas, investment
   intensities), though the rapidly evolving nature of the sector limits
@@ -595,9 +597,9 @@ risk; the analytical and semi-analytical results are contained in this
 section. Section~\ref{sec-calibration} describes the stylized
 calibration to frontier AI lab archetypes and presents baseline
 numerical results. Section~\ref{sec-valuation} develops quantitative
-implications: value decomposition, credit risk, Dario's dilemma, and
-equity valuation sensitivity. Section~\ref{sec-discussion} considers
-policy implications, testable predictions, and limitations.
+implications: a normalized scale-gap diagnostic, credit risk, Dario's
+dilemma, and equity valuation sensitivity. Section~\ref{sec-discussion}
+considers policy implications, testable predictions, and limitations.
 Section~\ref{sec-conclusion} concludes.
 
 \section{The Model}\label{sec-model}
@@ -2458,10 +2460,10 @@ discount \(X_P/X_L^{\text{mono}}\) rising from \(0.57\) at
 
 \section{Quantitative Implications}\label{sec-valuation}
 
-This section develops quantitative implications of the duopoly model:
-value decomposition, credit risk analysis, Dario's dilemma, and equity
-valuation sensitivity to beliefs. All results in this section are
-numerical, computed under the stylized calibration of
+This section develops quantitative implications of the duopoly model: a
+normalized scale-gap diagnostic, credit risk analysis, Dario's dilemma,
+and equity valuation sensitivity to beliefs. All results in this section
+are numerical, computed under the stylized calibration of
 Section~\ref{sec-calibration}; they illustrate the model's economic
 mechanisms rather than delivering empirically testable point estimates.
 
@@ -2495,14 +2497,23 @@ and 5-year switch probabilities from 22\% to 92\%.}
 
 \end{figure}%
 
-\subsection{Value Decomposition}\label{value-decomposition}
+\subsection{A Normalized Scale-Gap
+Diagnostic}\label{a-normalized-scale-gap-diagnostic}
 
-Motivated by \citet{berk1999optimal}, I decompose firm value into three
-components. Unlike the standard growth-option decomposition---which
-measures the present value of \emph{future} investment
-opportunities---the exercise here is a comparative statics analysis: it
-quantifies the capacity gap between a firm's current installed base and
-the model's optimal scale.
+Motivated by \citet{berk1999optimal}, I ask how far a firm's installed
+base sits from the model's optimal scale, and report the answer as a
+unit-free index. This is deliberately \emph{not} a growth-option
+decomposition. It does not measure the present value of future
+investment opportunities, and the two quantities it compares are
+benchmarks rather than separable claims on the firm: one is measured
+gross of sunk investment cost, the other net of it. Adding them is a
+normalization device---it puts the gap on a \([0, 1]\) scale so that it
+can be read across calibrations---not a valuation identity, and the
+resulting fraction is not a share of firm value or of market
+capitalization. The object of interest is the \emph{shape} of that index
+in \(K/K^*\), which is invariant to the cost normalization \(c = 1\)
+(Section~\ref{sec-calibration}); its level at any particular point on
+the horizontal axis is not.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -2526,40 +2537,43 @@ the model's optimal scale.
   value. Because the benchmark nets out the entire investment cost while
   assets-in-place are gross of sunk costs, the gap reaches zero before
   \(K_{\text{installed}}\) reaches \(K^*\).
-\item
-  \textbf{Regime switch value}: the additional value from the
-  possibility of transitioning from \(L\) to \(H\), which depends on
-  both the arrival rate \(\lambda\) and the training allocation
-  \(\phi\).
 \end{enumerate}
 
-The capacity gap fraction \(V_{\text{gap}} / V_{\text{total}}\) measures
-how far a firm is from optimal scale. For frontier AI labs, the capacity
-gap accounts for a large share of firm value---typically 30--60\% at
-installed capacities of 10--30\% of the optimum---reflecting the fact
-that current installed capacity is small relative to what the model
-prescribes.
+The value of the possibility of transitioning from \(L\) to \(H\) does
+not appear as a third additive term: it is embedded in \emph{both}
+quantities through the effective revenue coefficient
+\(A_{\text{eff}}(\phi, \cdot)\), which already weights the H-regime
+continuation value by the arrival rate \(\lambda\) and the training
+allocation \(\phi\). The scale-gap index is then \[
+g(K_{\text{installed}}) = \frac{V_{\text{gap}}}{V_{\text{AIP}} + V_{\text{gap}}} \in [0, 1].
+\]
 
-Figure~\ref{fig-growth-decomposition} illustrates the decomposition
-using the full model with regime switching: values are computed with the
-effective revenue coefficient \(A_{\text{eff}}\) at the optimal training
-fraction \(\phi^*\), evaluated at demand \(1.5 X^*\). Panel (a)
-decomposes total firm value into assets-in-place (blue) and capacity gap
-value (orange) as a function of installed capacity relative to the
-optimal level \(K^*\). When the firm has little installed capacity
-(\(K/K^* \ll 1\)), most of its value comes from the potential to reach
-optimal capacity, and assets-in-place are small. As installed capacity
-approaches \(K^*\), assets-in-place rise concavely (diminishing returns)
-while the capacity gap value shrinks because the firm is already near
-optimal scale. Panel (b) shows the capacity gap fraction, which declines
-steeply from near 80\% at very low \(K/K^*\) and reaches zero somewhat
-below \(K/K^* = 1\) (the crossover occurs where the gross value of
-installed assets overtakes the optimal \emph{net} value, since
-assets-in-place are measured gross of the sunk investment cost while the
-benchmark nets it out). For the typical frontier AI lab with
-\(K/K^* \approx 0.1\)--\(0.3\), the capacity gap fraction ranges from
-roughly 30\% to 60\%, confirming that these firms are far from the
-model's optimal capacity.
+Figure~\ref{fig-growth-decomposition} plots the index using the full
+model with regime switching: values are computed with the effective
+revenue coefficient \(A_{\text{eff}}\) at the optimal training fraction
+\(\phi^*\), evaluated at demand \(1.5 X^*\). Panel (a) stacks
+assets-in-place (blue) and the capacity gap (orange) against installed
+capacity relative to the optimal level \(K^*\). When the firm has little
+installed capacity (\(K/K^* \ll 1\)), the gap dominates the stack; as
+installed capacity rises, assets-in-place increase concavely
+(diminishing returns) while the gap shrinks. Panel (b) plots \(g\),
+which falls from about 80\% at the left edge of the figure
+(\(K/K^* = 0.01\)) to zero at \(K/K^* \approx 0.77\) (the crossover
+occurs where the gross value of installed assets overtakes the optimal
+\emph{net} value, since assets-in-place are measured gross of the sunk
+investment cost while the benchmark nets it out). At the baseline
+calibration \(g\) equals 50\% at \(K/K^* = 0.1\) and 26\% at
+\(K/K^* = 0.3\), so the index runs at roughly 25--50\% over that range;
+Internet Appendix E reports 48--59\% and 19--30\% at those two points
+across the \(\pm 25\%\) one-at-a-time parameter perturbations, so the
+band is a property of the model rather than of the baseline draw. The
+model is silent on where any actual lab sits on the horizontal axis.
+Because \(c = 1\) fixes the cost scale by normalization
+(Section~\ref{sec-calibration}), \(K^*\) is not a physical quantity and
+\(K/K^*\) cannot be read off observed compute stocks; I therefore make
+no claim about which point on the axis describes a given firm, and the
+content of the figure is entirely the monotone decline and the location
+of the crossover.
 
 \begin{figure}[!htb]
 
@@ -2569,26 +2583,30 @@ model's optimal capacity.
 
 }
 
-\caption{\label{fig-growth-decomposition}Value decomposition. (a)
-Stacked decomposition: assets-in-place (blue) and capacity gap value
+\caption{\label{fig-growth-decomposition}Normalized scale-gap
+diagnostic. (a) Stacked plot: assets-in-place (blue) and capacity gap
 (orange) as a function of installed capacity relative to optimal
-\(K^*\). The dotted line marks \(K/K^* = 1\). (b) Capacity gap
-fraction---the share of total value attributable to the gap between
-current and optimal capacity. For firms with capacity well below
-\(K^*\), the capacity gap dominates firm value. This is a comparative
-statics exercise: it shows how much value the firm would gain by
-adjusting from \(K_{\text{installed}}\) to \(K^*\), not the present
-value of future investment opportunities. Parameters: full model with
-regime switching at \(\phi^*\), demand at \(1.5 X^*\), baseline
-calibration.}
+\(K^*\). The dotted line marks \(K/K^* = 1\). (b) The scale-gap index
+\(g = V_{\text{gap}}/(V_{\text{AIP}} + V_{\text{gap}})\), falling
+monotonically to zero at \(K/K^* \approx 0.77\). This is a comparative
+statics exercise on installed capacity, not a growth-option
+decomposition: the two components are measured against different
+benchmarks (one gross of sunk cost, one net), so their sum is a
+normalization and \(g\) is not a share of firm value. Levels on the
+horizontal axis are not identified---\(c = 1\) is a normalization---so
+the informative content is the shape of the curve, not the position of
+any particular firm along it. Parameters: full model with regime
+switching at \(\phi^*\), demand at \(1.5 X^*\), baseline calibration.}
 
 \end{figure}%
 
-The large capacity gap fraction has implications for asset pricing:
-frontier AI lab equities should behave more like growth stocks (high
-beta, high volatility, high sensitivity to discount rates) than like
-mature businesses, because the bulk of their value reflects the distance
-to optimal scale rather than current operations.
+The diagnostic carries no direct asset-pricing implication: the model
+prices all claims by discounting at a single constant rate \(r\) and
+contains no pricing kernel, so it cannot map a value composition into a
+beta or an expected return. The related conjecture---that a larger
+H-regime share of value raises equity betas---is stated in
+Section~\ref{sec-discussion} as a hypothesis to be tested, not as a
+result derived here.
 
 \subsection{Credit Risk Analysis}\label{credit-risk-analysis}
 
@@ -3031,15 +3049,21 @@ frontier AI labs:
 \item
   \textbf{Training-beta relationship.} Firms with higher \(\hat{\phi}\)
   should have higher equity betas, because a larger share of their value
-  derives from the growth option (H-regime upside) rather than
-  assets-in-place, making them more sensitive to systematic risk. This
-  is the allocation analogue of \citet{aguerrevere2009real}, where the
-  level of installed capacity and the intensity of competition determine
-  the growth-option share of firm value and hence expected returns; the
-  testable difference is that here the composition shifts with the
-  training-inference split at a given level of capacity, so
-  \(\hat{\phi}\) should carry incremental explanatory power for betas
-  beyond capacity and concentration measures.
+  derives from the H-regime upside rather than from assets-in-place.
+  This one is a conjecture rather than a model implication: the model
+  discounts every claim at a single constant rate \(r\) and has no
+  pricing kernel, so it determines the \emph{composition} of value but
+  not the price of risk attached to each component. The step from
+  composition to beta is imported from \citet{aguerrevere2009real},
+  where the level of installed capacity and the intensity of competition
+  determine the growth-option share of firm value and hence expected
+  returns, and requires the auxiliary assumption that the H-regime
+  component carries the higher systematic-risk loading. Granting that
+  assumption, the testable difference from \citet{aguerrevere2009real}
+  is that here the composition shifts with the training-inference split
+  at a given level of capacity, so \(\hat{\phi}\) should carry
+  incremental explanatory power for betas beyond capacity and
+  concentration measures.
 \item
   \textbf{Asymmetric response to AI news.} The concavity of equity value
   in \(\lambda\) over the policy-relevant range

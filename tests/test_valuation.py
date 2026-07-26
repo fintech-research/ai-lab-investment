@@ -425,11 +425,21 @@ class TestCapacityGapDecomposition:
         below_one = K_fracs < 1.0
         assert np.any(gf[below_one] == 0.0)
 
-    def test_paper_range_30_to_60_pct(self, va):
-        """Paper claim: gap fraction roughly 30-60% for K/K* in [0.1, 0.3]."""
+    def test_paper_range_25_to_50_pct(self, va):
+        """Paper claim (_valuation.qmd): the scale-gap index runs at roughly
+        25-50% for K/K* in [0.1, 0.3], equalling ~50% at 0.1 and ~26% at 0.3."""
         d = va.capacity_gap_decomposition(np.array([0.1, 0.3]))
-        assert 40.0 < d["gap_fraction"][0] < 60.0
-        assert 20.0 < d["gap_fraction"][1] < 35.0
+        assert d["gap_fraction"][0] == pytest.approx(50.1, abs=0.5)
+        assert d["gap_fraction"][1] == pytest.approx(26.0, abs=0.5)
+        # Band quoted in the paper brackets both endpoints.
+        assert 25.0 <= d["gap_fraction"][1] < d["gap_fraction"][0] <= 50.5
+
+    def test_zero_crossover_near_077(self, va):
+        """Paper claim: the index reaches zero at K/K* ~ 0.77."""
+        K_fracs = np.linspace(0.5, 1.0, 501)
+        gf = va.capacity_gap_decomposition(K_fracs)["gap_fraction"]
+        crossover = K_fracs[np.argmax(gf <= 0.0)]
+        assert crossover == pytest.approx(0.77, abs=0.02)
 
 
 # ------------------------------------------------------------------

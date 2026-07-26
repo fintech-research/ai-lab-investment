@@ -557,11 +557,17 @@ def create_lambda_timeline() -> plt.Figure:
     return fig
 
 
-# ── Figure 10: Value decomposition ────────────────────────────────
+# ── Figure 10: Normalized scale-gap diagnostic ────────────────────
 
 
 def create_growth_decomposition() -> plt.Figure:
-    """Two-panel: value decomposition and capacity gap fraction.
+    """Two-panel normalized scale-gap diagnostic.
+
+    Panel (a) stacks assets-in-place and the capacity gap; panel (b)
+    plots the scale-gap index g = gap / (assets + gap). This is a
+    comparative-statics normalization, not a growth-option
+    decomposition: the two components use different benchmarks (gross
+    vs. net of sunk cost), so their sum is not firm value.
 
     Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
     uses the phi-aware model (optimal_trigger_capacity_phi,
@@ -587,17 +593,17 @@ def create_growth_decomposition() -> plt.Figure:
         assets + counterfactual,
         alpha=0.4,
         color="#ff7f0e",
-        label="Capacity gap value",
+        label="Capacity gap",
     )
     ax1.axvline(1.0, color="0.5", linestyle=":", linewidth=0.8)
     ax1.set_xlabel(r"Installed capacity ($K / K^*$)")
-    ax1.set_ylabel("Value")
+    ax1.set_ylabel("Normalized value")
     ax1.legend(loc="upper left", fontsize="small", framealpha=0.95)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     ax2.plot(K_fracs, growth_frac, "k-", linewidth=1.5)
     ax2.set_xlabel(r"Installed capacity $K / K^*$")
-    ax2.set_ylabel("Capacity gap fraction (%)")
+    ax2.set_ylabel(r"Scale-gap index $g$ (%)")
     ax2.set_ylim(0, 105)
     ax2.set_title("(b)", loc="left", fontweight="bold")
 

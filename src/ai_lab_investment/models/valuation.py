@@ -616,7 +616,11 @@ class ValuationAnalysis:
         assets-in-place are gross of sunk costs, the gap reaches zero
         before K reaches K*. This is the comparative-statics measure of
         distance to optimal scale reported in the paper, not the NPV of
-        incremental expansion from the installed base.
+        incremental expansion from the installed base. Because the two
+        components are measured against different benchmarks, their sum
+        is a normalization device rather than firm value, and
+        'gap_fraction' is a unit-free index in [0, 100], not a share of
+        firm value.
 
         Args:
             K_fracs: Installed capacity as fractions of optimal K*.
