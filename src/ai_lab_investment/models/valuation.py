@@ -368,6 +368,25 @@ class ValuationAnalysis:
         so deadweight bankruptcy costs (b * V(X_D)) are captured. This
         shows how leverage amplifies the cost of overinvestment through
         endogenous default risk.
+
+        Important: both the benchmark and the mismatched operating
+        policies (X*, K*, phi*) come from the *unleveraged*
+        SingleFirmModel at the respective lambda; the levered claims
+        E + D - leverage * I are then valued under those policies. That
+        is the intended experiment, not an oversight: leverage is
+        exogenous in this model, so the firm sizes and times its
+        investment on NPV grounds and debt is layered on top of the
+        resulting policy.
+
+        Consequence for the appendix argument: unlike the unleveraged
+        dario_dilemma(), the objective returned here is NOT maximized at
+        lambda_invest == lambda_true by construction, because the policy
+        is not re-optimized against the levered objective. Numerically
+        the gap is negligible -- at baseline with leverage 0.40 the
+        levered objective peaks at lambda_invest ~ 0.101 and the value
+        shortfall at lambda_true is ~1.3e-5 in relative terms -- so the
+        second-order expansion in Internet Appendix A is stated exactly
+        for the unleveraged case and used as an approximation here.
         """
         # Optimal policy under true lambda
         p_true = self.params.with_param(lam=lambda_true)

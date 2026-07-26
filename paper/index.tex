@@ -2521,7 +2521,20 @@ the value loss through the revenue channel: a mismatched \(\phi\)
 produces suboptimal revenue in both regimes. Throughout, percentage
 value losses are reported as
 \(\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})\),
-the loss as a fraction of the first-best value.
+the loss as a fraction of the first-best value. The levered version of
+the exercise keeps the same operating policy and changes only the claim
+being valued: the firm still chooses \((X^*, K^*, \phi^*)\) from the
+unlevered problem given its belief---leverage is exogenous in this model
+and is layered on top of an investment policy chosen on NPV
+grounds---and \(\text{NPV}\) then denotes the value of the total claims
+\(E + D - \ell I(K^*)\) under that policy. Because the policy is not
+re-optimized against the levered objective, the levered value function
+is not maximized at \(\lambda_{\text{invest}} = \lambda_{\text{true}}\)
+by construction, only very nearly so: at \(\ell = 0.40\) its maximizer
+is \(\lambda_{\text{invest}} \approx 0.101\) and the value shortfall at
+\(\lambda_{\text{true}}\) is about one thousandth of one percent, more
+than three orders of magnitude below the mismatch losses reported here
+(Internet Appendix A).
 
 \textbf{Numerical Finding 1} (Dario's dilemma). \emph{Across all
 parameterizations tested, the value loss from conservative
@@ -2587,14 +2600,28 @@ approximately 23\%---a substantial asymmetry driven by the training
 allocation channel. With leverage (\(\ell = 0.40\), dashed line), the
 curve is nearly identical on the conservative side and lies slightly
 \emph{below} the unleveraged curve on the aggressive side (21\% versus
-23\% at \(\lambda_{\text{invest}} = 0.50\)): for an overbuilt,
-over-trained firm, default truncates the operating-cost drain on the
-overscaled capacity---liquidation sheds the perpetual \(\delta K\)
-obligation---and this shutdown option modestly offsets the allocation
-distortion in expected value. The expected-value metric thus understates
-leverage's role, which shows up in the tail rather than the mean. The
-shaded region marks the ``danger zone'' where value losses from
-overinvestment exceed 10\%.
+23\% at \(\lambda_{\text{invest}} = 0.50\)). The entire wedge between
+the two curves is the shareholders' default option: the levered claim
+value \(E + D - \ell I\) exceeds the unlevered NPV by exactly
+\([R(X_D) + \delta K / r - A_{\text{eff}} X_D](X^*/X_D)^{\beta_s^-}\),
+and at this calibration the recovery cap binds (\(R(X_D) = c_D/r\), so
+creditors are made whole in value terms), leaving the bracket equal to
+the flow deficit escaped at default---overwhelmingly the perpetual
+operating-cost drain, since \(\delta K / r\) is about eighteen times the
+coupon claim \(c_D/r\) at baseline. Because \(K^*\)---and hence both the
+coupon and \(\delta K\)---is belief-invariant, and the boundary
+condition pins \(A_{\text{eff}} X_D\) to the same constant for every
+belief type, that bracket is \emph{identical} across the three firms;
+only the discount factor \((X^*/X_D)^{\beta_s^-}\) differs. The
+aggressive firm enters closest to its default boundary
+(\(X^*/X_D = 3.3\) against \(5.1\) at correct beliefs), so it
+capitalizes the most of this shutdown option---1.8\% of its NPV, against
+0.3\% at correct beliefs---and its measured percentage loss falls
+accordingly. Leverage therefore flatters the overinvesting firm slightly
+in expected value even as it raises its default risk: the expected-value
+metric understates leverage's role, which shows up in the tail rather
+than the mean. The shaded region marks the ``danger zone'' where value
+losses from overinvestment exceed 10\%.
 
 The expected-value metric \(\Delta V\) tells only half the story. The
 5-year default probability under the true demand process reveals a
@@ -2632,8 +2659,14 @@ leveraged (\(\ell = 0.40\)). The loss \(\Delta V\) is plotted as a
 function of \(\lambda_{\text{invest}}\) for fixed
 \(\lambda_{\text{true}} = 0.10\). The left branch (underinvestment)
 rises more steeply than the right (overinvestment), driven by the cost
-of under-allocating to training. The shaded region marks losses
-exceeding 10\% of optimal value. Parameters: baseline calibration.}
+of under-allocating to training. The leveraged curve lies slightly
+\emph{below} the unleveraged one on the aggressive side because the
+levered claim value \(E + D - \ell I\) adds the shareholders' default
+option---the value of escaping the perpetual \(\delta K\) operating
+drain and the coupon---which is worth most to the firm that enters
+closest to its default boundary; leverage's distinctive effect is on
+tail risk, not on the mean. The shaded region marks losses exceeding
+10\% of optimal value. Parameters: baseline calibration.}
 
 \end{figure}%
 
@@ -3841,16 +3874,42 @@ Define the value function
 \(W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})\):
 the present value when the firm invests at trigger
 \(X^*(\lambda_{\text{invest}})\) with capacity
-\(K^*(\lambda_{\text{invest}})\), training fraction
-\(\phi^*(\lambda_{\text{invest}})\), and exogenous leverage \(\ell\),
-but demand outcomes are realized under the true process governed by
-\(\lambda_{\text{true}}\).
+\(K^*(\lambda_{\text{invest}})\) and training fraction
+\(\phi^*(\lambda_{\text{invest}})\), but demand outcomes are realized
+under the true process governed by \(\lambda_{\text{true}}\). The
+operating policy \((X^*, K^*, \phi^*)\) is always the solution to the
+\emph{unlevered} problem at belief \(\lambda_{\text{invest}}\): the firm
+sizes and times its investment on NPV grounds, and exogenous leverage
+\(\ell\) is layered on afterwards. For \(\ell = 0\), \(W\) is the
+unlevered NPV of that policy; for \(\ell > 0\), \(W\) is the value of
+the levered claims \(E + D - \ell I(K^*)\) evaluated under the same
+belief-\(\lambda_{\text{invest}}\) operating policy.
 
-\emph{Optimality.} By construction, \(W\) is maximized at
-\(\lambda_{\text{invest}} = \lambda_{\text{true}}\), so
-\(W'(\lambda_{\text{true}}) = 0\). The second-order loss is therefore
+\emph{Optimality.} At \(\ell = 0\) the policy
+\((X^*, K^*, \phi^*)(\lambda_{\text{invest}})\) maximizes precisely the
+objective that \(W\) evaluates, so \(W\) is maximized at
+\(\lambda_{\text{invest}} = \lambda_{\text{true}}\) and
+\(W'(\lambda_{\text{true}}) = 0\) by construction. The second-order loss
+is therefore
 \(\Delta V \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2\),
 which is symmetric to second order.
+
+For \(\ell > 0\) this step must be weakened, because the operating
+policy optimizes the unlevered NPV while \(W\) values the levered
+claims: the belief that maximizes the levered \(W\) is not exactly
+\(\lambda_{\text{true}}\), and \(W'(\lambda_{\text{true}}) = 0\) holds
+only as an approximation. The discrepancy is numerically negligible. At
+the baseline calibration with \(\ell = 0.40\), the levered \(W\) peaks
+at \(\lambda_{\text{invest}} \approx 0.101\) rather than at
+\(\lambda_{\text{true}} = 0.10\) (the levered objective tilts marginally
+toward optimism, because the shareholders' default option is worth more
+to a firm that enters closer to its default boundary), and
+\(W(\lambda_{\text{true}})\) falls short of that maximum by about
+\(1.3 \times 10^{-5}\) of its value---roughly one thousandth of one
+percent, against the 5--26\% belief-mismatch losses the exercise
+reports. The expansion below is therefore exact for \(\ell = 0\) and is
+applied to \(\ell > 0\) as an approximation whose error is more than
+three orders of magnitude smaller than the effects it describes.
 
 \emph{Source of asymmetry.} The asymmetry arises from odd-order terms in
 the Taylor expansion, principally
@@ -3901,26 +3960,36 @@ Since the training allocation channel dominates,
 (\(\lambda_{\text{invest}} < \lambda_{\text{true}}\)) produces a larger
 expected-value loss than overinvestment of equal magnitude.
 
-\emph{Case \(\ell > 0\) (leveraged).} Leverage amplifies the asymmetry
-through the default channel. Because \(K^*\) is belief-independent, the
-coupon \(c_d \ell I(K^*)\) is identical across belief types, so the
-channel operates through the allocation and the trigger alone:
-over-training
+\emph{Case \(\ell > 0\) (leveraged).} Leverage operates through the
+default channel. Because \(K^*\) is belief-independent, the coupon
+\(c_d \ell I(K^*)\) is identical across belief types, so the channel
+runs through the allocation and the trigger alone: over-training
 (\(\phi^*(\lambda_{\text{invest}}) \gg \phi^*(\lambda_{\text{true}})\))
 lowers L-regime inference revenue and pushes the default boundary
 \(X_D\) up, while the lower entry trigger
 \(X^*(\lambda_{\text{invest}})\) simultaneously moves entry down toward
-that boundary. The two effects compound, compressing the distance to
-default at entry and introducing an additional convex loss absent in the
-underinvestment case, where the trigger moves \emph{away} from the
-boundary and largely offsets the allocation distortion. The
-amplification is verified numerically. The tail-risk asymmetry therefore
-runs in the \emph{opposite direction} to the expected-value asymmetry:
-the 5-year default probability under overinvestment
-(\(\lambda_{\text{invest}} = 0.50\), \(\ell = 0.40\)) is nearly eight
-times the baseline, while underinvestment barely raises default risk,
-because the conservative firm enters at a higher (safer) trigger.
-\(\square\)
+that boundary. The two effects compound and compress the distance to
+default at entry, whereas under underinvestment the trigger moves
+\emph{away} from the boundary and largely offsets the allocation
+distortion.
+
+In the total-claim metric \(E + D - \ell I\) this compression registers
+as a small \emph{gain}, not a loss: it raises the value of the
+shareholders' default option, which is the only term separating the
+levered from the unlevered objective and which is worth \(1.8\%\) of NPV
+to the overinvesting firm against \(0.3\%\) at correct beliefs. Both
+levered loss curves therefore lie marginally below their unlevered
+counterparts (at baseline, \(26.1\%\) and \(21.4\%\) at
+\(\lambda_{\text{invest}} = 0.02\) and \(0.50\), against \(26.2\%\) and
+\(22.6\%\) at \(\ell = 0\)), and what leverage amplifies is the
+\emph{ratio} of the two losses (from \(1.16\) to \(1.22\)), not their
+levels. The economically substantive effect of leverage is on the tail
+rather than the mean, and it runs in the \emph{opposite direction} to
+the expected-value asymmetry: the 5-year default probability under
+overinvestment (\(\lambda_{\text{invest}} = 0.50\), \(\ell = 0.40\)) is
+nearly eight times the baseline, while underinvestment barely raises
+default risk, because the conservative firm enters at a higher (safer)
+trigger. \(\square\)
 
 \newpage
 
