@@ -100,6 +100,11 @@ run-pipeline:
     @echo "🚀 Running analysis pipeline"
     uv run python -m ai_lab_investment
 
+# Run the +/-25% parameter-perturbation robustness sweep (Internet Appendix E)
+run-sweep:
+    @echo "🚀 Running robustness sweep"
+    uv run python -m ai_lab_investment.robustness
+
 # Install video dependencies (manim + kokoro-onnx) and download TTS model files
 video-setup:
     @echo "🚀 Installing video dependency group"

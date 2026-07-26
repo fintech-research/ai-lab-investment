@@ -3915,7 +3915,10 @@ three orders of magnitude smaller than the effects it describes.
 the Taylor expansion, principally
 \(W'''(\lambda_{\text{true}}) \neq 0\). The following heuristic argument
 identifies three contributing channels. All signs are verified
-numerically across the full parameter space.
+numerically at the baseline calibration and at each admissible draw of
+the \(\pm 25\%\) one-at-a-time parameter sweep reported in Internet
+Appendix E; that sweep, and not a search over the joint parameter space,
+is what the robustness of these signs rests on.
 
 \emph{Case \(\ell = 0\) (unleveraged).} The loss decomposes into a
 timing channel and a \emph{training allocation channel}:
@@ -4500,17 +4503,55 @@ independent of \(\lambda\) (Proposition 1), confirmed by
 \subsection*{E. Robustness}\label{e.-robustness}
 \addcontentsline{toc}{subsection}{E. Robustness}
 
-I assess robustness along three dimensions:
+I assess robustness along several dimensions:
 
-\textbf{Parameter sensitivity.} I vary each calibration parameter by
-\(\pm 25\%\) from the baseline, truncated to the admissible region of
-Assumption 1 where the interior capacity optimum exists, and re-compute
-all results. The truncation binds for \(\sigma\), \(\alpha\), and \(r\),
-whose full \(\pm 25\%\) ranges partially violate condition (A2)
-(Internet Appendix B reports the admissible windows); within the
-admissible region, the qualitative findings are robust: the asymmetry of
-Dario's dilemma, the large capacity gap fraction, and the faith-based
-survival mechanism are preserved across all parameter perturbations.
+\textbf{Parameter sensitivity.} I perturb each of the nine calibrated
+parameters (\(r\), \(\mu_L\), \(\mu_H\), \(\sigma\), \(\lambda\),
+\(\alpha\), \(\gamma\), \(\delta\), and \(c\)) one at a time by
+\(\pm 25\%\) from the baseline---eighteen draws---and re-compute at each
+draw the four objects the paper's qualitative claims rest on: the
+Dario's dilemma asymmetry (the conservative loss relative to the
+aggressive loss), the capacity gap fraction, the faith-based survival
+thresholds \(\underline{\phi}\) and \(\tilde{\phi}\) relative to the
+optimal allocation \(\phi^*\), and the preemption discount
+\(X_P/X_L^{\text{mono}}\). Draws that leave the admissible region are
+reported with the condition they violate rather than silently truncated,
+since it is the boundary behavior that the truncation would hide. The
+exercise is implemented in the replication package (module
+\texttt{robustness.py}).
+
+Thirteen of the eighteen draws are admissible and five violate the
+interior-capacity condition (A2). Four fail through its upper bound
+\((\beta_H - 1)/(\alpha\beta_H) < 1\), whose failure sends the capacity
+problem toward zero scale: \(r = 0.15\), \(\mu_H = 0.045\),
+\(\sigma = 0.188\), and \(\alpha = 0.30\). The remaining failure is
+\(r = 0.09\), which violates the \emph{lower} bound
+\(1/\gamma < (\beta_H - 1)/(\alpha\beta_H)\); the admissible window for
+\(r\) is \((0.097, 0.135)\), so both directions of the \(\pm 25\%\)
+range for \(r\) fall outside it. The truncation therefore binds for
+\(r\), \(\mu_H\), \(\sigma\), and \(\alpha\), and the surviving draw
+closest to the boundary is \(\gamma = 1.125\), which clears the lower
+bound by about \(0.001\).
+
+Across the thirteen admissible draws, no headline sign reverses. The
+conservative loss exceeds the aggressive loss in every draw, with the
+asymmetry ratio ranging from \(3.6\) to \(6.0\) (baseline \(4.6\)); the
+capacity gap fraction stays between \(48\%\) and \(59\%\) at
+\(K/K^* = 0.1\) and between \(19\%\) and \(30\%\) at \(K/K^* = 0.3\);
+the ordering \(0 < \underline{\phi} < \tilde{\phi} < \phi^*\) holds in
+every draw, with \(\underline{\phi} \in [0.10, 0.23]\),
+\(\tilde{\phi} \in [0.19, 0.37]\), and \(\phi^* \in [0.59, 0.79]\), so
+the faith-based survival mechanism is operative at the optimal
+allocation throughout; and the preemption discount stays between
+\(0.53\) and \(0.63\), always strictly below one. All four objects are
+ratios or value shares, and are therefore exactly invariant to the
+cost-scale parameters \(\delta\) and \(c\), which move \(K^*\) and
+\(X^*\) but not the normalized quantities. This sweep is also the
+reproducible content of the statements elsewhere in this appendix that a
+sign holds ``across all parameterizations,'' including the \(W''' > 0\)
+sign underlying Numerical Finding 1: those are one-at-a-time
+perturbations of this kind around the baseline calibration, not a search
+over the joint parameter space.
 
 \textbf{Alternative contest functions.} The Tullock contest is a reduced
 form, so it is natural to ask which results depend on it. The main
@@ -4723,11 +4764,27 @@ sides because the mismatched firm faces a well-calibrated rival, but the
 underinvestment cost remains roughly 2\(\times\) the overinvestment
 cost, confirming the single-firm finding.
 
-\textbf{Alternative regime structure.} Using a three-regime model
-(\(L \to M \to H\)) with intermediate capabilities does not
-qualitatively change the results. The two-regime model captures the
-essential feature: binary uncertainty about whether AI will be
-transformative.
+\textbf{Alternative regime structure.} A natural extension replaces the
+binary regime process with a three-regime ladder (\(L \to M \to H\)) in
+which an intermediate capability level arrives first. The mechanisms of
+Propositions 1 and 2 would be expected to survive it, because each
+operates through the composition of \(A_{\text{eff}}\): with a second
+absorbing-direction switch the effective revenue coefficient becomes a
+longer convex combination of regime-specific continuation values, but it
+remains increasing in the arrival rates whenever the training share is
+high enough, which is the only property the faith-based survival
+condition uses; and the training allocation channel behind Dario's
+dilemma continues to trade L-regime inference revenue against
+capability-contingent upside. What a third regime would change is
+quantitative: the value of waiting rises when uncertainty resolves in
+two steps rather than one, so the trigger \(X^*\) and the
+belief-mismatch losses would both move, and the direction of the net
+effect on \(\phi^*\) is not obvious a priori. I do not solve the
+three-regime model; this discussion is qualitative, and the two-regime
+specification is a modeling choice that captures the feature the paper
+is about---binary uncertainty over whether AI becomes
+transformative---rather than a case verified against a richer
+alternative.
 
 
 

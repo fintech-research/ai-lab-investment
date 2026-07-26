@@ -11,4 +11,5 @@ tasks:
   phase2_duopoly: true
   phase4_calibration: true
   phase5_valuation: true
+  robustness_sweep: true
 params: {}

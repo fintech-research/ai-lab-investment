@@ -14,6 +14,8 @@ Rules for working in `src/ai_lab_investment/`. Global rules are in `@../AGENTS.m
 
 **`piecewise_option.py`** — verification module (not in the pipeline) solving the *exact* piecewise L-regime stopping problem: the HJB forcing term is the H-regime option only below X_H*, and the exercised H payoff above it. Quantifies the bias of the paper's pure-power (unconditional-A_eff) convention against the exact free-boundary solution, with an independent Brennan--Schwartz LCP check. Run `uv run python -m ai_lab_investment.models.piecewise_option [sweep]` for the bias report.
 
+**`robustness.py`** — the ±25% one-at-a-time parameter-perturbation sweep behind Internet Appendix E. Re-computes the dilemma asymmetry, capacity-gap fraction, faith thresholds, and preemption discount at each draw, and *reports* (A1)/(A2) failures instead of truncating them. Run `just run-sweep`, or via the `tasks.robustness_sweep` pipeline flag. Its paper-pinned numbers live in `tests/test_robustness.py::TestPaperNumbers` — update the appendix text and the test together.
+
 **`calibration/`** — `data.py` holds the four stylized firm archetypes (`get_stylized_firms()`: Anthropic-, OpenAI-, Google-, xAI-like) and the baseline calibration; `revealed_beliefs.py` infers implied λ from observed investment. Revealed beliefs appear in the slides and the paper's conclusion (future work), not as a paper section.
 
 ## IMPORTANT: Figure Generation
