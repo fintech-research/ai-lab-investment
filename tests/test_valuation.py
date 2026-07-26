@@ -169,6 +169,53 @@ class TestCreditRisk:
         assert abs(p_mc - p_formula) < 0.006
 
 
+class TestPublishedCreditLevels:
+    """Pin the credit levels printed in section 5.2 and fig-credit-risk.
+
+    The formula itself is Monte-Carlo verified above; these pins guard the
+    *published levels* against silent drift. Everything here is a
+    deterministic closed-form evaluation at the figure's own conventions
+    (X = CREDIT_RISK_DEMAND_LEVEL, K = 1, phi = 0.5), so the tolerances
+    are tight enough to catch a one-digit change in the printed value.
+    """
+
+    def test_spread_levels_at_quoted_leverages(self, va):
+        """Paper: 'approximately 40 bps at ell = 0.40 and 100 bps at
+        ell = 0.70'."""
+        assert va.credit_spread(leverage=0.40) * 1e4 == pytest.approx(41.34, abs=0.2)
+        assert va.credit_spread(leverage=0.70) * 1e4 == pytest.approx(97.13, abs=0.5)
+
+    def test_spread_turns_positive_near_leverage_013(self, va):
+        """Paper: the spread turns positive 'around ell ~ 0.13'."""
+        assert va.credit_spread(leverage=0.13) < 1e-9
+        assert va.credit_spread(leverage=0.14) * 1e4 == pytest.approx(1.05, abs=0.1)
+        assert va.credit_spread(leverage=0.15) * 1e4 == pytest.approx(3.07, abs=0.1)
+
+    def test_default_probability_levels(self, va):
+        """Paper: the 5-year default probability 'rises from approximately
+        0.6% at low leverage to approximately 13% at ell = 0.70'. The
+        figure's leverage grid starts at 0.05."""
+        pd = va.default_probability
+        X = va.CREDIT_RISK_DEMAND_LEVEL
+        assert pd(X, 1.0, 0.05) * 100 == pytest.approx(0.627, abs=0.01)
+        assert pd(X, 1.0, 0.40) * 100 == pytest.approx(4.847, abs=0.02)
+        assert pd(X, 1.0, 0.70) * 100 == pytest.approx(12.979, abs=0.05)
+
+    def test_figure_grid_endpoints(self, va):
+        """fig-credit-risk plots credit_spread_curve() on
+        linspace(0.05, 0.70, 30); pin both endpoints of both panels."""
+        result = va.credit_spread_curve(np.linspace(0.05, 0.70, 30))
+        spreads_bps = result["credit_spread"] * 1e4
+        pds_pct = result["default_probability"] * 100
+        assert spreads_bps[0] == pytest.approx(0.0, abs=1e-9)
+        assert spreads_bps[-1] == pytest.approx(97.13, abs=0.5)
+        assert pds_pct[0] == pytest.approx(0.627, abs=0.01)
+        assert pds_pct[-1] == pytest.approx(12.979, abs=0.05)
+        # Panel shapes: spread weakly increasing, default prob strictly so.
+        assert np.all(np.diff(spreads_bps) >= -1e-12)
+        assert np.all(np.diff(pds_pct) > 0)
+
+
 # ------------------------------------------------------------------
 # Dario dilemma
 # ------------------------------------------------------------------
@@ -252,14 +299,43 @@ class TestDarioDilemmaLeveraged:
         assert abs(result["default_prob_optimal"] - dp_standalone) < 1e-10
 
     def test_baseline_default_probs(self, va):
-        """Regression: default probs at baseline match paper values."""
+        """Regression: default probs at baseline match paper values
+        (section 5.2: 0.64% baseline, 0.79% conservative, 5.04%
+        aggressive). Pinned to +/-0.01pp, i.e. one digit of the printed
+        two-decimal percentage."""
         r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
         r_aggr = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
         assert "error" not in r_cons
         assert "error" not in r_aggr
-        # Paper: conservative ~0.79%, aggressive ~5.04%
-        assert abs(r_cons["default_prob_mismatch"] - 0.0079) < 0.002
-        assert abs(r_aggr["default_prob_mismatch"] - 0.0504) < 0.005
+        assert r_cons["default_prob_optimal"] * 100 == pytest.approx(0.64, abs=0.01)
+        assert r_aggr["default_prob_optimal"] * 100 == pytest.approx(0.64, abs=0.01)
+        assert r_cons["default_prob_mismatch"] * 100 == pytest.approx(0.79, abs=0.01)
+        assert r_aggr["default_prob_mismatch"] * 100 == pytest.approx(5.04, abs=0.01)
+
+    def test_baseline_triggers_allocations_and_distance_to_default(self, va):
+        """Section 5.2 prose: the conservative firm enters at X* = 0.0055
+        against 0.0047 at correct beliefs; the aggressive firm at 0.0033
+        while over-training (phi* = 0.97 against 0.70). Distance to
+        default X*/X_D falls from 5.1 to 4.9 (conservative) and 3.3
+        (aggressive)."""
+        from ai_lab_investment.models.duopoly import DuopolyModel
+
+        duo = DuopolyModel(
+            va.params, leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        expected = {
+            # lambda_invest -> (X*, phi*, X*/X_D)
+            0.02: (0.005515, 0.1381, 4.85),
+            0.10: (0.004722, 0.7009, 5.05),
+            0.50: (0.003337, 0.9716, 3.27),
+        }
+        for lam, (X_exp, phi_exp, dd_exp) in expected.items():
+            model = SingleFirmModel(va.params.with_param(lam=lam))
+            X, K, phi = model.optimal_trigger_capacity_phi()
+            assert pytest.approx(X_exp, abs=5e-6) == X
+            assert phi == pytest.approx(phi_exp, abs=5e-4)
+            X_D = duo.default_boundary(phi, K, 0.0, 0.0)
+            assert pytest.approx(dd_exp, abs=0.01) == X / X_D
 
     def test_aggressive_higher_default_prob(self, va):
         """Aggressive overinvestment has higher default probability."""
@@ -282,11 +358,15 @@ class TestDilemmaAsymmetry:
             assert r_cons["value_loss_pct"] > r_aggr["value_loss_pct"]
 
     def test_baseline_loss_magnitudes(self, va):
-        """Regression: paper values 26% (lambda=0.02) and 6% (lambda=0.20)."""
+        """Regression: paper values 26% (lambda=0.02) and 6% (lambda=0.20),
+        and the asymmetry ratio 4.6 quoted in Internet Appendix E. Pinned
+        to +/-0.2pp so a one-digit drift in the printed percentage fails."""
         r_cons = va.dario_dilemma(0.10, 0.02)
         r_aggr = va.dario_dilemma(0.10, 0.20)
-        assert abs(r_cons["value_loss_pct"] - 0.262) < 0.01
-        assert abs(r_aggr["value_loss_pct"] - 0.056) < 0.01
+        assert r_cons["value_loss_pct"] * 100 == pytest.approx(26.19, abs=0.2)
+        assert r_aggr["value_loss_pct"] * 100 == pytest.approx(5.63, abs=0.2)
+        ratio = r_cons["value_loss_pct"] / r_aggr["value_loss_pct"]
+        assert ratio == pytest.approx(4.65, abs=0.05)
 
     def test_asymmetry_invariant_to_delta(self):
         """Section 4's delta = 0.10 robustness check: delta is a capacity
@@ -469,40 +549,66 @@ class TestAppendixERobustness:
 
     def test_duopoly_dilemma_table(self, va):
         """tbl-duopoly-dilemma: 26%->38% conservative, 6%->17% aggressive;
-        competition amplifies both losses but preserves the asymmetry."""
+        competition amplifies both losses but preserves the asymmetry.
+        Pinned to +/-0.2pp, one digit of the printed percentage."""
         r_cons = va.dario_dilemma_duopoly(0.10, 0.02)
         r_aggr = va.dario_dilemma_duopoly(0.10, 0.20)
         assert "error" not in r_cons
         assert "error" not in r_aggr
-        assert abs(r_cons["value_loss_pct_duopoly"] - 0.383) < 0.02
-        assert abs(r_aggr["value_loss_pct_duopoly"] - 0.173) < 0.02
+        assert r_cons["value_loss_pct_single"] * 100 == pytest.approx(26.19, abs=0.2)
+        assert r_aggr["value_loss_pct_single"] * 100 == pytest.approx(5.63, abs=0.2)
+        assert r_cons["value_loss_pct_duopoly"] * 100 == pytest.approx(38.31, abs=0.2)
+        assert r_aggr["value_loss_pct_duopoly"] * 100 == pytest.approx(17.33, abs=0.2)
         assert r_cons["value_loss_pct_duopoly"] > r_cons["value_loss_pct_single"]
         assert r_aggr["value_loss_pct_duopoly"] > r_aggr["value_loss_pct_single"]
         assert r_cons["value_loss_pct_duopoly"] > r_aggr["value_loss_pct_duopoly"]
         assert r_cons["focal_leads"] is False  # conservative cedes the lead
         assert r_aggr["focal_leads"] is True
 
+    def test_duopoly_dilemma_prose_numbers(self, va):
+        """Internet Appendix E prose around tbl-duopoly-dilemma: the
+        conservative firm invests at X* = 0.0055 against the rival's
+        0.0047 and under-allocates to training (phi = 0.14 vs 0.70); the
+        aggressive firm leads at X* = 0.0040 while over-allocating
+        (phi = 0.88)."""
+        r_cons = va.dario_dilemma_duopoly(0.10, 0.02)
+        r_aggr = va.dario_dilemma_duopoly(0.10, 0.20)
+        assert r_cons["X_focal"] == pytest.approx(0.005515, abs=5e-6)
+        assert r_cons["X_rival"] == pytest.approx(0.004722, abs=5e-6)
+        assert r_cons["phi_focal"] == pytest.approx(0.1381, abs=5e-4)
+        assert r_cons["phi_rival"] == pytest.approx(0.7009, abs=5e-4)
+        assert r_aggr["X_focal"] == pytest.approx(0.003999, abs=5e-6)
+        assert r_aggr["X_rival"] == pytest.approx(0.004722, abs=5e-6)
+        assert r_aggr["phi_focal"] == pytest.approx(0.8815, abs=5e-4)
+        assert r_aggr["phi_rival"] == pytest.approx(0.7009, abs=5e-4)
+
     def test_dynamic_phi_table(self, va):
         """tbl-dynamic-phi: phi_1 at or below the static optimum, rising
         back toward it as reallocation gets costlier; phi_H at the training
         corner when kappa = 0; value gains declining in the adjustment
-        cost; phi_underbar unchanged."""
+        cost; phi_underbar unchanged.
+
+        The table prints phi to two decimals and value gains to one, so
+        the tolerances (0.005 on phi, 0.03pp on gains) are set to fail on
+        a one-digit change in any printed cell.
+        """
         # kappa -> (phi_1, phi_H, phi_L2, value gain %)
         expected = {
-            0.0: (0.01, 0.99, 0.70, 5.06),
-            0.5: (0.60, 0.99, 0.66, 1.90),
-            2.0: (0.69, 0.92, 0.69, 0.86),
-            10.0: (0.70, 0.75, 0.70, 0.20),
+            0.0: (0.010, 0.990, 0.7009, 5.056),
+            0.5: (0.6017, 0.990, 0.6602, 1.896),
+            2.0: (0.6871, 0.9235, 0.6908, 0.859),
+            10.0: (0.6979, 0.7514, 0.6981, 0.196),
         }
         gains = []
         for kappa, (phi_1, phi_H, phi_L2, gain) in expected.items():
             r = va.two_period_dynamic_phi(adjustment_cost=kappa)
             assert "error" not in r
-            assert abs(r["phi_1_dynamic"] - phi_1) < 0.02
-            assert abs(r["phi_H_dynamic"] - phi_H) < 0.02
-            assert abs(r["phi_L2_dynamic"] - phi_L2) < 0.02
-            assert abs(r["value_gain_pct"] - gain) < 0.15
-            assert abs(r["phi_underbar"] - 0.180) < 0.005
+            assert r["phi_static"] == pytest.approx(0.7009, abs=5e-4)
+            assert r["phi_1_dynamic"] == pytest.approx(phi_1, abs=0.005)
+            assert r["phi_H_dynamic"] == pytest.approx(phi_H, abs=0.005)
+            assert r["phi_L2_dynamic"] == pytest.approx(phi_L2, abs=0.005)
+            assert r["value_gain_pct"] == pytest.approx(gain, abs=0.03)
+            assert r["phi_underbar"] == pytest.approx(0.1801, abs=5e-4)
             # the reallocation option never raises the initial allocation
             assert r["phi_1_dynamic"] <= r["phi_static"] + 1e-3
             gains.append(r["value_gain_pct"])
