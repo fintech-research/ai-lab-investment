@@ -33,7 +33,7 @@ In practice, firms expand incrementally and can repurpose compute across workloa
 A frontier AI laboratory produces intelligence by combining two forms of compute.
 *Training compute* optimizes a neural network's parameters on massive datasets, yielding a model whose quality scales as a power law of compute invested.
 *Inference compute* runs the trained model to serve predictions and generate revenue.
-Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction and their associated power production---creating an allocation problem with no close parallel in traditional capital budgeting.
+Both activities consume the same scarce hardware---the GPU clusters described in @sec-introduction and their associated power production---creating an allocation problem that resembles resource flexibility in operations management [@vanmieghem2003capacity; @chod2005resource] but differs in a way that matters for valuation: the split is committed at installation, and its training side pays off only in a demand regime that has not yet arrived.
 
 A firm with total installed capacity $K$ allocates fraction $\phi \in (0, 1)$ to training and $1 - \phi$ to inference, such that training compute is $\phi K$ and inference compute is $(1-\phi) K$.
 Revenue depends on the demand regime:
