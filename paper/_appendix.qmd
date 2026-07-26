@@ -399,6 +399,24 @@ The calibration uses data from the following sources:
 All firm-level data reflects publicly available information as of Q4 2025 and Q1 2026.
 The stylized firms are composites designed to capture the key features of each firm category; they do not represent exact calibrations to any specific company.
 
+**Archetype-by-archetype sourcing.**
+The figures in @tbl-firms are approximate composites derived from public filings (10-K, 10-Q), earnings call guidance, press reports, and analyst estimates.
+For the Anthropic-like archetype, 2025 revenue of \$4.5B reflects collected revenue, not the annualized run rate (\$9B ARR at year-end 2025, accelerating to \$14B ARR by February 2026); CapEx reflects annual cloud compute commitments, primarily on AWS (\$2.66B through September 2025) and Google Cloud TPUs.
+For the OpenAI-like archetype, 2024 revenue of \$3.7B and 2025 revenue of \$12.5B follow the CFO's January 2026 disclosure (\$20B ARR at year-end); CapEx of \$12B reflects Azure inference and training spend, which Epoch AI decomposes as approximately \$3B training, \$2B research/experimentation, and \$1.8B inference for 2024 alone.^[\url{https://epoch.ai/data-insights/openai-compute-spend}.]
+For the Google-like archetype, revenue is Google Cloud revenue (\$43.2B in 2024, growing 37--39\% to \$59--60B in 2025 per the Alphabet SEC filing), not Alphabet-wide revenue (\$403B); CapEx is total Alphabet capital expenditure (\$91.4B in 2025), approximately 60\% to servers and 40\% to data centers and networking.
+The resulting CapEx/Revenue ratio of 1.52$\times$ intentionally uses consolidated CapEx as the numerator because the majority of Alphabet's infrastructure spending supports AI workloads across all products, not only the Cloud segment; a segment-level ratio using only Cloud-attributed CapEx would be lower (approximately 0.5--0.7$\times$) but would understate the total AI infrastructure investment that the model's capacity $K$ represents.
+For the xAI-like archetype,^[This illustration relies on xAI figures from before the firm's acquisition by SpaceX, announced in February 2026 at a combined valuation of \$1.25 trillion (\url{https://www.reuters.com/business/musks-spacex-merge-with-xai-combined-valuation-125-trillion-bloomberg-news-2026-02-02/}); the archetype is calibrated to xAI as a standalone frontier lab as of Q4 2025--Q1 2026.] revenue reflects standalone AI-related revenue (Grok API and subscriptions); Bloomberg reported Q3 2025 revenue of \$107M, roughly doubled quarter-on-quarter. The March 2025 merger with X complicates attribution, but standalone AI figures best match the model's scope.
+These concepts are not harmonized across the four archetypes, which is why @sec-calibration reads the columns of @tbl-firms one at a time rather than as cross-sectional moments.
+
+**Evidence behind the training fractions $\hat{\phi}$.**
+The values of $\hat{\phi}$ in @tbl-firms are triangulated from three types of evidence.
+
+*Executive statements.* @amodei2026dwarkesh modeled the long-run equilibrium at "roughly 50/50 training and inference," noting that "it's not gonna be 10\%, it's not gonna be 90\%." Microsoft's CFO described Azure AI revenue as "primarily inference and post-training workloads." Jensen Huang estimated that inference workloads would require "easily 100 times more" compute than anticipated, with inference already exceeding 40\% of AI revenue by late 2025.
+
+*Firm-specific data.* The only company-level decomposition with primary documentation is Epoch AI's analysis of OpenAI's 2024 compute: of approximately \$7B in total cloud compute, roughly \$3B went to training, \$2B to research and experimentation, and \$1.8B to inference. Combined R\&D (training plus research) was approximately 71\%, inference approximately 26\%. The key finding is that "the majority of OpenAI's R\&D compute was likely allocated to research and experimental training runs, rather than the final training runs of released models"---the model's $\hat{\phi}$ subsumes both.
+
+*Industry trajectory.* Deloitte's TMT Predictions 2026 estimates that the industry-wide split shifted from roughly two-thirds training to parity (approximately 50/50) in 2025, and is projected to reach two-thirds inference by 2026, driven by expanding user bases, reasoning models using 10--100 times more compute per query, and enterprise adoption at scale.^[\url{https://www.deloitte.com/us/en/insights/industry/technology/technology-media-and-telecom-predictions.html}.]
+
 ### D. Parameter Sensitivity {.unnumbered}
 
 @tbl-elasticities reports the elasticities of the optimal trigger $X^*$, capacity $K^*$, and training fraction $\phi^*$ with respect to each model parameter, computed numerically at the baseline calibration.
@@ -488,6 +506,14 @@ The exercise ties the H prize to the *contemporaneous* training capacity, which 
 To the extent that post-switch revenue instead reflects capability accumulated from *cumulative* pre-switch training, the revision option is worth less and the static allocation is closer to optimal; in the limit where the prize is locked in at investment, the memoryless arrival and the absence of learning leave the continuation problem stationary and $\phi^*$ is exactly optimal.
 The gap also shrinks as the commitment period lengthens ($\phi_1 = 0.10$ at $\kappa = 0$ and $dt = 5$ years, against $0.01$ at $dt = 1$).
 The honest reading of @tbl-dynamic-phi is therefore that $\phi^*$ is the allocation of a firm that cannot cheaply and immediately re-purpose compute at the moment of the switch, and that the bias in the pre-switch training share runs downward, with a magnitude governed by the cost and speed of re-purposing and by how much of the H prize is embodied in prior training.
+Firms in practice reallocate GPUs between training and inference on timescales of weeks, though the configuration, networking, and software investments specific to large training clusters keep the adjustment cost strictly positive.
+The stationarity of the problem is worth stating explicitly, because it rules out an alternative reading of the bias: the switch time is exponential and the firm learns nothing from its non-arrival, so conditional on no switch the problem after one period is identical to the problem at the investment date---the hazard $\lambda$ is unchanged, and so is the continuation value that $\phi$ trades off against current inference revenue.^[An extension with unknown $\lambda$ and Bayesian learning would break this stationarity: non-arrival would lower the posterior arrival rate and generate a genuine downward drift in $\phi$ over time. The exercise here excludes that channel deliberately, so that what it measures is the value of re-purposing compute at the switch rather than the value of learning about $\lambda$.]
+The bias is therefore entirely the value of the re-purposing option, and it has one immediate consequence for the calibration: because the static model overstates the pre-switch training fraction, the implied $\lambda$ that rationalizes a given observed $\hat{\phi}$ is *higher* under the dynamic model than under the static model, since the observed $\hat{\phi}$ then represents a deliberate choice made despite the option to re-purpose rather than an irreversible commitment.
+
+Dynamic reallocation would attenuate the paper's headline mechanisms but not eliminate them, as @sec-discussion states.
+The faith-based survival channel (Proposition 2) would be weakened because a struggling firm could shift from training to inference to boost L-regime cash flow, partially offsetting the default-boundary reduction from high $\phi$.
+The channel survives, however, to the extent that expected post-switch revenue reflects *cumulative* training investment rather than the compute currently allocated, so that $\phi$ continues to enter $A_{\text{eff}}$; in the opposite limit, where compute is re-purposed at the switch, the continuation-value floor remains---the option to move into training upon a switch is what creates it---but it no longer varies with the firm's pre-switch $\phi$.
+The Dario's dilemma asymmetry (Numerical Finding 1) would likewise be attenuated because an over-training firm could partially recover by reallocating to inference, reducing the cost of aggressive overinvestment; the asymmetry between underinvestment and overinvestment would narrow but persist, because the dominant channel---the destruction of H-regime option value from under-training---operates through the *level* of training investment, not its adjustability.
 A full dynamic treatment with continuous $\phi_t$ control is left for future work.
 
 **Duopoly Dario's dilemma.**
@@ -512,3 +538,103 @@ A natural extension replaces the binary regime process with a three-regime ladde
 The mechanisms of Propositions 1 and 2 would be expected to survive it, because each operates through the composition of $A_{\text{eff}}$: with a second absorbing-direction switch the effective revenue coefficient becomes a longer convex combination of regime-specific continuation values, but it remains increasing in the arrival rates whenever the training share is high enough, which is the only property the faith-based survival condition uses; and the training allocation channel behind Dario's dilemma continues to trade L-regime inference revenue against capability-contingent upside.
 What a third regime would change is quantitative: the value of waiting rises when uncertainty resolves in two steps rather than one, so the trigger $X^*$ and the belief-mismatch losses would both move, and the direction of the net effect on $\phi^*$ is not obvious a priori.
 I do not solve the three-regime model; this discussion is qualitative, and the two-regime specification is a modeling choice that captures the feature the paper is about---binary uncertainty over whether AI becomes transformative---rather than a case verified against a richer alternative.
+
+\newpage
+
+### F. Single-Firm Illustrations in Regime $H$ {.unnumbered}
+
+This section collects the two textbook real-options exhibits for the H-regime sub-problem of @sec-single-firm. Both solve the H-regime problem with revenue $X K^\alpha$, i.e. all installed capacity treated as productive training capacity, which is without loss of generality within the absorbing H-regime; all quantitative results in the paper use the full model with the joint $(K, \phi)$ optimization.
+
+**Option value against the NPV of immediate investment.**
+@fig-option-value depicts the option value $F_H(X)$ of @eq-option-H alongside the net present value of investing immediately at the optimal scale, for the baseline calibration.
+The option value lies everywhere above the NPV curve, with the gap---the shaded "value of waiting" region---largest at low demand levels.
+At $X = X_H^*$ the two curves meet tangentially (smooth pasting), and for $X > X_H^*$ the firm invests immediately, so the option value equals the NPV.
+The figure illustrates the core real options result: for $X < X_H^*$ the firm strictly prefers to wait, and the magnitude of the value of waiting is substantial---exceeding the NPV by a factor of two or more at demand levels well below the trigger---which is the geometric counterpart of the option premium factor $\beta_H/(\beta_H - 1) \approx 2.8$ in @eq-trigger-H.
+
+![Option value versus NPV of immediate investment in regime $H$. The solid curve shows the option value $F_H(X)$; the dashed curve shows the NPV of investing immediately at the optimal scale $K_H^*$. The shaded region represents the "value of waiting"---the excess of the option value over the NPV. The vertical dotted line marks the optimal trigger $X_H^*$ where smooth pasting holds. Parameters: baseline calibration ($\sigma = 0.25$, $\mu_H = 0.06$, $r = 0.12$, $\alpha = 0.40$, $\gamma = 1.50$).](figures/fig_option_value.pdf){#fig-option-value}
+
+**Comparative statics of the H-regime policy.**
+@fig-comparative-statics presents comparative statics for the optimal trigger $X_H^*$ and capacity $K_H^*$ with respect to four key parameters; @tbl-elasticities reports the same objects as elasticities at the baseline.
+Panel (a) shows that higher volatility $\sigma$ raises both the trigger and the optimal capacity: uncertainty increases the option value of waiting, but when the firm does invest, it builds more to compensate for the higher risk.
+Panel (b) illustrates the effect of revenue elasticity $\alpha$: higher $\alpha$ (less diminishing returns) raises the trigger and substantially increases capacity, since the marginal value of additional capacity is higher.
+Panel (c) shows that greater cost convexity $\gamma$ has a non-monotone effect on the trigger while sharply reducing optimal capacity, reflecting the rapidly increasing marginal cost of building at scale.
+Panel (d) demonstrates that higher operating cost $\delta$ raises both the trigger and the optimal capacity: the linear cost floor creates the interior optimum (@eq-foc-K), and increasing $\delta$ shifts the cost balance toward larger scale.
+As @sec-calibration notes, the $\delta$ panel is a rescaling of the capacity unit rather than an economic sensitivity: $\delta$ enters only through the total cost $b(K) = \delta K/r + cK^\gamma$, so replacing $(\delta, K)$ by $(\delta s^{1-\gamma}, K/s)$ leaves the problem unchanged up to a constant factor.
+
+![Comparative statics of the single-firm investment policy in regime $H$. Each panel varies one parameter while holding others at baseline values. Solid lines (left axis) show the optimal trigger $X_H^*$; dashed lines (right axis) show the optimal capacity $K_H^*$. (a) Volatility $\sigma$; (b) revenue elasticity $\alpha$; (c) investment cost convexity $\gamma$; (d) operating cost rate $\delta$.](figures/fig_comparative_statics.pdf){#fig-comparative-statics}
+
+\newpage
+
+### G. A Normalized Scale-Gap Diagnostic {.unnumbered}
+
+Motivated by @berk1999optimal, this section asks how far a firm's installed base sits from the model's optimal scale, and reports the answer as a unit-free index; @sec-valuation summarizes the result.
+This is deliberately *not* a growth-option decomposition.
+It does not measure the present value of future investment opportunities, and the two quantities it compares are benchmarks rather than separable claims on the firm: one is measured gross of sunk investment cost, the other net of it.
+Adding them is a normalization device---it puts the gap on a $[0, 1]$ scale so that it can be read across calibrations---not a valuation identity, and the resulting fraction is not a share of firm value or of market capitalization.
+The object of interest is the *shape* of that index in $K/K^*$, which is invariant to the cost normalization $c = 1$ (@sec-calibration); its level at any particular point on the horizontal axis is not.
+
+1. **Assets-in-place**: the value of existing installed capacity at current demand, incorporating both L-regime inference revenue and H-regime continuation value through $A_{\text{eff}}$.
+$$
+V_{\text{AIP}} = A_{\text{eff}}(\phi, K_{\text{installed}}) \cdot X - \frac{\delta K_{\text{installed}}}{r}.
+$$
+
+2. **Capacity gap value**: the shortfall of the current installed base relative to the optimally sized project,
+$$
+V_{\text{gap}} = \max\{\text{NPV}(K^*, \phi^*) - V_{\text{AIP}},\; 0\},
+$$
+where $\text{NPV}(K^*, \phi^*)$ is the net (of the full investment cost $I(K^*)$) present value of the optimally sized greenfield project. This is a comparative-statics measure of distance to optimal scale---how far the firm's gross installed-asset value falls short of the net value of a full-scale deployment---not the NPV of incremental expansion from the installed base (which would credit the firm for capacity already sunk), and not a forward-looking option value. Because the benchmark nets out the entire investment cost while assets-in-place are gross of sunk costs, the gap reaches zero before $K_{\text{installed}}$ reaches $K^*$.
+
+The value of the possibility of transitioning from $L$ to $H$ does not appear as a third additive term: it is embedded in *both* quantities through the effective revenue coefficient $A_{\text{eff}}(\phi, \cdot)$, which already weights the H-regime continuation value by the arrival rate $\lambda$ and the training allocation $\phi$.
+The scale-gap index is then
+$$
+g(K_{\text{installed}}) = \frac{V_{\text{gap}}}{V_{\text{AIP}} + V_{\text{gap}}} \in [0, 1].
+$$
+
+@fig-growth-decomposition plots the index using the full model with regime switching: values are computed with the effective revenue coefficient $A_{\text{eff}}$ at the optimal training fraction $\phi^*$, evaluated at demand $1.5 X^*$.
+Panel (a) stacks assets-in-place (blue) and the capacity gap (orange) against installed capacity relative to the optimal level $K^*$.
+When the firm has little installed capacity ($K/K^* \ll 1$), the gap dominates the stack; as installed capacity rises, assets-in-place increase concavely (diminishing returns) while the gap shrinks.
+Panel (b) plots $g$, which falls from about 80\% at the left edge of the figure ($K/K^* = 0.01$) to zero at $K/K^* \approx 0.77$ (the crossover occurs where the gross value of installed assets overtakes the optimal *net* value, since assets-in-place are measured gross of the sunk investment cost while the benchmark nets it out).
+At the baseline calibration $g$ equals 50\% at $K/K^* = 0.1$ and 26\% at $K/K^* = 0.3$, so the index runs at roughly 25--50\% over that range; the sweep in Internet Appendix E reports 48--59\% and 19--30\% at those two points across the $\pm 25\%$ one-at-a-time parameter perturbations, so the band is a property of the model rather than of the baseline draw.
+The model is silent on where any actual lab sits on the horizontal axis.
+Because $c = 1$ fixes the cost scale by normalization (@sec-calibration), $K^*$ is not a physical quantity and $K/K^*$ cannot be read off observed compute stocks; I therefore make no claim about which point on the axis describes a given firm, and the content of the figure is entirely the monotone decline and the location of the crossover.
+
+![Normalized scale-gap diagnostic. (a) Stacked plot: assets-in-place (blue) and capacity gap (orange) as a function of installed capacity relative to optimal $K^*$. The dotted line marks $K/K^* = 1$. (b) The scale-gap index $g = V_{\text{gap}}/(V_{\text{AIP}} + V_{\text{gap}})$, falling monotonically to zero at $K/K^* \approx 0.77$. This is a comparative statics exercise on installed capacity, not a growth-option decomposition: the two components are measured against different benchmarks (one gross of sunk cost, one net), so their sum is a normalization and $g$ is not a share of firm value. Levels on the horizontal axis are not identified---$c = 1$ is a normalization---so the informative content is the shape of the curve, not the position of any particular firm along it. Parameters: full model with regime switching at $\phi^*$, demand at $1.5 X^*$, baseline calibration.](figures/fig_growth_decomposition.pdf){#fig-growth-decomposition}
+
+The diagnostic carries no direct asset-pricing implication: the model prices all claims by discounting at a single constant rate $r$ and contains no pricing kernel, so it cannot map a value composition into a beta or an expected return.
+The related conjecture---that a larger H-regime share of value raises equity betas---is stated in @sec-discussion as a hypothesis to be tested, not as a result derived here.
+
+\newpage
+
+### H. Credit Spreads and Default Probabilities {.unnumbered}
+
+This section gives the formulas and the leverage curves behind the credit-risk discussion of @sec-valuation.
+
+**Credit spreads.**
+For a levered firm with leverage $\ell$ and training fraction $\phi$, the credit spread is:
+$$
+\text{spread} = \frac{\text{coupon}}{D(X)} - r,
+$$
+where $D(X)$ is the market value of debt (which differs from face value due to default risk) and the reference rate is the model's discount rate $r$ (the WACC), not a risk-free rate.^[The benchmark is the model's discount rate $r$ because all claims are valued by discounting at $r$: a default-free perpetuity with coupon $C_D$ is worth $C_D/r$ and yields exactly $r$, so the spread is zero absent default risk and isolates the default-risk component. The model has a single, risk-adjusted discount rate and therefore cannot separately speak to the term-structure or risk-premium components of observed corporate spreads; the reported spreads are model-implied risk-adjusted objects---the default-risk increment over $r$---and not market credit spreads or yield spreads over Treasuries.]
+Because leverage and the coupon rate are exogenous stress-test parameters (@sec-model), the leverage gradients below describe the model's response to an imposed debt burden, not an optimally chosen capital structure.
+Higher leverage increases the default boundary $X_D$ and the coupon claim, reducing debt value and widening spreads.
+
+**Default probability.**
+The probability of default within horizon $T$ is the first-passage probability for GBM hitting the barrier $X_D$:
+$$
+P(\text{default within } T) = \mathcal{N}(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \mathcal{N}(-d_2),
+$$
+where $\nu = \mu_L - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\mathcal{N}$ is the standard normal CDF.
+This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model; the L-regime drift $\mu_L$ is the relevant one because the default boundary is an L-regime object (the firm defaults pre-switch).
+The calculation abstracts from the regime switch itself---a switch to $H$ before hitting $X_D$ would effectively remove default risk---so the reported figures are upper bounds on the pre-switch default hazard.
+Since $\mu_L$ is the risk-adjusted (certainty-equivalent) drift, the result is a *model-implied risk-adjusted* first-passage probability, computed under the same convention as the spread calculation; it is not a risk-neutral (pricing-measure) probability, because the model discounts at the WACC rather than at a risk-free rate (see the footnote in @sec-model), and the physical-measure probability (using the unadjusted drift) would be lower.
+
+**The leverage gradient.**
+@fig-credit-risk presents the credit risk implications.
+Panel (a) shows credit spreads as a function of leverage, evaluated at a fixed demand level $X = 0.10$ for a firm with capacity $K = 1$ and training fraction $\phi = 0.5$ (a representative interior allocation; using the optimal $\phi^* \approx 0.70$ shifts the level of the curves modestly through the two opposing $\phi$-channels discussed in @sec-valuation without changing their shape).
+At low leverage the spread is zero: the small coupon claim is over-collateralized by the liquidation value of the inference business, so debt is effectively riskless even though the equity holders' default boundary is positive.
+Once the coupon claim outgrows the inference collateral (around $\ell \approx 0.13$ at the evaluation point), the spread turns positive and rises with leverage, reaching approximately 12 bps at $\ell = 0.20$, 41 bps at $\ell = 0.40$, and 97 bps at $\ell = 0.70$.
+Panel (b) shows the model-implied risk-adjusted 5-year default probability (first-passage under the risk-adjusted L-regime drift), which rises from 0.63\% at $\ell = 0.05$ to 1.80\%, 4.85\%, and 12.98\% at the same three leverage levels.
+The steep increase in default probability at high leverage reflects the shrinking distance to default: as leverage increases, the default boundary $X_D$ rises while the firm's demand level is fixed, compressing the safety margin.
+The contrast between the two panels is itself informative: default is far from rare at high leverage, but creditor losses conditional on default are bounded by the inference-business collateral, so spreads remain moderate---the credit risk of an AI lab in this model is a high-probability, modest-severity event for creditors, while the catastrophic component (the destruction of the faith-based continuation value) is borne by shareholders.
+
+![Credit risk as a function of leverage. (a) Credit spread in basis points, measured relative to the model's discount rate $r$ rather than a risk-free rate. (b) Model-implied risk-adjusted five-year default probability (first-passage under the risk-adjusted L-regime drift); neither panel reports a risk-neutral (pricing-measure) object or a market credit spread. Spreads are zero at low leverage, where the coupon claim is over-collateralized by the liquidation value of the inference business, and rise once the claim outgrows the collateral. Default probability is increasing and convex in leverage, reflecting the rising default boundary. Evaluated at a fixed demand level $X = 0.10$ with capacity $K = 1$ and training fraction $\phi = 0.5$, using the Leland structural model with exogenous leverage, a stylized coupon rate $r_c = 0.05$, and bankruptcy cost $b = 0.30$.](figures/fig_credit_risk.pdf){#fig-credit-risk}

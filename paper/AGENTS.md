@@ -16,7 +16,7 @@ Main entry: `index.qmd` (includes all sections, then references, then `_appendix
 
 `index-blind.qmd` is the double-anonymous copy used for Management Science (`just render-blind`; see `../submission/README.md`). It includes the *same* section files as `index.qmd` — **if you add or remove an include in one, do the same in the other** — but drops `authors`/`affiliations`/`thanks` and sets `linestretch: 1.5`. Its `title`, `abstract`, and `keywords` are duplicated from `index.qmd` (Quarto has no per-document metadata include); `tests/test_paper_metadata.py` fails if the two drift apart, if the keyword count leaves 3–5, or if `keywords.tex` stops matching. Profile selection lives in `_quarto.yaml` (`identified` = default, `blind`); `split_blind_pdf.py` cuts the rendered PDF into the manuscript and the e-companion at the `_appendix-cover.qmd` page.
 
-`_appendix.qmd` is the **Internet Appendix** — always refer to it that way in prose ("Internet Appendix A", not "Appendix A"). Its sections: A. Proofs (Propositions 1–3 plus Numerical Finding 1, Dario's dilemma) and the result-taxonomy table; B. Numerical Verification Methods; C. Calibration Details and Data Sources; D. Parameter Sensitivity; E. Robustness (parameter sensitivity, Cournot discussion + quantified fixed-pie contest, dynamic φ reallocation, duopoly Dario's dilemma, alternative regime structure).
+`_appendix.qmd` is the **Internet Appendix** — always refer to it that way in prose ("Internet Appendix A", not "Appendix A"). Its sections: A. Proofs (Propositions 1–3 plus Numerical Finding 1, Dario's dilemma) and the result-taxonomy table; B. Numerical Verification Methods; C. Calibration Details and Data Sources (incl. the archetype-by-archetype sourcing and the φ̂ evidence blocks); D. Parameter Sensitivity; E. Robustness (parameter sensitivity, Cournot discussion + quantified fixed-pie contest, dynamic φ reallocation, duopoly Dario's dilemma, alternative regime structure); F. Single-Firm Illustrations in Regime H (`fig-option-value`, `fig-comparative-statics`); G. A Normalized Scale-Gap Diagnostic (`fig-growth-decomposition`); H. Credit Spreads and Default Probabilities (`fig-credit-risk`). Sections F–H were demoted from the main text to hold it near the target length — keep the main-text stubs and pointers in sync if you edit them.
 
 Results are labeled by method: Propositions 1–3 for analytical results, **Numerical Finding 1** for Dario's dilemma. Do not promote a numerical finding to a proposition; `@tbl-result-taxonomy` in Internet Appendix A records the analytical status of each result and must stay in sync.
 
@@ -26,7 +26,7 @@ The closed-form algebra of Propositions 1–3 is machine-checked in Lean 4/Mathl
 
 ## IMPORTANT: Figures
 
-- All figures are PDFs in `paper/figures/` (one PDF + one PNG per figure, 11 total; 10 are referenced in the paper — `fig_sample_paths` is used in the slides only).
+- All figures are PDFs in `paper/figures/` (one PDF + one PNG per figure, 11 total; 8 are referenced in the paper — `fig_sample_paths`, `fig_lambda_timeline`, and `fig_firm_comparison` are generated for the slides only, and the generators stay in `paper.py` and `generate_figures.py`).
 - Figure logic lives in `src/ai_lab_investment/figures/paper.py` — **never** in `generate_figures.py`.
 - To update a figure: edit the `create_*` function in `paper.py`, then run `uv run python paper/generate_figures.py`.
 - Do not add model code to `generate_figures.py`. It is a thin wrapper only.
