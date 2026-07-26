@@ -288,6 +288,28 @@ class TestDilemmaAsymmetry:
         assert abs(r_cons["value_loss_pct"] - 0.262) < 0.01
         assert abs(r_aggr["value_loss_pct"] - 0.056) < 0.01
 
+    def test_asymmetry_invariant_to_delta(self):
+        """Section 4's delta = 0.10 robustness check: delta is a capacity
+        normalization, so the dilemma percentages and the preemption
+        discount are numerically unchanged."""
+        from ai_lab_investment.models.duopoly import DuopolyModel
+
+        losses, discounts = [], []
+        for delta in [0.03, 0.10]:
+            p = ModelParameters(delta=delta)
+            v = ValuationAnalysis(p)
+            losses.append((
+                v.dario_dilemma(0.10, 0.02)["value_loss_pct"],
+                v.dario_dilemma(0.10, 0.20)["value_loss_pct"],
+            ))
+            eq = DuopolyModel(p, leverage=0.0).solve_preemption_equilibrium("L")
+            discounts.append(eq["X_leader"] / eq["X_leader_monopolist"])
+
+        assert losses[1][0] == pytest.approx(losses[0][0], rel=1e-4)
+        assert losses[1][1] == pytest.approx(losses[0][1], rel=1e-4)
+        assert discounts[1] == pytest.approx(discounts[0], rel=1e-4)
+        assert discounts[0] == pytest.approx(0.57, abs=0.01)
+
 
 # ------------------------------------------------------------------
 # Equity value vs lambda
