@@ -175,7 +175,7 @@ F_L(X) = A_1 X^{\beta_L^+} + C \cdot X^{\beta_H}, \quad X < X^*.
 
 
 
-When the simplified form applies, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
+Under this convention, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
 
 \begin{equation*}
 \tag*{[\texttt{eq-trigger-phi}]}
@@ -335,7 +335,7 @@ For a levered firm with leverage $\ell$ and training fraction $\phi$, the credit
 \text{spread} = \frac{\text{coupon}}{D(X)} - r,
 \end{equation*}
 
-where $D(X)$ is the market value of debt (which differs from face value due to default risk). Higher leverage increases the default boundary $X_D$ and the coupon claim, reducing debt value and widening spreads. The training fraction $\phi$ enters through two opposing channels. Through the faith-based survival mechanism (Proposition 2), higher $\phi$ raises $A_{\text{eff}}$ and lowers $X_D$, reducing the \emph{probability} of default. Through the recovery specification (\texttt{sec-duopoly}), higher $\phi$ shrinks the inference business that creditors can liquidate, raising the \emph{loss given default}---the faith-based continuation value that keeps the firm alive is destroyed in bankruptcy and is therefore worthless to creditors. At the baseline calibration the loss-given-default channel modestly dominates, so spreads are mildly increasing in $\phi$ for a given leverage level, even as default probabilities fall. This two-sided interaction between training allocation and credit risk---training as solvency protection for shareholders but collateral erosion for creditors---is, to my knowledge, novel.
+where $D(X)$ is the market value of debt (which differs from face value due to default risk) and the reference rate is the model's discount rate $r$ (the WACC), not a risk-free rate. Because leverage and the coupon rate are exogenous stress-test parameters (\texttt{sec-model}), the leverage gradients below describe the model's response to an imposed debt burden, not an optimally chosen capital structure. Higher leverage increases the default boundary $X_D$ and the coupon claim, reducing debt value and widening spreads. The training fraction $\phi$ enters through two opposing channels. Through the faith-based survival mechanism (Proposition 2), higher $\phi$ raises $A_{\text{eff}}$ and lowers $X_D$, reducing the \emph{probability} of default. Through the recovery specification (\texttt{sec-duopoly}), higher $\phi$ shrinks the inference business that creditors can liquidate, raising the \emph{loss given default}---the faith-based continuation value that keeps the firm alive is destroyed in bankruptcy and is therefore worthless to creditors. At the baseline calibration the loss-given-default channel modestly dominates, so spreads are mildly increasing in $\phi$ for a given leverage level, even as default probabilities fall. This two-sided interaction between training allocation and credit risk---training as solvency protection for shareholders but collateral erosion for creditors---is, to my knowledge, novel.
 
 
 
@@ -347,7 +347,7 @@ The probability of default within horizon $T$ is the first-passage probability f
 P(\text{default within } T) = \Phi(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \Phi(-d_2),
 \end{equation*}
 
-where $\nu = \mu_L - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\Phi$ is the standard normal CDF. This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model; the L-regime drift $\mu_L$ is the relevant one because the default boundary is an L-regime object (the firm defaults pre-switch). The calculation abstracts from the regime switch itself---a switch to $H$ before hitting $X_D$ would effectively remove default risk---so the reported figures are upper bounds on the pre-switch default hazard. Since $\mu_L$ is the risk-adjusted (certainty-equivalent) drift, this yields a risk-neutral default probability consistent with the spread calculation; the physical-measure default probability (using the unadjusted drift) would be lower.
+where $\nu = \mu_L - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\Phi$ is the standard normal CDF. This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model; the L-regime drift $\mu_L$ is the relevant one because the default boundary is an L-regime object (the firm defaults pre-switch). The calculation abstracts from the regime switch itself---a switch to $H$ before hitting $X_D$ would effectively remove default risk---so the reported figures are upper bounds on the pre-switch default hazard. Since $\mu_L$ is the risk-adjusted (certainty-equivalent) drift, the result is a \emph{model-implied risk-adjusted} first-passage probability, computed under the same convention as the spread calculation; it is not a risk-neutral (pricing-measure) probability, because the model discounts at the WACC rather than at a risk-free rate (see the footnote in \texttt{sec-model}), and the physical-measure probability (using the unadjusted drift) would be lower.
 
 
 
@@ -363,7 +363,7 @@ The value loss from mismatch is:
 \Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
 \end{equation*}
 
-where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the expected present value, evaluated at a common initial demand level $X_0$, of following the investment policy $(X^*, K^*, \phi^*)$ optimal for belief $\lambda_b$ when the true demand process is governed by $\lambda_a$. The timing discount $(X_0/X^*)^{\beta_H}$ adjusts for different waiting times before the respective triggers are reached. I evaluate investment \emph{outcomes} under the true demand process ($\lambda_a$) but use the \emph{investment policy} derived from the (possibly mistaken) belief $\lambda_b$. The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes. Throughout, percentage value losses are reported as $\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})$, the loss as a fraction of the first-best value.
+where $\text{NPV}(\lambda_a, \lambda_b)$ denotes the expected present value, evaluated at a common initial demand level $X_0$, of following the investment policy $(X^*, K^*, \phi^*)$ optimal for belief $\lambda_b$ when the true demand process is governed by $\lambda_a$. The timing discount $(X_0/X^*)^{\beta_H}$ adjusts for different waiting times before the respective triggers are reached. I evaluate investment \emph{outcomes} under the true demand process ($\lambda_a$) but use the \emph{investment policy} derived from the (possibly mistaken) belief $\lambda_b$. The training fraction enters the value loss through the revenue channel: a mismatched $\phi$ produces suboptimal revenue in both regimes. Throughout, percentage value losses are reported as $\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})$, the loss as a fraction of the first-best value. The levered version of the exercise keeps the same operating policy and changes only the claim being valued: the firm still chooses $(X^*, K^*, \phi^*)$ from the unlevered problem given its belief---leverage is exogenous in this model and is layered on top of an investment policy chosen on NPV grounds---and $\text{NPV}$ then denotes the value of the total claims $E + D - \ell I(K^*)$ under that policy. Because the policy is not re-optimized against the levered objective, the levered value function is not maximized at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ by construction, only very nearly so: at $\ell = 0.40$ its maximizer is $\lambda_{\text{invest}} \approx 0.101$ and the value shortfall at $\lambda_{\text{true}}$ is about one thousandth of one percent, more than three orders of magnitude below the mismatch losses reported here (Internet Appendix A).
 
 
 
@@ -440,13 +440,13 @@ which uniquely determines $\phi^*$ as an increasing function of $w_H / w_L$. $\s
 
 
 
-With $A_1 = 0$, dividing value-matching by smooth-pasting at the investment trigger $X^*$ eliminates the coefficient on $X^{\beta_H}$ and yields:
+\emph{The convention.} I nonetheless impose $A_1 = 0$, and price the pre-investment option with the pure power form $F_L(X) \propto X^{\beta_H}$ on the whole continuation region $(0, X^*)$. This is the unconditional-$A_{\text{eff}}$ convention of \texttt{sec-conventions}: option-like L-regime payoffs are discounted with the H-regime exponent $\beta_H$ rather than with a regime-switching first-passage factor mixing $X^{\beta_L^+}$ and $X^{\beta_H}$, and the exercise payoff is the unconditional L-regime installed value. With a single power in the continuation region, dividing value-matching by smooth-pasting at the investment trigger $X^*$ eliminates the coefficient and yields:
 
 \begin{equation*}
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + I(K^*)}{A_{\text{eff}}(\phi^*, K^*)},
 \end{equation*}
 
-confirming \texttt{eq-trigger-phi.} The trigger therefore depends only on the value-matching/smooth-pasting ratio, not on the level of that coefficient, which value-matching at $X^*$ then determines. Under the unconditional-$A_{\text{eff}}$ convention (Internet Appendix B), the option is priced with this smooth-fit coefficient rather than with the forced-ODE particular value $C$ of \texttt{eq-particular-C}, leaving \texttt{eq-trigger-phi} unchanged. $\square$
+confirming \texttt{eq-trigger-phi.} The trigger depends only on the value-matching/smooth-pasting ratio, not on the level of the coefficient, which value-matching at $X^*$ then determines; the two boundary conditions therefore pin down the trigger and the level jointly, and the system is exactly determined. The price of the convention is that this smooth-fit level differs from the forced-ODE value $C$ of \texttt{eq-particular-C}: at the baseline calibration the smooth-fit coefficient is $[V(X^*, K^*, \phi^*) - I(K^*)]/(X^*)^{\beta_H} \approx 16.5$ against $C \approx 21.1$. The direction of the resulting error is not implied by that comparison, and I therefore solve the piecewise free-boundary problem numerically and report the bias in Internet Appendix B. At the baseline calibration the exact continuation value exceeds the convention's smooth-fit value at every demand level while remaining below $C X^{\beta_H}$, so the convention understates the pre-investment option value---by 19\\% at $X_0 = X^*/2$---but the ordering is not general: it reverses for $\lambda \leq 0.02$. Propositions 1--3 are exact statements about the model these conventions define. The verification exercise shows what transfers to the exact problem and what does not: the levels of $X^*$ and $K^*$ are properties of the reduced model rather than estimates of the exact optimum, whereas the training fraction $\phi^*$ is numerically identical in the two problems and the value delivered by the reduced-form policy is within about 3\\% of the exact optimum at baseline. $\square$
 
 
 
@@ -584,6 +584,16 @@ whose economically relevant root (the continuation of the single-boundary root a
 \end{equation*}
 
 positive because $C_2 < 0$ at calibration values---so the direction of the bias (the single-boundary formula overstates default risk) follows analytically, not only numerically. At baseline the exact relative bias is 3.1\\% and the first-order $\kappa$ is 2.9\\%, uniform across leverage levels; the closed-form boundary exceeds the coupled-system boundary by approximately 3\\% throughout, in the conservative direction.
+
+
+
+\textbf{Piecewise low-regime stopping problem.} The pure-power convention for the pre-investment option (Proof of Proposition 1, Step 5b) is verified against the exact piecewise free-boundary problem, in the same spirit as the coupled default boundary above. Below $X_H^*$ the forcing term in \texttt{eq-hjb-L} is the H-regime option value and the continuation value is $A_1 X^{\beta_L^+} + C X^{\beta_H}$, the negative root being removed by $F_L(0) = 0$. Above $X_H^*$ a switch is followed by immediate exercise, so the forcing is affine, $\lambda\,[a_H X - b_H]$ with $a_H = A_H (K_H^*)^\alpha$ and $b_H = \delta K_H^*/r + I(K_H^*)$, and the continuation value is
+
+\begin{equation*}
+D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda a_H}{r + \lambda - \mu_L}\,X - \frac{\lambda b_H}{r + \lambda}.
+\end{equation*}
+
+Value and slope matching at $X_H^*$, together with value matching and smooth pasting at the free boundary, determine $(A_1, D_1, D_2, X^*)$: the coefficients solve a linear system given $X^*$, and the remaining slope condition at $X_H^*$ is solved by Brent's method. When the resulting boundary falls below $X_H^*$ the problem collapses to the single-region case, in which the pure-power forcing is exact. The solution is implemented in the replication package (module `piecewise\_option.py`) and cross-checked against an independent Brennan--Schwartz solution of the associated linear complementarity problem on a log-demand grid, which reproduces the free boundary to a relative $10^{-4}$ and the value function to a relative $10^{-9}$.
 
 
 

@@ -588,15 +588,15 @@ the risk-adjusted growth rate.\footnote{\label{fn:wacc}Following
   growth rates of demand \emph{minus} an appropriate risk premium, so
   that discounting the expected cash flow at rate \(r\) yields the
   correct present value. The volatility \(\sigma\) is the same under the
-  physical and risk-adjusted measures (by Girsanov's theorem).
-  Equivalently, one can interpret the model as working under a
-  risk-neutral measure \(\mathbb{Q}\) with drift
-  \(\mu_s^{\mathbb{Q}} = \mu_s\) (already risk-adjusted) and discount
-  rate \(r\) (the WACC), avoiding any double-counting of risk premia.
-  This reduced-form approach avoids specifying a complete asset pricing
-  model while remaining consistent with no-arbitrage valuation. All
-  parameters (\(r\), \(\mu_s\), \(\sigma\)) are therefore risk-adjusted
-  throughout the paper.}
+  physical and risk-adjusted measures (by Girsanov's theorem). This is
+  \emph{not} a risk-neutral pricing measure: under a genuine pricing
+  measure claims are discounted at the risk-free rate, whereas here
+  discounting is at the WACC. The certainty-equivalent convention avoids
+  specifying a complete asset pricing model and avoids double-counting
+  risk premia, but its outputs---triggers, values, credit spreads, and
+  default probabilities---are model-implied risk-adjusted objects, not
+  market prices or pricing-measure probabilities. All parameters (\(r\),
+  \(\mu_s\), \(\sigma\)) are risk-adjusted throughout the paper.}
 
 \subsection{Technology}\label{technology}
 
@@ -1195,15 +1195,27 @@ parameterize capital structure by the leverage ratio
 issuance; leverage is exogenous and common to both firms. Debt is issued
 at par and pays a continuous coupon \(c_D = c_d \cdot \ell \cdot I(K)\),
 where \(c_d\) is the coupon rate and \(c_D\) denotes the total coupon
-payment (used throughout). Because the coupon rate is below the discount
-rate (\(c_d < r\)), par issuance embeds a financing concession: debt
-reduces the firm's effective capital cost by the factor
-\(1 - \ell(1 - c_d/r)\), capturing the below-market terms that
-relationship lenders and strategic partners extend to frontier AI labs.
-This convention matters for the leverage comparative statics below:
-cheaper debt-financed capital pushes firms toward larger scale and later
-entry, while the coupon obligation raises the default boundary.
-Following \citet{leland1994corporate}, equity holders choose to default
+payment (used throughout). Leverage is a \emph{stress-test parameter}
+with a stylized coupon rate, not an equilibrium financing choice.
+Because the model's debt is a perpetual coupon claim with no principal
+repayment and the coupon rate is below the discount rate (\(c_d < r\)),
+the market value of the debt at issuance is below the proceeds
+\(\ell I(K)\): absent default risk it equals \((c_d/r)\,\ell I(K)\),
+about \(42\%\) of the proceeds at the baseline (\(c_d = 0.05\),
+\(r = 0.12\)), and par pricing at the entry trigger would require
+\(c_d = r\). Par issuance therefore embeds an implicit financing subsidy
+of \(\ell(1 - c_d/r) I(K)\)---roughly \(23\%\) of the investment cost at
+\(\ell = 0.40\)---which reduces the firm's effective capital cost by the
+factor \(1 - \ell(1 - c_d/r)\). I read this as a stylized representation
+of the below-market terms that relationship lenders and strategic
+partners extend to frontier AI labs, but the model does not endogenize
+the subsidy, and none of the leverage results below should be read as an
+endogenous capital-structure result: they are the response of an
+otherwise optimizing firm to an exogenously imposed debt burden. The
+convention matters for the leverage comparative statics below: cheaper
+debt-financed capital pushes firms toward larger scale and later entry,
+while the coupon obligation raises the default boundary. Following
+\citet{leland1994corporate}, equity holders choose to default
 endogenously when the equity value falls to zero.
 
 \subsubsection{Default boundary}\label{default-boundary}
@@ -1350,12 +1362,18 @@ capacity rather than a causal link.}
 higher rival capacity reduces the contest shares \(s_i^L\) and
 \(s_i^H\).}
 
-Parts (i)--(iv) hold at fixed \((K, \phi, \ell)\). If the firm were to
-re-optimize capacity, training, and leverage jointly in response to a
-change in \(\lambda\) or \(\ell\), additional channels would arise---for
-instance, higher \(\lambda\) also raises \(\phi^*\) (Proposition 1),
-which further lowers \(X_D\) through the \(A_{\text{eff}}\) denominator.
-The fixed-policy comparative statics isolate the direct mechanisms.
+Parts (i)--(iv) hold at fixed \((K, \phi, \ell)\). Leverage and the
+coupon rate are exogenous throughout, so part (i) is a stress-test
+comparative static---how the default boundary responds to a debt burden
+imposed on the firm---rather than a statement about an optimally chosen
+capital structure; the same qualification applies to the leverage
+results in Proposition 3(iv) and Section~\ref{sec-valuation}. If the
+firm were to re-optimize capacity, training, and leverage jointly in
+response to a change in \(\lambda\) or \(\ell\), additional channels
+would arise---for instance, higher \(\lambda\) also raises \(\phi^*\)
+(Proposition 1), which further lowers \(X_D\) through the
+\(A_{\text{eff}}\) denominator. The fixed-policy comparative statics
+isolate the direct mechanisms.
 
 Figure~\ref{fig-default-boundaries} illustrates the interaction between
 leverage, investment triggers, and default risk. As leverage increases,
@@ -1507,10 +1525,15 @@ functions. The optimization is over the two continuous variables
 \((K_F, \phi_F)\) at the exogenous leverage \(\ell\), with the trigger
 determined by smooth pasting at each evaluation. Leverage cannot be a
 free choice variable in this setting: because debt is issued at par with
-a coupon below the discount rate, the objective is strictly decreasing
-in \(\ell\) and an unconstrained leverage choice would be a corner
-solution; endogenizing capital structure would require fairly priced
-debt at issuance, which I leave for future work.
+a coupon below the discount rate, the implicit financing subsidy makes
+the objective strictly increasing in \(\ell\) (the follower's option
+value rises monotonically from \(\ell = 0\) to \(\ell = 1\) at the
+baseline calibration), so an unconstrained leverage choice would be the
+degenerate corner \(\ell = 1\). Endogenizing capital structure would
+require fairly priced debt at issuance---at the baseline entry trigger,
+a coupon rate of \(c_d = r\) or higher---which I leave for future work.
+Throughout, \(\ell\) is therefore varied exogenously as a stress-test
+parameter.
 
 \textbf{Leader's problem.} The leader must account for the follower's
 future entry. Before the follower invests (\(X < X_F\)), the leader
@@ -1578,11 +1601,13 @@ down by beliefs and technology, not by market position.}
 beliefs) increases \(\phi^*\) for both firms and lowers the preemption
 trigger \(X_P\).}
 
-\emph{(iv) (Numerical finding) Higher leverage increases the follower's
-capacity \(K_F\) and raises all three boundaries \(X_P\), \(X_F^*\), and
-\(X_D\): par-issued debt with a below-market coupon lowers the effective
-capital cost, supporting larger scale that requires higher demand to
-justify, while the coupon obligation raises the default point. The
+\emph{(iv) (Numerical finding; exogenous \((\ell, c_d)\)) Higher
+leverage increases the follower's capacity \(K_F\) and raises all three
+boundaries \(X_P\), \(X_F^*\), and \(X_D\): par-issued debt with a
+below-market coupon lowers the effective capital cost---the modeling
+convention of Section~\ref{sec-conventions}, not an equilibrium
+financing outcome---supporting larger scale that requires higher demand
+to justify, while the coupon obligation raises the default point. The
 proportional margin of safety \(X_F^*/X_D\) falls with leverage.}
 
 \emph{(v) (Numerical finding) The leader's proximity to default at
@@ -1645,9 +1670,8 @@ each result.
 \subsection{Solution conventions and
 approximations}\label{sec-conventions}
 
-The closed forms above rest on three solution conventions, collected
-here so that a reader can track which objects are exact and which are
-not.
+The closed forms above rest on four solution conventions, collected here
+so that a reader can track which objects are exact and which are not.
 
 \textbf{Unconditional-\(A_{\text{eff}}\) discounting.} All option-like
 L-regime payoffs are valued with the H-regime exponent \(\beta_H\) and
@@ -1707,6 +1731,20 @@ Appendix B). A smaller related approximation omits the default-option
 term from the follower's entry payoff; it is worth at most about 1.5\%
 of the default claim at the highest leverage considered and vanishes at
 zero leverage.
+
+\textbf{Par debt issuance at an exogenous coupon.} Leverage \(\ell\) and
+the coupon rate \(c_d\) are exogenous, and debt is issued at par: the
+firm receives \(\ell I(K)\) against a perpetual coupon \(c_d \ell I(K)\)
+with no principal repayment. Because \(c_d < r\), the market value of
+that claim at issuance is below the
+proceeds---\((c_d / r)\, \ell I(K)\), about \(42\%\) of the proceeds at
+baseline in the absence of default risk---so the convention embeds an
+implicit financing subsidy (see the capital structure discussion above).
+It is a stress-test device: it lets the model vary the debt burden
+without solving a capital-structure problem, and it is why the leverage
+comparative statics are not endogenous capital-structure results. Fairly
+priced debt at issuance would require \(c_d \geq r\) at the entry
+trigger and is left for future work.
 
 Propositions 1--3 are exact statements about the model these conventions
 define.
@@ -2378,31 +2416,36 @@ For a levered firm with leverage \(\ell\) and training fraction
 \(\phi\), the credit spread is: \[
 \text{spread} = \frac{\text{coupon}}{D(X)} - r,
 \] where \(D(X)\) is the market value of debt (which differs from face
-value due to default risk).\footnote{The benchmark is the model's
-  discount rate \(r\) because all claims are valued by discounting at
-  \(r\): a default-free perpetuity with coupon \(c_D\) is worth
-  \(c_D/r\) and yields exactly \(r\), so the spread is zero absent
-  default risk and isolates the default-risk component. The model has a
-  single discount rate and therefore cannot separately speak to the
-  term-structure or risk-premium components of observed corporate
-  spreads; the reported spreads should be read as the default-risk
-  increment, not as total yield spreads over Treasuries.} Higher
-leverage increases the default boundary \(X_D\) and the coupon claim,
-reducing debt value and widening spreads. The training fraction \(\phi\)
-enters through two opposing channels. Through the faith-based survival
-mechanism (Proposition 2), higher \(\phi\) raises \(A_{\text{eff}}\) and
-lowers \(X_D\), reducing the \emph{probability} of default. Through the
-recovery specification (Section~\ref{sec-duopoly}), higher \(\phi\)
-shrinks the inference business that creditors can liquidate, raising the
-\emph{loss given default}---the faith-based continuation value that
-keeps the firm alive is destroyed in bankruptcy and is therefore
-worthless to creditors. At the baseline calibration the
-loss-given-default channel modestly dominates, so spreads are mildly
-increasing in \(\phi\) for a given leverage level, even as default
-probabilities fall. This two-sided interaction between training
-allocation and credit risk---training as solvency protection for
-shareholders but collateral erosion for creditors---is, to my knowledge,
-novel.
+value due to default risk) and the reference rate is the model's
+discount rate \(r\) (the WACC), not a risk-free rate.\footnote{The
+  benchmark is the model's discount rate \(r\) because all claims are
+  valued by discounting at \(r\): a default-free perpetuity with coupon
+  \(c_D\) is worth \(c_D/r\) and yields exactly \(r\), so the spread is
+  zero absent default risk and isolates the default-risk component. The
+  model has a single, risk-adjusted discount rate and therefore cannot
+  separately speak to the term-structure or risk-premium components of
+  observed corporate spreads; the reported spreads are model-implied
+  risk-adjusted objects---the default-risk increment over \(r\)---and
+  not market credit spreads or yield spreads over Treasuries.} Because
+leverage and the coupon rate are exogenous stress-test parameters
+(Section~\ref{sec-model}), the leverage gradients below describe the
+model's response to an imposed debt burden, not an optimally chosen
+capital structure. Higher leverage increases the default boundary
+\(X_D\) and the coupon claim, reducing debt value and widening spreads.
+The training fraction \(\phi\) enters through two opposing channels.
+Through the faith-based survival mechanism (Proposition 2), higher
+\(\phi\) raises \(A_{\text{eff}}\) and lowers \(X_D\), reducing the
+\emph{probability} of default. Through the recovery specification
+(Section~\ref{sec-duopoly}), higher \(\phi\) shrinks the inference
+business that creditors can liquidate, raising the \emph{loss given
+default}---the faith-based continuation value that keeps the firm alive
+is destroyed in bankruptcy and is therefore worthless to creditors. At
+the baseline calibration the loss-given-default channel modestly
+dominates, so spreads are mildly increasing in \(\phi\) for a given
+leverage level, even as default probabilities fall. This two-sided
+interaction between training allocation and credit risk---training as
+solvency protection for shareholders but collateral erosion for
+creditors---is, to my knowledge, novel.
 
 \subsubsection{Default probability}\label{default-probability}
 
@@ -2419,10 +2462,13 @@ default boundary is an L-regime object (the firm defaults pre-switch).
 The calculation abstracts from the regime switch itself---a switch to
 \(H\) before hitting \(X_D\) would effectively remove default risk---so
 the reported figures are upper bounds on the pre-switch default hazard.
-Since \(\mu_L\) is the risk-adjusted (certainty-equivalent) drift, this
-yields a risk-neutral default probability consistent with the spread
-calculation; the physical-measure default probability (using the
-unadjusted drift) would be lower.
+Since \(\mu_L\) is the risk-adjusted (certainty-equivalent) drift, the
+result is a \emph{model-implied risk-adjusted} first-passage
+probability, computed under the same convention as the spread
+calculation; it is not a risk-neutral (pricing-measure) probability,
+because the model discounts at the WACC rather than at a risk-free rate
+(see the footnote in Section~\ref{sec-model}), and the physical-measure
+probability (using the unadjusted drift) would be lower.
 
 Figure~\ref{fig-credit-risk} presents the credit risk implications.
 Panel (a) shows credit spreads as a function of leverage, evaluated at a
@@ -2437,19 +2483,20 @@ equity holders' default boundary is positive. Once the coupon claim
 outgrows the inference collateral (around \(\ell \approx 0.13\) at the
 evaluation point), the spread turns positive and rises with leverage,
 reaching approximately 40 bps at \(\ell = 0.40\) and 100 bps at
-\(\ell = 0.70\). Panel (b) shows the 5-year default probability
-(first-passage under the L-regime drift), which rises from approximately
-0.6\% at low leverage to approximately 13\% at \(\ell = 0.70\). The
-steep increase in default probability at high leverage reflects the
-shrinking distance to default: as leverage increases, the default
-boundary \(X_D\) rises while the firm's demand level is fixed,
-compressing the safety margin. The contrast between the two panels is
-itself informative: default is far from rare at high leverage, but
-creditor losses conditional on default are bounded by the
-inference-business collateral, so spreads remain moderate---the credit
-risk of an AI lab in this model is a high-probability, modest-severity
-event for creditors, while the catastrophic component (the destruction
-of the faith-based continuation value) is borne by shareholders.
+\(\ell = 0.70\). Panel (b) shows the model-implied risk-adjusted 5-year
+default probability (first-passage under the risk-adjusted L-regime
+drift), which rises from approximately 0.6\% at low leverage to
+approximately 13\% at \(\ell = 0.70\). The steep increase in default
+probability at high leverage reflects the shrinking distance to default:
+as leverage increases, the default boundary \(X_D\) rises while the
+firm's demand level is fixed, compressing the safety margin. The
+contrast between the two panels is itself informative: default is far
+from rare at high leverage, but creditor losses conditional on default
+are bounded by the inference-business collateral, so spreads remain
+moderate---the credit risk of an AI lab in this model is a
+high-probability, modest-severity event for creditors, while the
+catastrophic component (the destruction of the faith-based continuation
+value) is borne by shareholders.
 
 \begin{figure}[!htb]
 
@@ -2460,15 +2507,19 @@ of the faith-based continuation value) is borne by shareholders.
 }
 
 \caption{\label{fig-credit-risk}Credit risk as a function of leverage.
-(a) Credit spread in basis points. (b) Five-year default probability
-(first-passage under the L-regime drift). Spreads are zero at low
-leverage, where the coupon claim is over-collateralized by the
+(a) Credit spread in basis points, measured relative to the model's
+discount rate \(r\) rather than a risk-free rate. (b) Model-implied
+risk-adjusted five-year default probability (first-passage under the
+risk-adjusted L-regime drift); neither panel reports a risk-neutral
+(pricing-measure) object or a market credit spread. Spreads are zero at
+low leverage, where the coupon claim is over-collateralized by the
 liquidation value of the inference business, and rise once the claim
 outgrows the collateral. Default probability is increasing and convex in
 leverage, reflecting the rising default boundary. Evaluated at a fixed
 demand level \(X = 0.10\) with capacity \(K = 1\) and training fraction
-\(\phi = 0.5\), using the Leland structural model with coupon rate
-\(c_d = 0.05\) and bankruptcy cost \(b = 0.30\).}
+\(\phi = 0.5\), using the Leland structural model with exogenous
+leverage, a stylized coupon rate \(c_d = 0.05\), and bankruptcy cost
+\(b = 0.30\).}
 
 \end{figure}%
 
@@ -2677,23 +2728,24 @@ aggressive investment patterns of frontier AI labs are \emph{rational}:
 the cost of being too conservative (\(\Delta V \approx 26\%\) at
 \(\lambda_{\text{invest}} = 0.02\)) far exceeds the cost of being too
 aggressive (\(\Delta V \approx 6\%\) at
-\(\lambda_{\text{invest}} = 0.20\)), so a risk-neutral firm should err
-on the side of higher training allocation even when uncertain about
-\(\lambda\). This illustrative comparison should be distinguished from a
-formal revealed-beliefs methodology, which would require a richer model
-(dynamic \(\phi\), heterogeneous information), proper identification,
-and estimation; such an exercise is left for future work. The asymmetry
-means that \emph{underinvestment} is more informative than
-overinvestment---a conservative firm allocating little to training
-(\(\phi \ll \phi^*\)) must hold genuinely pessimistic beliefs about
-\(\lambda\), since the cost of under-training is so high. The asymmetric
-loss function implies that firms should hedge against conservative
-under-training more than against aggressive over-training, rationalizing
-the observation that frontier AI labs consistently push the boundary of
-training compute investment. At the scale of trillion-dollar
-commitments, however, absolute (as opposed to percentage) losses from
-overinvestment can be existential, especially with leverage---a
-distinction the single-firm model does not fully capture.
+\(\lambda_{\text{invest}} = 0.20\)), so a firm maximizing risk-adjusted
+value should err on the side of higher training allocation even when
+uncertain about \(\lambda\). This illustrative comparison should be
+distinguished from a formal revealed-beliefs methodology, which would
+require a richer model (dynamic \(\phi\), heterogeneous information),
+proper identification, and estimation; such an exercise is left for
+future work. The asymmetry means that \emph{underinvestment} is more
+informative than overinvestment---a conservative firm allocating little
+to training (\(\phi \ll \phi^*\)) must hold genuinely pessimistic
+beliefs about \(\lambda\), since the cost of under-training is so high.
+The asymmetric loss function implies that firms should hedge against
+conservative under-training more than against aggressive over-training,
+rationalizing the observation that frontier AI labs consistently push
+the boundary of training compute investment. At the scale of
+trillion-dollar commitments, however, absolute (as opposed to
+percentage) losses from overinvestment can be existential, especially
+with leverage---a distinction the single-firm model does not fully
+capture.
 
 The single-firm formalization isolates the belief-mismatch channel in
 its cleanest form, but the motivating narrative (and the paper's duopoly
@@ -2965,6 +3017,15 @@ concentrates the tail risk of overinvestment, and that the default
 boundary rises with rival capacity---apply across financing structures;
 the specific Leland closed forms are the vehicle for these insights, not
 the literal description of any single firm's capital structure.
+Relatedly, leverage is a stress-test parameter with a stylized coupon
+rate rather than an equilibrium financing choice: because \(c_d < r\) on
+a perpetual coupon claim, par issuance implies a market value of debt at
+issuance below the proceeds \(\ell I(K)\)---an implicit financing
+subsidy the model does not endogenize (Section~\ref{sec-model}). The
+leverage results should accordingly be read as the response of an
+optimizing firm to an imposed debt burden, not as an endogenous
+capital-structure result; fairly priced debt at issuance is a natural
+extension.
 
 The Tullock contest function is a reduced-form representation that
 abstracts from product differentiation, network effects, and switching
@@ -2982,10 +3043,14 @@ Appendix E).
 
 All valuation uses a reduced-form risk-adjusted framework (see the
 footnote in Section~\ref{sec-model} defining \(r\) and \(\mu_s\)),
-abstracting from state-dependence of risk premia across regimes. In the
-credit risk analysis, the structural default probability uses the
-risk-adjusted drift, yielding a risk-neutral default probability
-consistent with the Leland spread calculation; physical default
+abstracting from state-dependence of risk premia across regimes. The
+framework is a certainty-equivalent one and not a pricing measure:
+discounting is at the WACC rather than at a risk-free rate, so the
+reported credit spreads and default probabilities are model-implied
+risk-adjusted objects rather than market spreads or risk-neutral
+probabilities. In the credit risk analysis in particular, the structural
+default probability uses the risk-adjusted drift and the spread is
+measured relative to the model's discount rate \(r\); physical default
 probabilities would be lower. A richer treatment would allow the risk
 premium to differ across regimes---plausibly higher in \(L\) (where AI
 capabilities are uncertain) than in \(H\) (where transformation is
@@ -3138,11 +3203,12 @@ careful econometric treatment is needed beyond the scope of this paper.
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1000}}@{}}
 \caption{Model parameters with baseline values and calibration status.
 All parameters are risk-adjusted; see Section~\ref{sec-model} for
-details. \(\phi\) and \(\ell\) are endogenous choice variables; dashes
-indicate no baseline value. Status: ``Inferred'' = backed out from
-observable proxies; ``Chosen'' = chosen for discipline (selected to
-generate plausible magnitudes without a precise empirical target);
-``Standard'' = standard value from the
+details. \(\phi\) is an endogenous choice variable, while \(\ell\) is
+fixed exogenously and varied as a stress-test parameter; dashes indicate
+no baseline value. Status: ``Inferred'' = backed out from observable
+proxies; ``Chosen'' = chosen for discipline (selected to generate
+plausible magnitudes without a precise empirical target); ``Standard'' =
+standard value from the
 literature.}\label{tbl-parameters}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
@@ -3195,9 +3261,11 @@ site prep costs & Chosen \\
 (flow cost only); jointly normalized with the capacity unit and \(c\) &
 Chosen \\
 \(\phi\) & Training fraction & --- & Endogenous choice variable & --- \\
-\(\ell\) & Leverage ratio & --- & Endogenous choice variable & --- \\
-\(c_d\) & Coupon rate & 0.05 & Cost of debt for frontier AI labs &
-Inferred \\
+\(\ell\) & Leverage ratio & --- & Exogenous stress-test parameter,
+varied over \([0, 0.7]\) & --- \\
+\(c_d\) & Coupon rate & 0.05 & Stylized cost of debt for frontier AI
+labs; below \(r\), so debt is not fairly priced at issuance
+(Section~\ref{sec-model}) & Inferred \\
 \(b\) & Bankruptcy cost & 0.30 & Bankruptcy cost fraction & Standard \\
 \end{longtable}
 

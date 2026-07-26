@@ -23,11 +23,11 @@
 | $c$ | Unit cost | 1.00 | Normalization | --- |
 | $\delta$ | Operating cost rate | 0.03 | Power, cooling, maintenance (flow cost only); jointly normalized with the capacity unit and $c$ | Chosen |
 | $\phi$ | Training fraction | --- | Endogenous choice variable | --- |
-| $\ell$ | Leverage ratio | --- | Endogenous choice variable | --- |
-| $c_d$ | Coupon rate | 0.05 | Cost of debt for frontier AI labs | Inferred |
+| $\ell$ | Leverage ratio | --- | Exogenous stress-test parameter, varied over $[0, 0.7]$ | --- |
+| $c_d$ | Coupon rate | 0.05 | Stylized cost of debt for frontier AI labs; below $r$, so debt is not fairly priced at issuance (@sec-model) | Inferred |
 | $b$ | Bankruptcy cost | 0.30 | Bankruptcy cost fraction | Standard |
 
-: Model parameters with baseline values and calibration status. All parameters are risk-adjusted; see @sec-model for details. $\phi$ and $\ell$ are endogenous choice variables; dashes indicate no baseline value. Status: "Inferred" = backed out from observable proxies; "Chosen" = chosen for discipline (selected to generate plausible magnitudes without a precise empirical target); "Standard" = standard value from the literature. {#tbl-parameters tbl-colwidths="[8,20,8,46,10]"}
+: Model parameters with baseline values and calibration status. All parameters are risk-adjusted; see @sec-model for details. $\phi$ is an endogenous choice variable, while $\ell$ is fixed exogenously and varied as a stress-test parameter; dashes indicate no baseline value. Status: "Inferred" = backed out from observable proxies; "Chosen" = chosen for discipline (selected to generate plausible magnitudes without a precise empirical target); "Standard" = standard value from the literature. {#tbl-parameters tbl-colwidths="[8,20,8,46,10]"}
 
 | Symbol | Meaning | Type |
 |:------:|:--------|:-----|

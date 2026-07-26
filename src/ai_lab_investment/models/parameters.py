@@ -21,8 +21,8 @@ class ModelParameters:
 
     Attributes:
         r: Risk-adjusted discount rate (WACC).
-        mu_L: Risk-neutral demand drift in regime L (pre-adoption).
-        mu_H: Risk-neutral demand drift in regime H (post-adoption).
+        mu_L: Risk-adjusted demand drift in regime L (pre-adoption).
+        mu_H: Risk-adjusted demand drift in regime H (post-adoption).
         sigma: Volatility of demand (common across regimes).
         lam: Arrival rate of regime switch L -> H (firm belief).
         lam_0: Exogenous baseline arrival rate (rest-of-world progress).
@@ -40,9 +40,9 @@ class ModelParameters:
 
     # Discount rate (WACC for AI infrastructure firms)
     r: float = 0.12
-    # Risk-neutral demand drift in low regime (pre-adoption)
+    # Risk-adjusted demand drift in low regime (pre-adoption)
     mu_L: float = 0.01
-    # Risk-neutral demand drift in high regime (post-adoption)
+    # Risk-adjusted demand drift in high regime (post-adoption)
     mu_H: float = 0.06
     sigma: float = 0.25
     # Poisson arrival rate of regime switch L -> H (firm belief)

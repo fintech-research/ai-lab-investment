@@ -18,7 +18,7 @@ The high regime $H$ is absorbing: once the economy transitions, it remains in $H
 This asymmetric regime structure captures the *irreversibility of AI progress*: capabilities, once demonstrated, do not disappear.
 
 I assume $\mu_H > \mu_L$ (higher growth in the high regime).
-For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the discount rate and $\mu_s$ is the risk-adjusted growth rate.^[\label{fn:wacc}Following @dixit1994investment [Chapter 4], all valuation is conducted under a single *risk-adjusted* (certainty-equivalent) framework. The discount rate $r$ is the firm's weighted average cost of capital (WACC), which embeds the equity risk premium and the cost of debt. The growth rates $\mu_L$ and $\mu_H$ are the physical-measure expected growth rates of demand *minus* an appropriate risk premium, so that discounting the expected cash flow at rate $r$ yields the correct present value. The volatility $\sigma$ is the same under the physical and risk-adjusted measures (by Girsanov's theorem). Equivalently, one can interpret the model as working under a risk-neutral measure $\mathbb{Q}$ with drift $\mu_s^{\mathbb{Q}} = \mu_s$ (already risk-adjusted) and discount rate $r$ (the WACC), avoiding any double-counting of risk premia. This reduced-form approach avoids specifying a complete asset pricing model while remaining consistent with no-arbitrage valuation. All parameters ($r$, $\mu_s$, $\sigma$) are therefore risk-adjusted throughout the paper.]
+For the model to have well-defined present values, I require $r > \mu_H > \mu_L$, where $r$ is the discount rate and $\mu_s$ is the risk-adjusted growth rate.^[\label{fn:wacc}Following @dixit1994investment [Chapter 4], all valuation is conducted under a single *risk-adjusted* (certainty-equivalent) framework. The discount rate $r$ is the firm's weighted average cost of capital (WACC), which embeds the equity risk premium and the cost of debt. The growth rates $\mu_L$ and $\mu_H$ are the physical-measure expected growth rates of demand *minus* an appropriate risk premium, so that discounting the expected cash flow at rate $r$ yields the correct present value. The volatility $\sigma$ is the same under the physical and risk-adjusted measures (by Girsanov's theorem). This is *not* a risk-neutral pricing measure: under a genuine pricing measure claims are discounted at the risk-free rate, whereas here discounting is at the WACC. The certainty-equivalent convention avoids specifying a complete asset pricing model and avoids double-counting risk premia, but its outputs---triggers, values, credit spreads, and default probabilities---are model-implied risk-adjusted objects, not market prices or pricing-measure probabilities. All parameters ($r$, $\mu_s$, $\sigma$) are risk-adjusted throughout the paper.]
 
 ### Technology
 
@@ -271,8 +271,11 @@ The effective revenue coefficient $A_{\text{eff},i}$ embodies the central econom
 Each firm finances investment with a mix of equity and debt.
 I parameterize capital structure by the leverage ratio $\ell = D_0 / I(K)$, where $D_0$ is the face value of debt at issuance; leverage is exogenous and common to both firms.
 Debt is issued at par and pays a continuous coupon $c_D = c_d \cdot \ell \cdot I(K)$, where $c_d$ is the coupon rate and $c_D$ denotes the total coupon payment (used throughout).
-Because the coupon rate is below the discount rate ($c_d < r$), par issuance embeds a financing concession: debt reduces the firm's effective capital cost by the factor $1 - \ell(1 - c_d/r)$, capturing the below-market terms that relationship lenders and strategic partners extend to frontier AI labs.
-This convention matters for the leverage comparative statics below: cheaper debt-financed capital pushes firms toward larger scale and later entry, while the coupon obligation raises the default boundary.
+Leverage is a *stress-test parameter* with a stylized coupon rate, not an equilibrium financing choice.
+Because the model's debt is a perpetual coupon claim with no principal repayment and the coupon rate is below the discount rate ($c_d < r$), the market value of the debt at issuance is below the proceeds $\ell I(K)$: absent default risk it equals $(c_d/r)\,\ell I(K)$, about $42\%$ of the proceeds at the baseline ($c_d = 0.05$, $r = 0.12$), and par pricing at the entry trigger would require $c_d = r$.
+Par issuance therefore embeds an implicit financing subsidy of $\ell(1 - c_d/r) I(K)$---roughly $23\%$ of the investment cost at $\ell = 0.40$---which reduces the firm's effective capital cost by the factor $1 - \ell(1 - c_d/r)$.
+I read this as a stylized representation of the below-market terms that relationship lenders and strategic partners extend to frontier AI labs, but the model does not endogenize the subsidy, and none of the leverage results below should be read as an endogenous capital-structure result: they are the response of an otherwise optimizing firm to an exogenously imposed debt burden.
+The convention matters for the leverage comparative statics below: cheaper debt-financed capital pushes firms toward larger scale and later entry, while the coupon obligation raises the default boundary.
 Following @leland1994corporate, equity holders choose to default endogenously when the equity value falls to zero.
 
 #### Default boundary
@@ -316,7 +319,7 @@ $$ {#eq-phi-tilde}
 
 *(iv) $X_D$ is increasing in rival capacity $K_j$, because higher rival capacity reduces the contest shares $s_i^L$ and $s_i^H$.*
 
-Parts (i)--(iv) hold at fixed $(K, \phi, \ell)$. If the firm were to re-optimize capacity, training, and leverage jointly in response to a change in $\lambda$ or $\ell$, additional channels would arise---for instance, higher $\lambda$ also raises $\phi^*$ (Proposition 1), which further lowers $X_D$ through the $A_{\text{eff}}$ denominator. The fixed-policy comparative statics isolate the direct mechanisms.
+Parts (i)--(iv) hold at fixed $(K, \phi, \ell)$. Leverage and the coupon rate are exogenous throughout, so part (i) is a stress-test comparative static---how the default boundary responds to a debt burden imposed on the firm---rather than a statement about an optimally chosen capital structure; the same qualification applies to the leverage results in Proposition 3(iv) and @sec-valuation. If the firm were to re-optimize capacity, training, and leverage jointly in response to a change in $\lambda$ or $\ell$, additional channels would arise---for instance, higher $\lambda$ also raises $\phi^*$ (Proposition 1), which further lowers $X_D$ through the $A_{\text{eff}}$ denominator. The fixed-policy comparative statics isolate the direct mechanisms.
 
 @fig-default-boundaries illustrates the interaction between leverage, investment triggers, and default risk.
 As leverage increases, the follower invests later and at larger scale: par-issued debt with a coupon below the discount rate lowers the effective capital cost (see the capital structure discussion above), pushing optimal capacity up, and the larger commitment requires a higher demand level to justify---$X_F^*$ rises from approximately $0.12$ at $\ell = 0.05$ to $0.21$ at $\ell = 0.65$, with $K_F$ growing in step.
@@ -380,7 +383,9 @@ The equilibrium features sequential investment: one firm (the *leader*) invests 
 The follower observes the leader's capacity $K_L$ and training fraction $\phi_L$, and chooses its own trigger $X_F$, capacity $K_F$, and training fraction $\phi_F$ to maximize the value of its option, taking $(K_L, \phi_L)$ as given.
 The follower's problem is a real option with a modified revenue function that accounts for duopoly sharing through the regime-specific contest functions.
 The optimization is over the two continuous variables $(K_F, \phi_F)$ at the exogenous leverage $\ell$, with the trigger determined by smooth pasting at each evaluation.
-Leverage cannot be a free choice variable in this setting: because debt is issued at par with a coupon below the discount rate, the objective is strictly decreasing in $\ell$ and an unconstrained leverage choice would be a corner solution; endogenizing capital structure would require fairly priced debt at issuance, which I leave for future work.
+Leverage cannot be a free choice variable in this setting: because debt is issued at par with a coupon below the discount rate, the implicit financing subsidy makes the objective strictly increasing in $\ell$ (the follower's option value rises monotonically from $\ell = 0$ to $\ell = 1$ at the baseline calibration), so an unconstrained leverage choice would be the degenerate corner $\ell = 1$.
+Endogenizing capital structure would require fairly priced debt at issuance---at the baseline entry trigger, a coupon rate of $c_d = r$ or higher---which I leave for future work.
+Throughout, $\ell$ is therefore varied exogenously as a stress-test parameter.
 
 **Leader's problem.**
 The leader must account for the follower's future entry.
@@ -406,7 +411,7 @@ At $X_P$, the rent from leading is fully dissipated by the threat of preemption.
 
 *(iii) (Numerical finding) Higher $\lambda$ (more optimistic beliefs) increases $\phi^*$ for both firms and lowers the preemption trigger $X_P$.*
 
-*(iv) (Numerical finding) Higher leverage increases the follower's capacity $K_F$ and raises all three boundaries $X_P$, $X_F^*$, and $X_D$: par-issued debt with a below-market coupon lowers the effective capital cost, supporting larger scale that requires higher demand to justify, while the coupon obligation raises the default point. The proportional margin of safety $X_F^*/X_D$ falls with leverage.*
+*(iv) (Numerical finding; exogenous $(\ell, c_d)$) Higher leverage increases the follower's capacity $K_F$ and raises all three boundaries $X_P$, $X_F^*$, and $X_D$: par-issued debt with a below-market coupon lowers the effective capital cost---the modeling convention of @sec-conventions, not an equilibrium financing outcome---supporting larger scale that requires higher demand to justify, while the coupon obligation raises the default point. The proportional margin of safety $X_F^*/X_D$ falls with leverage.*
 
 *(v) (Numerical finding) The leader's proximity to default at entry, measured by the distance-to-default ratio $X_P/X_D$, is decreasing in $\lambda$: firms that invest earlier due to more optimistic beliefs enter closer to their default boundary, and the credit spread at entry is correspondingly weakly increasing in $\lambda$.*
 
@@ -422,7 +427,7 @@ Propositions 1 and 2 are fully analytical; Proposition 3 combines analytical exi
 
 ### Solution conventions and approximations {#sec-conventions}
 
-The closed forms above rest on three solution conventions, collected here so that a reader can track which objects are exact and which are not.
+The closed forms above rest on four solution conventions, collected here so that a reader can track which objects are exact and which are not.
 
 **Unconditional-$A_{\text{eff}}$ discounting.**
 All option-like L-regime payoffs are valued with the H-regime exponent $\beta_H$ and the unconditional effective revenue coefficient $A_{\text{eff}}$ (@eq-a-eff) rather than with regime-contingent value functions.
@@ -444,5 +449,11 @@ Re-optimizing scale for entry at the preemption trigger would imply somewhat sma
 The default boundary @eq-default-boundary replaces the H-regime equity value by its perpetuity component, collapsing the coupled pair $(X_D^L, X_D^H)$ into a single boundary.
 Unlike the first convention, this one is an approximation whose bias is signed and quantified: it overstates $X_D$ by approximately 3\% at baseline, uniformly across leverage levels, and therefore errs against the faith-based survival mechanism (Internet Appendix B).
 A smaller related approximation omits the default-option term from the follower's entry payoff; it is worth at most about 1.5\% of the default claim at the highest leverage considered and vanishes at zero leverage.
+
+**Par debt issuance at an exogenous coupon.**
+Leverage $\ell$ and the coupon rate $c_d$ are exogenous, and debt is issued at par: the firm receives $\ell I(K)$ against a perpetual coupon $c_d \ell I(K)$ with no principal repayment.
+Because $c_d < r$, the market value of that claim at issuance is below the proceeds---$(c_d / r)\, \ell I(K)$, about $42\%$ of the proceeds at baseline in the absence of default risk---so the convention embeds an implicit financing subsidy (see the capital structure discussion above).
+It is a stress-test device: it lets the model vary the debt burden without solving a capital-structure problem, and it is why the leverage comparative statics are not endogenous capital-structure results.
+Fairly priced debt at issuance would require $c_d \geq r$ at the entry trigger and is left for future work.
 
 Propositions 1--3 are exact statements about the model these conventions define.
