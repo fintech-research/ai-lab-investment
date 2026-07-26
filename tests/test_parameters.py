@@ -68,3 +68,81 @@ class TestModelParameters:
         p1 = ModelParameters(lam=0.05)
         p2 = ModelParameters(lam=0.30)
         assert p2.A_L > p1.A_L
+
+
+class TestValidationGuards:
+    """Inadmissible primitives must fail loudly at construction."""
+
+    def test_zero_volatility_raises(self):
+        with pytest.raises(ValueError, match="Volatility"):
+            ModelParameters(sigma=0.0)
+
+    def test_negative_volatility_raises(self):
+        with pytest.raises(ValueError, match="Volatility"):
+            ModelParameters(sigma=-0.25)
+
+    def test_mu_H_below_mu_L_raises(self):
+        """(A1): the switch to H is a growth acceleration, mu_H > mu_L."""
+        with pytest.raises(ValueError, match="must exceed low-regime"):
+            ModelParameters(mu_L=0.06, mu_H=0.01)
+
+    def test_mu_H_equal_mu_L_raises(self):
+        with pytest.raises(ValueError, match="must exceed low-regime"):
+            ModelParameters(mu_L=0.05, mu_H=0.05)
+
+    def test_negative_delta_raises(self):
+        with pytest.raises(ValueError, match="delta"):
+            ModelParameters(delta=-0.01)
+
+    def test_zero_delta_allowed(self):
+        assert ModelParameters(delta=0.0).delta == 0.0
+
+    def test_negative_lambda_raises(self):
+        with pytest.raises(ValueError, match="lambda"):
+            ModelParameters(lam=-0.01)
+
+    def test_with_param_revalidates(self):
+        """with_param goes through __post_init__, so guards still bite."""
+        p = ModelParameters()
+        with pytest.raises(ValueError, match="Volatility"):
+            p.with_param(sigma=0.0)
+
+
+class TestLambdaEdgeCases:
+    """The lam = 0 branch and the large-lambda limit."""
+
+    def test_exact_zero_lambda_A_L(self):
+        """At lam = 0 exactly, A_L collapses to the pure-L perpetuity."""
+        p = ModelParameters(lam=0.0)
+        assert abs(p.A_L - 1.0 / (p.r - p.mu_L)) < 1e-15
+
+    def test_exact_zero_lambda_beta_L(self):
+        """At lam = 0, beta_L solves the L equation discounted at r."""
+        p = ModelParameters(lam=0.0)
+        beta = p.beta_L
+        residual = 0.5 * p.sigma**2 * beta * (beta - 1.0) + p.mu_L * beta - p.r
+        assert abs(residual) < 1e-12
+
+    def test_zero_lambda_is_limit_of_small_lambda(self):
+        p0 = ModelParameters(lam=0.0)
+        p_eps = ModelParameters(lam=1e-9)
+        assert abs(p0.A_L - p_eps.A_L) < 1e-7
+        assert abs(p0.beta_L - p_eps.beta_L) < 1e-7
+
+    def test_large_lambda_A_L_approaches_A_H(self):
+        """As lambda -> infinity the firm is effectively already in H."""
+        p = ModelParameters(lam=1e6)
+        assert abs(p.A_L - p.A_H) / p.A_H < 1e-5
+
+    def test_large_lambda_beta_L_grows(self):
+        """beta_L is increasing in the effective discount rate r + lambda."""
+        p_small = ModelParameters(lam=0.10)
+        p_large = ModelParameters(lam=100.0)
+        assert p_large.beta_L > p_small.beta_L
+        beta = p_large.beta_L
+        residual = (
+            0.5 * p_large.sigma**2 * beta * (beta - 1.0)
+            + p_large.mu_L * beta
+            - (p_large.r + p_large.lam)
+        )
+        assert abs(residual) < 1e-6

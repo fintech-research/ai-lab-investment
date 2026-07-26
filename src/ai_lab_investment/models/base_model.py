@@ -24,10 +24,78 @@ Training-inference allocation:
   training value, modulated by the arrival rate lambda.
 """
 
+import logging
+
 import numpy as np
 from scipy import optimize
 
 from .parameters import ModelParameters
+
+#: Objective value returned by the (K, phi) objectives on infeasible points.
+INFEASIBLE_OBJECTIVE = 1e20
+
+
+def multistart_minimize(
+    objective,
+    starts,
+    args: tuple = (),
+    maxiter: int = 2000,
+    xatol: float = 1e-8,
+    fatol: float = 1e-10,
+) -> tuple[np.ndarray | None, float, dict]:
+    """Deterministic Nelder-Mead multistart with convergence diagnostics.
+
+    Runs ``objective`` from every point in ``starts`` and keeps the first
+    start attaining the lowest objective value (ties go to the earlier
+    start, so the result is independent of dict/set ordering).
+
+    Unlike a bare loop over ``optimize.minimize``, this reports how many
+    starts actually *converged*: a start counts as converged when SciPy
+    reports ``success`` and the objective is finite and below the
+    infeasibility sentinel. Callers must refuse to accept the best value
+    when no start converged -- otherwise a run that only ever hit the
+    iteration cap or the infeasible region would be reported as an
+    optimum.
+
+    Returns:
+        ``(best_x, best_value, diagnostics)``; ``best_x`` is None when no
+        start returned a usable point.
+    """
+    starts = [np.asarray(x0, dtype=float) for x0 in starts]
+    best_val = INFEASIBLE_OBJECTIVE
+    best_x: np.ndarray | None = None
+    n_converged = 0
+    n_evaluated = 0
+
+    for x0 in starts:
+        try:
+            result = optimize.minimize(
+                objective,
+                x0,
+                args=args,
+                method="Nelder-Mead",
+                options={"maxiter": maxiter, "xatol": xatol, "fatol": fatol},
+            )
+        except (ValueError, RuntimeError):
+            continue
+        n_evaluated += 1
+        if (
+            bool(result.success)
+            and np.isfinite(result.fun)
+            and result.fun < INFEASIBLE_OBJECTIVE / 10.0
+        ):
+            n_converged += 1
+        if result.fun < best_val:
+            best_val = float(result.fun)
+            best_x = result.x
+
+    diagnostics = {
+        "n_starts": len(starts),
+        "n_evaluated": n_evaluated,
+        "n_converged": n_converged,
+        "best_objective": best_val,
+    }
+    return best_x, best_val, diagnostics
 
 
 class SingleFirmModel:
@@ -43,6 +111,8 @@ class SingleFirmModel:
     def __init__(self, params: ModelParameters):
         self.params = params
         self._cache: dict = {}
+        #: Multistart convergence diagnostics, keyed by sub-problem.
+        self.solver_diagnostics: dict[str, dict] = {}
 
     def installed_value(self, X: float, K: float, regime: str) -> float:
         """Value of installed capacity V(X, K, s).
@@ -183,6 +253,22 @@ class SingleFirmModel:
         in regime L. Returns (None, None, 0.0) and the option value is
         F_L(X) = C * X^beta_H (value from potential regime switch only).
 
+        IMPORTANT -- the interior branch is a pure-power approximation.
+        Under the paper's calibration and (A3), Phi_L >= 1 and the branch
+        is dead: only the no-trigger branch is ever taken. It becomes
+        live only for parameterizations with a much larger alpha (e.g.
+        alpha > 0.67 at the baseline volatility), and there it is *not*
+        the exact free-boundary solution: (X_L*, K_L*) are taken from the
+        pure-power problem, which ignores the particular term C X^beta_H,
+        while D_L is then fitted by smooth pasting *including* C. The two
+        conditions are mutually consistent only when C = 0 (lambda = 0);
+        with C != 0 value matching fails at X_L*. The branch is retained
+        for the structural verification in symbolic_duopoly.py (which
+        checks the two-term *form* of F_L and the smooth-pasting fit, not
+        the location of the free boundary) and must not be used for
+        quantitative results. The exact piecewise free-boundary problem
+        is solved separately in piecewise_option.py.
+
         Returns:
             (X_L* or None, K_L* or None, D_L)
         """
@@ -193,7 +279,17 @@ class SingleFirmModel:
         C = self._particular_solution_coeff()
 
         if self.has_interior_trigger("L"):
-            # Interior solution exists in pure L
+            # Interior solution of the *pure-power* L problem (C ignored);
+            # see the docstring: inconsistent with the C-inclusive
+            # smooth-pasting fit below whenever C != 0, and dead under (A3).
+            if C != 0.0:
+                logging.warning(
+                    "Interior L-trigger branch entered with C=%.4g != 0: "
+                    "the pure-power trigger and the C-inclusive smooth-pasting "
+                    "fit are mutually inconsistent; use piecewise_option.py "
+                    "for the exact free boundary.",
+                    C,
+                )
             result = optimize.minimize_scalar(
                 self._objective_K,
                 bounds=(-15, 15),
@@ -364,6 +460,11 @@ class SingleFirmModel:
         X[0] = X0
         regime[0] = 0 if initial_regime == "L" else 1
 
+        # Exact one-step switching probability for the Poisson clock,
+        # 1 - exp(-lambda*dt), rather than the Euler approximation
+        # lambda*dt (which overstates the hazard at order (lambda*dt)^2).
+        switch_prob = -np.expm1(-p.lam * dt)
+
         for t in range(n_steps):
             s = regime[t]
             mu = p.mu_H if s == 1 else p.mu_L
@@ -372,7 +473,7 @@ class SingleFirmModel:
             dW = rng.normal(0, dt**0.5)
             X[t + 1] = X[t] * np.exp((mu - 0.5 * sigma**2) * dt + sigma * dW)
 
-            if s == 0 and rng.random() < p.lam * dt:
+            if s == 0 and rng.random() < switch_prob:
                 regime[t + 1] = 1
             else:
                 regime[t + 1] = s
@@ -487,14 +588,15 @@ class SingleFirmModel:
         H-regime expectations (same as duopoly model).
         """
         log_K, phi = params_vec
-        K = np.exp(log_K)
 
-        # Bound checks (log_K bounds match the duopoly solvers)
+        # Bound checks first: exp(log_K) overflows outside the bounds, so
+        # K is only formed once log_K is known to be admissible.
         if log_K < -15 or log_K > 15:
             return 1e20
         if phi <= 0.01 or phi >= 0.99:
             return 1e20
 
+        K = np.exp(log_K)
         p = self.params
         beta = p.beta_H
 
@@ -536,27 +638,24 @@ class SingleFirmModel:
             raise RuntimeError(msg)
 
         beta = p.beta_H
-        best_val = 1e20
-        best_params = None
-
-        for log_K_init in [-6, -2, 0, 2]:
-            for phi_init in [0.15, 0.30, 0.50, 0.70]:
-                x0 = np.array([log_K_init, phi_init])
-                try:
-                    result = optimize.minimize(
-                        self._objective_K_phi,
-                        x0,
-                        method="Nelder-Mead",
-                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
-                    )
-                    if result.fun < best_val:
-                        best_val = result.fun
-                        best_params = result.x
-                except (ValueError, RuntimeError):
-                    continue
+        starts = [
+            np.array([log_K_init, phi_init])
+            for log_K_init in (-6, -2, 0, 2)
+            for phi_init in (0.15, 0.30, 0.50, 0.70)
+        ]
+        best_params, best_val, diagnostics = multistart_minimize(
+            self._objective_K_phi, starts
+        )
+        self.solver_diagnostics["trigger_capacity_phi"] = diagnostics
 
         if best_params is None or best_val >= 1e19:
             msg = "Joint (K, phi) optimization failed"
+            raise RuntimeError(msg)
+        if diagnostics["n_converged"] == 0:
+            msg = (
+                "Joint (K, phi) optimization did not converge from any of the "
+                f"{diagnostics['n_starts']} starting points"
+            )
             raise RuntimeError(msg)
 
         K_star = np.exp(best_params[0])

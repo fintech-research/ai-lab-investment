@@ -1,15 +1,7 @@
 logging_level: 20
-matplotlib:
-  font:
-    family: serif
-    sans_serif:
-      - Helvetica
-    serif:
-      - "Computer Modern Roman"
 tasks:
   phase1_base_model: true
   phase2_duopoly: true
   phase4_calibration: true
   phase5_valuation: true
   robustness_sweep: true
-params: {}

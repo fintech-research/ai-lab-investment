@@ -309,6 +309,108 @@ class TestOptimalTriggerCapacityPhi:
         cost = model.investment_cost(K_star)
         assert V - cost > 0
 
+    def test_reports_multistart_convergence(self, model):
+        """The multistart records how many starts actually converged."""
+        model.optimal_trigger_capacity_phi()
+        diag = model.solver_diagnostics["trigger_capacity_phi"]
+        assert diag["n_starts"] == 16
+        assert diag["n_converged"] >= 1
+        assert diag["best_objective"] < 1e19
+
+    def test_rejects_unconverged_multistart(self, model, monkeypatch):
+        """A run where no start converges must raise, not return the best
+        non-converged value."""
+        from ai_lab_investment.models import base_model as bm
+
+        def fake_multistart(objective, starts, **kwargs):
+            starts = list(starts)
+            return (
+                np.array([-2.0, 0.5]),
+                -1.0,
+                {
+                    "n_starts": len(starts),
+                    "n_evaluated": len(starts),
+                    "n_converged": 0,
+                    "best_objective": -1.0,
+                },
+            )
+
+        monkeypatch.setattr(bm, "multistart_minimize", fake_multistart)
+        model._cache.clear()
+        with pytest.raises(RuntimeError, match="did not converge"):
+            model.optimal_trigger_capacity_phi()
+
+    def test_objective_rejects_out_of_bounds_log_K(self, model):
+        """The bound guard fires before exp(log_K) is ever formed."""
+        assert model._objective_K_phi(np.array([1e4, 0.5])) == 1e20
+        assert model._objective_K_phi(np.array([-1e4, 0.5])) == 1e20
+
+
+class TestZeroLambda:
+    """The dedicated lambda = 0 branch (no regime switch is ever expected)."""
+
+    @pytest.fixture
+    def zero_lam_model(self):
+        return SingleFirmModel(ModelParameters(lam=0.0))
+
+    def test_particular_coefficient_is_zero(self, zero_lam_model):
+        """C = -lambda B_H / Q_L vanishes exactly at lambda = 0."""
+        assert zero_lam_model.particular_solution_coeff() == 0.0
+
+    def test_option_value_L_has_no_switching_component(self, zero_lam_model):
+        """With no interior L-trigger and C = 0, F_L is identically zero."""
+        assert not zero_lam_model.has_interior_trigger("L")
+        for X in [0.01, 0.05, 0.5]:
+            assert zero_lam_model.option_value_L(X) == 0.0
+
+    def test_effective_coefficient_has_no_H_term(self, zero_lam_model):
+        """A_eff reduces to the pure inference perpetuity at lambda = 0."""
+        p = zero_lam_model.params
+        a_eff = zero_lam_model._effective_revenue_coeff_single(0.5, 1.0)
+        expected = (0.5 * 1.0) ** p.alpha / (p.r - p.mu_L)
+        assert abs(a_eff - expected) < 1e-15
+
+    def test_regime_H_solution_unaffected(self, zero_lam_model, model):
+        """The H-regime problem does not involve lambda at all."""
+        X0, K0 = zero_lam_model.optimal_trigger_and_capacity("H")
+        X1, K1 = model.optimal_trigger_and_capacity("H")
+        assert abs(X0 - X1) < 1e-12
+        assert abs(K0 - K1) < 1e-12
+
+    def test_simulation_never_switches(self, zero_lam_model):
+        sim = zero_lam_model.simulate_demand(
+            X0=1.0, T=50.0, dt=0.01, rng=np.random.default_rng(0)
+        )
+        assert np.all(sim["regime"] == 0)
+
+
+class TestLargeLambda:
+    """Very large lambda: the L regime is a vanishing instant before H."""
+
+    def test_phi_approaches_all_training(self):
+        """When the switch is imminent, essentially everything is training."""
+        m = SingleFirmModel(ModelParameters(lam=50.0))
+        _, _, phi_star = m.optimal_trigger_capacity_phi()
+        assert phi_star > 0.95
+
+    def test_trigger_approaches_H_regime_trigger(self):
+        """With lambda huge, the (K, phi) solution collapses onto the
+        H-regime problem of Proposition 1."""
+        p = ModelParameters(lam=1e4)
+        m = SingleFirmModel(p)
+        X_phi, K_phi, _ = m.optimal_trigger_capacity_phi()
+        X_H, K_H = m.optimal_trigger_and_capacity("H")
+        assert abs(K_phi - K_H) / K_H < 0.05
+        assert abs(X_phi - X_H) / X_H < 0.05
+
+    def test_simulation_switches_immediately(self):
+        m = SingleFirmModel(ModelParameters(lam=500.0))
+        sim = m.simulate_demand(X0=1.0, T=1.0, dt=0.001, rng=np.random.default_rng(1))
+        assert sim["regime"][-1] == 1
+        # 1 - exp(-0.5) ~ 39% per step: the switch happens in the first
+        # handful of steps with overwhelming probability.
+        assert int(np.argmax(sim["regime"] == 1)) < 50
+
 
 class TestOptionValueWithPhi:
     def test_positive(self, model):

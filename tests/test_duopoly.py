@@ -364,6 +364,149 @@ class TestPreemptionEquilibrium:
         assert eq["single_crossing"]
         assert 0 < eq["phi_follower"] < 1
 
+    def test_reports_solver_diagnostics(self, model):
+        """The equilibrium dict carries the bracket and multistart
+        diagnostics needed to tell a solved root from a fallback."""
+        eq = model.solve_preemption_equilibrium("H")
+        assert eq["bracket_failed"] is False
+        assert eq["n_sign_changes"] == 1
+        diag = eq["solver_diagnostics"]
+        assert diag["leader_monopolist"]["n_converged"] >= 1
+        assert diag["follower"]["n_converged"] >= 1
+
+
+# ------------------------------------------------------------------
+# Preemption failure paths: strict mode must raise
+# ------------------------------------------------------------------
+
+
+class TestPreemptionFailurePaths:
+    """A failed bracket is not an equilibrium. Paper-generating paths run
+    in strict mode and must raise; the strict=False escape hatch returns
+    the endpoint fallback with bracket_failed set."""
+
+    @staticmethod
+    def _force_gap(model, gap_fn):
+        model._preemption_gap = gap_fn
+
+    def test_positive_gap_at_lower_endpoint_raises(self, model):
+        """L - F already non-negative at X_low: no first up-crossing."""
+        self._force_gap(model, lambda X, regime: 1.0)
+        with pytest.raises(RuntimeError, match="No preemption equilibrium"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_no_sign_change_raises(self, model):
+        """L - F never turns positive on (X_D, X_L^mono)."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        with pytest.raises(RuntimeError, match="no sign change"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_brent_failure_raises(self, model):
+        """A grid sign change that Brent cannot reproduce still raises."""
+        X_mid = model.solve_leader_monopolist("H")[0] * 0.5
+        calls = {"n": 0}
+
+        def flaky_gap(X, regime):
+            calls["n"] += 1
+            if calls["n"] <= 500:  # the grid scan brackets a root
+                return X - X_mid
+            return 1.0  # ... which has vanished by the time Brent runs
+
+        self._force_gap(model, flaky_gap)
+        with pytest.raises(RuntimeError, match="Brent"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_non_strict_returns_flagged_fallback(self, model):
+        """strict=False keeps the old endpoint fallback, but flags it."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        eq = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq["bracket_failed"] is True
+        assert eq["X_leader"] == eq["X_leader_monopolist"]
+
+    def test_non_strict_lower_endpoint_fallback(self, model):
+        self._force_gap(model, lambda X, regime: 1.0)
+        eq = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq["bracket_failed"] is True
+        assert eq["X_leader"] < eq["X_leader_monopolist"]
+
+    def test_strict_is_the_default(self, model):
+        """Callers that do not opt out get the raising behaviour."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        with pytest.raises(RuntimeError):
+            model.solve_preemption_equilibrium()
+
+    def test_strict_and_non_strict_cached_separately(self, model):
+        """The escape hatch must not poison the strict cache entry."""
+        eq_strict = model.solve_preemption_equilibrium("H")
+        eq_loose = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq_loose["X_leader"] == eq_strict["X_leader"]
+        assert eq_loose["bracket_failed"] is False
+
+
+# ------------------------------------------------------------------
+# Domain guards on public methods
+# ------------------------------------------------------------------
+
+
+class TestDomainGuards:
+    """Invalid parameters and allocations fail loudly rather than
+    silently producing nan through a negative fractional power."""
+
+    def test_contest_share_L_rejects_phi_above_one(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_L(1.2, 1.0, 0.5, 1.0)
+
+    def test_contest_share_L_rejects_negative_rival_phi(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_L(0.5, 1.0, -0.1, 1.0)
+
+    def test_contest_share_H_rejects_phi_above_one(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_H(1.2, 1.0, 0.5, 1.0)
+
+    @pytest.mark.parametrize("phi", [-0.1, 1.2])
+    def test_value_functions_reject_out_of_range_phi(self, model, phi):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.installed_value_L(0.1, phi, 1.0, 0.5, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.installed_value_H(0.1, phi, 1.0, 0.5, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.monopolist_value_L(0.1, phi, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.monopolist_value_H(0.1, phi, 1.0)
+
+    @pytest.mark.parametrize("phi", [-0.1, 1.2])
+    def test_credit_objects_reject_out_of_range_phi(self, levered_model, phi):
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.default_boundary(phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.equity_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.debt_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.liquidation_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.firm_value(0.1, phi, 1.0, 0.0, 0.0)
+
+    def test_boundary_phi_values_allowed(self, model):
+        """phi = 0 and phi = 1 are admissible corners, not errors."""
+        assert model.contest_share_L(0.0, 1.0, 0.0, 1.0) == pytest.approx(0.5)
+        assert model.contest_share_H(1.0, 1.0, 1.0, 1.0) == pytest.approx(0.5)
+
+    @pytest.mark.parametrize("lev", [-0.1, 1.5])
+    def test_leverage_out_of_range_raises(self, default_params, lev):
+        with pytest.raises(ValueError, match="Leverage"):
+            DuopolyModel(default_params, leverage=lev)
+
+    def test_non_positive_coupon_rate_raises(self, default_params):
+        with pytest.raises(ValueError, match="Coupon rate"):
+            DuopolyModel(default_params, leverage=0.4, coupon_rate=0.0)
+
+    @pytest.mark.parametrize("bc", [-0.1, 1.5])
+    def test_bankruptcy_cost_out_of_range_raises(self, default_params, bc):
+        with pytest.raises(ValueError, match="Bankruptcy cost"):
+            DuopolyModel(default_params, leverage=0.4, bankruptcy_cost=bc)
+
 
 # ------------------------------------------------------------------
 # Default risk with new API

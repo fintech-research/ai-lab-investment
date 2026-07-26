@@ -18,6 +18,12 @@ from .base_model import SingleFirmModel
 from .duopoly import DuopolyModel
 from .parameters import ModelParameters
 
+CREDIT_COUPON_RATE = 0.05
+"""Coupon rate on debt used throughout the credit-risk analysis."""
+
+CREDIT_BANKRUPTCY_COST = 0.30
+"""Fraction of firm value lost in default (alpha_bc) in the analysis."""
+
 
 def _two_period_state_prices(
     p: ModelParameters, lam: float, dt: float
@@ -54,7 +60,6 @@ class ValuationAnalysis:
 
     def __init__(self, params: ModelParameters):
         self.params = params
-        self._cache: dict = {}
 
     # ------------------------------------------------------------------
     # Growth option decomposition
@@ -169,8 +174,8 @@ class ValuationAnalysis:
         duo = DuopolyModel(
             self.params,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
 
         X = self.CREDIT_RISK_DEMAND_LEVEL
@@ -221,8 +226,8 @@ class ValuationAnalysis:
         duo = DuopolyModel(
             self.params,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         if X_D <= 0 or X_current <= X_D:
@@ -417,7 +422,10 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         duo_true = DuopolyModel(
-            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p_true,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         try:
             X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
@@ -727,7 +735,10 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         duo_true = DuopolyModel(
-            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p_true,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
 
         try:
@@ -1000,7 +1011,10 @@ class ValuationAnalysis:
 
         # --- Standard Tullock ---
         duo_tullock = DuopolyModel(
-            p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         try:
             eq_tullock = duo_tullock.solve_preemption_equilibrium()
@@ -1021,8 +1035,8 @@ class ValuationAnalysis:
         duo_fp = DuopolyModel(
             p,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
             contest="fixed_pie",
         )
 
