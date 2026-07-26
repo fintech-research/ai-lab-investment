@@ -71,6 +71,13 @@ render-paper:
     touch paper/index.qmd
     uv run quarto render paper
 
+# Build the double-anonymous submission PDFs (blind manuscript + e-companion)
+render-blind:
+    @echo "🚀 Building blind submission"
+    touch paper/index-blind.qmd
+    QUARTO_PROFILE=blind uv run quarto render paper
+    uv run python paper/split_blind_pdf.py
+
 # Build the slides
 render-slides:
     @echo "🚀 Building long-form slides"
@@ -92,6 +99,11 @@ update-deps:
 run-pipeline:
     @echo "🚀 Running analysis pipeline"
     uv run python -m ai_lab_investment
+
+# Run the +/-25% parameter-perturbation robustness sweep (Internet Appendix E)
+run-sweep:
+    @echo "🚀 Running robustness sweep"
+    uv run python -m ai_lab_investment.robustness
 
 # Install video dependencies (manim + kokoro-onnx) and download TTS model files
 video-setup:

@@ -1,3 +1,13 @@
 /.quarto/
 
 **/*.quarto_ipynb
+
+# LaTeX intermediates kept by the blind build (`latex-clean: false`, needed so
+# split_blind_pdf.py can read the Internet Appendix cover page from the .aux)
+/index-blind.aux
+/index-blind.bbl
+/index-blind.blg
+/index-blind.log
+/index-blind.out
+/index-blind.tex
+/index-blind.toc

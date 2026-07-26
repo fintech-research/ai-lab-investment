@@ -33,7 +33,15 @@ import logging
 import numpy as np
 from scipy import optimize
 
+from .base_model import multistart_minimize
 from .parameters import ModelParameters
+
+_KPHI_STARTS: tuple[tuple[float, float], ...] = tuple(
+    (log_K_init, phi_init)
+    for log_K_init in (-6.0, -2.0, 0.0, 2.0)
+    for phi_init in (0.15, 0.30, 0.50, 0.70)
+)
+"""Deterministic (log K, phi) multistart grid shared by both roles."""
 
 
 class DuopolyModel:
@@ -74,12 +82,23 @@ class DuopolyModel:
         if contest not in ("tullock", "fixed_pie"):
             msg = f"Unknown contest specification: {contest!r}"
             raise ValueError(msg)
+        if not 0.0 <= leverage <= 1.0:
+            msg = f"Leverage must be in [0, 1], got {leverage}"
+            raise ValueError(msg)
+        if coupon_rate <= 0.0:
+            msg = f"Coupon rate must be positive, got {coupon_rate}"
+            raise ValueError(msg)
+        if not 0.0 <= bankruptcy_cost <= 1.0:
+            msg = f"Bankruptcy cost must be in [0, 1], got {bankruptcy_cost}"
+            raise ValueError(msg)
         self.params = params
         self.leverage = leverage
         self.coupon_rate = coupon_rate
         self.bankruptcy_cost = bankruptcy_cost
         self.contest = contest
         self._cache: dict = {}
+        #: Multistart convergence diagnostics, keyed by sub-problem.
+        self.solver_diagnostics: dict[str, dict] = {}
 
     # ------------------------------------------------------------------
     # Endogenous arrival rate
@@ -103,6 +122,21 @@ class DuopolyModel:
     # Revenue with regime-specific competition
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _check_phi(*phis: float) -> None:
+        """Reject training fractions outside [0, 1].
+
+        phi is a share of installed capacity, so phi > 1 makes the
+        inference capacity (1-phi)K negative and phi < 0 does the same to
+        the training capacity. Raising a negative base to the fractional
+        power alpha silently produces a nan rather than failing, so the
+        public entry points check the domain instead.
+        """
+        for phi in phis:
+            if not 0.0 <= phi <= 1.0:
+                msg = f"Training fraction phi must be in [0, 1], got {phi}"
+                raise ValueError(msg)
+
     def contest_share_L(
         self, phi_i: float, K_i: float, phi_j: float, K_j: float
     ) -> float:
@@ -111,6 +145,7 @@ class DuopolyModel:
         share_i^L = [(1-phi_i)*K_i]^alpha
                     / {[(1-phi_i)*K_i]^alpha + [(1-phi_j)*K_j]^alpha}
         """
+        self._check_phi(phi_i, phi_j)
         alpha = self.params.alpha
         inf_i = (1.0 - phi_i) * K_i
         inf_j = (1.0 - phi_j) * K_j
@@ -128,6 +163,7 @@ class DuopolyModel:
         share_i^H = [phi_i*K_i]^alpha
                     / {[phi_i*K_i]^alpha + [phi_j*K_j]^alpha}
         """
+        self._check_phi(phi_i, phi_j)
         alpha = self.params.alpha
         tr_i = phi_i * K_i
         tr_j = phi_j * K_j
@@ -151,18 +187,6 @@ class DuopolyModel:
         if denom <= 0:
             return 0.5
         return num / denom
-
-    def contest_share_L_fixed_pie(
-        self, phi_i: float, K_i: float, phi_j: float, K_j: float
-    ) -> float:
-        """Fixed-pie L-regime share (same Tullock shares, no expansion)."""
-        return self.contest_share_L(phi_i, K_i, phi_j, K_j)
-
-    def contest_share_H_fixed_pie(
-        self, phi_i: float, K_i: float, phi_j: float, K_j: float
-    ) -> float:
-        """Fixed-pie H-regime share (same Tullock shares, no expansion)."""
-        return self.contest_share_H(phi_i, K_i, phi_j, K_j)
 
     def _effective_revenue_coeff_fixed_pie(
         self,
@@ -272,6 +296,7 @@ class DuopolyModel:
 
         V_i^L(X) = A_eff * X - delta * K_i / r
         """
+        self._check_phi(phi_i, phi_j)
         p = self.params
         a_eff = self._effective_revenue_coeff(phi_i, K_i, phi_j, K_j)
         return a_eff * X - p.delta * K_i / p.r
@@ -288,6 +313,7 @@ class DuopolyModel:
 
         V_i^H(X) = X * (phi_i*K_i)^alpha * s_i^H / (r - mu_H) - delta * K_i / r
         """
+        self._check_phi(phi_i, phi_j)
         p = self.params
         s_H = self.contest_share_H(phi_i, K_i, phi_j, K_j)
         tr_cap = phi_i * K_i
@@ -302,6 +328,7 @@ class DuopolyModel:
         K_i: float,
     ) -> float:
         """L-regime value when firm i is the only investor (share = 1)."""
+        self._check_phi(phi_i)
         p = self.params
         a_eff = self._effective_revenue_coeff(phi_i, K_i, 0.0, 0.0, monopolist=True)
         return a_eff * X - p.delta * K_i / p.r
@@ -316,6 +343,7 @@ class DuopolyModel:
 
         V_i^H(X) = X * (phi_i*K_i)^alpha / (r - mu_H) - delta * K_i / r
         """
+        self._check_phi(phi_i)
         p = self.params
         tr_cap = phi_i * K_i
         if tr_cap <= 0:
@@ -385,6 +413,7 @@ class DuopolyModel:
 
         Returns 0 if no debt (leverage = 0).
         """
+        self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
             return 0.0
@@ -443,6 +472,7 @@ class DuopolyModel:
         at baseline; see coupled_boundary_bias_linear for the closed-form
         first-order bias).
         """
+        self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
             return 0.0
@@ -550,6 +580,7 @@ class DuopolyModel:
         formula overstates the coupled boundary). Returns 0.0 when the
         firm is unlevered or has no H-regime revenue.
         """
+        self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0 or self.coupon_payment(K_i, lev) <= 0:
             return 0.0
@@ -647,16 +678,34 @@ class DuopolyModel:
         K_j: float,
         leverage: float | None = None,
     ) -> float:
-        """Equity value of firm i after investment, accounting for default.
+        """Entry NPV of the equity claim: going concern minus contribution.
 
-        E(X) = V(X) - equity_contribution - coupon/r
-               + [coupon/r - V(X_D)] * (X/X_D)^beta_neg
+        The model's single equity convention (paper, "Equity and debt
+        values"): the going-concern claim is
 
-        The ongoing equity (excluding sunk cost) satisfies E_ongoing(X_D) = 0.
-        The net equity at X_D equals -equity_contribution, clamped to 0 by
-        limited liability.
-        Without debt, equity = V(X) - I(K).
+            E_gc(X) = V(X) - coupon/r
+                      + [coupon/r - V(X_D)] * (X/X_D)^beta_neg,
+
+        which limited liability floors at zero -- E_gc(X_D) = 0 by
+        smooth pasting, so the floor is a numerical guard that never
+        binds above X_D. This method returns the object the investment
+        decision is made on,
+
+            E_gc(X) - (1 - leverage) * I(K),
+
+        i.e. net of the equity holders' sunk contribution. That
+        contribution is *not* refunded on default, so the returned value
+        is negative below the default boundary (it equals
+        -(1 - leverage) I(K) there) and at X = 0. This is exactly the
+        L(0) < 0 endpoint the existence argument for the preemption
+        trigger uses; clamping the net object at zero would contradict
+        it.
+
+        Without debt, the going-concern value is the unlevered
+        perpetuity V(X) (no abandonment option, as stated in the paper)
+        and the entry NPV is V(X) - I(K).
         """
+        self._check_phi(phi_i, phi_j)
         p = self.params
         lev = leverage if leverage is not None else self.leverage
 
@@ -666,7 +715,7 @@ class DuopolyModel:
             V_X = self.monopolist_value_L(X, phi_i, K_i)
 
         if lev <= 0:
-            return max(V_X - self.investment_cost(K_i), 0.0)
+            return V_X - self.investment_cost(K_i)
 
         c_D = self.coupon_payment(K_i, lev)
         I_K = self.investment_cost(K_i)
@@ -674,8 +723,15 @@ class DuopolyModel:
 
         X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
 
-        if X_D <= 0 or X <= X_D:
-            return max(V_X - equity_contribution - c_D / p.r, 0.0)
+        if X_D <= 0:
+            # No reachable default boundary: the going concern is the
+            # levered perpetuity, with no default option.
+            return V_X - c_D / p.r - equity_contribution
+
+        if X <= X_D:
+            # Default has occurred: the going-concern claim is worthless
+            # and the sunk equity contribution is lost.
+            return -equity_contribution
 
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
         beta_neg = self._negative_root("L", lam_tilde)
@@ -691,8 +747,8 @@ class DuopolyModel:
         default_claim = c_D / p.r - V_XD
         default_option = default_claim * (X / X_D) ** beta_neg
 
-        equity = V_X - equity_contribution - c_D / p.r + default_option
-        return max(equity, 0.0)
+        going_concern = V_X - c_D / p.r + default_option
+        return max(going_concern, 0.0) - equity_contribution
 
     def debt_value(
         self,
@@ -716,6 +772,7 @@ class DuopolyModel:
         the coupon claim c_D/r (absolute priority: creditors cannot
         recover more than their claim is worth default-free).
         """
+        self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
             return 0.0
@@ -754,6 +811,7 @@ class DuopolyModel:
         value (the faith-based component of A_eff) is destroyed in
         bankruptcy. Gross of operating costs, following Leland (1994).
         """
+        self._check_phi(phi_i, phi_j)
         p = self.params
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
         denom_L = p.r - p.mu_L + lam_tilde
@@ -838,14 +896,15 @@ class DuopolyModel:
         Maximizes h(K, phi) = a_eff^beta_H / cost^(beta_H-1).
         """
         log_K, phi_F = params_vec
-        K_F = np.exp(log_K)
 
-        # Bound checks (log_K bounds match base_model's (-15, 15))
+        # Bound checks first: exp(log_K) overflows outside the bounds
+        # (log_K bounds match base_model's (-15, 15)).
         if log_K < -15 or log_K > 15:
             return 1e20
         if phi_F <= 0.01 or phi_F >= 0.99:
             return 1e20
 
+        K_F = np.exp(log_K)
         p = self.params
         beta = p.beta_H
         lev_F = self.leverage
@@ -886,28 +945,20 @@ class DuopolyModel:
             return self._cache[cache_key]
 
         lev_F = self.leverage
-        best_val = 1e20
-        best_params = None
-
-        for log_K_init in [-6, -2, 0, 2]:
-            for phi_init in [0.15, 0.30, 0.50, 0.70]:
-                x0 = np.array([log_K_init, phi_init])
-                try:
-                    result = optimize.minimize(
-                        self._follower_objective,
-                        x0,
-                        args=(K_L, phi_L),
-                        method="Nelder-Mead",
-                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
-                    )
-                    if result.fun < best_val:
-                        best_val = result.fun
-                        best_params = result.x
-                except (ValueError, RuntimeError):
-                    continue
+        best_params, best_val, diagnostics = multistart_minimize(
+            self._follower_objective, _KPHI_STARTS, args=(K_L, phi_L)
+        )
+        self.solver_diagnostics["follower"] = diagnostics
 
         if best_params is None or best_val >= 1e19:
             msg = f"Follower optimization failed for K_L={K_L:.4f}, phi_L={phi_L:.3f}"
+            raise RuntimeError(msg)
+        if diagnostics["n_converged"] == 0:
+            msg = (
+                f"Follower optimization did not converge from any of the "
+                f"{diagnostics['n_starts']} starting points "
+                f"(K_L={K_L:.4f}, phi_L={phi_L:.3f})"
+            )
             raise RuntimeError(msg)
 
         K_F = np.exp(best_params[0])
@@ -1011,6 +1062,12 @@ class DuopolyModel:
         leader's value on the same terms as the follower's (the follower
         side of the preemption gap is also an equity_value).
 
+        Returns the leader's entry NPV L(X), net of the sunk equity
+        contribution and therefore negative at low demand -- the L(0) < 0
+        endpoint of the existence argument. No clamp is applied here; the
+        only limited-liability floor is the one inside equity_value(),
+        which applies to the going-concern claim.
+
         Accounts for follower's entry changing lambda_tilde.
         """
         p = self.params
@@ -1034,7 +1091,7 @@ class DuopolyModel:
         beta = p.beta_H
         entry_factor = (X / X_F) ** beta if X_F > 0 else 1.0
 
-        return max(eq_mono - revenue_drop * entry_factor, 0.0)
+        return eq_mono - revenue_drop * entry_factor
 
     def _leader_objective(
         self,
@@ -1048,14 +1105,15 @@ class DuopolyModel:
         Uses beta_H and A_eff (combined L+H revenue coefficient).
         """
         log_K, phi_L = params_vec
-        K_L = np.exp(log_K)
 
-        # Bound checks (log_K bounds match base_model's (-15, 15))
+        # Bound checks first: exp(log_K) overflows outside the bounds
+        # (log_K bounds match base_model's (-15, 15)).
         if log_K < -15 or log_K > 15:
             return 1e20
         if phi_L <= 0.01 or phi_L >= 0.99:
             return 1e20
 
+        K_L = np.exp(log_K)
         p = self.params
         beta = p.beta_H
         lev_L = self.leverage
@@ -1105,27 +1163,19 @@ class DuopolyModel:
             raise RuntimeError(msg)
 
         lev_L = self.leverage
-        best_val = 1e20
-        best_params = None
-
-        for log_K_init in [-6, -2, 0, 2]:
-            for phi_init in [0.15, 0.30, 0.50, 0.70]:
-                x0 = np.array([log_K_init, phi_init])
-                try:
-                    result = optimize.minimize(
-                        self._leader_objective,
-                        x0,
-                        method="Nelder-Mead",
-                        options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
-                    )
-                    if result.fun < best_val:
-                        best_val = result.fun
-                        best_params = result.x
-                except (ValueError, RuntimeError):
-                    continue
+        best_params, best_val, diagnostics = multistart_minimize(
+            self._leader_objective, _KPHI_STARTS
+        )
+        self.solver_diagnostics["leader_monopolist"] = diagnostics
 
         if best_params is None or best_val >= 1e19:
             msg = f"Leader optimization failed for regime={regime}"
+            raise RuntimeError(msg)
+        if diagnostics["n_converged"] == 0:
+            msg = (
+                f"Leader optimization did not converge from any of the "
+                f"{diagnostics['n_starts']} starting points (regime={regime})"
+            )
             raise RuntimeError(msg)
 
         K_L = np.exp(best_params[0])
@@ -1180,15 +1230,39 @@ class DuopolyModel:
         follower_opt = self.follower_option_value(X, K_L, phi_L, regime)
         return leader_val - follower_opt
 
-    def solve_preemption_equilibrium(self, regime: str = "H") -> dict:
+    def solve_preemption_equilibrium(
+        self, regime: str = "H", strict: bool = True
+    ) -> dict:
         """Solve for the preemption equilibrium.
 
         Finds X_P where the value of leading first equals the value
         of following.
 
-        Returns dict with equilibrium quantities for leader and follower.
+        Args:
+            regime: Regime label (cache key; the equilibrium objects are
+                built from the L-regime entry values throughout).
+            strict: When True (the default, and what every paper,
+                figure, and pipeline path uses), a failure to bracket or
+                refine the rent-equalization root raises RuntimeError.
+                When False, the routine falls back to the corresponding
+                endpoint of the search interval and logs a warning; the
+                returned dict then has ``bracket_failed = True``. The
+                escape hatch exists only for exploratory sweeps that
+                prefer a flagged number to an exception -- a fallback
+                endpoint is *not* an equilibrium and must never reach a
+                reported result.
+
+        Returns:
+            Dict with equilibrium quantities for leader and follower,
+            plus the diagnostics ``single_crossing``, ``n_sign_changes``,
+            ``bracket_failed``, and ``solver_diagnostics``.
+
+        Raises:
+            RuntimeError: In strict mode, when the preemption gap does
+                not cross zero inside (X_D, X_L^mono) or Brent's method
+                fails on the bracketing interval.
         """
-        cache_key = ("preemption_3d", regime)
+        cache_key = ("preemption_3d", regime, strict)
         if cache_key in self._cache:
             return self._cache[cache_key]
 
@@ -1215,12 +1289,18 @@ class DuopolyModel:
         single_crossing = bool(sign_changes == 1)
 
         bracket_failed = False
+        reason = ""
         if gaps[0] >= 0:
             X_P = X_low
             bracket_failed = True
+            reason = (
+                f"the gap is already non-negative at the lower endpoint "
+                f"(L - F = {gaps[0]:.4g} at X = {X_low:.4g})"
+            )
         elif sign_changes == 0:
             X_P = X_L_mono
             bracket_failed = True
+            reason = "the gap has no sign change on the search interval"
         else:
             # Bracket the first sign change and refine with Brent's method
             idx = int(np.argmax(np.diff(np.sign(gaps)) != 0))
@@ -1232,14 +1312,24 @@ class DuopolyModel:
                     args=(regime,),
                     xtol=1e-10,
                 )
-            except ValueError:
+            except ValueError as exc:
                 X_P = X_L_mono
                 bracket_failed = True
+                reason = f"Brent's method failed on the bracketing interval: {exc}"
         if bracket_failed:
+            if strict:
+                msg = (
+                    f"No preemption equilibrium on ({X_low:.4g}, {X_high:.4g}): "
+                    f"{reason}. Rerun with strict=False to accept the "
+                    f"flagged endpoint fallback X_P={X_P:.4g}."
+                )
+                raise RuntimeError(msg)
             logging.warning(
-                "Preemption bracket failed on (%.4g, %.4g); using fallback X_P=%.4g",
+                "Preemption bracket failed on (%.4g, %.4g) because %s; "
+                "using fallback X_P=%.4g (strict=False)",
                 X_low,
                 X_high,
+                reason,
                 X_P,
             )
 
@@ -1260,6 +1350,238 @@ class DuopolyModel:
             "X_leader_monopolist": X_L_mono,
             "lambda_tilde": lam_tilde,
             "single_crossing": single_crossing,
+            "n_sign_changes": int(sign_changes),
+            "bracket_failed": bracket_failed,
+            "solver_diagnostics": dict(self.solver_diagnostics),
+        }
+        self._cache[cache_key] = result
+        return result
+
+    # ------------------------------------------------------------------
+    # Leader-convention sensitivity: re-optimized leader scale
+    # ------------------------------------------------------------------
+
+    def _solve_follower_warm(
+        self,
+        K_L: float,
+        phi_L: float,
+        x0: np.ndarray,
+    ) -> tuple[float, float, float, float]:
+        """Follower best response from a single warm-started Nelder-Mead.
+
+        Identical objective to solve_follower(), but with one starting
+        point instead of the 16-point deterministic multistart. Used only
+        inside solve_preemption_reoptimized_leader(), where the follower
+        problem is re-solved at every evaluation of the leader's
+        objective and the 16-start global search dominates the run time.
+        The follower objective is smooth and single-peaked in (log K,
+        phi) at every (K_L, phi_L) reached along the search, and the
+        equilibrium returned by the sensitivity routine is cross-checked
+        against the 16-start solve_follower() at the fixed point.
+        """
+        lev_F = self.leverage
+        result = optimize.minimize(
+            self._follower_objective,
+            x0,
+            args=(K_L, phi_L),
+            method="Nelder-Mead",
+            options={"maxiter": 2000, "xatol": 1e-8, "fatol": 1e-10},
+        )
+        if not np.isfinite(result.fun) or result.fun >= 1e19:
+            msg = f"Warm follower solve failed for K_L={K_L:.6g}, phi_L={phi_L:.4f}"
+            raise RuntimeError(msg)
+        K_F = float(np.exp(result.x[0]))
+        phi_F = float(np.clip(result.x[1], 0.01, 0.99))
+        X_F = self._follower_trigger(K_F, phi_F, K_L, phi_L, lev_F)
+        return X_F, K_F, phi_F, lev_F
+
+    def _leader_value_reoptimized_at(
+        self,
+        X: float,
+        K_L: float,
+        phi_L: float,
+        follower_x0: np.ndarray,
+    ) -> float:
+        """Leader entry NPV at X for a candidate (K_L, phi_L).
+
+        Same three-phase construction as _leader_value_at(), but with the
+        follower solved from a warm start (see _solve_follower_warm).
+        """
+        p = self.params
+        lev_L = self.leverage
+
+        X_F, K_F, phi_F, _ = self._solve_follower_warm(K_L, phi_L, follower_x0)
+
+        if X >= X_F:
+            return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
+
+        eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
+        V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
+        V_duo_at_XF = self.installed_value_L(X_F, phi_L, K_L, phi_F, K_F)
+        revenue_drop = V_mono_at_XF - V_duo_at_XF
+        entry_factor = (X / X_F) ** p.beta_H if X_F > 0 else 1.0
+        return eq_mono - revenue_drop * entry_factor
+
+    def reoptimized_leader_policy(
+        self,
+        X: float,
+        x0: np.ndarray | None = None,
+    ) -> tuple[float, float, float]:
+        """Leader's (K, phi) maximizing its entry NPV at demand X.
+
+        Returns (L_star, K_L, phi_L), where L_star is the maximized entry
+        NPV L(X; K_L, phi_L) with the follower best-responding to the
+        chosen (K_L, phi_L).
+
+        This replaces the paper's leader convention -- (K_L, phi_L) held
+        at the monopoly-phase optimum of Proposition 1 -- by scale and
+        allocation chosen for entry at X itself. Passing x0 runs a single
+        warm-started Nelder-Mead from that point; omitting it runs the
+        six-point deterministic multistart.
+        """
+        follower_x0 = np.array([-1.0, 0.70])
+
+        def objective(v: np.ndarray) -> float:
+            log_K, phi_L = v
+            if log_K < -15.0 or log_K > 15.0:
+                return 1e20
+            if phi_L <= 0.01 or phi_L >= 0.99:
+                return 1e20
+            try:
+                value = self._leader_value_reoptimized_at(
+                    X, float(np.exp(log_K)), float(phi_L), follower_x0
+                )
+            except (ValueError, RuntimeError, FloatingPointError):
+                return 1e20
+            return -value if np.isfinite(value) else 1e20
+
+        if x0 is not None:
+            starts = [np.asarray(x0, dtype=float)]
+        else:
+            starts = [
+                np.array([log_K0, phi0])
+                for log_K0 in (-8.0, -5.0, -2.0)
+                for phi0 in (0.35, 0.70)
+            ]
+
+        best_x, best_val, diagnostics = multistart_minimize(
+            objective, starts, xatol=1e-9, fatol=1e-12
+        )
+        self.solver_diagnostics["leader_reoptimized"] = diagnostics
+
+        if best_x is None or best_val >= 1e19:
+            msg = f"Leader re-optimization failed at X={X:.6g}"
+            raise RuntimeError(msg)
+        # The convergence requirement applies to the cold multistart. A
+        # warm start may legitimately stop at the iteration cap while
+        # already sitting on the optimum (it begins there), and the fixed
+        # point reached that way is cross-checked against the 16-start
+        # solve_follower() at the end of the calling routine.
+        if x0 is None and diagnostics["n_converged"] == 0:
+            msg = (
+                f"Leader re-optimization did not converge from any of the "
+                f"{diagnostics['n_starts']} starting points at X={X:.6g}"
+            )
+            raise RuntimeError(msg)
+
+        return (
+            -best_val,
+            float(np.exp(best_x[0])),
+            float(np.clip(best_x[1], 0.01, 0.99)),
+        )
+
+    def solve_preemption_reoptimized_leader(
+        self,
+        regime: str = "H",
+        n_grid: int = 40,
+        x_low_factor: float = 1e-3,
+    ) -> dict:
+        """Preemption trigger when the leader re-optimizes scale for entry.
+
+        Sensitivity counterpart to solve_preemption_equilibrium(), which
+        holds the leader's (K_L, phi_L) at the monopoly-phase optimum
+        (the leader-scale convention). Here the leader chooses (K_L,
+        phi_L) to maximize its entry NPV at the entry point itself, and
+        the follower best-responds to that choice, so the leader's value
+        of entering at X is the upper envelope
+
+            L*(X) = max_{K, phi} L(X; K, phi),
+
+        and X_P solves the rent-equalization condition on that envelope,
+
+            L*(X_P) = F(X_P; K_L*(X_P), phi_L*(X_P)).
+
+        The envelope gap is scanned on a log grid over
+        (x_low_factor * X_L^mono, X_L^mono) with the leader's optimizer
+        warm-started along the grid, then the first up-crossing is
+        refined with Brent's method.
+
+        The benchmark trigger X_L^mono in the reported discount is the
+        single-firm (Proposition 1) monopolist trigger, which is common
+        to both solutions, so the discount 1 - X_P / X_L^mono is
+        comparable across the two.
+        """
+        cache_key = ("preemption_reopt", regime, n_grid, x_low_factor)
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        X_L_mono, K_mono, phi_mono, lev_L = self.solve_leader_monopolist(regime)
+        baseline = self.solve_preemption_equilibrium(regime)
+
+        warm: dict[str, np.ndarray | None] = {"x0": None}
+
+        grid = np.geomspace(X_L_mono * x_low_factor, X_L_mono, n_grid)
+        gaps = np.empty(n_grid)
+        policies: list[tuple[float, float]] = []
+        for i, X in enumerate(grid):
+            L_star, K_L, phi_L = self.reoptimized_leader_policy(
+                X, x0=warm["x0"] if i else None
+            )
+            warm["x0"] = np.array([np.log(K_L), phi_L])
+            policies.append((K_L, phi_L))
+            gaps[i] = L_star - self.follower_option_value(X, K_L, phi_L, regime)
+
+        crossings = np.flatnonzero(np.diff(np.sign(gaps)) != 0)
+        if gaps[0] >= 0 or crossings.size == 0:
+            msg = (
+                "Re-optimized preemption gap does not cross zero on "
+                f"({grid[0]:.4g}, {grid[-1]:.4g})"
+            )
+            raise RuntimeError(msg)
+
+        idx = int(crossings[0])
+        warm["x0"] = np.array([np.log(policies[idx][0]), policies[idx][1]])
+
+        def gap(X: float) -> float:
+            _, K_L, phi_L = self.reoptimized_leader_policy(X, x0=warm["x0"])
+            warm["x0"] = np.array([np.log(K_L), phi_L])
+            L_star = self._leader_value_at(X, K_L, phi_L, lev_L)
+            return L_star - self.follower_option_value(X, K_L, phi_L, regime)
+
+        X_P = float(optimize.brentq(gap, grid[idx], grid[idx + 1], xtol=1e-14))
+
+        _, K_L, phi_L = self.reoptimized_leader_policy(X_P, x0=warm["x0"])
+        # Cross-check the fixed point with the 16-start follower solver.
+        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
+
+        result = {
+            "X_leader": X_P,
+            "K_leader": K_L,
+            "phi_leader": phi_L,
+            "lev_leader": lev_L,
+            "X_follower": X_F,
+            "K_follower": K_F,
+            "phi_follower": phi_F,
+            "lev_follower": lev_F,
+            "X_leader_monopolist": X_L_mono,
+            "K_leader_convention": float(K_mono),
+            "phi_leader_convention": float(phi_mono),
+            "X_leader_convention": float(baseline["X_leader"]),
+            "K_follower_convention": float(baseline["K_follower"]),
+            "preemption_discount": 1.0 - X_P / X_L_mono,
+            "preemption_discount_convention": 1.0
+            - float(baseline["X_leader"]) / X_L_mono,
+            "single_crossing": bool(crossings.size == 1),
         }
         self._cache[cache_key] = result
         return result

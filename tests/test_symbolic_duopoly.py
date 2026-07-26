@@ -45,6 +45,14 @@ def high_alpha_params():
     return ModelParameters(alpha=0.85, r=0.20, mu_H=0.06, sigma=0.12)
 
 
+_NO_L_TRIGGER = (
+    "The high-alpha fixture must produce an interior L-trigger: it is the "
+    "only parameterization exercising the two-term F_L branch. If parameter "
+    "drift removes the trigger, that branch goes untested -- fail here "
+    "rather than skip silently."
+)
+
+
 # =====================================================================
 # Characteristic equations
 # =====================================================================
@@ -177,8 +185,7 @@ class TestOptionValueStructure:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger for these params")
+        assert model.has_interior_trigger("L"), _NO_L_TRIGGER
         result = verify_option_value_structure(high_alpha_params)
         assert result["has_L_trigger"]
         assert not result["paper_simplified_form_valid"]
@@ -188,8 +195,7 @@ class TestOptionValueStructure:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger for these params")
+        assert model.has_interior_trigger("L"), _NO_L_TRIGGER
         result = verify_option_value_structure(high_alpha_params)
         assert result["match"]
 
@@ -220,8 +226,7 @@ class TestSmoothPasting:
     def test_smooth_pasting_L_regime(self, high_alpha_params):
         """Smooth-pasting holds at L-regime trigger (when it exists)."""
         result = verify_smooth_pasting_L(high_alpha_params)
-        if result.get("skip"):
-            pytest.skip("No interior L-trigger")
+        assert not result.get("skip"), _NO_L_TRIGGER
         assert result["match"]
 
 
@@ -331,8 +336,7 @@ class TestFullPipeline:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         model = SingleFirmModel(high_alpha_params)
-        if not model.has_interior_trigger("L"):
-            pytest.skip("No interior L-trigger")
+        assert model.has_interior_trigger("L"), _NO_L_TRIGGER
 
         c_result = verify_particular_solution_coefficient(high_alpha_params)
         assert c_result["match"]

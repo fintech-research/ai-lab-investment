@@ -9,10 +9,17 @@ verification"). Every theorem here is verified by the Lean 4 kernel against
 
 It covers the reduction of the Euler ODE to the characteristic equation and the
 algebraic / single-variable-calculus content of the propositions — the closed
-forms, first-order conditions, comparative statics, and the existence/uniqueness
-of the preemption trigger — i.e. the steps a referee checks by hand. It does *not*
-attempt the optimal-stopping verification theorem or the numerical results, which
-are out of scope for an algebraic proof assistant.
+forms, first-order conditions, comparative statics, and the generic
+intermediate-value and single-crossing lemmas underlying the preemption trigger
+— i.e. the steps a referee checks by hand. Those last two are *conditional*
+lemmas: their model-specific hypotheses (continuity, the endpoint signs, and
+zero-leverage concavity of the leader–follower gap) are supplied by the paper,
+the upper endpoint sign computationally, and uniqueness under leverage is
+numerical. Kernel-checked and `sorry`-free means there are no gaps in the formal
+proofs; it does not mean there are no economic hypotheses. The formalization
+does *not* attempt the derivation of the HJB equation, the optimal-stopping
+verification theorem, or the numerical results, which are out of scope for an
+algebraic proof assistant.
 
 ## What is verified
 
@@ -36,7 +43,7 @@ are out of scope for an algebraic proof assistant.
 | | `faith_threshold` | the threshold `(φ/(1-φ))^α > q ⟺ φ > R/(1+R)`, `R=q^{1/α}` (eq-phi-underbar) |
 | | `XD_increasing_leverage` | Prop 2(i) — default boundary increasing in leverage `ℓ` |
 | | `share_decreasing_rival`, `XD_decreasing_in_Aeff` | Prop 2(iv) — contest share falls in rival capacity, so `X_D` rises |
-| | `net_threshold_rearrange`, `net_threshold_phi` | Prop 2(ii) — net-threshold rearrangement and the `φ̃` ratio inversion (eq-phi-tilde) |
+| | `net_threshold_rearrange`, `net_threshold_phi` | Prop 2(ii) — net-threshold rearrangement and the `φ̃` ratio inversion (eq-phi-tilde). `net_threshold_phi` is an alias of `faith_threshold` applied at the larger cutoff `q̃`, not an independent argument |
 | `Proposition1Phi.lean` | `hasDerivAt_alloc` | Prop 1, Step 5 — `g'(φ) = α(w_H φ^{α-1} - w_L(1-φ)^{α-1})` |
 | | `alloc_foc_ratio` | interior FOC `⟺ (φ/(1-φ))^{1-α} = w_H/w_L` |
 | | `ratio_eq_closed_form` | ratio condition pins the **unique** interior `φ* = ρ/(1+ρ)`, `ρ=(w_H/w_L)^{1/(1-α)}` |
@@ -44,8 +51,8 @@ are out of scope for an algebraic proof assistant.
 | | `phiStar_lt_phiStar`, `phiStar_increasing_lam`, `phiStar_increasing_muH`, `weight_ratio` | Prop 1, Step 6 — `φ*` increasing in `λ` and `μ_H`, independent of `μ_L` |
 | `Duopoly.lean` | `contest_share_scale_invariant`, `share_role_invariant` | Prop 3(ii) — Tullock share is scale-invariant, so the allocation cancels |
 | | `A_eff_follower_separable` | Appendix B — follower coefficient factors as `g(φ)·K_F^{2α}/(K_F^α+K_L^α)` |
-| | `preemption_exists` | Prop 3(i) — existence of the rent-equalization trigger `X_P` (IVT) |
-| | `unique_crossing` | Prop 3(i) — a continuous strictly concave `G` with `G(a)<0<G(b)` has a **unique** zero in `(a,b)` (the `ℓ=0` single-crossing) |
+| | `preemption_exists` | Prop 3(i) — existence of the rent-equalization trigger `X_P` by the IVT, *given* continuity and the endpoint signs `L(a)<F(a)`, `F(b)<L(b)`, which the paper supplies (upper endpoint verified computationally) |
+| | `unique_crossing` | Prop 3(i) — a continuous strictly concave `G` with `G(a)<0<G(b)` has a **unique** zero in `(a,b)`; the paper supplies the strict concavity of the leader–follower gap, which holds at `ℓ=0` |
 | | `hasDerivAt_tullock` | Prop 3(ii) — `f'(u) = α u^{α-1} s(2-s)` for `f(u)=u^{2α}/(u^α+c)` |
 
 `Basic.lean` holds the shared `ModelParams` structure (primitives + admissibility
@@ -82,16 +89,23 @@ printf 'import AILabProofs\n#print axioms AILab.alloc_foc_closed_form\n' | lake 
   `K*` and training fraction `φ*` (with comparative statics), the characteristic
   roots and their ordering, the faith-based-survival derivative/threshold and the
   default-boundary monotonicities, the duopoly role-invariance and separable
-  reduction, and the existence **and** zero-leverage single-crossing uniqueness of
-  the preemption trigger.
-- **Not formalized:** the single-crossing uniqueness of `X_P` for `ℓ>0`
+  reduction, and the generic intermediate-value existence and strict-concavity
+  single-crossing lemmas underlying the preemption trigger — the latter two
+  conditional on the continuity, endpoint-sign, and zero-leverage concavity
+  hypotheses the paper supplies.
+- **Not formalized:** the model-specific hypotheses of the preemption lemmas —
+  that the leader–follower gap actually satisfies the endpoint signs (the upper
+  endpoint `L(X_L^mono) > F(X_L^mono)` is verified computationally in the paper)
+  and is strictly concave — and the single-crossing uniqueness of `X_P` for `ℓ>0`
   (numerical in the paper), the explicit markup semi-elasticity `m` as a derivative
   and the numerical magnitude of `φ̃` (the markup-channel *monotonicity* and the
   net-threshold rearrangement are verified), strict-concavity of `A_eff` in `φ` as
   an abstract statement (the explicit FOC closed form here already gives existence
-  *and* uniqueness of the interior critical point), the `A₁=0` exactness argument
-  under (A3), and all numerical / coupled-ODE results (Appendix B), including
-  Numerical Finding 1.
+  *and* uniqueness of the interior critical point), the pure-power (`A₁=0`) form of
+  the L-regime option value — a solution convention rather than a theorem, see
+  Step 5b of the Proof of Proposition 1 — and all numerical / coupled-ODE results
+  (Appendix B), including the piecewise-stopping bias check and Numerical
+  Finding 1.
 - The reduction of the ODE to the characteristic equation is verified
   (`rpow_solves_euler_iff`), but the *derivation of the HJB equation itself* from
   stochastic-calculus primitives, and the optimal-stopping verification theorem

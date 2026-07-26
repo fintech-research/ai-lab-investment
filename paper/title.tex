@@ -13,9 +13,17 @@ $else$
 $endif$
 \subtitle{$subtitle$}
 $endif$
+$if(by-author)$
 $for(by-author)$
 \author$if(it.metadata.affil-id)$[$it.metadata.affil-id$]$endif${$it.name.literal$}
 $endfor$
+$else$
+% Anonymous (blind) build: no authors. Clear LaTeX's default \@author so that
+% \maketitle neither warns nor typesets its placeholder.
+\makeatletter
+\let\@author\@empty
+\makeatother
+$endif$
 $if(by-affiliation)$
 $for(by-affiliation)$
 \affil[$it.id$]{$it.name$}

@@ -18,6 +18,37 @@ from .base_model import SingleFirmModel
 from .duopoly import DuopolyModel
 from .parameters import ModelParameters
 
+CREDIT_COUPON_RATE = 0.05
+"""Coupon rate on debt used throughout the credit-risk analysis."""
+
+CREDIT_BANKRUPTCY_COST = 0.30
+"""Fraction of firm value lost in default (alpha_bc) in the analysis."""
+
+
+def _two_period_state_prices(
+    p: ModelParameters, lam: float, dt: float
+) -> tuple[float, float, float, float]:
+    """State prices of the two-period training-reallocation decomposition.
+
+    See ValuationAnalysis.two_period_dynamic_phi for the decomposition.
+    Returns (w_L, w_pre, w_sw, w_ns): the weights on, respectively, the
+    L-regime flow over [0, dt], the H-regime flow earned at the
+    pre-switch allocation between an in-period switch and the revision
+    date, the H perpetuity at the readjusted post-switch allocation, and
+    the no-switch continuation at dt.
+    """
+    rho = p.r - p.mu_L + lam
+    rho_H = p.r - p.mu_H
+    w_ns = np.exp(-rho * dt)
+    w_L = (1.0 - w_ns) / rho
+    w_total = lam / rho * (1.0 - w_ns)
+    gap = rho - rho_H
+    if abs(gap) < 1e-12:
+        w_sw = lam * np.exp(-rho_H * dt) * dt
+    else:
+        w_sw = lam * np.exp(-rho_H * dt) * (1.0 - np.exp(-gap * dt)) / gap
+    return w_L, w_total - w_sw, w_sw, w_ns
+
 
 class ValuationAnalysis:
     """Comprehensive valuation analysis for AI infrastructure firms.
@@ -29,7 +60,6 @@ class ValuationAnalysis:
 
     def __init__(self, params: ModelParameters):
         self.params = params
-        self._cache: dict = {}
 
     # ------------------------------------------------------------------
     # Growth option decomposition
@@ -144,8 +174,8 @@ class ValuationAnalysis:
         duo = DuopolyModel(
             self.params,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
 
         X = self.CREDIT_RISK_DEMAND_LEVEL
@@ -196,8 +226,8 @@ class ValuationAnalysis:
         duo = DuopolyModel(
             self.params,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         X_D = duo.default_boundary(phi, K, 0.0, 0.0)
         if X_D <= 0 or X_current <= X_D:
@@ -273,16 +303,21 @@ class ValuationAnalysis:
     ) -> dict[str, Any]:
         """Quantify the cost of belief mismatches.
 
-        Uses the phi-aware model where lambda enters through A_eff,
-        so the optimal (X*, K*, phi*) all depend on lambda.
+        Uses the phi-aware model where lambda enters through A_eff, so
+        the optimal trigger X* and allocation phi* depend on lambda. The
+        optimal capacity K* does *not*: by Proposition 1 it is
+        independent of both lambda and phi, so belief mismatches distort
+        timing and allocation only, never scale (and hence never the
+        coupon, which is proportional to I(K*)).
 
         If a firm's true lambda (private belief) differs from the lambda
         it uses for investment decisions, what is the cost?
 
-        - Conservative (lambda_invest < lambda_true): invests too late,
-          misses revenue during the boom
+        - Conservative (lambda_invest < lambda_true): invests too late
+          and under-allocates to training, forgoing H-regime upside
         - Aggressive (lambda_invest > lambda_true): invests too early
-          and too much, risk of default in bad states
+          and over-allocates to training, sacrificing L-regime revenue
+          and raising default risk in bad states
 
         Args:
             lambda_true: True arrival rate (private belief).
@@ -363,12 +398,34 @@ class ValuationAnalysis:
         so deadweight bankruptcy costs (b * V(X_D)) are captured. This
         shows how leverage amplifies the cost of overinvestment through
         endogenous default risk.
+
+        Important: both the benchmark and the mismatched operating
+        policies (X*, K*, phi*) come from the *unleveraged*
+        SingleFirmModel at the respective lambda; the levered claims
+        E + D - leverage * I are then valued under those policies. That
+        is the intended experiment, not an oversight: leverage is
+        exogenous in this model, so the firm sizes and times its
+        investment on NPV grounds and debt is layered on top of the
+        resulting policy.
+
+        Consequence for the appendix argument: unlike the unleveraged
+        dario_dilemma(), the objective returned here is NOT maximized at
+        lambda_invest == lambda_true by construction, because the policy
+        is not re-optimized against the levered objective. Numerically
+        the gap is negligible -- at baseline with leverage 0.40 the
+        levered objective peaks at lambda_invest ~ 0.101 and the value
+        shortfall at lambda_true is ~1.3e-5 in relative terms -- so the
+        second-order expansion in Internet Appendix A is stated exactly
+        for the unleveraged case and used as an approximation here.
         """
         # Optimal policy under true lambda
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         duo_true = DuopolyModel(
-            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p_true,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         try:
             X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
@@ -567,7 +624,11 @@ class ValuationAnalysis:
         assets-in-place are gross of sunk costs, the gap reaches zero
         before K reaches K*. This is the comparative-statics measure of
         distance to optimal scale reported in the paper, not the NPV of
-        incremental expansion from the installed base.
+        incremental expansion from the installed base. Because the two
+        components are measured against different benchmarks, their sum
+        is a normalization device rather than firm value, and
+        'gap_fraction' is a unit-free index in [0, 100], not a share of
+        firm value.
 
         Args:
             K_fracs: Installed capacity as fractions of optimal K*.
@@ -674,7 +735,10 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         duo_true = DuopolyModel(
-            p_true, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p_true,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
 
         try:
@@ -765,14 +829,57 @@ class ValuationAnalysis:
     ) -> dict[str, Any]:
         """Two-period illustration of dynamic training reallocation.
 
-        Period 1: firm invests with phi_1.
-        Period 2: if regime switched (prob p_switch), firm uses phi_H.
-                  if no switch (prob 1 - p_switch), firm uses phi_L2.
-        Reallocation costs kappa * (delta_phi)^2 per reallocation event.
+        The firm commits to phi_1 at investment and may revise the
+        allocation once, at the period boundary dt, conditioning on
+        whether the regime switch has occurred: to phi_H if it has, to
+        phi_L2 if it has not. After the boundary the allocation is fixed
+        forever, so each branch continues with the corresponding
+        perpetuity. Capacity is held at the static optimum K_s, which
+        isolates the allocation margin.
+
+        Value decomposition (per unit of X_0, capacity K_s, with
+        rho = r - mu_L + lam the L-regime discount rate inclusive of the
+        switch hazard and rho_H = r - mu_H, A_H = 1/rho_H):
+
+            V = w_L * [(1-phi_1) K]^alpha                       (i)
+              + w_pre * A_H * [phi_1 K]^alpha                   (ii)
+              + w_sw  * (A_H * [phi_H K]^alpha - kappa (phi_H - phi_1)^2)
+              + w_ns  * (A_eff(phi_L2, K)      - kappa (phi_L2 - phi_1)^2)
+
+            w_L   = (1 - e^{-rho dt}) / rho
+                    survival-adjusted L-regime flow over [0, dt];
+            w_sw  = int_0^dt lam e^{-rho t} e^{-rho_H (dt-t)} dt
+                    state price of one unit of X_dt in the switched
+                    state, i.e. the weight on the post-boundary
+                    (readjusted) H allocation;
+            w_tot = (lam / rho) (1 - e^{-rho dt})
+                    total state price of the switch arriving in [0, dt];
+            w_pre = w_tot - w_sw
+                    residual weight on the *pre-switch* allocation: the
+                    H flows earned between the switch and the boundary,
+                    before the firm can reallocate;
+            w_ns  = e^{-rho dt}
+                    no-switch continuation at dt.
+
+        The H prize therefore enters exactly once, split between the
+        pre-boundary allocation (w_pre) and the post-boundary one
+        (w_sw). The decomposition is exact rather than approximate: at
+        phi_1 = phi_H = phi_L2 = phi it collapses to the perpetual
+        A_eff(phi, K) of eq-a-eff, because w_L + w_ns / rho = 1 / rho on
+        the inference term and w_pre + w_sw + w_ns * lam / rho = lam / rho
+        on the H term. That identity is the test of the decomposition
+        (test_two_period_decomposition_collapses_to_a_eff) and it makes
+        the static benchmark behind the reported value gain literally the
+        static model's revenue coefficient.
+
+        Adjustment costs are charged inside the branch in which the
+        reallocation happens and carry that branch's state price, so
+        kappa is denominated in the same per-unit-of-X units as the
+        revenue coefficients.
 
         Args:
             lambda_val: Arrival rate (defaults to params.lam).
-            dt: Period length in years.
+            dt: Length of the commitment period in years.
             adjustment_cost: Quadratic reallocation cost kappa.
 
         Returns:
@@ -783,9 +890,8 @@ class ValuationAnalysis:
         p = self.params
         lam = lambda_val if lambda_val is not None else p.lam
 
-        # Probability of switch in period 1
+        # Probability of switch in period 1 (physical, reported only)
         p_switch = 1.0 - np.exp(-lam * dt)
-        disc_1 = np.exp(-p.r * dt)
 
         # Static benchmark
         p_lam = p.with_param(lam=lam)
@@ -794,34 +900,33 @@ class ValuationAnalysis:
 
         kappa = adjustment_cost
 
+        w_L, w_pre, w_sw, w_ns = _two_period_state_prices(p, lam, dt)
+
         def _period_value(phi_1: float, phi_H: float, phi_L2: float) -> float:
             """Expected PV of two-period revenue (per unit X, at K_s)."""
             K = K_s
 
-            # Period 1: L-regime revenue (inference + H-option from training).
-            # Reuses the model's effective revenue coefficient (eq-a-eff).
-            a_eff_1 = model_static._effective_revenue_coeff_single(phi_1, K)
+            # (i) L-regime inference flow at phi_1 over [0, dt]
+            value = w_L * ((1.0 - phi_1) * K) ** p.alpha
 
-            # PV from period 1 flows: effective coefficient times the
-            # fraction of the perpetuity earned over [0, dt]
-            pv_1 = a_eff_1 * (1.0 - np.exp(-(p.r - p.mu_L + lam) * dt))
+            # (ii) H flows between an in-period switch and the boundary,
+            # still at the pre-switch allocation phi_1
+            value += w_pre * p.A_H * (phi_1 * K) ** p.alpha
 
-            # Period 2 outcomes:
-            # If switch: H-regime revenue with phi_H
-            rev_2_H = (phi_H * K) ** p.alpha * p.A_H
-
-            # If no switch: L-regime with phi_L2
-            rev_2_L = model_static._effective_revenue_coeff_single(phi_L2, K)
-
-            pv_2 = disc_1 * (p_switch * rev_2_H + (1.0 - p_switch) * rev_2_L)
-
-            # Adjustment costs (expected)
-            adj = kappa * (
-                p_switch * (phi_H - phi_1) ** 2
-                + (1.0 - p_switch) * (phi_L2 - phi_1) ** 2
+            # (iii) switched state at dt: H perpetuity at the readjusted
+            # allocation, net of the reallocation cost
+            value += w_sw * (
+                p.A_H * (phi_H * K) ** p.alpha - kappa * (phi_H - phi_1) ** 2
             )
 
-            return pv_1 + pv_2 - adj
+            # (iv) no-switch state at dt: L-regime perpetuity (eq-a-eff)
+            # at the readjusted allocation, net of the reallocation cost
+            value += w_ns * (
+                model_static._effective_revenue_coeff_single(phi_L2, K)
+                - kappa * (phi_L2 - phi_1) ** 2
+            )
+
+            return value
 
         def _neg_value(params_vec: np.ndarray) -> float:
             phi_1, phi_H, phi_L2 = params_vec
@@ -839,7 +944,7 @@ class ValuationAnalysis:
         # Optimize
         best_val = 1e20
         best_params = None
-        for p1 in [0.3, 0.5, 0.7]:
+        for p1 in [0.05, 0.3, 0.5, 0.7]:
             for pH in [0.5, 0.7, 0.9]:
                 for pL in [0.2, 0.4, 0.6]:
                     x0 = np.array([p1, pH, pL])
@@ -863,7 +968,8 @@ class ValuationAnalysis:
         phi_H_opt = np.clip(best_params[1], 0.01, 0.99)
         phi_L2_opt = np.clip(best_params[2], 0.01, 0.99)
 
-        # Compute effective A_eff for the dynamic allocation
+        # The static benchmark is the collapsed decomposition, i.e.
+        # A_eff(phi_s, K_s) exactly (see the docstring identity).
         val_dynamic = _period_value(phi_1_opt, phi_H_opt, phi_L2_opt)
         val_static = _period_value(phi_s, phi_s, phi_s)
 
@@ -905,7 +1011,10 @@ class ValuationAnalysis:
 
         # --- Standard Tullock ---
         duo_tullock = DuopolyModel(
-            p, leverage=leverage, coupon_rate=0.05, bankruptcy_cost=0.30
+            p,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         try:
             eq_tullock = duo_tullock.solve_preemption_equilibrium()
@@ -926,8 +1035,8 @@ class ValuationAnalysis:
         duo_fp = DuopolyModel(
             p,
             leverage=leverage,
-            coupon_rate=0.05,
-            bankruptcy_cost=0.30,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
             contest="fixed_pie",
         )
 

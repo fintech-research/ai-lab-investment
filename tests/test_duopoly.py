@@ -364,6 +364,149 @@ class TestPreemptionEquilibrium:
         assert eq["single_crossing"]
         assert 0 < eq["phi_follower"] < 1
 
+    def test_reports_solver_diagnostics(self, model):
+        """The equilibrium dict carries the bracket and multistart
+        diagnostics needed to tell a solved root from a fallback."""
+        eq = model.solve_preemption_equilibrium("H")
+        assert eq["bracket_failed"] is False
+        assert eq["n_sign_changes"] == 1
+        diag = eq["solver_diagnostics"]
+        assert diag["leader_monopolist"]["n_converged"] >= 1
+        assert diag["follower"]["n_converged"] >= 1
+
+
+# ------------------------------------------------------------------
+# Preemption failure paths: strict mode must raise
+# ------------------------------------------------------------------
+
+
+class TestPreemptionFailurePaths:
+    """A failed bracket is not an equilibrium. Paper-generating paths run
+    in strict mode and must raise; the strict=False escape hatch returns
+    the endpoint fallback with bracket_failed set."""
+
+    @staticmethod
+    def _force_gap(model, gap_fn):
+        model._preemption_gap = gap_fn
+
+    def test_positive_gap_at_lower_endpoint_raises(self, model):
+        """L - F already non-negative at X_low: no first up-crossing."""
+        self._force_gap(model, lambda X, regime: 1.0)
+        with pytest.raises(RuntimeError, match="No preemption equilibrium"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_no_sign_change_raises(self, model):
+        """L - F never turns positive on (X_D, X_L^mono)."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        with pytest.raises(RuntimeError, match="no sign change"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_brent_failure_raises(self, model):
+        """A grid sign change that Brent cannot reproduce still raises."""
+        X_mid = model.solve_leader_monopolist("H")[0] * 0.5
+        calls = {"n": 0}
+
+        def flaky_gap(X, regime):
+            calls["n"] += 1
+            if calls["n"] <= 500:  # the grid scan brackets a root
+                return X - X_mid
+            return 1.0  # ... which has vanished by the time Brent runs
+
+        self._force_gap(model, flaky_gap)
+        with pytest.raises(RuntimeError, match="Brent"):
+            model.solve_preemption_equilibrium("H")
+
+    def test_non_strict_returns_flagged_fallback(self, model):
+        """strict=False keeps the old endpoint fallback, but flags it."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        eq = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq["bracket_failed"] is True
+        assert eq["X_leader"] == eq["X_leader_monopolist"]
+
+    def test_non_strict_lower_endpoint_fallback(self, model):
+        self._force_gap(model, lambda X, regime: 1.0)
+        eq = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq["bracket_failed"] is True
+        assert eq["X_leader"] < eq["X_leader_monopolist"]
+
+    def test_strict_is_the_default(self, model):
+        """Callers that do not opt out get the raising behaviour."""
+        self._force_gap(model, lambda X, regime: -1.0)
+        with pytest.raises(RuntimeError):
+            model.solve_preemption_equilibrium()
+
+    def test_strict_and_non_strict_cached_separately(self, model):
+        """The escape hatch must not poison the strict cache entry."""
+        eq_strict = model.solve_preemption_equilibrium("H")
+        eq_loose = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq_loose["X_leader"] == eq_strict["X_leader"]
+        assert eq_loose["bracket_failed"] is False
+
+
+# ------------------------------------------------------------------
+# Domain guards on public methods
+# ------------------------------------------------------------------
+
+
+class TestDomainGuards:
+    """Invalid parameters and allocations fail loudly rather than
+    silently producing nan through a negative fractional power."""
+
+    def test_contest_share_L_rejects_phi_above_one(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_L(1.2, 1.0, 0.5, 1.0)
+
+    def test_contest_share_L_rejects_negative_rival_phi(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_L(0.5, 1.0, -0.1, 1.0)
+
+    def test_contest_share_H_rejects_phi_above_one(self, model):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.contest_share_H(1.2, 1.0, 0.5, 1.0)
+
+    @pytest.mark.parametrize("phi", [-0.1, 1.2])
+    def test_value_functions_reject_out_of_range_phi(self, model, phi):
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.installed_value_L(0.1, phi, 1.0, 0.5, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.installed_value_H(0.1, phi, 1.0, 0.5, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.monopolist_value_L(0.1, phi, 1.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            model.monopolist_value_H(0.1, phi, 1.0)
+
+    @pytest.mark.parametrize("phi", [-0.1, 1.2])
+    def test_credit_objects_reject_out_of_range_phi(self, levered_model, phi):
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.default_boundary(phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.equity_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.debt_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.liquidation_value(0.1, phi, 1.0, 0.0, 0.0)
+        with pytest.raises(ValueError, match="phi must be in"):
+            levered_model.firm_value(0.1, phi, 1.0, 0.0, 0.0)
+
+    def test_boundary_phi_values_allowed(self, model):
+        """phi = 0 and phi = 1 are admissible corners, not errors."""
+        assert model.contest_share_L(0.0, 1.0, 0.0, 1.0) == pytest.approx(0.5)
+        assert model.contest_share_H(1.0, 1.0, 1.0, 1.0) == pytest.approx(0.5)
+
+    @pytest.mark.parametrize("lev", [-0.1, 1.5])
+    def test_leverage_out_of_range_raises(self, default_params, lev):
+        with pytest.raises(ValueError, match="Leverage"):
+            DuopolyModel(default_params, leverage=lev)
+
+    def test_non_positive_coupon_rate_raises(self, default_params):
+        with pytest.raises(ValueError, match="Coupon rate"):
+            DuopolyModel(default_params, leverage=0.4, coupon_rate=0.0)
+
+    @pytest.mark.parametrize("bc", [-0.1, 1.5])
+    def test_bankruptcy_cost_out_of_range_raises(self, default_params, bc):
+        with pytest.raises(ValueError, match="Bankruptcy cost"):
+            DuopolyModel(default_params, leverage=0.4, bankruptcy_cost=bc)
+
 
 # ------------------------------------------------------------------
 # Default risk with new API
@@ -847,3 +990,121 @@ class TestFollowerScalarReduction:
             m = DuopolyModel(default_params.with_param(lam=lam), leverage=0.0)
             eq = m.solve_preemption_equilibrium("H")
             assert eq["single_crossing"] is True
+
+
+# ------------------------------------------------------------------
+# Equity convention: going-concern claim floored, entry NPV not
+# ------------------------------------------------------------------
+
+
+class TestEquityConvention:
+    """One equity convention across paper, proof, and code: limited
+    liability floors the *going-concern* claim E, and the object the
+    entry decision uses is E(X) - (1 - ell) I(K), which is negative near
+    the origin. That negativity is the L(0) < 0 = F(0) endpoint of the
+    Proposition 3(i) existence argument."""
+
+    def test_unlevered_entry_npv_negative_near_origin(self, model):
+        """At ell = 0, entry NPV -> -[delta K / r + I(K)] as X -> 0."""
+        p = model.params
+        phi, K = 0.70, 0.0067
+        limit = -(p.delta * K / p.r + model.investment_cost(K))
+        a_eff = model._effective_revenue_coeff(phi, K, 0.0, 0.0, monopolist=True)
+        for X in [0.0, 1e-12, 1e-9, 1e-6]:
+            npv = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
+            assert npv < 0
+            assert abs(npv - limit) <= a_eff * X + 1e-15
+
+    def test_levered_entry_npv_below_default_boundary(self, levered_model):
+        """Below X_D the going concern is worthless and the sunk equity
+        contribution is lost: entry NPV == -(1 - ell) I(K), exactly."""
+        phi, K, lev = 0.70, 1.0, 0.5
+        X_D = levered_model.default_boundary(phi, K, 0.0, 0.0, lev)
+        assert X_D > 0
+        expected = -(1.0 - lev) * levered_model.investment_cost(K)
+        for X in [1e-9, X_D * 0.5, X_D]:
+            npv = levered_model.equity_value(X, phi, K, 0.0, 0.0, lev)
+            assert abs(npv - expected) < 1e-12
+
+    def test_going_concern_continuous_and_zero_at_boundary(self, levered_model):
+        """E(X_D) = 0 by smooth pasting, so the limited-liability floor on
+        the going-concern claim is a guard that never binds above X_D."""
+        phi, K, lev = 0.70, 1.0, 0.5
+        X_D = levered_model.default_boundary(phi, K, 0.0, 0.0, lev)
+        contribution = (1.0 - lev) * levered_model.investment_cost(K)
+        for eps in [1e-8, 1e-6, 1e-4]:
+            npv = levered_model.equity_value(X_D * (1 + eps), phi, K, 0.0, 0.0, lev)
+            going_concern = npv + contribution
+            assert going_concern >= 0.0
+            assert going_concern < 1e-3 * contribution
+
+    def test_leader_value_negative_at_low_demand(self, model):
+        """L(X) < 0 = F(0) at low demand -- no clamp on the leader's NPV."""
+        eq = model.solve_preemption_equilibrium("H")
+        K_L, phi_L = eq["K_leader"], eq["phi_leader"]
+        for frac in [1e-4, 1e-2, 0.1]:
+            X = eq["X_leader_monopolist"] * frac
+            assert model._leader_value_at(X, K_L, phi_L, 0.0) < 0.0
+
+    def test_preemption_trigger_unaffected_by_convention(self, model):
+        """The floor never binds in the reported region: the equilibrium
+        trigger still sits where L and F are both strictly positive."""
+        eq = model.solve_preemption_equilibrium("H")
+        X_P = eq["X_leader"]
+        L = model._leader_value_at(X_P, eq["K_leader"], eq["phi_leader"], 0.0)
+        F = model.follower_option_value(X_P, eq["K_leader"], eq["phi_leader"], "H")
+        assert L > 0
+        assert abs(L - F) < 1e-10
+
+
+# ------------------------------------------------------------------
+# Leader-scale convention: sensitivity and scale asymmetry
+# ------------------------------------------------------------------
+
+
+class TestLeaderScaleConvention:
+    """Paper-pinned numbers for the leader-scale convention (Internet
+    Appendix B) and the leader-follower scale asymmetry (@sec-duopoly)."""
+
+    def test_reoptimized_leader_preemption_discount(self, default_params):
+        """Re-optimizing (K_L, phi_L) for entry roughly doubles the
+        preemption discount: 86% against the convention's 43%."""
+        m = DuopolyModel(default_params, leverage=0.0)
+        res = m.solve_preemption_reoptimized_leader(n_grid=24, x_low_factor=1e-2)
+
+        assert res["single_crossing"]
+        assert abs(res["preemption_discount_convention"] - 0.427) < 0.005
+        assert abs(res["preemption_discount"] - 0.861) < 0.005
+        assert abs(res["X_leader"] - 0.000657) < 5e-6
+        # Leader shrinks to about 6% of the monopoly-phase capacity.
+        assert abs(res["K_leader"] / res["K_leader_convention"] - 0.056) < 0.003
+        # Role invariance survives re-optimization.
+        assert abs(res["phi_leader"] - res["phi_leader_convention"]) < 1e-3
+        # The convention understates, never overstates, the discount.
+        assert res["preemption_discount"] > res["preemption_discount_convention"]
+
+    def test_scale_asymmetry_ratios(self, model):
+        """Paper numbers: K_F/K_L ~ 38, X_F/X_P ~ 44 at baseline."""
+        eq = model.solve_preemption_equilibrium("H")
+        assert abs(eq["K_follower"] / eq["K_leader"] - 38.48) < 0.05
+        assert abs(eq["X_follower"] / eq["X_leader"] - 43.95) < 0.05
+
+    def test_elasticity_wedge_reproduces_follower_capacity(self, model):
+        """The asymmetry is the elasticity wedge: substituting
+        alpha*(2 - s_F) for alpha in the Proposition 1 closed form for K*
+        reproduces K_F."""
+        p = model.params
+        eq = model.solve_preemption_equilibrium("H")
+        K_L, K_F, beta = eq["K_leader"], eq["K_follower"], p.beta_H
+        s_F = K_F**p.alpha / (K_F**p.alpha + K_L**p.alpha)
+        alpha_eff = p.alpha * (2.0 - s_F)
+        assert abs(s_F - 0.8115) < 5e-4
+        assert abs(alpha_eff - 0.4754) < 5e-4
+
+        def k_star(a):
+            num = p.delta * (a * beta - beta + 1.0)
+            den = p.r * p.c * (p.gamma * (beta - 1.0) - a * beta)
+            return (num / den) ** (1.0 / (p.gamma - 1.0))
+
+        assert abs(k_star(p.alpha) / K_L - 1.0) < 1e-6
+        assert abs(k_star(alpha_eff) / K_F - 1.0) < 1e-6

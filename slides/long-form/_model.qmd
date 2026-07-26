@@ -85,7 +85,7 @@ Higher $\sigma$, $\alpha$, $\gamma$ raise the trigger; effects on capacity vary
 
 **Endogenous default** [@leland1994corporate]: equity holders default when $E(X) = 0$
 
-$$X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}}$$
+$$X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D / r + \delta K_i / r}{A_{\text{eff},i}}$$
 
 **Proposition**: Higher leverage *and* stronger competition both raise $X_D$
 

@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Sync environment
+        run: uv sync --locked
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Check (ruff + ty)
+        run: just check
+
+      - name: Test
+        run: just test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  lean:
+    name: Lean proofs (sorry-free)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs elan with the toolchain pinned in lean/lean-toolchain,
+      # restores the Mathlib build cache, and runs `lake build`.
+      - name: Build the Lean project
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: lean
+          use-mathlib-cache: "true"
+          build: "true"
+          test: "false"
+          lint: "false"
+
+      - name: Assert the sources are sorry-free
+        working-directory: lean
+        run: |
+          if grep -rnw --include='*.lean' sorry AILabProofs; then
+            echo "::error::found 'sorry' in the Lean sources"
+            exit 1
+          fi
+          echo "no 'sorry' found."
+
+      - name: Print the axioms behind each headline theorem
+        working-directory: lean
+        run: |
+          {
+            echo "import AILabProofs"
+            for t in \
+              AILab.euler_operator_rpow \
+              AILab.charPoly_betaPlus \
+              AILab.trigger_from_boundary_conditions \
+              AILab.alloc_foc_closed_form \
+              AILab.faith_threshold \
+              AILab.preemption_exists
+            do
+              echo "#print axioms $t"
+            done
+          } | lake env lean --stdin

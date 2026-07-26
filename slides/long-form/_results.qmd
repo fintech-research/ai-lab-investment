@@ -49,18 +49,20 @@ $$\phi^* \approx 0.70$$
 
 ---
 
-## Growth Option Decomposition
+## A Normalized Scale-Gap Diagnostic
 
-Following @berk1999optimal, decompose firm value:
+Motivated by @berk1999optimal, index the distance to optimal scale:
 
-$$V_{\text{total}} = \underbrace{V_{\text{AIP}}}_{\text{assets-in-place}} + \underbrace{V_{\text{expand}}}_{\text{expansion option}} + \underbrace{V_{\text{switch}}}_{\text{regime switch}}$$
+$$g = \frac{V_{\text{gap}}}{V_{\text{AIP}} + V_{\text{gap}}}, \qquad V_{\text{gap}} = \max\{\text{NPV}(K^*, \phi^*) - V_{\text{AIP}},\; 0\}$$
+
+Not a growth-option decomposition: gross vs. net benchmarks, so the sum is a normalization, not firm value
 
 ---
 
-## Growth Options Dominate Firm Value
+## The Scale Gap Shrinks with Installed Capacity
 
 ![](figures/fig_growth_decomposition.png){width="90%"}
 
-At $K/K_H^* < 0.1$ (typical for AI firms), growth options exceed 50% of value
+$g \approx 50\%$ at $K/K^* = 0.1$, $26\%$ at $0.3$, zero at $K/K^* \approx 0.77$; levels of $K/K^*$ are not identified ($c = 1$)
 
 ---

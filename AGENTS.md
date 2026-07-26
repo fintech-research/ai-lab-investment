@@ -11,6 +11,7 @@ All commands use `just` (task runner) and `uv` (Python package manager). `just h
 - `just check` — lint, format, typecheck (pre-commit + ty)
 - `just test` — pytest with coverage
 - `just run-pipeline` — full analysis pipeline (`uv run python -m ai_lab_investment`)
+- `just run-sweep` — ±25% parameter-perturbation robustness sweep (Internet Appendix E)
 - `uv run pytest tests/test_file.py::test_name` — single test
 - `just render-paper` / `just render-slides` — Quarto builds (output in `_output/`)
 - `just build-replication-package` — referee-facing zip (Lean project + equation listing)
@@ -20,7 +21,7 @@ Use the Context7 MCP tool to look up library documentation before writing code.
 
 ## Architecture
 
-**Pipeline entry point:** `src/ai_lab_investment/__main__.py` → `pipeline.py` (Hydra, `conf/config.yaml`). The pipeline runs four exploratory phases (`phase1_base_model`, `phase2_duopoly`, `phase4_calibration`, `phase5_valuation`), each toggled by a `tasks.*` flag and overridable via CLI (e.g., `tasks.phase2_duopoly=false`). It writes to `RESULTS_DIR`; the *paper* figures are produced separately by `paper/generate_figures.py`.
+**Pipeline entry point:** `src/ai_lab_investment/__main__.py` → `pipeline.py` (Hydra, `conf/config.yaml`). The pipeline runs four exploratory phases (`phase1_base_model`, `phase2_duopoly`, `phase4_calibration`, `phase5_valuation`) plus the `robustness_sweep` task backing Internet Appendix E, each toggled by a `tasks.*` flag and overridable via CLI (e.g., `tasks.phase2_duopoly=false`). It writes to `RESULTS_DIR`; the *paper* figures are produced separately by `paper/generate_figures.py`.
 
 **Core model hierarchy:**
 `models/parameters.py` → `base_model.py` (single firm) → `duopoly.py` (2 firms) → `valuation.py` (credit risk, dilemma)

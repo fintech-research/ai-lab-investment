@@ -88,11 +88,25 @@ def _run_phase5():
     logging.info("Phase 5 figures saved")
 
 
+def _run_robustness_sweep():
+    from .robustness import format_sweep_report, run_sweep, write_sweep_csv
+
+    logging.info("Running robustness sweep: +/-25% parameter perturbations")
+    rows = run_sweep()
+    for line in format_sweep_report(rows).splitlines():
+        logging.info(line)
+
+    results_dirs = get_results_directories()
+    path = write_sweep_csv(rows, results_dirs.tables)
+    logging.info(f"Sweep written to {path}")
+
+
 _TASK_RUNNERS = {
     "phase1_base_model": _run_phase1,
     "phase2_duopoly": _run_phase2,
     "phase4_calibration": _run_phase4,
     "phase5_valuation": _run_phase5,
+    "robustness_sweep": _run_robustness_sweep,
 }
 
 

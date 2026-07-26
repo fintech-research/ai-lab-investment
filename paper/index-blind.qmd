@@ -1,0 +1,69 @@
+---
+# Double-anonymous (blind) manuscript for Management Science / INFORMS submission.
+#
+# This file mirrors `index.qmd` but omits `authors`, `affiliations`, and `thanks`
+# (no title page, no acknowledgments, no repository URL) and applies the
+# submission-only formatting (1.5 line spacing).
+#
+# The submission is two PDFs: the manuscript and a separate anonymous
+# e-companion holding the Internet Appendix. Because Quarto resolves
+# cross-references only within a single render, this file is rendered *whole*
+# (appendix included) and `split_blind_pdf.py` then cuts the resulting PDF at the
+# Internet Appendix cover page. That keeps every `@tbl-parameters` / `@eq-hjb-L`
+# style reference resolved in both artifacts. Run `just render-blind`.
+#
+# IMPORTANT: `title`, `abstract`, and `keywords` below are *content* and must stay
+# identical to `index.qmd`. Quarto has no per-document metadata include, so the
+# parity is enforced by `tests/test_paper_metadata.py` instead.
+title: "Investing in Artificial General Intelligence"
+date: today
+date-format: long
+format:
+  pdf:
+    output-file: ai_lab_investment_blind_full.pdf
+    keep-tex: true
+    linestretch: 1.5
+    latex-clean: false
+abstract: |
+  Frontier AI laboratories racing toward Artificial General Intelligence (AGI) face uncertain timing of transformative demand.
+  They must decide how much irreversible capacity to build, and how to split it between inference (current revenue) and training (future capability).
+  I develop a real-options model with regime switching, duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
+  The model delivers analytical investment triggers for the single firm and a semi-analytical duopoly preemption equilibrium in which competition compresses investment timing while the training fraction is pinned down by beliefs about AI timelines rather than by competitive position.
+  A "faith-based survival" mechanism emerges: training raises the expected post-AGI continuation value, lowering the default boundary---the hope of AGI keeps the firm alive, though that hope is worthless to creditors in bankruptcy.
+  An asymmetric dilemma arises: conservative underinvestment is costlier in expected value, but aggressive overinvestment carries substantially higher tail default risk.
+  Calibration to four AI lab archetypes illustrates how heterogeneity in beliefs about AI timelines drives cross-sectional variation in investment behavior.
+keywords:
+  - real options
+  - irreversible capacity investment
+  - artificial intelligence
+  - duopoly preemption
+  - default risk
+---
+
+
+{{< include _introduction.qmd >}}
+
+{{< include _model.qmd >}}
+
+{{< include _calibration.qmd >}}
+
+{{< include _valuation.qmd >}}
+
+{{< include _discussion.qmd >}}
+
+{{< include _conclusion.qmd >}}
+
+\newpage
+\clearpage
+
+## References {.unnumbered}
+
+\begingroup
+\raggedright
+::: {#refs}
+:::
+\endgroup
+
+{{< include _appendix-cover.qmd >}}
+
+{{< include _appendix.qmd >}}

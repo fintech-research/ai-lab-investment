@@ -12,6 +12,10 @@ Rules for working in `src/ai_lab_investment/`. Global rules are in `@../AGENTS.m
 
 **`symbolic_duopoly.py`** — verification/documentation module using SymPy. Not called in the pipeline. Used to verify that `base_model.py` and `duopoly.py` implement the correct ODE solution.
 
+**`piecewise_option.py`** — verification module (not in the pipeline) solving the *exact* piecewise L-regime stopping problem: the HJB forcing term is the H-regime option only below X_H*, and the exercised H payoff above it. Quantifies the bias of the paper's pure-power (unconditional-A_eff) convention against the exact free-boundary solution, with an independent Brennan--Schwartz LCP check. Run `uv run python -m ai_lab_investment.models.piecewise_option [sweep]` for the bias report.
+
+**`robustness.py`** — the ±25% one-at-a-time parameter-perturbation sweep behind Internet Appendix E. Re-computes the dilemma asymmetry, capacity-gap fraction, faith thresholds, and preemption discount at each draw, and *reports* (A1)/(A2) failures instead of truncating them. Run `just run-sweep`, or via the `tasks.robustness_sweep` pipeline flag. Its paper-pinned numbers live in `tests/test_robustness.py::TestPaperNumbers` — update the appendix text and the test together.
+
 **`calibration/`** — `data.py` holds the four stylized firm archetypes (`get_stylized_firms()`: Anthropic-, OpenAI-, Google-, xAI-like) and the baseline calibration; `revealed_beliefs.py` infers implied λ from observed investment. Revealed beliefs appear in the slides and the paper's conclusion (future work), not as a paper section.
 
 ## IMPORTANT: Figure Generation
@@ -22,11 +26,11 @@ The other `figures/` modules produce exploratory output for the Hydra pipeline (
 
 ## Key Analytical Parameters
 
-At baseline: β_L⁺ ≈ 3.01 (positive root of L-regime ODE with discount r+λ), β_H ≈ 1.55. Assumption A3 holds: simplified F_L = C·X^{β_H} is valid. `verify_baseline_simplification()` in `symbolic_duopoly.py` confirms this.
+At baseline: β_L⁺ ≈ 3.01 (positive root of L-regime ODE with discount r+λ), β_H ≈ 1.55. Assumption A3 holds in the sense the paper uses it, i.e. the pure-power F_L ∝ X^{β_H} convention (see `piecewise_option.py` for its bias). `verify_baseline_simplification()` in `symbolic_duopoly.py` confirms this.
 
 ## Testing
 
-Tests are in `tests/` (6 files, one per module; ~230 tests). Run with `just test`. `assert` statements allowed in tests. Several tests pin paper numbers (e.g. `TestAppendixERobustness` in `test_valuation.py` checks the Internet Appendix E tables) — if a model change moves those numbers, update the paper text and the test together.
+Tests are in `tests/` (7 files, one per module; ~250 tests). Run with `just test`. `assert` statements allowed in tests. Several tests pin paper numbers (e.g. `TestAppendixERobustness` in `test_valuation.py` checks the Internet Appendix E tables) — if a model change moves those numbers, update the paper text and the test together.
 
 The closed-form algebra these modules implement is independently machine-checked in Lean (`../lean/`, see `lean/README.md`). Changing a closed form means checking the corresponding Lean theorem too.
 

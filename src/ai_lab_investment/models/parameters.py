@@ -21,8 +21,8 @@ class ModelParameters:
 
     Attributes:
         r: Risk-adjusted discount rate (WACC).
-        mu_L: Risk-neutral demand drift in regime L (pre-adoption).
-        mu_H: Risk-neutral demand drift in regime H (post-adoption).
+        mu_L: Risk-adjusted demand drift in regime L (pre-adoption).
+        mu_H: Risk-adjusted demand drift in regime H (post-adoption).
         sigma: Volatility of demand (common across regimes).
         lam: Arrival rate of regime switch L -> H (firm belief).
         lam_0: Exogenous baseline arrival rate (rest-of-world progress).
@@ -40,9 +40,9 @@ class ModelParameters:
 
     # Discount rate (WACC for AI infrastructure firms)
     r: float = 0.12
-    # Risk-neutral demand drift in low regime (pre-adoption)
+    # Risk-adjusted demand drift in low regime (pre-adoption)
     mu_L: float = 0.01
-    # Risk-neutral demand drift in high regime (post-adoption)
+    # Risk-adjusted demand drift in high regime (post-adoption)
     mu_H: float = 0.06
     sigma: float = 0.25
     # Poisson arrival rate of regime switch L -> H (firm belief)
@@ -75,9 +75,11 @@ class ModelParameters:
 
     def _validate(self):
         self._validate_core()
+        self._validate_technology()
         self._validate_endogenous()
 
     def _validate_core(self):
+        """Discount rate, drifts, volatility, and the switching rate (A1)."""
         if self.r <= 0:
             msg = f"Discount rate r must be positive, got {self.r}"
             raise ValueError(msg)
@@ -93,6 +95,22 @@ class ModelParameters:
                 f"mu_L={self.mu_L} for convergence"
             )
             raise ValueError(msg)
+        if self.mu_H <= self.mu_L:
+            msg = (
+                f"High-regime drift mu_H={self.mu_H} must exceed low-regime "
+                f"drift mu_L={self.mu_L} (Assumption 1: the switch to H is "
+                f"a growth acceleration)"
+            )
+            raise ValueError(msg)
+        if self.sigma <= 0:
+            msg = "Volatility must be positive"
+            raise ValueError(msg)
+        if self.lam < 0:
+            msg = f"Arrival rate lambda must be non-negative, got {self.lam}"
+            raise ValueError(msg)
+
+    def _validate_technology(self):
+        """Revenue elasticity, cost curvature, and operating parameters."""
         if not 0 < self.alpha < 1:
             msg = f"Revenue elasticity alpha must be in (0,1), got {self.alpha}"
             raise ValueError(msg)
@@ -105,11 +123,8 @@ class ModelParameters:
         if self.c <= 0:
             msg = f"Cost scale c must be positive, got {self.c}"
             raise ValueError(msg)
-        if self.sigma <= 0:
-            msg = "Volatility must be positive"
-            raise ValueError(msg)
-        if self.lam < 0:
-            msg = f"Arrival rate lambda must be non-negative, got {self.lam}"
+        if self.delta < 0:
+            msg = f"Operating cost delta must be non-negative, got {self.delta}"
             raise ValueError(msg)
         if self.tau < 0:
             msg = f"Time-to-build tau must be non-negative, got {self.tau}"
@@ -193,26 +208,6 @@ class ModelParameters:
         if training_j > 0:
             contribution += training_j**self.eta
         return self.lam_0 + self.xi * contribution
-
-    def A_L_at_lambda(self, lam_eff: float) -> float:
-        """Compute A_L multiplier at a specific effective lambda.
-
-        A_L(lambda) = (r - mu_H + lambda) / [(r - mu_H)(r - mu_L + lambda)]
-
-        Used when lambda_tilde differs from the stored lam.
-        """
-        if lam_eff > 0:
-            return (self.r - self.mu_H + lam_eff) / (
-                (self.r - self.mu_H) * (self.r - self.mu_L + lam_eff)
-            )
-        return 1.0 / (self.r - self.mu_L)
-
-    def beta_L_at_lambda(self, lam_eff: float) -> float:
-        """Compute beta_L at a specific effective lambda.
-
-        beta_L solves: (sigma^2/2)*b*(b-1) + mu_L*b - (r + lambda) = 0
-        """
-        return _positive_root(self.sigma, self.mu_L, self.r + lam_eff)
 
     def with_param(self, **kwargs) -> "ModelParameters":
         """Return a new ModelParameters with specified parameters changed."""
