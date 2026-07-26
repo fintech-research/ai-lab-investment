@@ -5,7 +5,7 @@ import itertools
 import numpy as np
 import pytest
 
-from ai_lab_investment.models import ModelParameters, ValuationAnalysis
+from ai_lab_investment.models import ModelParameters, SingleFirmModel, ValuationAnalysis
 
 
 @pytest.fixture
@@ -473,20 +473,43 @@ class TestAppendixERobustness:
         assert r_aggr["focal_leads"] is True
 
     def test_dynamic_phi_table(self, va):
-        """tbl-dynamic-phi: phi_1 near the static optimum, phi_H -> 0.99 at
-        kappa = 0, modest value gains declining in the adjustment cost,
-        phi_underbar unchanged."""
+        """tbl-dynamic-phi: phi_1 at or below the static optimum, rising
+        back toward it as reallocation gets costlier; phi_H at the training
+        corner when kappa = 0; value gains declining in the adjustment
+        cost; phi_underbar unchanged."""
+        # kappa -> (phi_1, phi_H, phi_L2, value gain %)
+        expected = {
+            0.0: (0.01, 0.99, 0.70, 5.06),
+            0.5: (0.60, 0.99, 0.66, 1.90),
+            2.0: (0.69, 0.92, 0.69, 0.86),
+            10.0: (0.70, 0.75, 0.70, 0.20),
+        }
         gains = []
-        for kappa in [0.0, 0.5, 2.0, 10.0]:
+        for kappa, (phi_1, phi_H, phi_L2, gain) in expected.items():
             r = va.two_period_dynamic_phi(adjustment_cost=kappa)
             assert "error" not in r
-            gains.append(r["value_gain_pct"])
+            assert abs(r["phi_1_dynamic"] - phi_1) < 0.02
+            assert abs(r["phi_H_dynamic"] - phi_H) < 0.02
+            assert abs(r["phi_L2_dynamic"] - phi_L2) < 0.02
+            assert abs(r["value_gain_pct"] - gain) < 0.15
             assert abs(r["phi_underbar"] - 0.180) < 0.005
-            if kappa == 0.0:
-                assert r["phi_H_dynamic"] >= 0.95
-                assert abs(r["phi_1_dynamic"] - 0.70) < 0.02
-                assert 1.0 < r["value_gain_pct"] < 2.0
+            # the reallocation option never raises the initial allocation
+            assert r["phi_1_dynamic"] <= r["phi_static"] + 1e-3
+            gains.append(r["value_gain_pct"])
         assert all(g1 >= g2 - 1e-9 for g1, g2 in itertools.pairwise(gains))
+
+    def test_two_period_decomposition_collapses_to_a_eff(self, va):
+        """The two-period value decomposition is exact: with the same
+        allocation in every branch it reproduces the perpetual A_eff of
+        eq-a-eff, so the static benchmark behind the tbl-dynamic-phi value
+        gains is literally the static model's revenue coefficient."""
+        model = SingleFirmModel(va.params)
+        _, K_s, phi_s = model.optimal_trigger_capacity_phi()
+        a_eff = model._effective_revenue_coeff_single(phi_s, K_s)
+        for dt in [0.25, 1.0, 5.0]:
+            r = va.two_period_dynamic_phi(dt=dt, adjustment_cost=1.0)
+            assert "error" not in r
+            assert r["value_static"] == pytest.approx(a_eff, rel=1e-10)
 
 
 # ------------------------------------------------------------------

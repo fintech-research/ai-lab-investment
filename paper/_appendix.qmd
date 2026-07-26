@@ -441,25 +441,37 @@ The Dario's dilemma asymmetry ratio (underinvestment cost relative to overinvest
 
 **Dynamic training reallocation.**
 The static $\phi$ assumption is the most-flagged limitation.
-To quantify the direction and magnitude of bias, I solve a two-period extension in which the firm chooses $\phi_1$ at investment time and can update to $\phi_H$ if the regime switch occurs within the first period, or to $\phi_{L2}$ if it does not.
-Reallocation incurs a quadratic adjustment cost $\kappa \cdot (\Delta\phi)^2$.
+To quantify the direction and magnitude of the bias, I solve a two-period extension in which the firm commits to $\phi_1$ at investment time and may revise the allocation once, at the end of the first period, conditioning on what it has observed: to $\phi_H$ if the regime switch has occurred by then, to $\phi_{L2}$ if it has not.
+After the revision the allocation is fixed forever, so each branch continues with the corresponding perpetuity.
+Capacity is held at the static optimum $K^*$, which isolates the allocation margin, and reallocation incurs a quadratic adjustment cost $\kappa \cdot (\Delta\phi)^2$ charged in the branch in which it occurs.
+Writing $\rho = r - \mu_L + \lambda$ for the L-regime discount rate inclusive of the switch hazard, the value per unit of $X_0$ decomposes into the survival-adjusted L-regime flow over the first period (weight $(1 - e^{-\rho \, dt})/\rho$), the H-regime flow earned between an in-period switch and the revision date at the *pre-switch* allocation, the H perpetuity at the readjusted allocation in the switched state, and the L perpetuity at the readjusted allocation in the no-switch state (weight $e^{-\rho \, dt}$).
+The decomposition is exact rather than approximate: at $\phi_1 = \phi_H = \phi_{L2}$ the four terms collapse to the perpetual $A_{\text{eff}}$ of @eq-a-eff, so the $\kappa = \infty$ row is the static model itself and the value gains are measured against it.
 
 | $\kappa$ | $\phi_1$ | $\phi_H$ | $\phi_{L2}$ | Value gain |
 |:---------:|:--------:|:--------:|:-----------:|:----------:|
-| 0 (free) | 0.70 | 0.99 | 0.70 | 1.6\% |
-| 0.5 | 0.73 | 0.99 | 0.71 | 1.4\% |
-| 2.0 | 0.76 | 0.97 | 0.75 | 0.8\% |
-| 10.0 | 0.76 | 0.80 | 0.75 | 0.3\% |
+| 0 (free) | 0.01 | 0.99 | 0.70 | 5.1\% |
+| 0.5 | 0.60 | 0.99 | 0.66 | 1.9\% |
+| 2.0 | 0.69 | 0.92 | 0.69 | 0.9\% |
+| 10.0 | 0.70 | 0.75 | 0.70 | 0.2\% |
 | $\infty$ (static) | 0.70 | 0.70 | 0.70 | 0\% |
 
-: Two-period dynamic reallocation at baseline ($\lambda = 0.10$, $dt = 1$ year). $\phi^* = 0.70$ in the static model. {#tbl-dynamic-phi tbl-colwidths="[15,15,15,15,15]"}
+: Two-period dynamic reallocation at baseline ($\lambda = 0.10$, $dt = 1$ year). $\phi^* = 0.70$ in the static model; $\phi_1$ and $\phi_H$ are constrained to $[0.01, 0.99]$, and the $\kappa = 0$ row attains both bounds. Value gains are relative to the static revenue coefficient $A_{\text{eff}}(\phi^*, K^*)$. {#tbl-dynamic-phi tbl-colwidths="[15,15,15,15,15]"}
 
 Three findings emerge.
-First, the initial allocation $\phi_1$ is close to the static optimum $\phi^* = 0.70$ across all adjustment costs: the static model captures the initial training-inference balance well.
-The option to reallocate raises $\phi_1$ slightly above $\phi^*$ when $\kappa > 0$, because the firm anticipates wanting to increase $\phi$ upon the switch and positions itself closer to the post-switch target to reduce adjustment costs.
-Second, the main benefit of dynamic reallocation is the ability to shift toward training upon observing the regime switch ($\phi_H \to 0.99$ when $\kappa = 0$), capturing additional H-regime value. The value gain from this option is modest: 1.6\% under free reallocation, declining to 0.3\% with high adjustment costs.
+First, the option to revise pushes the initial allocation *below* the static optimum, by more the cheaper reallocation is: $\phi_1$ falls from $\phi^* = 0.70$ to $0.60$ at $\kappa = 0.5$ and to the lower bound of the admissible range when revision is free.
+The mechanism is that H-regime revenue in the model scales with the training capacity in place at the time, $A_H X (\phi K)^\alpha$, so a firm that can re-purpose compute once the switch is observed earns the H prize at its *initial* allocation only over the interval between the switch and the revision date---a state price of $0.003$ out of a total weight of $0.090$ on the switch payoff at a one-year period, about $3\%$.
+Almost the entire training motive is therefore deferred to the post-switch allocation.
+The static model, which forbids revision, is the polar case in which the whole H prize must be bought in advance; its $\phi^*$ is accordingly an *upper* bound on the pre-switch training share.
+Nothing in this is a drift in the optimal allocation over time: the switch time is exponential and the firm learns nothing from non-arrival, so the problem conditional on non-arrival is unchanged and $\phi_{L2} = \phi^* = 0.70$ exactly when $\kappa = 0$.
+Second, the value of the option is modest and is used mainly after the switch: the gain over the static allocation is $5.1\%$ of the gross revenue value at fixed capacity under free reallocation, falling to $0.2\%$ when adjustment costs are high, and the post-switch allocation goes to the training corner ($\phi_H \to 0.99$ at $\kappa = 0$).
 Third, the faith-based survival threshold $\underline{\phi} \approx 0.18$ is unchanged: it depends on the level of $A_{\text{eff}}$ relative to costs, not on whether $\phi$ is static or dynamic.
-These results confirm the qualitative discussion in @sec-discussion: the static model slightly overstates the initial training fraction but correctly captures the economic mechanisms. A full dynamic treatment with continuous $\phi_t$ control is left for future work.
+
+These numbers bound the bias from one side.
+The exercise ties the H prize to the *contemporaneous* training capacity, which makes re-purposing maximally effective: nothing about the pre-switch allocation is embodied in the post-switch payoff.
+To the extent that post-switch revenue instead reflects capability accumulated from *cumulative* pre-switch training, the revision option is worth less and the static allocation is closer to optimal; in the limit where the prize is locked in at investment, the memoryless arrival and the absence of learning leave the continuation problem stationary and $\phi^*$ is exactly optimal.
+The gap also shrinks as the commitment period lengthens ($\phi_1 = 0.10$ at $\kappa = 0$ and $dt = 5$ years, against $0.01$ at $dt = 1$).
+The honest reading of @tbl-dynamic-phi is therefore that $\phi^*$ is the allocation of a firm that cannot cheaply and immediately re-purpose compute at the moment of the switch, and that the bias in the pre-switch training share runs downward, with a magnitude governed by the cost and speed of re-purposing and by how much of the H prize is embodied in prior training.
+A full dynamic treatment with continuous $\phi_t$ control is left for future work.
 
 **Duopoly Dario's dilemma.**
 The single-firm formalization of Dario's dilemma (Numerical Finding 1) isolates the belief-mismatch channel.
