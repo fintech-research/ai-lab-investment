@@ -1,8 +1,13 @@
 # Default profile: the identified build (`just render-paper`).
 # Everything except the double-anonymous submission document, which carries its
 # own profile (`_quarto-blind.yml`).
+#
+# Only `.qmd` inputs are rendered. The `.md` files in this directory are project
+# documentation, not paper sources -- `reference_corrections.md` (the
+# bibliography audit log), `AGENTS.md`, and `CLAUDE.md` -- and rendering them
+# leaked stray HTML/PDF files into `_output/`. The blind profile renders only
+# `index-blind.qmd`, so it never picked them up.
 project:
   render:
     - "*.qmd"
-    - "*.md"
     - "!index-blind.qmd"
