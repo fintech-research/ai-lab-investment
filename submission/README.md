@@ -62,13 +62,16 @@ drop `informs2014.bst` (from the INFORMS LaTeX author package) into `paper/` and
       `ai-disclosure.md` must go into the cover letter / portal disclosure field instead
 - [ ] Keywords (3–5, as printed on the manuscript title page): real options; irreversible
       capacity investment; artificial intelligence; duopoly preemption; default risk
-- [ ] JEL codes (from `paper/keywords.tex`): G31, G32, G33, L13, O33
+- [ ] JEL codes (from `paper/keywords.tex`): C73, D25, G31, G32, G33, L13, O33
+      (C73 = stochastic and dynamic games, for the preemption equilibrium; D25 =
+      intertemporal firm choice: investment, capacity, financing)
 - [ ] INFORMS subject classifications (proposed; confirm the exact wording against the
       portal's list at submission time):
       *Finance: capital budgeting* (primary);
       *Games/group decisions: noncooperative*;
       *Dynamic programming/optimal control: applications*;
-      *Industries: computers/electronics*
+      *Industries: computers/electronics*;
+      secondary, if a fifth is allowed: *Finance: capital structure*
 
 ## Target journal ladder (decided 2026-07-03)
 

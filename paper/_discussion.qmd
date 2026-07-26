@@ -64,8 +64,7 @@ A full dynamic treatment (modeling $\phi_t$ as a continuous control in the HJB e
 ### Limitations
 
 Several limitations should be noted.
-The model fixes the training fraction $\phi$ at investment time---a reasonable first approximation for large-scale capacity decisions with multi-year planning horizons, but limiting given the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation) that blurs the boundary between training and inference.
-A dynamic extension in which $\phi$ responds to realized demand would enrich the model; I leave this for future work.
+The static training fraction is the first, and the preceding subsection signs and bounds the bias it induces; one consideration that exercise does not capture is the emergence of *inference-time scaling* (chain-of-thought reasoning, search-augmented generation), which blurs the training-inference boundary that the model treats as sharp.
 
 The regime-specific revenue structure---inference in $L$, training in $H$---is deliberately extreme, chosen to generate a clean training-inference trade-off. In practice, inference demand likely remains large or increases post-AGI, and training contributes to pre-AGI revenue through model improvements. A more realistic structure with mixed revenue sources in both regimes would attenuate the quantitative magnitude of the training allocation trade-off while preserving the qualitative mechanisms.
 
@@ -75,17 +74,14 @@ The Leland (1994) structural default framework assumes publicly traded equity an
 Several frontier AI labs (Anthropic, OpenAI) have complex capital structures involving SAFE notes, convertible debt, and multi-class equity---far from the Leland setting.
 The Leland mechanism is best viewed as an analytically tractable approximation to the broader financial distress risk that all AI labs face: the model's default boundary $X_D$ captures the demand level at which the firm can no longer sustain operations, whether the binding constraint is a missed coupon (for a public debt issuer), a failed funding round (for a VC-backed lab), or a covenant violation (for a credit facility).
 The qualitative predictions---that higher training investment lowers the distress threshold through the continuation-value channel, that leverage concentrates the tail risk of overinvestment, and that the default boundary rises with rival capacity---apply across financing structures; the specific Leland closed forms are the vehicle for these insights, not the literal description of any single firm's capital structure.
-Relatedly, leverage is a stress-test parameter with a stylized coupon rate rather than an equilibrium financing choice: because $c_d < r$ on a perpetual coupon claim, par issuance implies a market value of debt at issuance below the proceeds $\ell I(K)$---an implicit financing subsidy the model does not endogenize (@sec-model).
+Relatedly, leverage is a stress-test parameter with a stylized coupon rate rather than an equilibrium financing choice: because $r_c < r$ on a perpetual coupon claim, par issuance implies a market value of debt at issuance below the proceeds $\ell I(K)$---an implicit financing subsidy the model does not endogenize (@sec-model).
 The leverage results should accordingly be read as the response of an optimizing firm to an imposed debt burden, not as an endogenous capital-structure result; fairly priced debt at issuance is a natural extension.
 
-The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs.
-Revenue depends on *relative* capacity through a zero-sum share function: symmetric entry by a second firm splits aggregate revenue rather than expanding it, unlike a Cournot specification where additional industry capacity would serve new demand.
-Under asymmetry, the Tullock form produces a revenue-expansion effect (see @sec-duopoly), but it does not capture the market-growing effect of AI adoption where investment expands total addressable demand.
+The Tullock contest function is a reduced-form representation that abstracts from product differentiation, network effects, and switching costs, and it does not capture the market-growing effect of AI adoption in which investment expands total addressable demand.
 This biases the model toward stronger competition effects relative to a setting where investment expands the pie.
-A Cournot specification would avoid this limitation at the cost of additional complexity (see Internet Appendix E).
+The Cournot alternative, and the fixed-pie variant that quantifies what the Tullock form contributes, are discussed in @sec-duopoly and Internet Appendix E.
 
-All valuation uses a reduced-form risk-adjusted framework (see the footnote in @sec-model defining $r$ and $\mu_s$), abstracting from state-dependence of risk premia across regimes.
-The framework is a certainty-equivalent one and not a pricing measure: discounting is at the WACC rather than at a risk-free rate, so the reported credit spreads and default probabilities are model-implied risk-adjusted objects rather than market spreads or risk-neutral probabilities.
+All valuation uses the reduced-form risk-adjusted framework of @sec-model and Internet Appendix B---a certainty-equivalent convention, not a pricing measure---and abstracts from state-dependence of risk premia across regimes.
 In the credit risk analysis in particular, the structural default probability uses the risk-adjusted drift and the spread is measured relative to the model's discount rate $r$; physical default probabilities would be lower.
 A richer treatment would allow the risk premium to differ across regimes---plausibly higher in $L$ (where AI capabilities are uncertain) than in $H$ (where transformation is realized)---but this would require a complete equilibrium asset pricing model and is left for future work.
 The regime switch to $H$ is absorbing: once transformative AI arrives, the model does not allow for reversal.

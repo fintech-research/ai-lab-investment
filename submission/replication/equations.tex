@@ -190,7 +190,7 @@ which generalizes \texttt{eq-trigger-H} by replacing the H-regime revenue coeffi
 
 \subsubsection*{Regime-specific competition}
 
-Revenue in each regime is governed by a Tullock contest success function (\texttt{tullock1980efficient; \texttt{skaperdas1996contest}}) over the regime-relevant capacity measure. The Tullock specification captures the essential feature of AI compute competition: firms' revenues depend on \emph{relative} capacity, not just absolute capacity, because customers (enterprises, developers) allocate workloads to providers based on relative performance and availability. In the L-regime, firms compete over \emph{inference capacity}:
+Revenue in each regime is governed by a Tullock contest success function (\texttt{tullock1980efficient; \texttt{skaperdas1996contest}}) over the regime-relevant capacity measure. The Tullock specification captures the essential feature of AI compute competition: firms' revenues depend on \emph{relative} capacity, not just absolute capacity, because customers (enterprises, developers) allocate workloads to providers based on relative performance and availability. The Tullock form is also more tractable for the training-inference allocation problem than the natural alternative---a Cournot specification, in which firms choose quantities and price clears a downward-sloping demand curve---because it cleanly separates the capacity and share effects; the discussion of asymmetry below returns to what the choice costs. In the L-regime, firms compete over \emph{inference capacity}:
 
 \begin{equation*}
 \tag*{[\texttt{eq-contest-L}]}
@@ -246,10 +246,10 @@ Equity holders default endogenously when it is optimal to stop servicing debt. F
 
 \begin{equation*}
 \tag*{[\texttt{eq-default-boundary}]}
-X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}},
+X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D / r + \delta K_i / r}{A_{\text{eff},i}},
 \end{equation*}
 
-where $\beta_s^-$ (with $s = L$) is the negative root of the L-regime characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$, incorporating the regime-switching term through the effective discount rate $r + \lambda$; $c_D$ is the coupon payment; and $A_{\text{eff},i}$ is the effective revenue coefficient from \texttt{eq-a-eff-duopoly.} The factor $\beta_s^- / (\beta_s^- - 1) \in (0, 1)$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.
+where $\beta_L^-$ is the negative root of the L-regime characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$, incorporating the regime-switching term through the effective discount rate $r + \lambda$; $C_D$ is the coupon payment; and $A_{\text{eff},i}$ is the effective revenue coefficient from \texttt{eq-a-eff-duopoly.} The factor $\beta_L^- / (\beta_L^- - 1) \in (0, 1)$ reflects the option value of waiting before defaulting, yielding a lower (optimal) default boundary than the naive break-even condition.
 
 
 
@@ -257,19 +257,19 @@ where $\beta_s^-$ (with $s = L$) is the negative root of the L-regime characteri
 
 \begin{equation*}
 \tag*{[\texttt{eq-phi-underbar}]}
-\underline{\phi} = \frac{R}{1 + R}, \quad R \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+\underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 \end{equation*}
 
 
 
-*An opposing markup channel operates through the discount root: higher $\lambda$ raises the effective discount rate and pushes $\beta_s^-/(\beta_s^- - 1)$ toward one, raising $X_D$. Because the $A_{\text{eff}}$-channel semi-elasticity is linear in the L-regime flow and H-regime continuation terms, the net condition $\partial X_D / \partial \lambda < 0$ also solves in closed form: it holds if and only if $\phi_i$ exceeds the exact threshold*
+*An opposing markup channel operates through the discount root: higher $\lambda$ raises the effective discount rate and pushes $\beta_L^-/(\beta_L^- - 1)$ toward one, raising $X_D$. Because the $A_{\text{eff}}$-channel semi-elasticity is linear in the L-regime flow and H-regime continuation terms, the net condition $\partial X_D / \partial \lambda < 0$ also solves in closed form: it holds if and only if $\phi_i$ exceeds the exact threshold*
 
 \begin{equation*}
 \tag*{[\texttt{eq-phi-tilde}]}
-\tilde{\phi} = \frac{\tilde{R}}{1 + \tilde{R}}, \quad \tilde{R} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
+\tilde{\phi} = \frac{\tilde{\Omega}}{1 + \tilde{\Omega}}, \quad \tilde{\Omega} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
 \end{equation*}
 
-*where $\Delta = r - \mu_L + \lambda$ and $m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_s^-(\beta_s^- - 1)D] > 0$ is the markup-channel semi-elasticity, with $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$ (Internet Appendix A states the mild regularity condition). The exact threshold nests $\underline{\phi}$ as the $m \to 0$ limit and satisfies $\tilde{\phi} > \underline{\phi}$. For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$), $R = (0.06/0.11)^{2.5} \approx 0.22$, $\underline{\phi} \approx 0.18$, and $\tilde{\phi} \approx 0.32$; the optimal allocation $\phi^* \approx 0.70$ exceeds both, so faith-based survival holds at the optimum. Unlike $\underline{\phi}$, $\tilde{\phi}$ depends on $\lambda$: at the baseline calibration $\phi^*(\lambda) > \tilde{\phi}(\lambda)$ if and only if $\lambda \gtrsim 0.034$, so for sufficiently pessimistic beliefs the optimal allocation is too inference-heavy for the continuation-value channel to dominate, and $X_D$ is locally increasing in $\lambda$ at the optimum. Note that $\underline{\phi}$ is increasing in $\alpha$ (with less concavity in the revenue function, a larger training allocation is needed for the H-regime term to dominate), decreasing in $\mu_H - \mu_L$ (a larger regime-switch growth premium amplifies the H-regime term, lowering the threshold), and increasing in $r$ (higher discounting reduces the present value of the continuation opportunity).*
+*where $\Delta = r - \mu_L + \lambda$ and $m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_L^-(\beta_L^- - 1)D] > 0$ is the markup-channel semi-elasticity, with $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$ (Internet Appendix A states the mild regularity condition). The exact threshold nests $\underline{\phi}$ as the $m \to 0$ limit and satisfies $\tilde{\phi} > \underline{\phi}$. For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$), $\Omega = (0.06/0.11)^{2.5} \approx 0.22$, $\underline{\phi} \approx 0.18$, and $\tilde{\phi} \approx 0.32$; the optimal allocation $\phi^* \approx 0.70$ exceeds both, so faith-based survival holds at the optimum. Unlike $\underline{\phi}$, $\tilde{\phi}$ depends on $\lambda$: at the baseline calibration $\phi^*(\lambda) > \tilde{\phi}(\lambda)$ if and only if $\lambda \gtrsim 0.034$, so for sufficiently pessimistic beliefs the optimal allocation is too inference-heavy for the continuation-value channel to dominate, and $X_D$ is locally increasing in $\lambda$ at the optimum. Note that $\underline{\phi}$ is increasing in $\alpha$ (with less concavity in the revenue function, a larger training allocation is needed for the H-regime term to dominate), decreasing in $\mu_H - \mu_L$ (a larger regime-switch growth premium amplifies the H-regime term, lowering the threshold), and increasing in $r$ (higher discounting reduces the present value of the continuation opportunity).*
 
 
 
@@ -278,17 +278,18 @@ where $\beta_s^-$ (with $s = L$) is the negative root of the L-regime characteri
 Above the default boundary:
 
 \begin{equation*}
-E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - (1 - \ell) I(K) - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
+\tag*{[\texttt{eq-equity}]}
+E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - \frac{C_D}{r} + \left[\frac{C_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_L^-},
 \end{equation*}
 
-where $A_{\text{eff},i}$ is the effective revenue coefficient from \texttt{eq-a-eff-duopoly} and $\beta_s^- < 0$ is the negative characteristic root. The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_s^-}$ which approaches one as $X \to X_D$. The bracket $[c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the smooth-pasting conditions on the going-concern equity $E(X) + (1-\ell)I(K)$ pin the default boundary $X_D$ in \texttt{eq-default-boundary} and are independent of the sunk equity contribution. At $X = X_D$, $E(X_D) = -(1-\ell)I(K) \leq 0$: the equity holders' sunk contribution is lost, but limited liability prevents negative payoffs, so equity is worth $\max\{E(X),\, 0\}$. Without debt ($\ell = 0$), the expression simplifies to the NPV of the unlevered investment: $E(X) = A_{\text{eff},i}\, X - \delta K / r - I(K)$, treated as a perpetuity with no endogenous abandonment option.
+where $A_{\text{eff},i}$ is the effective revenue coefficient from \texttt{eq-a-eff-duopoly} and $\beta_L^- < 0$ is the negative characteristic root. The last term is the default option: it captures the value of limited liability, discounted by the probability-weighted factor $(X/X_D)^{\beta_L^-}$ which approaches one as $X \to X_D$. The bracket $[C_D/r + \delta K/r - A_{\text{eff},i}\, X_D]$ equals the ongoing flow deficit at the default boundary; the value-matching and smooth-pasting conditions on $E$ pin the default boundary $X_D$ in \texttt{eq-default-boundary} and are independent of the sunk equity contribution. At $X = X_D$, $E(X_D) = 0$ and the entry NPV equals $-(1-\ell)I(K) < 0$: equity holders walk away from a worthless claim, and their sunk contribution is lost. Below $X_D$ the same two values obtain, $E \equiv 0$ and entry NPV $\equiv -(1-\ell)I(K)$. Without debt ($\ell = 0$), $E(X) = A_{\text{eff},i}\, X - \delta K/r$ is the unlevered perpetuity, treated with no endogenous abandonment option, and the entry NPV is $A_{\text{eff},i}\, X - \delta K/r - I(K)$, which tends to $-[\delta K/r + I(K)] < 0$ as $X \to 0$.
 
 
 
 Debt value is:
 
 \begin{equation*}
-D(X) = \frac{c_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+D(X) = \frac{C_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_L^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_L^-},
 \end{equation*}
 
 
@@ -296,16 +297,16 @@ D(X) = \frac{c_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + R(
 where the recovery in default is
 
 \begin{equation*}
-R(X_D) = \min\left\{(1 - b)\,\Lambda(X_D),\; \frac{c_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D,
+R(X_D) = \min\left\{(1 - b)\,\Lambda(X_D),\; \frac{C_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D,
 \end{equation*}
 
-$b \in [0,1]$ is the fraction of liquidation value lost in bankruptcy, and $\Lambda(X_D)$ is the liquidation value of the firm's productive assets at the default boundary (gross of maintenance costs, following \texttt{leland1994corporate}). Two features of the recovery specification deserve comment. First, only the \emph{inference} business survives liquidation: the buyer acquires the capacity serving current demand and the associated L-regime revenue stream, capitalized at the effective rate $r - \mu_L + \lambda$. The H-regime continuation value---the faith-based component of $A_{\text{eff},i}$---is destroyed in bankruptcy, because the speculative post-AGI payoff requires the going concern (its researchers, models, and training program) and does not transfer to creditors in a liquidation. This asymmetry is central to the credit-risk analysis in \texttt{sec-valuation}: faith-based survival lowers the \emph{probability} of default, but faith is worthless to creditors \emph{in} default, so training allocation raises the loss given default. Second, the cap at $c_D/r$ imposes absolute priority: creditors cannot recover more in default than the default-free value of their coupon claim. Without the cap, a lightly levered firm---whose default boundary is driven by the operating cost $\delta K$ rather than the coupon---would receive a windfall at default, since the liquidation value of its assets can exceed its small debt claim.
+$b \in [0,1]$ is the fraction of liquidation value lost in bankruptcy, and $\Lambda(X_D)$ is the liquidation value of the firm's productive assets at the default boundary (gross of maintenance costs, following \texttt{leland1994corporate}). Two features of the recovery specification deserve comment. First, only the \emph{inference} business survives liquidation: the buyer acquires the capacity serving current demand and the associated L-regime revenue stream, capitalized at the effective rate $r - \mu_L + \lambda$. The H-regime continuation value---the faith-based component of $A_{\text{eff},i}$---is destroyed in bankruptcy, because the speculative post-AGI payoff requires the going concern (its researchers, models, and training program) and does not transfer to creditors in a liquidation. This asymmetry is central to the credit-risk analysis in \texttt{sec-valuation}: faith-based survival lowers the \emph{probability} of default, but faith is worthless to creditors \emph{in} default, so training allocation raises the loss given default. Second, the cap at $C_D/r$ imposes absolute priority: creditors cannot recover more in default than the default-free value of their coupon claim. Without the cap, a lightly levered firm---whose default boundary is driven by the operating cost $\delta K$ rather than the coupon---would receive a windfall at default, since the liquidation value of its assets can exceed its small debt claim.
 
 
 
 \section*{Quantitative Implications}
 
-\subsection*{Value Decomposition}
+\subsection*{A Normalized Scale-Gap Diagnostic}
 
 1. \textbf{Assets-in-place}: the value of existing installed capacity at current demand, incorporating both L-regime inference revenue and H-regime continuation value through $A_{\text{eff}}$.
 
@@ -322,6 +323,14 @@ V_{\text{gap}} = \max\{\text{NPV}(K^*, \phi^*) - V_{\text{AIP}},\; 0\},
 \end{equation*}
 
 where $\text{NPV}(K^*, \phi^*)$ is the net (of the full investment cost $I(K^*)$) present value of the optimally sized greenfield project. This is a comparative-statics measure of distance to optimal scale---how far the firm's gross installed-asset value falls short of the net value of a full-scale deployment---not the NPV of incremental expansion from the installed base (which would credit the firm for capacity already sunk), and not a forward-looking option value. Because the benchmark nets out the entire investment cost while assets-in-place are gross of sunk costs, the gap reaches zero before $K_{\text{installed}}$ reaches $K^*$.
+
+
+
+The value of the possibility of transitioning from $L$ to $H$ does not appear as a third additive term: it is embedded in \emph{both} quantities through the effective revenue coefficient $A_{\text{eff}}(\phi, \cdot)$, which already weights the H-regime continuation value by the arrival rate $\lambda$ and the training allocation $\phi$. The scale-gap index is then
+
+\begin{equation*}
+g(K_{\text{installed}}) = \frac{V_{\text{gap}}}{V_{\text{AIP}} + V_{\text{gap}}} \in [0, 1].
+\end{equation*}
 
 
 
@@ -344,10 +353,10 @@ where $D(X)$ is the market value of debt (which differs from face value due to d
 The probability of default within horizon $T$ is the first-passage probability for GBM hitting the barrier $X_D$:
 
 \begin{equation*}
-P(\text{default within } T) = \Phi(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \Phi(-d_2),
+P(\text{default within } T) = \mathcal{N}(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \mathcal{N}(-d_2),
 \end{equation*}
 
-where $\nu = \mu_L - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\Phi$ is the standard normal CDF. This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model; the L-regime drift $\mu_L$ is the relevant one because the default boundary is an L-regime object (the firm defaults pre-switch). The calculation abstracts from the regime switch itself---a switch to $H$ before hitting $X_D$ would effectively remove default risk---so the reported figures are upper bounds on the pre-switch default hazard. Since $\mu_L$ is the risk-adjusted (certainty-equivalent) drift, the result is a \emph{model-implied risk-adjusted} first-passage probability, computed under the same convention as the spread calculation; it is not a risk-neutral (pricing-measure) probability, because the model discounts at the WACC rather than at a risk-free rate (see the footnote in \texttt{sec-model}), and the physical-measure probability (using the unadjusted drift) would be lower.
+where $\nu = \mu_L - \sigma^2/2$, $d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})$, $d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})$, and $\mathcal{N}$ is the standard normal CDF. This is the exact barrier hitting probability for GBM, consistent with the Leland-style first-passage default mechanism in the model; the L-regime drift $\mu_L$ is the relevant one because the default boundary is an L-regime object (the firm defaults pre-switch). The calculation abstracts from the regime switch itself---a switch to $H$ before hitting $X_D$ would effectively remove default risk---so the reported figures are upper bounds on the pre-switch default hazard. Since $\mu_L$ is the risk-adjusted (certainty-equivalent) drift, the result is a \emph{model-implied risk-adjusted} first-passage probability, computed under the same convention as the spread calculation; it is not a risk-neutral (pricing-measure) probability, because the model discounts at the WACC rather than at a risk-free rate (see the footnote in \texttt{sec-model}), and the physical-measure probability (using the unadjusted drift) would be lower.
 
 
 
@@ -383,10 +392,10 @@ where $A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \lambda) + \l
 
 
 
-\emph{Step 2: NPV at the trigger.} Define $b(K) = cK^\gamma + \delta K / r$ (total cost). The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} b(K)$, so the NPV at the trigger is:
+\emph{Step 2: NPV at the trigger.} Define the total cost $\Theta(K) = cK^\gamma + \delta K / r$. The revenue at the trigger is $A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} \Theta(K)$, so the NPV at the trigger is:
 
 \begin{equation*}
-V - I = \frac{1}{\beta_H - 1}\, b(K).
+V - I = \frac{1}{\beta_H - 1}\, \Theta(K).
 \end{equation*}
 
 
@@ -394,10 +403,10 @@ V - I = \frac{1}{\beta_H - 1}\, b(K).
 *Step 3: Joint optimization over $(K, \phi)$.* Substituting the trigger and NPV into $F(X_0)$:
 
 \begin{equation*}
-F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
+F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{\Theta(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
 \end{equation*}
 
-where $\mathcal{C} = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H} > 0$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}$.
+where $\mathcal{C} = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H} > 0$ is independent of $(K, \phi)$. The optimal $(K^*, \phi^*)$ maximizes $h(K, \phi) = A_{\text{eff}}^{\beta_H} / \Theta^{\beta_H - 1}$.
 
 
 
@@ -455,27 +464,27 @@ confirming \texttt{eq-trigger-phi.} The trigger depends only on the value-matchi
 Second, replacing $E_H$ with its perpetuity component:
 
 \begin{equation*}
-E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - c_D/r - \delta K_i/r,
+E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - C_D/r - \delta K_i/r,
 \end{equation*}
 
 the L-regime equity ODE yields a particular solution with coefficient $A_{\text{eff},i}$, and Leland's smooth-pasting gives the default boundary below in closed form. The omitted term $D_H X^{\beta_H^-}$ is the (positive) value of the H-regime default option, so the perpetuity approximation understates the H-regime continuation value and the closed-form boundary weakly \emph{overstates} $X_D$. The magnitude of the bias is computed by solving the coupled system exactly: substituting the closed-form $E_H$ (including $D_H X^{\beta_H^-}$) into the L-regime ODE yields an additional particular term $C_2 X^{\beta_H^-}$ with $C_2 = -\lambda D_H / Q_L(\beta_H^-)$, and value-matching plus smooth-pasting at $X_D$ then determine the boundary jointly with the homogeneous coefficient. At the baseline calibration the closed-form boundary exceeds the coupled-system boundary by approximately 3\\%, uniformly across leverage levels (Internet Appendix B). The approximation therefore errs against the faith-based survival mechanism---it makes the levered firm look slightly riskier than it is---and is conservative for the credit-risk conclusions.
 
 
 
-In the L-regime, the going-concern equity $\hat{E}(X) \equiv E(X) + (1-\ell)I(K)$ satisfies an ODE analogous to \texttt{eq-hjb-L}, with the firm defaulting when $\hat{E}(X_D) = 0$ and $\hat{E}'(X_D) = 0$ (smooth pasting). The resulting default boundary is:
+In the L-regime, the going-concern equity $E(X)$ of \texttt{eq-equity} satisfies an ODE analogous to \texttt{eq-hjb-L}, with the firm defaulting when $E(X_D) = 0$ and $E'(X_D) = 0$ (smooth pasting); the sunk equity contribution enters the entry NPV $E(X) - (1-\ell)I(K)$ but not the boundary conditions. The resulting default boundary is:
 
 \begin{equation*}
-X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}},
+X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D/r + \delta K_i/r}{A_{\text{eff},i}},
 \end{equation*}
 
-where $\beta_s^-$ is the negative characteristic root, $c_D = c_d \cdot \ell \cdot I(K)$ is the coupon, and all comparative statics below hold *with $(K_i, \phi_i)$ fixed at their optimal values*.
+where $\beta_L^-$ is the negative characteristic root, $C_D = r_c \cdot \ell \cdot I(K)$ is the coupon, and all comparative statics below hold *with $(K_i, \phi_i)$ fixed at their optimal values*.
 
 
 
-*(ii) Default boundary decreasing in $\lambda$ (faith-based survival).* Holding $(K_i, \phi_i, K_j, \phi_j)$ fixed, define the L-regime revenue flow $a \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L$ and the H-regime revenue present value $b \equiv (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H)$, both positive. The effective revenue coefficient is:
+*(ii) Default boundary decreasing in $\lambda$ (faith-based survival).* Holding $(K_i, \phi_i, K_j, \phi_j)$ fixed, define the L-regime revenue flow $\Pi_L \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L$ and the H-regime revenue present value $\Pi_H \equiv (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H)$, both positive. The effective revenue coefficient is:
 
 \begin{equation*}
-A_{\text{eff},i} = \frac{a + \lambda \cdot b}{r - \mu_L + \lambda}.
+A_{\text{eff},i} = \frac{\Pi_L + \lambda \cdot \Pi_H}{r - \mu_L + \lambda}.
 \end{equation*}
 
 
@@ -483,12 +492,12 @@ A_{\text{eff},i} = \frac{a + \lambda \cdot b}{r - \mu_L + \lambda}.
 Differentiating with respect to $\lambda$:
 
 \begin{equation*}
-\frac{\partial A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(r - \mu_L + \lambda)^2}.
+\frac{\partial A_{\text{eff},i}}{\partial \lambda} = \frac{\Pi_H(r - \mu_L) - \Pi_L}{(r - \mu_L + \lambda)^2}.
 \end{equation*}
 
 
 
-This is positive whenever $b(r - \mu_L) > a$, i.e., when the H-regime revenue present value scaled by the L-regime effective discount rate exceeds the L-regime revenue flow:
+This is positive whenever $\Pi_H(r - \mu_L) > \Pi_L$, i.e., when the H-regime revenue present value scaled by the L-regime effective discount rate exceeds the L-regime revenue flow:
 
 \begin{equation*}
 \tag*{[\texttt{eq-faith-condition}]}
@@ -502,36 +511,36 @@ Since $\mu_H > \mu_L$ implies $(r - \mu_L)/(r - \mu_H) > 1$, the factor $(r - \m
 \emph{Closed-form threshold (symmetric duopoly).} In the symmetric case with $s_i^L = s_i^H = 1/2$ and equal capacity, the contest shares and $K^\alpha$ terms cancel, and the condition reduces to $(r - \mu_L)/(r - \mu_H) \cdot \phi^\alpha > (1-\phi)^\alpha$, i.e., $(\phi/(1-\phi))^\alpha > (r-\mu_H)/(r-\mu_L)$. Solving for $\phi$:
 
 \begin{equation*}
-\phi > \underline{\phi} = \frac{R}{1 + R}, \quad R = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+\phi > \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 \end{equation*}
 
 
 
-For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$): $R = (0.06/0.11)^{2.5} \approx 0.22$, giving $\underline{\phi} \approx 0.18$. To complete the proof, note that $X_D$ also depends on $\lambda$ through the markup factor $M(\beta_s^-) \equiv \beta_s^- / (\beta_s^- - 1)$, since $\beta_s^-$ is the negative root of $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$ and thus depends on $\lambda$. The full derivative decomposes into two opposing channels:
+For the baseline calibration ($r = 0.12$, $\mu_H = 0.06$, $\mu_L = 0.01$, $\alpha = 0.40$): $\Omega = (0.06/0.11)^{2.5} \approx 0.22$, giving $\underline{\phi} \approx 0.18$. To complete the proof, note that $X_D$ also depends on $\lambda$ through the markup factor $M(\beta_L^-) \equiv \beta_L^- / (\beta_L^- - 1)$, since $\beta_L^-$ is the negative root of $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$ and thus depends on $\lambda$. The full derivative decomposes into two opposing channels:
 
 \begin{equation*}
-\frac{\partial X_D}{\partial \lambda} = \underbrace{\frac{\partial M}{\partial \lambda} \cdot \frac{N}{A_{\text{eff},i}}}_{>0\;\text{($\beta$-channel)}} + \underbrace{M(\beta_s^-) \cdot N \cdot \frac{\partial (1/A_{\text{eff},i})}{\partial \lambda}}_{<0\;\text{($A_{\text{eff}}$-channel)}},
+\frac{\partial X_D}{\partial \lambda} = \underbrace{\frac{\partial M}{\partial \lambda} \cdot \frac{N}{A_{\text{eff},i}}}_{>0\;\text{($\beta$-channel)}} + \underbrace{M(\beta_L^-) \cdot N \cdot \frac{\partial (1/A_{\text{eff},i})}{\partial \lambda}}_{<0\;\text{($A_{\text{eff}}$-channel)}},
 \end{equation*}
 
-where $N = c_D/r + \delta K_i/r > 0$. The $\beta$-channel is positive because increasing $\lambda$ raises the effective discount rate $(r + \lambda)$, making $\beta_s^-$ more negative and pushing the markup $M$ toward 1 from below (since $\beta_s^- < 0$ implies $M \in (0,1)$) ($dM/d\lambda = 1/[(\beta_s^- - 1)^2 D] > 0$, where $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$). The $A_{\text{eff}}$-channel is negative under \texttt{eq-faith-condition.}
+where $N = C_D/r + \delta K_i/r > 0$. The $\beta$-channel is positive because increasing $\lambda$ raises the effective discount rate $(r + \lambda)$, making $\beta_L^-$ more negative and pushing the markup $M$ toward 1 from below (since $\beta_L^- < 0$ implies $M \in (0,1)$) ($dM/d\lambda = 1/[(\beta_L^- - 1)^2 D] > 0$, where $D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}$). The $A_{\text{eff}}$-channel is negative under \texttt{eq-faith-condition.}
 
 
 
-\emph{Exact net threshold.} The net sign resolves in closed form. In log form, $\partial \ln X_D / \partial \lambda = m - \partial \ln A_{\text{eff},i} / \partial \lambda$, where the markup semi-elasticity is $m \equiv (\mathrm{d}M/\mathrm{d}\lambda)/M = 1/[\beta_s^-(\beta_s^- - 1)D] > 0$, and, from the derivative above,
+\emph{Exact net threshold.} The net sign resolves in closed form. In log form, $\partial \ln X_D / \partial \lambda = m - \partial \ln A_{\text{eff},i} / \partial \lambda$, where the markup semi-elasticity is $m \equiv (\mathrm{d}M/\mathrm{d}\lambda)/M = 1/[\beta_L^-(\beta_L^- - 1)D] > 0$, and, from the derivative above,
 
 \begin{equation*}
-\frac{\partial \ln A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(a + \lambda b)\,\Delta}, \qquad \Delta \equiv r - \mu_L + \lambda.
+\frac{\partial \ln A_{\text{eff},i}}{\partial \lambda} = \frac{\Pi_H(r - \mu_L) - \Pi_L}{(\Pi_L + \lambda \Pi_H)\,\Delta}, \qquad \Delta \equiv r - \mu_L + \lambda.
 \end{equation*}
 
 
 
-The condition $\partial X_D / \partial \lambda < 0$ is therefore $b(r - \mu_L) - a > m(a + \lambda b)\Delta$, which is \emph{linear} in $(a, b)$ and rearranges to
+The condition $\partial X_D / \partial \lambda < 0$ is therefore $\Pi_H(r - \mu_L) - \Pi_L > m(\Pi_L + \lambda \Pi_H)\Delta$, which is \emph{linear} in $(\Pi_L, \Pi_H)$ and rearranges to
 
 \begin{equation*}
-\frac{b}{a} > \frac{1 + m\Delta}{(r - \mu_L) - m\lambda\Delta},
+\frac{\Pi_H}{\Pi_L} > \frac{1 + m\Delta}{(r - \mu_L) - m\lambda\Delta},
 \end{equation*}
 
-provided the regularity condition $(r - \mu_L) > m\lambda\Delta$ holds (it does throughout the calibration ranges; if it fails, no allocation can deliver $\partial X_D/\partial\lambda < 0$). With symmetric shares, $b/a = (\phi/(1-\phi))^\alpha / (r - \mu_H)$, giving the exact threshold $\tilde{\phi}$ of \texttt{eq-phi-tilde.} Since $m > 0$, $\tilde{R} > R$ and $\tilde{\phi} > \underline{\phi}$; as $m \to 0$ (no markup channel), $\tilde{\phi} \to \underline{\phi}$. At the baseline calibration $m \approx 0.77$ and $\tilde{\phi} \approx 0.32$, between $\underline{\phi} \approx 0.18$ and $\phi^* \approx 0.70$; the numerically measured $\beta$-channel is about one-third of the $A_{\text{eff}}$-channel at $\phi^*$, consistent with the closed form. The sign flip of $\partial X_D/\partial \lambda$ at $\tilde{\phi}$ is verified by finite differences as a regression test.
+provided the regularity condition $(r - \mu_L) > m\lambda\Delta$ holds (it does throughout the calibration ranges; if it fails, no allocation can deliver $\partial X_D/\partial\lambda < 0$). With symmetric shares, $\Pi_H/\Pi_L = (\phi/(1-\phi))^\alpha / (r - \mu_H)$, giving the exact threshold $\tilde{\phi}$ of \texttt{eq-phi-tilde.} Since $m > 0$, $\tilde{\Omega} > \Omega$ and $\tilde{\phi} > \underline{\phi}$; as $m \to 0$ (no markup channel), $\tilde{\phi} \to \underline{\phi}$. At the baseline calibration $m \approx 0.77$ and $\tilde{\phi} \approx 0.32$, between $\underline{\phi} \approx 0.18$ and $\phi^* \approx 0.70$; the numerically measured $\beta$-channel is about one-third of the $A_{\text{eff}}$-channel at $\phi^*$, consistent with the closed form. The sign flip of $\partial X_D/\partial \lambda$ at $\tilde{\phi}$ is verified by finite differences as a regression test.
 
 
 
@@ -569,10 +578,20 @@ The multiplier cancels, leaving exactly the single-firm condition of Proposition
 
 \subsection*{B. Numerical Verification Methods}
 
-\textbf{Coupled default boundary.} The single-boundary default formula (\texttt{eq-default-boundary}) is verified against the fully coupled regime-switching system: the H-regime equity has the closed Leland form $E_H(X) = A_H(\phi K)^\alpha s^H X - (c_D + \delta K)/r + D_H X^{\beta_H^-}$, whose default-option term forces an additional particular solution $C_2 X^{\beta_H^-}$ in the L-regime equity ODE; value-matching and smooth-pasting at the boundary then determine $X_D$ jointly with the homogeneous coefficient $A_-$. Because $A_-$ enters both boundary conditions linearly, the combination $\beta_L^- E(X_D) - X_D E'(X_D) = 0$ eliminates it exactly, reducing the coupled system to a single equation,
+\textbf{Leader-scale convention: re-optimization sensitivity.} The paper holds the leader's $(K_L, \phi_L)$ at the monopoly-phase optimum of Proposition 1 (\texttt{sec-conventions}). Because $X_P$ equalizes rents against an $L(\cdot)$ evaluated at that fixed scale, the preemption discount inherits the convention, and this block reports how much. The alternative solved here lets the leader choose scale and allocation \emph{for entry at the entry point itself}: the leader's value of entering at $X$ is the upper envelope
 
 \begin{equation*}
-A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{c_D + \delta K}{r},
+L^{\text{re}}(X) = \max_{K, \phi}\, L(X; K, \phi),
+\end{equation*}
+
+with the follower best-responding to the chosen $(K, \phi)$, and the trigger solves the fixed point $L^{\text{re}}(X_P) = F\bigl(X_P; K_L^{\text{re}}(X_P), \phi_L^{\text{re}}(X_P)\bigr)$. Everything else---the unconditional-$A_{\text{eff}}$ discounting, the single default boundary, the par-debt convention---is held fixed, so the comparison isolates the leader-scale convention alone. Computationally, the envelope gap is evaluated on a 40-point log grid over $(10^{-3} X_L^{\text{mono}},\, X_L^{\text{mono}})$ with the leader's two-dimensional Nelder--Mead optimizer warm-started along the grid (a six-point deterministic multistart at the first node), the first up-crossing is refined with Brent's method, and the resulting policy is re-checked against the sixteen-start follower solver. Exactly one up-crossing is found in each case reported.
+
+
+
+\textbf{Coupled default boundary.} The single-boundary default formula (\texttt{eq-default-boundary}) is verified against the fully coupled regime-switching system: the H-regime equity has the closed Leland form $E_H(X) = A_H(\phi K)^\alpha s^H X - (C_D + \delta K)/r + D_H X^{\beta_H^-}$, whose default-option term forces an additional particular solution $C_2 X^{\beta_H^-}$ in the L-regime equity ODE; value-matching and smooth-pasting at the boundary then determine $X_D$ jointly with the homogeneous coefficient $A_-$. Because $A_-$ enters both boundary conditions linearly, the combination $\beta_L^- E(X_D) - X_D E'(X_D) = 0$ eliminates it exactly, reducing the coupled system to a single equation,
+
+\begin{equation*}
+A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{C_D + \delta K}{r},
 \end{equation*}
 
 
@@ -587,10 +606,10 @@ positive because $C_2 < 0$ at calibration values---so the direction of the bias 
 
 
 
-\textbf{Piecewise low-regime stopping problem.} The pure-power convention for the pre-investment option (Proof of Proposition 1, Step 5b) is verified against the exact piecewise free-boundary problem, in the same spirit as the coupled default boundary above. Below $X_H^*$ the forcing term in \texttt{eq-hjb-L} is the H-regime option value and the continuation value is $A_1 X^{\beta_L^+} + C X^{\beta_H}$, the negative root being removed by $F_L(0) = 0$. Above $X_H^*$ a switch is followed by immediate exercise, so the forcing is affine, $\lambda\,[a_H X - b_H]$ with $a_H = A_H (K_H^*)^\alpha$ and $b_H = \delta K_H^*/r + I(K_H^*)$, and the continuation value is
+\textbf{Piecewise low-regime stopping problem.} The pure-power convention for the pre-investment option (Proof of Proposition 1, Step 5b) is verified against the exact piecewise free-boundary problem, in the same spirit as the coupled default boundary above. Below $X_H^*$ the forcing term in \texttt{eq-hjb-L} is the H-regime option value and the continuation value is $A_1 X^{\beta_L^+} + C X^{\beta_H}$, the negative root being removed by $F_L(0) = 0$. Above $X_H^*$ a switch is followed by immediate exercise, so the forcing is affine, $\lambda\,[p_H X - q_H]$ with $p_H = A_H (K_H^*)^\alpha$ and $q_H = \delta K_H^*/r + I(K_H^*)$, and the continuation value is
 
 \begin{equation*}
-D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda a_H}{r + \lambda - \mu_L}\,X - \frac{\lambda b_H}{r + \lambda}.
+D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda p_H}{r + \lambda - \mu_L}\,X - \frac{\lambda q_H}{r + \lambda}.
 \end{equation*}
 
 Value and slope matching at $X_H^*$, together with value matching and smooth pasting at the free boundary, determine $(A_1, D_1, D_2, X^*)$: the coefficients solve a linear system given $X^*$, and the remaining slope condition at $X_H^*$ is solved by Brent's method. When the resulting boundary falls below $X_H^*$ the problem collapses to the single-region case, in which the pure-power forcing is exact. The solution is implemented in the replication package (module `piecewise\_option.py`) and cross-checked against an independent Brennan--Schwartz solution of the associated linear complementarity problem on a log-demand grid, which reproduces the free boundary to a relative $10^{-4}$ and the value function to a relative $10^{-9}$.
@@ -608,10 +627,10 @@ A_{\text{eff},F} = g(\phi) \cdot \frac{K_F^{2\alpha}}{K_F^\alpha + K_L^\alpha},
 with $g(\phi) = w_L (1-\phi)^\alpha + w_H \phi^\alpha$. The allocation FOC is then exactly the single-firm condition (the role-invariance of Proposition 3(ii)), and the capacity FOC reduces to a single equation with \emph{effective revenue elasticity} $\alpha(2 - s_F)$, where $s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)$:
 
 \begin{equation*}
-\alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, b(K_F) = (\beta_H - 1)\, K_F\, b'(K_F),
+\alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, \Theta_\ell(K_F) = (\beta_H - 1)\, K_F\, \Theta_\ell'(K_F),
 \end{equation*}
 
-where $b(K) = \delta K / r + c[1 - \ell(1 - c_d/r)]K^\gamma$ is the leverage-adjusted total cost. The left-hand bracket $\alpha\beta_H(2 - s_F) - (\beta_H - 1)Kb'/b$ is strictly decreasing in $K$ ($s_F$ is increasing and $Kb'/b$ rises from 1 to $\gamma$), so the interior optimum is \emph{unique} whenever $(\beta_H - 1)/(2\alpha\beta_H) < 1$ and $(\beta_H - 1)/(\alpha\beta_H) > 1/\gamma$. The first condition is weaker than (A2)'s upper bound because the follower's small-$K$ elasticity is $2\alpha$ (share gains compound the standalone revenue gain), so the follower's problem remains well-posed in part of the region where the single-firm problem degenerates. The scalar solution agrees with the two-dimensional Nelder-Mead optimizer to a relative tolerance of $10^{-6}$ at baseline (with and without leverage), which is enforced as a regression test; the elasticity wedge $\alpha(2 - s_F) > \alpha$ is the analytical source of the large follower scale ($K_F \gg K_L$) noted in \texttt{sec-calibration.}
+where $\Theta_\ell(K) = \delta K / r + c[1 - \ell(1 - r_c/r)]K^\gamma$ is the leverage-adjusted total cost. The left-hand bracket $\alpha\beta_H(2 - s_F) - (\beta_H - 1)K\Theta_\ell'/\Theta_\ell$ is strictly decreasing in $K$ ($s_F$ is increasing and $K\Theta_\ell'/\Theta_\ell$ rises from 1 to $\gamma$), so the interior optimum is \emph{unique} whenever $(\beta_H - 1)/(2\alpha\beta_H) < 1$ and $(\beta_H - 1)/(\alpha\beta_H) > 1/\gamma$. The first condition is weaker than (A2)'s upper bound because the follower's small-$K$ elasticity is $2\alpha$ (share gains compound the standalone revenue gain), so the follower's problem remains well-posed in part of the region where the single-firm problem degenerates. The scalar solution agrees with the two-dimensional Nelder-Mead optimizer to a relative tolerance of $10^{-6}$ at baseline (with and without leverage), which is enforced as a regression test; the elasticity wedge $\alpha(2 - s_F) > \alpha$ is the analytical source of the large follower scale ($K_F \gg K_L$) discussed in \texttt{sec-duopoly} and \texttt{sec-calibration.}
 
 
 

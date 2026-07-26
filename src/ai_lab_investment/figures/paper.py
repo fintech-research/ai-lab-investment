@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import transforms
 
 FULL_W = 6.5  # full-column width (inches)
 HALF_W = 3.25  # half-column width (inches)
@@ -108,12 +109,18 @@ def create_option_value() -> plt.Figure:
         label="NPV of immediate investment",
     )
     ax.axvline(X_star, color="0.6", linestyle=":", linewidth=0.8)
-    ax.annotate(
+    # Anchor the trigger label to the top of its own vertical line (x in data
+    # coordinates, y in axes coordinates) so it reads as a label for the line
+    # rather than floating in the middle of the panel.
+    ax.text(
+        X_star,
+        0.02,
         r"$X_H^*$",
-        xy=(X_star, 0),
-        xytext=(X_star * 1.08, max(F_H) * 0.15),
+        transform=transforms.blended_transform_factory(ax.transData, ax.transAxes),
         fontsize="small",
         color="0.4",
+        ha="left",
+        va="bottom",
     )
 
     mask = X_vals < X_star
@@ -183,10 +190,11 @@ def create_comparative_statics() -> plt.Figure:
             label=r"Capacity $K_H^*$",
         )
         ax.set_xlabel(xlabel)
-        if idx % 2 == 0:
-            ax.set_ylabel(r"$X_H^*$")
-        if idx % 2 == 1:
-            ax2.set_ylabel(r"$K_H^*$", color="0.45")
+        # Label both axes on every panel: the right-hand (capacity) axis of the
+        # left-column panels (a) and (c) was previously unlabelled, leaving the
+        # dashed series unidentified outside the panel-(a) legend.
+        ax.set_ylabel(r"$X_H^*$")
+        ax2.set_ylabel(r"$K_H^*$", color="0.45")
         ax.set_title(labels[idx], loc="left", fontweight="bold")
 
         lines1, labs1 = ax.get_legend_handles_labels()
@@ -524,7 +532,7 @@ def create_firm_comparison() -> plt.Figure:
             xytext=(8, 4),
             fontsize="small",
         )
-    ax2.set_xlabel("Revenue growth (2024-2025x)")
+    ax2.set_xlabel("Revenue multiple (2025/2024)")
     ax2.set_ylabel("Leverage ratio")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
@@ -657,7 +665,7 @@ def create_investment_dilemma() -> plt.Figure:
             where=high_loss.tolist(),
             alpha=0.10,
             color="red",
-            label="Loss > 10%",
+            label=r"Loss > 10% ($\ell = 0$ curve)",
         )
 
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")

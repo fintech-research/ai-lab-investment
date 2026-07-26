@@ -166,7 +166,7 @@ investment, artificial intelligence, duopoly preemption, default risk},
 
 
 \title{Investing in Artificial General Intelligence\thanks{I thank
-Armand Jr Brunelle, Tolga Cenesizogly, Joshua Gans, Charles Martineau,
+Armand Jr Brunelle, Tolga Cenesizoglu, Joshua Gans, Charles Martineau,
 and Piotr Orłowski for helpful comments. AI assistance was used
 extensively in writing this paper; the code for the project and details
 on the use of AI tools are available at
@@ -180,8 +180,8 @@ Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \maketitle
 \begin{abstract}
 Frontier AI laboratories racing toward Artificial General Intelligence
-(AGI) face uncertain timing of transformative demand and must decide how
-much irreversible capacity to build and how to split it between
+(AGI) face uncertain timing of transformative demand. They must decide
+how much irreversible capacity to build, and how to split it between
 inference (current revenue) and training (future capability). I develop
 a real-options model with regime switching, duopoly competition,
 endogenous default risk, and diminishing returns calibrated to AI
@@ -209,7 +209,7 @@ variation in investment behavior.
 \small
 \noindent\textbf{Keywords:} real options; irreversible capacity investment; artificial intelligence; duopoly preemption; default risk\par
 \medskip
-\noindent\textbf{JEL classification:} G31, G32, G33, L13, O33\par
+\noindent\textbf{JEL classification:} C73, D25, G31, G32, G33, L13, O33\par
 \end{minipage}
 \end{center}
 \bigskip
@@ -222,12 +222,12 @@ The race to build artificial intelligence infrastructure is the defining
 capital allocation event of the 2020s. The leading AI laboratories and
 their compute partners committed over \$200 billion in 2024 alone, with
 combined capital expenditure projected to reach \$660--690 billion in
-2026.\footnote{\url{https://www.cnbc.com/2026/02/05/why-amazons-ceo-is-confident-with-200-billion-spending-plan.html};
-  \url{https://www.sec.gov/Archives/edgar/data/1652044/000165204426000012/googexhibit991q42025.htm};
-  \url{https://www.microsoft.com/en-us/investor/earnings/fy-2026-q2/press-release-webcast}.}
-OpenAI's Stargate joint venture with SoftBank, Oracle, and MGX alone
-commits up to \$500 billion in U.S. AI infrastructure through 2029, with
-an initial deployment of \$100 billion.\footnote{\url{https://openai.com/index/announcing-the-stargate-project/}.}\footnote{The
+2026.\footnote{Sources: Amazon FY2026 capital-expenditure guidance
+  (CNBC, February 5, 2026); Alphabet Q4 2025 earnings release (SEC
+  EDGAR, exhibit 99.1); Microsoft FY2026 Q2 earnings release.} OpenAI's
+Stargate joint venture with SoftBank, Oracle, and MGX alone commits up
+to \$500 billion in U.S. AI infrastructure through 2029, with an initial
+deployment of \$100 billion.\footnote{\url{https://openai.com/index/announcing-the-stargate-project/}.}\footnote{The
   centrality of compute to AI capability has made it a focal point for
   governance: governments and firms increasingly use compute allocation,
   monitoring, and export controls as levers for AI safety and industrial
@@ -275,11 +275,13 @@ generate sustained, qualitatively higher demand for compute
 \citep{amodei2024machines}. Executive timeline estimates for this event
 range from ``superintelligence in a few thousand days''
 \citep{altman2024intelligence}, 2026--2027 \citep{amodei2024machines},
-and ``AGI in 2026''\footnote{\url{https://x.com/elonmusk/status/2025124840806514916}.}
-to ``not with current architectures.''\footnote{\url{https://www.pymnts.com/artificial-intelligence-2/2025/meta-large-language-models-will-not-get-to-human-level-intelligence/}.}
-This dispersion in beliefs is precisely what makes the investment
-problem so acute: firms must commit irreversible capital based on
-profoundly different priors about the future.
+and ``AGI in 2026''\footnote{Elon Musk, post on X, 2025:
+  \url{https://x.com/elonmusk/status/2025124840806514916}.} to ``not
+with current architectures.''\footnote{PYMNTS, ``Meta: Large Language
+  Models Will Not Get to Human-Level Intelligence,'' 2025.} This
+dispersion in beliefs is precisely what makes the investment problem so
+acute: firms must commit irreversible capital based on profoundly
+different priors about the future.
 
 The central question is how a firm should time, size, and allocate an
 irreversible capacity investment when the return to that capacity
@@ -631,13 +633,11 @@ permanently shifts demand to a higher trajectory.\footnote{The
   ``smarter than a Nobel Prize winner'' as early as 2026, implying
   \(\lambda \approx 0.30\)--\(0.50\); Demis Hassabis gives roughly 50\%
   probability by the end of the decade
-  (\(\lambda \approx 0.10\)--\(0.15\);
-  \url{https://www.cnbc.com/2025/03/17/human-level-ai-will-be-here-in-5-to-10-years-deepmind-ceo-says.html});
-  and Satya Nadella proposes an economic test---developed-world GDP
-  growth of 10\%---that implicitly pushes the threshold further out
-  (\url{https://www.geekwire.com/2025/microsoft-ceo-satya-nadella-has-a-formula-to-gauge-the-long-term-success-of-ai-investments/}).
-  These differences in \(\lambda\) drive the heterogeneity in investment
-  behavior analyzed in Section~\ref{sec-valuation}.}
+  (\(\lambda \approx 0.10\)--\(0.15\); CNBC, March 17, 2025); and Satya
+  Nadella proposes an economic test---developed-world GDP growth of
+  10\%---that implicitly pushes the threshold further out (GeekWire,
+  2025). These differences in \(\lambda\) drive the heterogeneity in
+  investment behavior analyzed in Section~\ref{sec-valuation}.}
 
 The high regime \(H\) is absorbing: once the economy transitions, it
 remains in \(H\) permanently. This asymmetric regime structure captures
@@ -649,22 +649,16 @@ model to have well-defined present values, I require
 \(r > \mu_H > \mu_L\), where \(r\) is the discount rate and \(\mu_s\) is
 the risk-adjusted growth rate.\footnote{\label{fn:wacc}Following
   \citet[Chapter 4]{dixit1994investment}, all valuation is conducted
-  under a single \emph{risk-adjusted} (certainty-equivalent) framework.
-  The discount rate \(r\) is the firm's weighted average cost of capital
-  (WACC), which embeds the equity risk premium and the cost of debt. The
-  growth rates \(\mu_L\) and \(\mu_H\) are the physical-measure expected
-  growth rates of demand \emph{minus} an appropriate risk premium, so
-  that discounting the expected cash flow at rate \(r\) yields the
-  correct present value. The volatility \(\sigma\) is the same under the
-  physical and risk-adjusted measures (by Girsanov's theorem). This is
-  \emph{not} a risk-neutral pricing measure: under a genuine pricing
-  measure claims are discounted at the risk-free rate, whereas here
-  discounting is at the WACC. The certainty-equivalent convention avoids
-  specifying a complete asset pricing model and avoids double-counting
-  risk premia, but its outputs---triggers, values, credit spreads, and
-  default probabilities---are model-implied risk-adjusted objects, not
-  market prices or pricing-measure probabilities. All parameters (\(r\),
-  \(\mu_s\), \(\sigma\)) are risk-adjusted throughout the paper.}
+  under a single \emph{risk-adjusted} (certainty-equivalent) framework:
+  \(r\) is the firm's weighted average cost of capital (WACC) and
+  \(\mu_L\), \(\mu_H\) are physical-measure expected growth rates
+  \emph{net} of a risk premium. This is \emph{not} a risk-neutral
+  pricing measure---under a genuine pricing measure claims are
+  discounted at the risk-free rate, whereas here discounting is at the
+  WACC---so the model's outputs (triggers, values, credit spreads,
+  default probabilities) are model-implied risk-adjusted objects, not
+  market prices or pricing-measure probabilities. Internet Appendix B
+  states the convention in full.}
 
 \subsection{Technology}\label{technology}
 
@@ -688,19 +682,14 @@ in Section~\ref{sec-discussion}.
 \subsubsection{Training-inference
 allocation}\label{training-inference-allocation}
 
-A frontier AI laboratory produces intelligence by combining two forms of
-compute. \emph{Training compute} optimizes a neural network's parameters
-on massive datasets, yielding a model whose quality scales as a power
-law of compute invested. \emph{Inference compute} runs the trained model
-to serve predictions and generate revenue. Both activities consume the
-same scarce hardware---the GPU clusters described in
-Section~\ref{sec-introduction} and their associated power
-production---creating an allocation problem that resembles resource
-flexibility in operations management
-\citep{vanmieghem2003capacity, chod2005resource} but differs in a way
-that matters for valuation: the split is committed at installation, and
-its training side pays off only in a demand regime that has not yet
-arrived.
+Training and inference compute, defined in
+Section~\ref{sec-introduction}, draw on the same scarce hardware---the
+GPU clusters and their associated power production---creating an
+allocation problem that resembles resource flexibility in operations
+management \citep{vanmieghem2003capacity, chod2005resource} but differs
+in a way that matters for valuation: the split is committed at
+installation, and its training side pays off only in a demand regime
+that has not yet arrived.
 
 A firm with total installed capacity \(K\) allocates fraction
 \(\phi \in (0, 1)\) to training and \(1 - \phi\) to inference, such that
@@ -731,12 +720,8 @@ in AI infrastructure: today, inference capacity determines revenue (you
 must serve demand), but in a world of transformative AI, training
 quality determines competitive position (the best models capture the
 market). The training fraction \(\phi\) is chosen at investment time and
-fixed thereafter.\footnote{Dynamic reallocation of \(\phi\)
-  post-investment would require modeling \(\phi\) as a continuous state
-  variable in the HJB equation, substantially increasing computational
-  complexity. The static choice is already rich enough to generate the
-  key economic trade-offs. I note this as a limitation in
-  Section~\ref{sec-discussion}.}
+fixed thereafter; Section~\ref{sec-discussion} signs and bounds the
+resulting bias.
 
 Installed capacity incurs a continuous operating cost at rate
 \(\delta \geq 0\) per unit, representing power, cooling, maintenance,
@@ -1165,17 +1150,9 @@ regime-relevant capacity measure. The Tullock specification captures the
 essential feature of AI compute competition: firms' revenues depend on
 \emph{relative} capacity, not just absolute capacity, because customers
 (enterprises, developers) allocate workloads to providers based on
-relative performance and availability.\footnote{A Cournot
-  specification---in which firms choose quantities and price clears a
-  downward-sloping demand curve---would be an alternative. Internet
-  Appendix E argues that the main qualitative results (interior
-  \(\phi^*\), faith-based survival, preemption) do not hinge on the
-  Tullock form, and quantifies the role of its revenue-expansion
-  property directly by re-solving the equilibrium under a fixed-pie
-  variant; the Tullock form is more tractable for the training-inference
-  allocation problem because it cleanly separates the capacity and share
-  effects.} In the L-regime, firms compete over \emph{inference
-capacity}: \begin{equation}\protect\phantomsection\label{eq-contest-L}{
+relative performance and availability. In the L-regime, firms compete
+over \emph{inference capacity}:
+\begin{equation}\protect\phantomsection\label{eq-contest-L}{
 \pi_i^L(X, \mathbf{K}, \boldsymbol{\phi}) = X \cdot \frac{[(1-\phi_i)K_i]^{2\alpha}}{[(1-\phi_i)K_i]^\alpha + [(1-\phi_j)K_j]^\alpha},
 }\end{equation} which I write equivalently as
 \(\pi_i^L = X \cdot [(1-\phi_i)K_i]^\alpha \cdot s_i^L\), where
@@ -1220,8 +1197,11 @@ with diminishing marginal returns. The revenue-inflating property of
 asymmetry means that the leader's gain from capacity dominance partly
 reflects pie expansion, not just share theft; this could amplify
 preemption incentives and leader-follower value gaps beyond what a
-fixed-pie specification would deliver. A Cournot specification would
-avoid this feature at the cost of additional complexity. Internet
+fixed-pie specification would deliver. A Cournot specification---in
+which firms choose quantities and price clears a downward-sloping demand
+curve---would avoid this feature, at the cost of additional complexity
+and of the clean separation between capacity and share effects that
+makes the Tullock form tractable for the allocation problem. Internet
 Appendix E quantifies the role of revenue expansion directly by
 re-solving the equilibrium under a fixed-pie variant (same Tullock
 shares, no expansion), finding that the training fraction and the
@@ -1268,20 +1248,20 @@ Each firm finances investment with a mix of equity and debt. I
 parameterize capital structure by the leverage ratio
 \(\ell = D_0 / I(K)\), where \(D_0\) is the face value of debt at
 issuance; leverage is exogenous and common to both firms. Debt is issued
-at par and pays a continuous coupon \(c_D = c_d \cdot \ell \cdot I(K)\),
-where \(c_d\) is the coupon rate and \(c_D\) denotes the total coupon
+at par and pays a continuous coupon \(C_D = r_c \cdot \ell \cdot I(K)\),
+where \(r_c\) is the coupon rate and \(C_D\) denotes the total coupon
 payment (used throughout). Leverage is a \emph{stress-test parameter}
 with a stylized coupon rate, not an equilibrium financing choice.
 Because the model's debt is a perpetual coupon claim with no principal
-repayment and the coupon rate is below the discount rate (\(c_d < r\)),
+repayment and the coupon rate is below the discount rate (\(r_c < r\)),
 the market value of the debt at issuance is below the proceeds
-\(\ell I(K)\): absent default risk it equals \((c_d/r)\,\ell I(K)\),
-about \(42\%\) of the proceeds at the baseline (\(c_d = 0.05\),
+\(\ell I(K)\): absent default risk it equals \((r_c/r)\,\ell I(K)\),
+about \(42\%\) of the proceeds at the baseline (\(r_c = 0.05\),
 \(r = 0.12\)), and par pricing at the entry trigger would require
-\(c_d = r\). Par issuance therefore embeds an implicit financing subsidy
-of \(\ell(1 - c_d/r) I(K)\)---roughly \(23\%\) of the investment cost at
+\(r_c = r\). Par issuance therefore embeds an implicit financing subsidy
+of \(\ell(1 - r_c/r) I(K)\)---roughly \(23\%\) of the investment cost at
 \(\ell = 0.40\)---which reduces the firm's effective capital cost by the
-factor \(1 - \ell(1 - c_d/r)\). I read this as a stylized representation
+factor \(1 - \ell(1 - r_c/r)\). I read this as a stylized representation
 of the below-market terms that relationship lenders and strategic
 partners extend to frontier AI labs, but the model does not endogenize
 the subsidy, and none of the leverage results below should be read as an
@@ -1301,44 +1281,31 @@ debt. Following \citet{leland1994corporate} and
 smooth pasting. For a levered firm with capacity \(K_i\), training
 fraction \(\phi_i\), facing a rival with \((K_j, \phi_j)\):
 \begin{equation}\protect\phantomsection\label{eq-default-boundary}{
-X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D / r + \delta K_i / r}{A_{\text{eff},i}},
-}\end{equation} where \(\beta_s^-\) (with \(s = L\)) is the negative
-root of the L-regime characteristic equation
+X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D / r + \delta K_i / r}{A_{\text{eff},i}},
+}\end{equation} where \(\beta_L^-\) is the negative root of the L-regime
+characteristic equation
 \(\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0\),
 incorporating the regime-switching term through the effective discount
-rate \(r + \lambda\); \(c_D\) is the coupon payment; and
+rate \(r + \lambda\); \(C_D\) is the coupon payment; and
 \(A_{\text{eff},i}\) is the effective revenue coefficient from
 Equation~\ref{eq-a-eff-duopoly}. The factor
-\(\beta_s^- / (\beta_s^- - 1) \in (0, 1)\) reflects the option value of
+\(\beta_L^- / (\beta_L^- - 1) \in (0, 1)\) reflects the option value of
 waiting before defaulting, yielding a lower (optimal) default boundary
 than the naive break-even condition.\footnote{The default boundary uses
   \(A_{\text{eff},i}\), which incorporates the regime-switching
   opportunity in unconditional expectation. In a fully coupled
   regime-switching default model, equity values \((E_L, E_H)\) would
-  satisfy coupled ODEs with regime-contingent default boundaries
-  \((X_D^L, X_D^H)\). Because the regime switch is absorbing
-  (\(L \to H\) only), \(E_H(X)\) satisfies a standard uncoupled Leland
-  equity ODE with closed-form solution, and the coupling is one-way: the
-  L-regime equity is forced by \(\lambda E_H(X)\). Replacing \(E_H\)
-  with its perpetuity component---dropping the (positive) H-regime
-  default-option term---yields the single-boundary formula
-  Equation~\ref{eq-default-boundary} exactly. The omitted term
-  understates the H-regime continuation value, so the formula weakly
-  \emph{overstates} the default boundary; solving the coupled system
-  (using the closed-form \(E_H\) and matching value and slope at
-  \(X_D\)) shows the overstatement is approximately 3\% at the baseline
-  calibration, uniformly across leverage levels (Internet Appendix B).
-  The approximation therefore errs on the side of overstating default
-  risk. The faith-based survival threshold \(\underline{\phi}\)
-  (Equation~\ref{eq-phi-underbar}) is independent of \(\lambda\): it
-  characterizes the condition
-  \(\partial A_{\text{eff},i}/\partial \lambda > 0\), which depends on
-  the ratio of H-regime to L-regime revenue terms but not on the level
-  of \(\lambda\) itself, since \(\lambda\) appears symmetrically in the
-  numerator and denominator of \(A_{\text{eff},i}\) at the threshold.
-  The exact net threshold \(\tilde{\phi}\)
-  (Equation~\ref{eq-phi-tilde}), which also absorbs the markup channel,
-  does depend on \(\lambda\); see Proposition 2(ii).}
+  satisfy coupled ODEs with regime-contingent boundaries
+  \((X_D^L, X_D^H)\). Because the switch is absorbing (\(L \to H\)
+  only), \(E_H\) satisfies a standard uncoupled Leland ODE and the
+  coupling is one-way: the L-regime equity is forced by
+  \(\lambda E_H(X)\). Replacing \(E_H\) with its perpetuity
+  component---dropping the (positive) H-regime default-option
+  term---yields Equation~\ref{eq-default-boundary} exactly, and
+  therefore weakly \emph{overstates} the boundary. Solving the coupled
+  system shows the overstatement is approximately 3\% at baseline,
+  uniformly across leverage levels (Internet Appendix B), so the
+  approximation errs on the side of overstating default risk.}
 
 Crucially, \(A_{\text{eff},i}\) includes the H-regime continuation value
 through the \(\lambda\) term. This creates a \emph{faith-based survival}
@@ -1346,15 +1313,11 @@ mechanism: a firm that invests heavily in training (high \(\phi_i\))
 increases the H-regime component of \(A_{\text{eff},i}\), which
 \emph{lowers} the default boundary. Optimism about transformative AI,
 backed by training investment, extends the firm's solvency by raising
-the equity value at any demand level. As noted above, the unconditional
-\(A_{\text{eff},i}\) framework overstates the default boundary by
-approximately 3\% at baseline relative to the fully coupled
-regime-switching default model, a bias that runs against the faith-based
-survival mechanism and is therefore conservative (see the preceding
-footnote and Internet Appendix B for details). Conversely, a firm that
-allocates entirely to inference (\(\phi_i = 0\)) receives no H-regime
-upside, faces a higher default boundary, and is more vulnerable to
-demand downturns.
+the equity value at any demand level. The single-boundary reduction
+noted above biases \(X_D\) upward, against this mechanism, and is
+therefore conservative. Conversely, a firm that allocates entirely to
+inference (\(\phi_i = 0\)) receives no H-regime upside, faces a higher
+default boundary, and is more vulnerable to demand downturns.
 
 The mechanism differs from the standard result that growth options lower
 default boundaries in Leland-type models. In models with exogenous
@@ -1366,7 +1329,17 @@ continuation value and solvency through current cash flow. The
 faith-based survival thresholds (Equation~\ref{eq-phi-underbar} and
 Equation~\ref{eq-phi-tilde} below) characterize precisely when the
 continuation-value channel operates and when it dominates the cash-flow
-sacrifice and the markup channel outright.
+sacrifice and the markup channel outright.\footnote{The two thresholds
+  differ in their dependence on beliefs. The \(A_{\text{eff}}\)-channel
+  threshold \(\underline{\phi}\) (Equation~\ref{eq-phi-underbar}) is
+  independent of \(\lambda\): it characterizes the condition
+  \(\partial A_{\text{eff},i}/\partial \lambda > 0\), which turns on the
+  ratio of H-regime to L-regime revenue terms but not on the level of
+  \(\lambda\), since \(\lambda\) appears symmetrically in the numerator
+  and denominator of \(A_{\text{eff},i}\) at the threshold. The exact
+  net threshold \(\tilde{\phi}\) (Equation~\ref{eq-phi-tilde}), which
+  also absorbs the markup channel, does depend on \(\lambda\); see
+  Proposition 2(ii).}
 
 \textbf{Proposition 2} (Endogenous default with faith-based survival;
 leveraged duopoly). \emph{For a levered firm in the duopoly with fixed
@@ -1374,7 +1347,7 @@ capacity \((K_i, \phi_i)\) and rival \((K_j, \phi_j)\), the default
 boundary \(X_D\) has the following properties:}
 
 \emph{(i) \(X_D\) is increasing in leverage \(\ell\) and the coupon rate
-\(c_d\).}
+\(r_c\).}
 
 \emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
 training allocation is sufficiently high, and the characterization is
@@ -1384,25 +1357,25 @@ under symmetric capacities or monopoly). Two channels operate. The
 H-regime continuation value, lowering \(X_D\)) is positive if and only
 if \(\phi_i\) exceeds}
 \begin{equation}\protect\phantomsection\label{eq-phi-underbar}{
-\underline{\phi} = \frac{R}{1 + R}, \quad R \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+\underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 }\end{equation} \emph{An opposing markup channel operates through the
 discount root: higher \(\lambda\) raises the effective discount rate and
-pushes \(\beta_s^-/(\beta_s^- - 1)\) toward one, raising \(X_D\).
+pushes \(\beta_L^-/(\beta_L^- - 1)\) toward one, raising \(X_D\).
 Because the \(A_{\text{eff}}\)-channel semi-elasticity is linear in the
 L-regime flow and H-regime continuation terms, the net condition
 \(\partial X_D / \partial \lambda < 0\) also solves in closed form: it
 holds if and only if \(\phi_i\) exceeds the exact threshold}
 \begin{equation}\protect\phantomsection\label{eq-phi-tilde}{
-\tilde{\phi} = \frac{\tilde{R}}{1 + \tilde{R}}, \quad \tilde{R} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
+\tilde{\phi} = \frac{\tilde{\Omega}}{1 + \tilde{\Omega}}, \quad \tilde{\Omega} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
 }\end{equation} \emph{where \(\Delta = r - \mu_L + \lambda\) and
-\(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_s^-(\beta_s^- - 1)D] > 0\)
+\(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_L^-(\beta_L^- - 1)D] > 0\)
 is the markup-channel semi-elasticity, with
 \(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\) (Internet
 Appendix A states the mild regularity condition). The exact threshold
 nests \(\underline{\phi}\) as the \(m \to 0\) limit and satisfies
 \(\tilde{\phi} > \underline{\phi}\). For the baseline calibration
 (\(r = 0.12\), \(\mu_H = 0.06\), \(\mu_L = 0.01\), \(\alpha = 0.40\)),
-\(R = (0.06/0.11)^{2.5} \approx 0.22\),
+\(\Omega = (0.06/0.11)^{2.5} \approx 0.22\),
 \(\underline{\phi} \approx 0.18\), and \(\tilde{\phi} \approx 0.32\);
 the optimal allocation \(\phi^* \approx 0.70\) exceeds both, so
 faith-based survival holds at the optimum. Unlike \(\underline{\phi}\),
@@ -1492,7 +1465,7 @@ firm has invested but not defaulted. Higher leverage raises both
 boundaries---debt-financed scale delays entry while coupon obligations
 raise the default point---and compresses the firm's proportional margin
 of safety \(X_F^*/X_D\). Parameters: baseline calibration with coupon
-rate \(c_d = 0.05\) and bankruptcy cost \(b = 0.30\).}
+rate \(r_c = 0.05\) and bankruptcy cost \(b = 0.30\).}
 
 \end{figure}%
 
@@ -1513,14 +1486,14 @@ existence argument of Proposition 3(i) rests on.
 
 Above the default boundary:
 \begin{equation}\protect\phantomsection\label{eq-equity}{
-E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - \frac{c_D}{r} + \left[\frac{c_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_s^-},
+E(X) = A_{\text{eff},i}\, X - \frac{\delta K}{r} - \frac{C_D}{r} + \left[\frac{C_D}{r} + \frac{\delta K}{r} - A_{\text{eff},i}\, X_D \right]\left(\frac{X}{X_D}\right)^{\beta_L^-},
 }\end{equation} where \(A_{\text{eff},i}\) is the effective revenue
-coefficient from Equation~\ref{eq-a-eff-duopoly} and \(\beta_s^- < 0\)
+coefficient from Equation~\ref{eq-a-eff-duopoly} and \(\beta_L^- < 0\)
 is the negative characteristic root. The last term is the default
 option: it captures the value of limited liability, discounted by the
-probability-weighted factor \((X/X_D)^{\beta_s^-}\) which approaches one
+probability-weighted factor \((X/X_D)^{\beta_L^-}\) which approaches one
 as \(X \to X_D\). The bracket
-\([c_D/r + \delta K/r - A_{\text{eff},i}\, X_D]\) equals the ongoing
+\([C_D/r + \delta K/r - A_{\text{eff},i}\, X_D]\) equals the ongoing
 flow deficit at the default boundary; the value-matching and
 smooth-pasting conditions on \(E\) pin the default boundary \(X_D\) in
 Equation~\ref{eq-default-boundary} and are independent of the sunk
@@ -1540,9 +1513,9 @@ NPV is \(A_{\text{eff},i}\, X - \delta K/r - I(K)\), which tends to
   abandonment threshold.}
 
 Debt value is: \[
-D(X) = \frac{c_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_s^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_s^-},
+D(X) = \frac{C_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_L^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_L^-},
 \] where the recovery in default is \[
-R(X_D) = \min\left\{(1 - b)\,\Lambda(X_D),\; \frac{c_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D,
+R(X_D) = \min\left\{(1 - b)\,\Lambda(X_D),\; \frac{C_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D,
 \] \(b \in [0,1]\) is the fraction of liquidation value lost in
 bankruptcy, and \(\Lambda(X_D)\) is the liquidation value of the firm's
 productive assets at the default boundary (gross of maintenance costs,
@@ -1558,7 +1531,7 @@ not transfer to creditors in a liquidation. This asymmetry is central to
 the credit-risk analysis in Section~\ref{sec-valuation}: faith-based
 survival lowers the \emph{probability} of default, but faith is
 worthless to creditors \emph{in} default, so training allocation raises
-the loss given default. Second, the cap at \(c_D/r\) imposes absolute
+the loss given default. Second, the cap at \(C_D/r\) imposes absolute
 priority: creditors cannot recover more in default than the default-free
 value of their coupon claim. Without the cap, a lightly levered
 firm---whose default boundary is driven by the operating cost
@@ -1616,7 +1589,7 @@ value rises monotonically from \(\ell = 0\) to \(\ell = 1\) at the
 baseline calibration), so an unconstrained leverage choice would be the
 degenerate corner \(\ell = 1\). Endogenizing capital structure would
 require fairly priced debt at issuance---at the baseline entry trigger,
-a coupon rate of \(c_d = r\) or higher---which I leave for future work.
+a coupon rate of \(r_c = r\) or higher---which I leave for future work.
 Throughout, \(\ell\) is therefore varied exogenously as a stress-test
 parameter.
 
@@ -1720,7 +1693,7 @@ down by beliefs and technology, not by market position.}
 beliefs) increases \(\phi^*\) for both firms and lowers the preemption
 trigger \(X_P\).}
 
-\emph{(iv) (Numerical finding; exogenous \((\ell, c_d)\)) Higher
+\emph{(iv) (Numerical finding; exogenous \((\ell, r_c)\)) Higher
 leverage increases the follower's capacity \(K_F\) and raises all three
 boundaries \(X_P\), \(X_F^*\), and \(X_D\): par-issued debt with a
 below-market coupon lowers the effective capital cost---the modeling
@@ -1918,17 +1891,17 @@ of the default claim at the highest leverage considered and vanishes at
 zero leverage.
 
 \textbf{Par debt issuance at an exogenous coupon.} Leverage \(\ell\) and
-the coupon rate \(c_d\) are exogenous, and debt is issued at par: the
-firm receives \(\ell I(K)\) against a perpetual coupon \(c_d \ell I(K)\)
-with no principal repayment. Because \(c_d < r\), the market value of
+the coupon rate \(r_c\) are exogenous, and debt is issued at par: the
+firm receives \(\ell I(K)\) against a perpetual coupon \(r_c \ell I(K)\)
+with no principal repayment. Because \(r_c < r\), the market value of
 that claim at issuance is below the
-proceeds---\((c_d / r)\, \ell I(K)\), about \(42\%\) of the proceeds at
+proceeds---\((r_c / r)\, \ell I(K)\), about \(42\%\) of the proceeds at
 baseline in the absence of default risk---so the convention embeds an
 implicit financing subsidy (see the capital structure discussion above).
 It is a stress-test device: it lets the model vary the debt burden
 without solving a capital-structure problem, and it is why the leverage
 comparative statics are not endogenous capital-structure results. Fairly
-priced debt at issuance would require \(c_d \geq r\) at the entry
+priced debt at issuance would require \(r_c \geq r\) at the entry
 trigger and is left for future work.
 
 Propositions 1--3 are exact statements about the model these conventions
@@ -2301,19 +2274,15 @@ and inference on timescales of weeks (see Section~\ref{sec-discussion}
 for the direction of bias from this simplification).
 
 Figure~\ref{fig-firm-comparison} provides a visual summary of the
-calibration targets. Panel (a) shows the capital expenditure to revenue
-ratio for each stylized firm. The xAI-like compute racer is a dramatic
-outlier (20\(\times\)), reflecting its strategy of building massive
-training clusters before monetization; the Google-like hyperscaler
-invests 1.5\(\times\) its cloud revenue, while the Anthropic-like and
-OpenAI-like labs are near or below parity. Note that the CapEx concept
-differs across archetypes: for the private labs, it captures cloud
-compute commitments rather than owned infrastructure, so the ratios are
-not directly comparable. Panel (b) plots each firm in revenue-growth
-versus leverage space, revealing substantial dispersion: the
-Anthropic-like lab combines extreme revenue growth (5.0\(\times\)) with
-minimal leverage, while the Google-like hyperscaler combines modest
-growth with the lowest cost of capital. This dispersion in financial
+calibration targets: panel (a) plots capital expenditure over revenue,
+and panel (b) places each archetype in revenue-multiple versus leverage
+space. Note that the CapEx concept differs across archetypes: for the
+private labs, it captures cloud compute commitments rather than owned
+infrastructure, so the ratios in panel (a) are not directly comparable.
+Panel (b) reveals substantial dispersion---the Anthropic-like lab
+combines a \(5.0\times\) revenue multiple with minimal leverage, while
+the Google-like hyperscaler combines the most modest multiple with the
+lowest cost of capital---and this dispersion in financial
 characteristics drives the heterogeneous investment behavior analyzed in
 Section~\ref{sec-valuation}.
 
@@ -2327,10 +2296,13 @@ Section~\ref{sec-valuation}.
 
 \caption{\label{fig-firm-comparison}Stylized firm comparison. (a)
 Capital expenditure to revenue ratio (2025). The xAI-like compute racer
-is a pronounced outlier at 20\(\times\); other firms cluster near or
-below parity. (b) Revenue growth (2024--2025) versus leverage ratio. The
-four firm archetypes occupy distinct positions in this space, reflecting
-different investment strategies and financial structures.}
+is a pronounced outlier at 20\(\times\); the other three archetypes span
+\(0.7\times\) to \(1.5\times\), with the Google-like hyperscaler above
+parity and the two labs at or below it. Note the broken vertical axis.
+(b) Revenue multiple (2025 revenue divided by 2024 revenue) versus
+leverage ratio. The four firm archetypes occupy distinct positions in
+this space, reflecting different investment strategies and financial
+structures.}
 
 \end{figure}%
 
@@ -2624,7 +2596,7 @@ value due to default risk) and the reference rate is the model's
 discount rate \(r\) (the WACC), not a risk-free rate.\footnote{The
   benchmark is the model's discount rate \(r\) because all claims are
   valued by discounting at \(r\): a default-free perpetuity with coupon
-  \(c_D\) is worth \(c_D/r\) and yields exactly \(r\), so the spread is
+  \(C_D\) is worth \(C_D/r\) and yields exactly \(r\), so the spread is
   zero absent default risk and isolates the default-risk component. The
   model has a single, risk-adjusted discount rate and therefore cannot
   separately speak to the term-structure or risk-premium components of
@@ -2655,24 +2627,25 @@ creditors---is, to my knowledge, novel.
 
 The probability of default within horizon \(T\) is the first-passage
 probability for GBM hitting the barrier \(X_D\): \[
-P(\text{default within } T) = \Phi(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \Phi(-d_2),
+P(\text{default within } T) = \mathcal{N}(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \mathcal{N}(-d_2),
 \] where \(\nu = \mu_L - \sigma^2/2\),
 \(d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})\),
-\(d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})\), and \(\Phi\) is the
-standard normal CDF. This is the exact barrier hitting probability for
-GBM, consistent with the Leland-style first-passage default mechanism in
-the model; the L-regime drift \(\mu_L\) is the relevant one because the
-default boundary is an L-regime object (the firm defaults pre-switch).
-The calculation abstracts from the regime switch itself---a switch to
-\(H\) before hitting \(X_D\) would effectively remove default risk---so
-the reported figures are upper bounds on the pre-switch default hazard.
-Since \(\mu_L\) is the risk-adjusted (certainty-equivalent) drift, the
-result is a \emph{model-implied risk-adjusted} first-passage
-probability, computed under the same convention as the spread
-calculation; it is not a risk-neutral (pricing-measure) probability,
-because the model discounts at the WACC rather than at a risk-free rate
-(see the footnote in Section~\ref{sec-model}), and the physical-measure
-probability (using the unadjusted drift) would be lower.
+\(d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})\), and \(\mathcal{N}\) is
+the standard normal CDF. This is the exact barrier hitting probability
+for GBM, consistent with the Leland-style first-passage default
+mechanism in the model; the L-regime drift \(\mu_L\) is the relevant one
+because the default boundary is an L-regime object (the firm defaults
+pre-switch). The calculation abstracts from the regime switch itself---a
+switch to \(H\) before hitting \(X_D\) would effectively remove default
+risk---so the reported figures are upper bounds on the pre-switch
+default hazard. Since \(\mu_L\) is the risk-adjusted
+(certainty-equivalent) drift, the result is a \emph{model-implied
+risk-adjusted} first-passage probability, computed under the same
+convention as the spread calculation; it is not a risk-neutral
+(pricing-measure) probability, because the model discounts at the WACC
+rather than at a risk-free rate (see the footnote in
+Section~\ref{sec-model}), and the physical-measure probability (using
+the unadjusted drift) would be lower.
 
 Figure~\ref{fig-credit-risk} presents the credit risk implications.
 Panel (a) shows credit spreads as a function of leverage, evaluated at a
@@ -2722,7 +2695,7 @@ outgrows the collateral. Default probability is increasing and convex in
 leverage, reflecting the rising default boundary. Evaluated at a fixed
 demand level \(X = 0.10\) with capacity \(K = 1\) and training fraction
 \(\phi = 0.5\), using the Leland structural model with exogenous
-leverage, a stylized coupon rate \(c_d = 0.05\), and bankruptcy cost
+leverage, a stylized coupon rate \(r_c = 0.05\), and bankruptcy cost
 \(b = 0.30\).}
 
 \end{figure}%
@@ -2858,16 +2831,16 @@ curve is nearly identical on the conservative side and lies slightly
 23\% at \(\lambda_{\text{invest}} = 0.50\)). The entire wedge between
 the two curves is the shareholders' default option: the levered claim
 value \(E + D - \ell I\) exceeds the unlevered NPV by exactly
-\([R(X_D) + \delta K / r - A_{\text{eff}} X_D](X^*/X_D)^{\beta_s^-}\),
-and at this calibration the recovery cap binds (\(R(X_D) = c_D/r\), so
+\([R(X_D) + \delta K / r - A_{\text{eff}} X_D](X^*/X_D)^{\beta_L^-}\),
+and at this calibration the recovery cap binds (\(R(X_D) = C_D/r\), so
 creditors are made whole in value terms), leaving the bracket equal to
 the flow deficit escaped at default---overwhelmingly the perpetual
 operating-cost drain, since \(\delta K / r\) is about eighteen times the
-coupon claim \(c_D/r\) at baseline. Because \(K^*\)---and hence both the
+coupon claim \(C_D/r\) at baseline. Because \(K^*\)---and hence both the
 coupon and \(\delta K\)---is belief-invariant, and the boundary
 condition pins \(A_{\text{eff}} X_D\) to the same constant for every
 belief type, that bracket is \emph{identical} across the three firms;
-only the discount factor \((X^*/X_D)^{\beta_s^-}\) differs. The
+only the discount factor \((X^*/X_D)^{\beta_L^-}\) differs. The
 aggressive firm enters closest to its default boundary
 (\(X^*/X_D = 3.3\) against \(5.1\) at correct beliefs), so it
 capitalizes the most of this shutdown option---1.8\% of its NPV, against
@@ -2920,8 +2893,9 @@ levered claim value \(E + D - \ell I\) adds the shareholders' default
 option---the value of escaping the perpetual \(\delta K\) operating
 drain and the coupon---which is worth most to the firm that enters
 closest to its default boundary; leverage's distinctive effect is on
-tail risk, not on the mean. The shaded region marks losses exceeding
-10\% of optimal value. Parameters: baseline calibration.}
+tail risk, not on the mean. The shaded region is bounded above by the
+\emph{unleveraged} (\(\ell = 0\)) curve and marks the belief range over
+which that curve exceeds a 10\% loss. Parameters: baseline calibration.}
 
 \end{figure}%
 
@@ -3201,14 +3175,12 @@ HJB equation) is left for future work.
 
 \subsection{Limitations}\label{limitations}
 
-Several limitations should be noted. The model fixes the training
-fraction \(\phi\) at investment time---a reasonable first approximation
-for large-scale capacity decisions with multi-year planning horizons,
-but limiting given the emergence of \emph{inference-time scaling}
-(chain-of-thought reasoning, search-augmented generation) that blurs the
-boundary between training and inference. A dynamic extension in which
-\(\phi\) responds to realized demand would enrich the model; I leave
-this for future work.
+Several limitations should be noted. The static training fraction is the
+first, and the preceding subsection signs and bounds the bias it
+induces; one consideration that exercise does not capture is the
+emergence of \emph{inference-time scaling} (chain-of-thought reasoning,
+search-augmented generation), which blurs the training-inference
+boundary that the model treats as sharp.
 
 The regime-specific revenue structure---inference in \(L\), training in
 \(H\)---is deliberately extreme, chosen to generate a clean
@@ -3244,7 +3216,7 @@ boundary rises with rival capacity---apply across financing structures;
 the specific Leland closed forms are the vehicle for these insights, not
 the literal description of any single firm's capital structure.
 Relatedly, leverage is a stress-test parameter with a stylized coupon
-rate rather than an equilibrium financing choice: because \(c_d < r\) on
+rate rather than an equilibrium financing choice: because \(r_c < r\) on
 a perpetual coupon claim, par issuance implies a market value of debt at
 issuance below the proceeds \(\ell I(K)\)---an implicit financing
 subsidy the model does not endogenize (Section~\ref{sec-model}). The
@@ -3255,38 +3227,29 @@ extension.
 
 The Tullock contest function is a reduced-form representation that
 abstracts from product differentiation, network effects, and switching
-costs. Revenue depends on \emph{relative} capacity through a zero-sum
-share function: symmetric entry by a second firm splits aggregate
-revenue rather than expanding it, unlike a Cournot specification where
-additional industry capacity would serve new demand. Under asymmetry,
-the Tullock form produces a revenue-expansion effect (see
-Section~\ref{sec-duopoly}), but it does not capture the market-growing
-effect of AI adoption where investment expands total addressable demand.
-This biases the model toward stronger competition effects relative to a
-setting where investment expands the pie. A Cournot specification would
-avoid this limitation at the cost of additional complexity (see Internet
-Appendix E).
+costs, and it does not capture the market-growing effect of AI adoption
+in which investment expands total addressable demand. This biases the
+model toward stronger competition effects relative to a setting where
+investment expands the pie. The Cournot alternative, and the fixed-pie
+variant that quantifies what the Tullock form contributes, are discussed
+in Section~\ref{sec-duopoly} and Internet Appendix E.
 
-All valuation uses a reduced-form risk-adjusted framework (see the
-footnote in Section~\ref{sec-model} defining \(r\) and \(\mu_s\)),
-abstracting from state-dependence of risk premia across regimes. The
-framework is a certainty-equivalent one and not a pricing measure:
-discounting is at the WACC rather than at a risk-free rate, so the
-reported credit spreads and default probabilities are model-implied
-risk-adjusted objects rather than market spreads or risk-neutral
-probabilities. In the credit risk analysis in particular, the structural
-default probability uses the risk-adjusted drift and the spread is
-measured relative to the model's discount rate \(r\); physical default
-probabilities would be lower. A richer treatment would allow the risk
-premium to differ across regimes---plausibly higher in \(L\) (where AI
-capabilities are uncertain) than in \(H\) (where transformation is
-realized)---but this would require a complete equilibrium asset pricing
-model and is left for future work. The regime switch to \(H\) is
-absorbing: once transformative AI arrives, the model does not allow for
-reversal. In practice, an ``AI winter'' scenario is a material risk that
-the model abstracts from. Finally, the model treats competition among a
-fixed set of domestic firms, omitting international dynamics, export
-controls, and sovereign AI initiatives.
+All valuation uses the reduced-form risk-adjusted framework of
+Section~\ref{sec-model} and Internet Appendix B---a certainty-equivalent
+convention, not a pricing measure---and abstracts from state-dependence
+of risk premia across regimes. In the credit risk analysis in
+particular, the structural default probability uses the risk-adjusted
+drift and the spread is measured relative to the model's discount rate
+\(r\); physical default probabilities would be lower. A richer treatment
+would allow the risk premium to differ across regimes---plausibly higher
+in \(L\) (where AI capabilities are uncertain) than in \(H\) (where
+transformation is realized)---but this would require a complete
+equilibrium asset pricing model and is left for future work. The regime
+switch to \(H\) is absorbing: once transformative AI arrives, the model
+does not allow for reversal. In practice, an ``AI winter'' scenario is a
+material risk that the model abstracts from. Finally, the model treats
+competition among a fixed set of domestic firms, omitting international
+dynamics, export controls, and sovereign AI initiatives.
 
 \section{Conclusion}\label{sec-conclusion}
 
@@ -3358,15 +3321,16 @@ The model necessarily abstracts from several dimensions of the full
 decision space that executives navigate. It does not capture talent
 constraints, safety and alignment objectives, geopolitical competition
 from actors like DeepSeek \citep{deepseek2025r1}, or the ongoing debate
-about whether pre-training scaling has reached its limits.\footnote{\url{https://www.reuters.com/technology/artificial-intelligence/openai-rivals-seek-new-path-smarter-ai-current-methods-hit-limitations-2024-11-11/}.}
-It treats the training fraction as fixed at investment time, whereas
-dynamic reallocation and inference-time scaling create a richer
-optimization. And it does not address the \$600 billion revenue gap
-between AI infrastructure spending and current AI revenue
-\citep{cahn2024gap} that may discipline the investment race through
-financial markets before any technological resolution occurs. These
-omissions define the frontier for extending the framework developed
-here.
+about whether pre-training scaling has reached its limits.\footnote{Reuters,
+  ``OpenAI and others seek new path to smarter AI as current methods hit
+  limitations,'' November 11, 2024.} It treats the training fraction as
+fixed at investment time, whereas dynamic reallocation and
+inference-time scaling create a richer optimization. And it does not
+address the \$600 billion revenue gap between AI infrastructure spending
+and current AI revenue \citep{cahn2024gap} that may discipline the
+investment race through financial markets before any technological
+resolution occurs. These omissions define the frontier for extending the
+framework developed here.
 
 Several directions for future research are promising. Dynamic learning
 models in which firms update their beliefs about \(\lambda\) in response
@@ -3496,7 +3460,7 @@ Chosen \\
 \(\phi\) & Training fraction & --- & Endogenous choice variable & --- \\
 \(\ell\) & Leverage ratio & --- & Exogenous stress-test parameter,
 varied over \([0, 0.7]\) & --- \\
-\(c_d\) & Coupon rate & 0.05 & Stylized cost of debt for frontier AI
+\(r_c\) & Coupon rate & 0.05 & Stylized cost of debt for frontier AI
 labs; below \(r\), so debt is not fairly priced at issuance
 (Section~\ref{sec-model}) & Inferred \\
 \(b\) & Bankruptcy cost & 0.30 & Bankruptcy cost fraction & Standard \\
@@ -3543,6 +3507,12 @@ H-regime values & Derived (choices) \\
 (primitives) \\
 \(\beta_L^+\) & Positive characteristic root, L-regime ODE (with
 \(\lambda\)) & Derived (primitives) \\
+\(\beta_L^-\) & Negative characteristic root, L-regime ODE (with
+\(\lambda\)) & Derived (primitives) \\
+\(C_D\) & Total coupon flow: \(C_D = r_c \, \ell \, I(K)\) & Derived
+(choices) \\
+\(\Omega\) & H-to-L present-value ratio setting \(\underline{\phi}\)
+(Equation~\ref{eq-phi-underbar}) & Derived (primitives) \\
 \(s_i^L, s_i^H\) & Tullock contest shares (L-regime inference, H-regime
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived \\
@@ -3568,7 +3538,7 @@ point \(\phi^*\) in closed form, together with its comparative statics
 to the characteristic equation Equation~\ref{eq-beta-H} (a power
 solution \(X^\beta\) solves the ODE if and only if \(Q(\beta) = 0\)) and
 the sign, magnitude, and ordering of its roots, namely \(\beta_H > 1\),
-\(\beta_s^- < 0\), and \(\beta_L^+ > \beta_H\); the quotient-rule
+\(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\); the quotient-rule
 derivative \(\partial A_{\text{eff}}/\partial \lambda\), the faith-based
 survival condition, the threshold Equation~\ref{eq-phi-underbar}, the
 monotonicity of the default boundary in leverage and rival capacity,
@@ -3620,21 +3590,20 @@ X^*(K, \phi) = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K/r + cK^\gamma}{A
 \(A_{\text{eff}}(\phi, K) = [(1-\phi)K]^\alpha / (r - \mu_L + \lambda) + \lambda / (r - \mu_L + \lambda) \cdot (\phi K)^\alpha \cdot A_H\)
 is the effective revenue coefficient.
 
-\emph{Step 2: NPV at the trigger.} Define
-\(b(K) = cK^\gamma + \delta K / r\) (total cost). The revenue at the
-trigger is
-\(A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} b(K)\), so the
-NPV at the trigger is: \[
-V - I = \frac{1}{\beta_H - 1}\, b(K).
+\emph{Step 2: NPV at the trigger.} Define the total cost
+\(\Theta(K) = cK^\gamma + \delta K / r\). The revenue at the trigger is
+\(A_{\text{eff}} \cdot X^* = \frac{\beta_H}{\beta_H - 1} \Theta(K)\), so
+the NPV at the trigger is: \[
+V - I = \frac{1}{\beta_H - 1}\, \Theta(K).
 \]
 
 \emph{Step 3: Joint optimization over \((K, \phi)\).} Substituting the
 trigger and NPV into \(F(X_0)\): \[
-F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{b(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
+F(X_0) = \mathcal{C} \cdot \frac{A_{\text{eff}}(\phi, K)^{\beta_H}}{\Theta(K)^{\beta_H - 1}} \equiv \mathcal{C} \cdot h(K, \phi),
 \] where
 \(\mathcal{C} = \frac{1}{\beta_H - 1}\left(\frac{(\beta_H - 1) X_0}{\beta_H}\right)^{\beta_H} > 0\)
 is independent of \((K, \phi)\). The optimal \((K^*, \phi^*)\) maximizes
-\(h(K, \phi) = A_{\text{eff}}^{\beta_H} / b^{\beta_H - 1}\).
+\(h(K, \phi) = A_{\text{eff}}^{\beta_H} / \Theta^{\beta_H - 1}\).
 
 \emph{Step 4: First-order condition for \(K\).} Setting
 \((\partial \ln h / \partial K) = 0\):
@@ -3654,9 +3623,9 @@ fraction.
 Write
 \(A_{\text{eff}}(\phi) = w_L \cdot [(1-\phi)K]^\alpha + w_H \cdot (\phi K)^\alpha\),
 where \(w_L = 1/(r - \mu_L + \lambda) > 0\) and
-\(w_H = \lambda A_H / (r - \mu_L + \lambda) > 0\). Since \(b(K)\) is
-independent of \(\phi\), maximizing \(h\) over \(\phi\) is equivalent to
-maximizing \(A_{\text{eff}}(\phi)^{\beta_H}\), or equivalently
+\(w_H = \lambda A_H / (r - \mu_L + \lambda) > 0\). Since \(\Theta(K)\)
+is independent of \(\phi\), maximizing \(h\) over \(\phi\) is equivalent
+to maximizing \(A_{\text{eff}}(\phi)^{\beta_H}\), or equivalently
 \(A_{\text{eff}}(\phi)\).
 
 The first derivative with respect to \(\phi\) is: \[
@@ -3751,7 +3720,7 @@ H-regime arrival, and then hold the H-regime option---and that this
 strategy is worth \(C X^{\beta_H}\). It is not: the pure switching
 strategy faces the same piecewise forcing as every other strategy, so
 its value is \(A_w X^{\beta_L^+} + C X^{\beta_H}\) below \(X_H^*\) and
-\(D_w X^{\beta_L^-} + [\lambda a_H/(r + \lambda - \mu_L)] X - \lambda b_H/(r + \lambda)\)
+\(D_w X^{\beta_L^-} + [\lambda p_H/(r + \lambda - \mu_L)] X - \lambda q_H/(r + \lambda)\)
 above it, with \((A_w, D_w)\) pinned by value and slope matching at
 \(X_H^*\) once the no-bubble condition removes \(X^{\beta_L^+}\) from
 the upper branch. Because the exercised H-regime payoff lies strictly
@@ -3860,7 +3829,7 @@ term is the default option (put-like, with \(\beta_H^- < 0\) and
 \(\lambda E_H(X)\)---a one-way coupling.
 
 Second, replacing \(E_H\) with its perpetuity component: \[
-E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - c_D/r - \delta K_i/r,
+E_H(X) \approx A_H (\phi_i K_i)^\alpha \cdot s_i^H \cdot X - C_D/r - \delta K_i/r,
 \] the L-regime equity ODE yields a particular solution with coefficient
 \(A_{\text{eff},i}\), and Leland's smooth-pasting gives the default
 boundary below in closed form. The omitted term \(D_H X^{\beta_H^-}\) is
@@ -3885,30 +3854,31 @@ Equation~\ref{eq-hjb-L}, with the firm defaulting when \(E(X_D) = 0\)
 and \(E'(X_D) = 0\) (smooth pasting); the sunk equity contribution
 enters the entry NPV \(E(X) - (1-\ell)I(K)\) but not the boundary
 conditions. The resulting default boundary is: \[
-X_D = \frac{\beta_s^-}{\beta_s^- - 1} \cdot \frac{c_D/r + \delta K_i/r}{A_{\text{eff},i}},
-\] where \(\beta_s^-\) is the negative characteristic root,
-\(c_D = c_d \cdot \ell \cdot I(K)\) is the coupon, and all comparative
+X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D/r + \delta K_i/r}{A_{\text{eff},i}},
+\] where \(\beta_L^-\) is the negative characteristic root,
+\(C_D = r_c \cdot \ell \cdot I(K)\) is the coupon, and all comparative
 statics below hold \emph{with \((K_i, \phi_i)\) fixed at their optimal
 values}.
 
 \emph{(i) Default boundary increasing in leverage.} \(X_D\) depends on
 \(\ell\) only through the numerator via
-\(c_D = c_d \cdot \ell \cdot I(K)\), which is strictly increasing in
+\(C_D = r_c \cdot \ell \cdot I(K)\), which is strictly increasing in
 \(\ell\). Since \(A_{\text{eff},i}\) is independent of \(\ell\) (holding
 capacity and training fixed), \(\partial X_D / \partial \ell > 0\).
 
 \emph{(ii) Default boundary decreasing in \(\lambda\) (faith-based
 survival).} Holding \((K_i, \phi_i, K_j, \phi_j)\) fixed, define the
-L-regime revenue flow \(a \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L\)
-and the H-regime revenue present value
-\(b \equiv (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H)\), both
+L-regime revenue flow
+\(\Pi_L \equiv [(1-\phi_i)K_i]^\alpha \cdot s_i^L\) and the H-regime
+revenue present value
+\(\Pi_H \equiv (\phi_i K_i)^\alpha \cdot s_i^H / (r - \mu_H)\), both
 positive. The effective revenue coefficient is: \[
-A_{\text{eff},i} = \frac{a + \lambda \cdot b}{r - \mu_L + \lambda}.
+A_{\text{eff},i} = \frac{\Pi_L + \lambda \cdot \Pi_H}{r - \mu_L + \lambda}.
 \] Differentiating with respect to \(\lambda\): \[
-\frac{\partial A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(r - \mu_L + \lambda)^2}.
-\] This is positive whenever \(b(r - \mu_L) > a\), i.e., when the
-H-regime revenue present value scaled by the L-regime effective discount
-rate exceeds the L-regime revenue flow:
+\frac{\partial A_{\text{eff},i}}{\partial \lambda} = \frac{\Pi_H(r - \mu_L) - \Pi_L}{(r - \mu_L + \lambda)^2}.
+\] This is positive whenever \(\Pi_H(r - \mu_L) > \Pi_L\), i.e., when
+the H-regime revenue present value scaled by the L-regime effective
+discount rate exceeds the L-regime revenue flow:
 \begin{equation}\protect\phantomsection\label{eq-faith-condition}{
 \frac{(\phi_i K_i)^\alpha \cdot s_i^H}{r - \mu_H} \cdot (r - \mu_L) > [(1-\phi_i)K_i]^\alpha \cdot s_i^L.
 }\end{equation} Since \(\mu_H > \mu_L\) implies
@@ -3924,23 +3894,23 @@ with \(s_i^L = s_i^H = 1/2\) and equal capacity, the contest shares and
 \((r - \mu_L)/(r - \mu_H) \cdot \phi^\alpha > (1-\phi)^\alpha\), i.e.,
 \((\phi/(1-\phi))^\alpha > (r-\mu_H)/(r-\mu_L)\). Solving for \(\phi\):
 \[
-\phi > \underline{\phi} = \frac{R}{1 + R}, \quad R = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
+\phi > \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega = \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 \] For the baseline calibration (\(r = 0.12\), \(\mu_H = 0.06\),
 \(\mu_L = 0.01\), \(\alpha = 0.40\)):
-\(R = (0.06/0.11)^{2.5} \approx 0.22\), giving
+\(\Omega = (0.06/0.11)^{2.5} \approx 0.22\), giving
 \(\underline{\phi} \approx 0.18\). To complete the proof, note that
 \(X_D\) also depends on \(\lambda\) through the markup factor
-\(M(\beta_s^-) \equiv \beta_s^- / (\beta_s^- - 1)\), since \(\beta_s^-\)
+\(M(\beta_L^-) \equiv \beta_L^- / (\beta_L^- - 1)\), since \(\beta_L^-\)
 is the negative root of
 \(\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0\)
 and thus depends on \(\lambda\). The full derivative decomposes into two
 opposing channels: \[
-\frac{\partial X_D}{\partial \lambda} = \underbrace{\frac{\partial M}{\partial \lambda} \cdot \frac{N}{A_{\text{eff},i}}}_{>0\;\text{($\beta$-channel)}} + \underbrace{M(\beta_s^-) \cdot N \cdot \frac{\partial (1/A_{\text{eff},i})}{\partial \lambda}}_{<0\;\text{($A_{\text{eff}}$-channel)}},
-\] where \(N = c_D/r + \delta K_i/r > 0\). The \(\beta\)-channel is
+\frac{\partial X_D}{\partial \lambda} = \underbrace{\frac{\partial M}{\partial \lambda} \cdot \frac{N}{A_{\text{eff},i}}}_{>0\;\text{($\beta$-channel)}} + \underbrace{M(\beta_L^-) \cdot N \cdot \frac{\partial (1/A_{\text{eff},i})}{\partial \lambda}}_{<0\;\text{($A_{\text{eff}}$-channel)}},
+\] where \(N = C_D/r + \delta K_i/r > 0\). The \(\beta\)-channel is
 positive because increasing \(\lambda\) raises the effective discount
-rate \((r + \lambda)\), making \(\beta_s^-\) more negative and pushing
-the markup \(M\) toward 1 from below (since \(\beta_s^- < 0\) implies
-\(M \in (0,1)\)) (\(dM/d\lambda = 1/[(\beta_s^- - 1)^2 D] > 0\), where
+rate \((r + \lambda)\), making \(\beta_L^-\) more negative and pushing
+the markup \(M\) toward 1 from below (since \(\beta_L^- < 0\) implies
+\(M \in (0,1)\)) (\(dM/d\lambda = 1/[(\beta_L^- - 1)^2 D] > 0\), where
 \(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\)). The
 \(A_{\text{eff}}\)-channel is negative under
 Equation~\ref{eq-faith-condition}.
@@ -3949,19 +3919,20 @@ Equation~\ref{eq-faith-condition}.
 form,
 \(\partial \ln X_D / \partial \lambda = m - \partial \ln A_{\text{eff},i} / \partial \lambda\),
 where the markup semi-elasticity is
-\(m \equiv (\mathrm{d}M/\mathrm{d}\lambda)/M = 1/[\beta_s^-(\beta_s^- - 1)D] > 0\),
+\(m \equiv (\mathrm{d}M/\mathrm{d}\lambda)/M = 1/[\beta_L^-(\beta_L^- - 1)D] > 0\),
 and, from the derivative above, \[
-\frac{\partial \ln A_{\text{eff},i}}{\partial \lambda} = \frac{b(r - \mu_L) - a}{(a + \lambda b)\,\Delta}, \qquad \Delta \equiv r - \mu_L + \lambda.
+\frac{\partial \ln A_{\text{eff},i}}{\partial \lambda} = \frac{\Pi_H(r - \mu_L) - \Pi_L}{(\Pi_L + \lambda \Pi_H)\,\Delta}, \qquad \Delta \equiv r - \mu_L + \lambda.
 \] The condition \(\partial X_D / \partial \lambda < 0\) is therefore
-\(b(r - \mu_L) - a > m(a + \lambda b)\Delta\), which is \emph{linear} in
-\((a, b)\) and rearranges to \[
-\frac{b}{a} > \frac{1 + m\Delta}{(r - \mu_L) - m\lambda\Delta},
+\(\Pi_H(r - \mu_L) - \Pi_L > m(\Pi_L + \lambda \Pi_H)\Delta\), which is
+\emph{linear} in \((\Pi_L, \Pi_H)\) and rearranges to \[
+\frac{\Pi_H}{\Pi_L} > \frac{1 + m\Delta}{(r - \mu_L) - m\lambda\Delta},
 \] provided the regularity condition \((r - \mu_L) > m\lambda\Delta\)
 holds (it does throughout the calibration ranges; if it fails, no
 allocation can deliver \(\partial X_D/\partial\lambda < 0\)). With
-symmetric shares, \(b/a = (\phi/(1-\phi))^\alpha / (r - \mu_H)\), giving
-the exact threshold \(\tilde{\phi}\) of Equation~\ref{eq-phi-tilde}.
-Since \(m > 0\), \(\tilde{R} > R\) and
+symmetric shares,
+\(\Pi_H/\Pi_L = (\phi/(1-\phi))^\alpha / (r - \mu_H)\), giving the exact
+threshold \(\tilde{\phi}\) of Equation~\ref{eq-phi-tilde}. Since
+\(m > 0\), \(\tilde{\Omega} > \Omega\) and
 \(\tilde{\phi} > \underline{\phi}\); as \(m \to 0\) (no markup channel),
 \(\tilde{\phi} \to \underline{\phi}\). At the baseline calibration
 \(m \approx 0.77\) and \(\tilde{\phi} \approx 0.32\), between
@@ -3989,7 +3960,7 @@ that finite-difference checks confirm (e.g., at \(\lambda = 0.02\),
 
 \emph{(iii) Leverage-training substitution.} Write the default boundary
 as \(X_D = \Psi(\ell) / A_{\text{eff},i}(\phi_i)\), where
-\(\Psi(\ell) = [\beta_s^- / (\beta_s^- - 1)] \cdot (c_d \ell I(K) / r + \delta K/r)\)
+\(\Psi(\ell) = [\beta_L^- / (\beta_L^- - 1)] \cdot (r_c \ell I(K) / r + \delta K/r)\)
 is strictly increasing in leverage (note: \(\Psi\) absorbs the markup
 factor \(M\), unlike the cost term \(N\) in the
 \(\lambda\)-decomposition above). From the proof of Proposition 1 (Step
@@ -4115,7 +4086,7 @@ from below at most once, so the up-crossing on
 above---is unique. \(\square\)
 
 With leverage, the default-option term (proportional to
-\(X^{\beta_s^-}\) with \(\beta_s^- < 0\)) enters \(L(X)\) with a
+\(X^{\beta_L^-}\) with \(\beta_L^- < 0\)) enters \(L(X)\) with a
 positive coefficient and is strictly convex, breaking global concavity
 in a neighborhood of \(X_D\); the default kink at \(X_D\) also
 introduces a non-smooth point. Providing analytical sufficient
@@ -4288,7 +4259,7 @@ expected-value loss than overinvestment of equal magnitude.
 
 \emph{Case \(\ell > 0\) (leveraged).} Leverage operates through the
 default channel. Because \(K^*\) is belief-independent, the coupon
-\(c_d \ell I(K^*)\) is identical across belief types, so the channel
+\(r_c \ell I(K^*)\) is identical across belief types, so the channel
 runs through the allocation and the trigger alone: over-training
 (\(\phi^*(\lambda_{\text{invest}}) \gg \phi^*(\lambda_{\text{true}})\))
 lowers L-regime inference revenue and pushes the default boundary
@@ -4395,6 +4366,26 @@ parameterizations tested \\
 Methods}\label{b.-numerical-verification-methods}
 \addcontentsline{toc}{subsection}{B. Numerical Verification Methods}
 
+\textbf{Risk-adjusted discounting convention.} All valuation in the
+paper is conducted under a single \emph{risk-adjusted}
+(certainty-equivalent) framework, following \citet[Chapter
+4]{dixit1994investment}; the main text states it in condensed form in
+{Footnote \ref{fn:wacc}} of Section~\ref{sec-model}, and this block
+gives it in full. The discount rate \(r\) is the firm's weighted average
+cost of capital (WACC), which embeds the equity risk premium and the
+cost of debt. The growth rates \(\mu_L\) and \(\mu_H\) are the
+physical-measure expected growth rates of demand \emph{minus} an
+appropriate risk premium, so that discounting the expected cash flow at
+rate \(r\) yields the correct present value; the volatility \(\sigma\)
+is the same under the physical and risk-adjusted measures (by Girsanov's
+theorem). The convention avoids specifying a complete asset pricing
+model and avoids double-counting risk premia, at the price recorded in
+the main-text footnote: because discounting is at the WACC and not at a
+risk-free rate, this is not a pricing measure, and every output of the
+model is a risk-adjusted object rather than a market price or a
+pricing-measure probability. All parameters (\(r\), \(\mu_s\),
+\(\sigma\)) are risk-adjusted throughout the paper.
+
 All numerical results are computed using SciPy 1.14 optimization
 routines in Python 3.13. The single-firm and duopoly optimizations use
 Nelder-Mead over \((\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]\),
@@ -4443,7 +4434,7 @@ pasting on the linear entry payoff
 \(A_{\text{eff}} X - [\text{total cost}]\), omitting the (small)
 default-option term in the levered entry payoff; the omitted term is at
 most about 1.5\% of the default claim at the highest leverage considered
-(\((X_F/X_D)^{\beta_s^-} \approx 0.015\) at \(\ell = 0.65\)) and
+(\((X_F/X_D)^{\beta_L^-} \approx 0.015\) at \(\ell = 0.65\)) and
 vanishes at zero leverage.
 
 \textbf{Leader-scale convention: re-optimization sensitivity.} The paper
@@ -4508,7 +4499,7 @@ reduced model rather than as estimates.
 (Equation~\ref{eq-default-boundary}) is verified against the fully
 coupled regime-switching system: the H-regime equity has the closed
 Leland form
-\(E_H(X) = A_H(\phi K)^\alpha s^H X - (c_D + \delta K)/r + D_H X^{\beta_H^-}\),
+\(E_H(X) = A_H(\phi K)^\alpha s^H X - (C_D + \delta K)/r + D_H X^{\beta_H^-}\),
 whose default-option term forces an additional particular solution
 \(C_2 X^{\beta_H^-}\) in the L-regime equity ODE; value-matching and
 smooth-pasting at the boundary then determine \(X_D\) jointly with the
@@ -4516,7 +4507,7 @@ homogeneous coefficient \(A_-\). Because \(A_-\) enters both boundary
 conditions linearly, the combination
 \(\beta_L^- E(X_D) - X_D E'(X_D) = 0\) eliminates it exactly, reducing
 the coupled system to a single equation, \[
-A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{c_D + \delta K}{r},
+A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{C_D + \delta K}{r},
 \] whose economically relevant root (the continuation of the
 single-boundary root as \(C_2 \to 0\)) is computed by Brent's method. A
 first-order expansion in the small coefficient \(C_2\) around the
@@ -4538,9 +4529,9 @@ the forcing term in Equation~\ref{eq-hjb-L} is the H-regime option value
 and the continuation value is \(A_1 X^{\beta_L^+} + C X^{\beta_H}\), the
 negative root being removed by \(F_L(0) = 0\). Above \(X_H^*\) a switch
 is followed by immediate exercise, so the forcing is affine,
-\(\lambda\,[a_H X - b_H]\) with \(a_H = A_H (K_H^*)^\alpha\) and
-\(b_H = \delta K_H^*/r + I(K_H^*)\), and the continuation value is \[
-D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda a_H}{r + \lambda - \mu_L}\,X - \frac{\lambda b_H}{r + \lambda}.
+\(\lambda\,[p_H X - q_H]\) with \(p_H = A_H (K_H^*)^\alpha\) and
+\(q_H = \delta K_H^*/r + I(K_H^*)\), and the continuation value is \[
+D_1 X^{\beta_L^+} + D_2 X^{\beta_L^-} + \frac{\lambda p_H}{r + \lambda - \mu_L}\,X - \frac{\lambda q_H}{r + \lambda}.
 \] Value and slope matching at \(X_H^*\), together with value matching
 and smooth pasting at the free boundary, determine
 \((A_1, D_1, D_2, X^*)\): the coefficients solve a linear system given
@@ -4622,12 +4613,14 @@ role-invariance of Proposition 3(ii)), and the capacity FOC reduces to a
 single equation with \emph{effective revenue elasticity}
 \(\alpha(2 - s_F)\), where
 \(s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)\): \[
-\alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, b(K_F) = (\beta_H - 1)\, K_F\, b'(K_F),
-\] where \(b(K) = \delta K / r + c[1 - \ell(1 - c_d/r)]K^\gamma\) is the
-leverage-adjusted total cost. The left-hand bracket
-\(\alpha\beta_H(2 - s_F) - (\beta_H - 1)Kb'/b\) is strictly decreasing
-in \(K\) (\(s_F\) is increasing and \(Kb'/b\) rises from 1 to
-\(\gamma\)), so the interior optimum is \emph{unique} whenever
+\alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, \Theta_\ell(K_F) = (\beta_H - 1)\, K_F\, \Theta_\ell'(K_F),
+\] where
+\(\Theta_\ell(K) = \delta K / r + c[1 - \ell(1 - r_c/r)]K^\gamma\) is
+the leverage-adjusted total cost. The left-hand bracket
+\(\alpha\beta_H(2 - s_F) - (\beta_H - 1)K\Theta_\ell'/\Theta_\ell\) is
+strictly decreasing in \(K\) (\(s_F\) is increasing and
+\(K\Theta_\ell'/\Theta_\ell\) rises from 1 to \(\gamma\)), so the
+interior optimum is \emph{unique} whenever
 \((\beta_H - 1)/(2\alpha\beta_H) < 1\) and
 \((\beta_H - 1)/(\alpha\beta_H) > 1/\gamma\). The first condition is
 weaker than (A2)'s upper bound because the follower's small-\(K\)
@@ -4683,7 +4676,7 @@ via the upper bound: the platform (\(r = 0.14\)), the frontier lab
 (\(r = 0.15\)), and the compute racer (\(r = 0.18\)) all yield
 \((\beta_H - 1)/(\alpha\beta_H) > 1\). When the upper bound fails, the
 capacity problem has no interior optimum: the option-value factor
-\(A_{\text{eff}}^{\beta_H} / b(K)^{\beta_H - 1}\) behaves as
+\(A_{\text{eff}}^{\beta_H} / \Theta(K)^{\beta_H - 1}\) behaves as
 \(K^{\alpha\beta_H - (\beta_H - 1)}\) for small \(K\), and the exponent
 turns negative, so the factor diverges as \(K \to 0\) and an
 unconstrained optimizer degenerates toward zero scale. The solvers
@@ -4966,7 +4959,7 @@ market), because each operates through the composition of
 \(A_{\text{eff}}\) rather than the contest functional form: the
 faith-based survival mechanism (Proposition 2) requires only that the
 default boundary take the form
-\(X_D = [\beta_s^-/(\beta_s^- - 1)] \cdot (c_D/r + \delta K_i/r) / A_{\text{eff},i}\)
+\(X_D = [\beta_L^-/(\beta_L^- - 1)] \cdot (C_D/r + \delta K_i/r) / A_{\text{eff},i}\)
 with \(\partial A_{\text{eff},i}/\partial \lambda > 0\) for
 \(\phi_i > \underline{\phi}\), conditions that do not reference how
 revenue shares are determined; and the Dario's dilemma asymmetry
