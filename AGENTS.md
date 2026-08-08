@@ -1,4 +1,4 @@
-# AGENTS.md — Investing in Artificial General Intelligence
+# AGENTS.md — Capacity, Training, and Default in the Race to Artificial General Intelligence
 
 A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry).
 

@@ -1,6 +1,6 @@
 # AI Lab Investment
 
-Analysis code for *Investing in Artificial General Intelligence* — a model of irreversible capacity investment under regime-switching demand uncertainty with duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
+Analysis code for *Capacity, Training, and Default in the Race to Artificial General Intelligence* — a model of irreversible capacity investment under regime-switching demand uncertainty with duopoly competition, endogenous default risk, and diminishing returns calibrated to AI scaling laws.
 
 ## Project structure
 

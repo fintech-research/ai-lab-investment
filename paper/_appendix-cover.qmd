@@ -4,7 +4,7 @@
 \begin{center}
 \vspace*{0.18\textheight}
 {\Large\bfseries Internet Appendix for}\\[1.2em]
-{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
+{\Large\bfseries ``Capacity, Training, and Default in the Race to Artificial General Intelligence''}\\[3em]
 {\large\itshape Supplementary material intended for online publication as an e-companion}
 \label{ia-cover}%
 \end{center}

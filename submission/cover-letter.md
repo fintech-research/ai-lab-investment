@@ -13,7 +13,7 @@
 
 Dear Editor,
 
-I am pleased to submit my manuscript, "Investing in Artificial General Intelligence," for consideration at *Management Science*.
+I am pleased to submit my manuscript, "Capacity, Training, and Default in the Race to Artificial General Intelligence," for consideration at *Management Science*.
 
 The paper develops a real-options model of irreversible capacity investment by frontier AI laboratories. A firm facing regime-switching demand, duopoly competition, and endogenous default must decide when to invest, how much compute capacity to install, and how to split that capacity between inference (current revenue) and training (future capability). The central contribution is the characterization of a training–survival channel: because the same capacity serves both current revenue and future capability, the allocation decision links the firm's growth option to its default boundary. This produces a "faith-based survival" mechanism, in which training investment lowers the default boundary by raising the expected post-AGI continuation value, and an asymmetric cost of mistaken beliefs about AI timelines — conservative underinvestment is costlier in expected value, while aggressive overinvestment concentrates tail default risk. The model delivers closed-form investment triggers and a semi-analytical duopoly preemption equilibrium, calibrated to four AI-lab archetypes.
 

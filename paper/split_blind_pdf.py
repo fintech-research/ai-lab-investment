@@ -33,7 +33,7 @@ FULL_PDF = HERE / "_output" / "ai_lab_investment_blind_full.pdf"
 MANUSCRIPT_PDF = HERE / "_output" / "ai_lab_investment_blind.pdf"
 ECOMPANION_PDF = HERE / "_output" / "ai_lab_investment_blind_ecompanion.pdf"
 
-TITLE = "Investing in Artificial General Intelligence"
+TITLE = "Capacity, Training, and Default in the Race to Artificial General Intelligence"
 KEYWORDS = (
     "real options, irreversible capacity investment, artificial intelligence, "
     "duopoly preemption, default risk"
