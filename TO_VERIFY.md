@@ -70,10 +70,6 @@ exhibit, or consulting a source. Delete an entry once verified.
 
 ## Editorial calls to confirm
 
-- [ ] **Abstract phrase dropped.** "the hope of AGI keeps the firm alive,
-  though that hope is worthless to creditors in bankruptcy" was cut to hit the
-  150-word target. Restoring it costs about 6 words. The loss-given-default
-  point survives in the introduction and Section 5.
 - [ ] **43% preemption discount in the introduction.** Now qualified as "at
   baseline volatility, and conditional on the convention that the leader
   installs the monopoly-phase optimal scale". The alternative is to drop the

@@ -28,7 +28,7 @@ abstract: |
   Frontier AI laboratories must decide how much irreversible capacity to build under uncertain arrival of Artificial General Intelligence (AGI), and how to split it between inference (current revenue) and training (future capability).
   I develop a real-options model with regime switching, duopoly competition, endogenous default, and diminishing returns to capacity whose curvature is calibrated to AI scaling laws.
   The model yields analytical investment triggers and a semi-analytical preemption equilibrium in which competition compresses investment timing, while beliefs about AI timelines, not competitive position, pin down the training fraction.
-  It also produces "faith-based survival": training raises the post-AGI continuation value and lowers the default boundary, though that value is worthless to creditors in bankruptcy.
+  It also produces "faith-based survival": training raises the post-AGI continuation value and lowers the default boundary. The hope of AGI keeps the firm alive, though that hope is worthless to creditors in bankruptcy.
   Calibration to four AI lab archetypes shows how heterogeneous beliefs about AI timelines can generate cross-sectional differences in investment.
   In the calibrated model, conservative underinvestment is costlier in expected value, but aggressive overinvestment carries higher tail default risk.
 keywords:
