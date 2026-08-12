@@ -6,7 +6,7 @@ You are reviewing a research project and its accompanying codebase. Your task is
 
 ## Project Overview
 
-**Title:** "Investing in Artificial General Intelligence"
+**Title:** "Capacity, Training, and Default in the Race to Artificial General Intelligence"
 
 **Author:** Vincent Grégoire (HEC Montréal)
 

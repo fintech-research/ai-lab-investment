@@ -244,14 +244,14 @@ def create_lambda_option_value() -> plt.Figure:
         F_L_vals[valid],
         "k-",
         linewidth=1.5,
-        label=r"$F_L(X)$ (pre-adoption)",
+        label=r"$F_L(X)$ (regime $L$)",
     )
     ax1.axhline(
         F_H_vals[0],
         color="0.5",
         linestyle="--",
         linewidth=1.0,
-        label=r"$F_H(X)$ (post-adoption)",
+        label=r"$F_H(X)$ (regime $H$)",
     )
     ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
     ax1.set_ylabel(f"Option value at $X={X_ref}$")
@@ -421,7 +421,7 @@ def create_competition_effect() -> plt.Figure:
     ax.set_xlabel(r"Volatility $\sigma$")
     ax.set_ylabel(r"Investment trigger $X^*$")
 
-    # Preemption discount on the right axis, so the ratio claims in the
+    # Trigger ratio on the right axis, so the ratio claims in the
     # text are directly readable from the figure.
     v_r = v_m & v_l
     ax2 = ax.twinx()
@@ -433,7 +433,7 @@ def create_competition_effect() -> plt.Figure:
         linewidth=1.2,
         label=r"$X_P / X_L^{\mathrm{mono}}$ (right axis)",
     )
-    ax2.set_ylabel(r"Preemption discount $X_P / X_L^{\mathrm{mono}}$")
+    ax2.set_ylabel(r"Trigger ratio $X_P / X_L^{\mathrm{mono}}$")
     ax2.set_ylim(0.0, 1.0)
     ax2.spines["right"].set_visible(True)
 

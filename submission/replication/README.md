@@ -1,4 +1,4 @@
-# Machine-checked proof package — *Investing in Artificial General Intelligence*
+# Machine-checked proof package — *Capacity, Training, and Default in the Race to Artificial General Intelligence*
 
 This package lets a referee verify the paper's closed-form results without
 checking the algebra by hand. It contains a formalization of the paper's

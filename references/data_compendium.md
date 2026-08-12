@@ -1,8 +1,8 @@
-# Data Compendium: Investing in Artificial General Intelligence
+# Data Compendium: Capacity, Training, and Default in the Race to Artificial General Intelligence
 
 **Prepared for:** Vincent Grégoire, HEC Montréal
 **Date:** February 24, 2026
-**Purpose:** Stylized calibration data for "Investing in Artificial General Intelligence" — order-of-magnitude figures and credible ranges from public sources.
+**Purpose:** Stylized calibration data for "Capacity, Training, and Default in the Race to Artificial General Intelligence" — order-of-magnitude figures and credible ranges from public sources.
 
 ---
 

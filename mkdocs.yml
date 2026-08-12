@@ -1,7 +1,7 @@
 site_name: ai-lab-investment
 repo_url: https://github.com/vgreg/ai-lab-investment
 site_url: https://vgreg.github.io/ai-lab-investment
-site_description: Analysis code for "Investing in Artificial General Intelligence" — irreversible capacity investment under regime-switching demand with duopoly competition and endogenous default risk.
+site_description: Analysis code for "Capacity, Training, and Default in the Race to Artificial General Intelligence" — irreversible capacity investment under regime-switching demand with duopoly competition and endogenous default risk.
 site_author: Vincent Grégoire
 edit_uri: edit/main/docs/
 repo_name: vgreg/ai-lab-investment
