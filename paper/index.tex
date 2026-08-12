@@ -179,7 +179,7 @@ the project and details on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{August 8, 2026}
+\date{August 12, 2026}
 
 \begin{document}
 \maketitle
@@ -967,6 +967,32 @@ governed by the cost function and the option premium, while how it
 splits what it builds is governed by beliefs and by the two regimes'
 revenue technologies.
 
+\textbf{Remark 2} (Allocation versus two separate investments).
+\emph{Because \(\phi\) is fixed at installation, choosing \((K, \phi)\)
+is a change of variables from choosing training capacity
+\(K_T = \phi K\) and inference capacity \(K_I = (1-\phi)K\) directly,
+and revenue is additive across the two uses (Equation~\ref{eq-a-eff} has
+no cross term). The joint problem nevertheless does not reduce to two
+independent investment problems, for two reasons. First, the investment
+cost \(c(K_T + K_I)^\gamma\) is convex in total compute, so each unit of
+training capacity raises the marginal cost of inference capacity: the
+convexity prices the total fleet (power, sites, GPU supply), not each
+workload separately. Second, both capacities are installed at a single
+trigger; if each could be timed on its own, inference capacity, which
+earns revenue immediately in regime \(L\), and training capacity, which
+pays off only through the regime switch, would generically be installed
+at different thresholds. With separable costs, separate timing, and
+exogenous \(\lambda\), the model would decompose into independent
+training and inference investments. The \((K, \phi)\) parameterization
+is instead the coordinate system in which the joint problem separates
+along economic margins: by Proposition 1, scale is set by the cost
+function and the option premium and allocation by beliefs, whereas the
+first-order conditions for \((K_T, K_I)\) are coupled through the convex
+cost. In the duopoly of Section~\ref{sec-duopoly}, the endogenous
+arrival rate adds a further interaction: training compute accelerates
+the regime switch, which changes the rate at which inference revenue is
+discounted.}
+
 \subsubsection{\texorpdfstring{Option value in regime
 \(L\)}{Option value in regime L}}\label{option-value-in-regime-l}
 
@@ -1062,7 +1088,7 @@ premium \(\beta_H / (\beta_H - 1) > 1\) still applies, reflecting the
 value of waiting, but the relevant revenue metric now accounts for both
 L-regime inference earnings and the expected H-regime training prize.
 
-\textbf{Remark 2} (Role of \(\lambda\)). \emph{The arrival rate
+\textbf{Remark 3} (Role of \(\lambda\)). \emph{The arrival rate
 \(\lambda\) has three effects on investment timing, allocation, and
 value. First, higher \(\lambda\) increases the weight on the H-regime
 term in \(A_{\text{eff}}\) (Equation~\ref{eq-a-eff}), raising the
