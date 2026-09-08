@@ -1760,16 +1760,19 @@ revenue, with contest share \(s_L = 1\) in both regimes, and the
 effective revenue coefficient reflects the full monopoly value. After
 the follower invests (\(X \geq X_F^*\)), revenue is shared according to
 the regime-specific contests, and the leader's value incorporates both
-phases and the transition between them. As with the default boundary,
-the follower's entry trigger \(X_F^*\) is computed using the
-unconditional \(A_{\text{eff}}\) framework and is not regime-contingent;
-a fully state-dependent formulation would feature separate triggers
-\((X_F^L, X_F^H)\) linked by the switching intensity. The unconditional
-formulation buys tractability at a price that
-Section~\ref{sec-conventions} quantifies: at baseline it displaces
-trigger levels by 53\% at the reduced-form policy and by 96\% once the
-policy is re-optimized, while leaving the value delivered by the policy
-within 2.6\% of the exact optimum.
+phases and the transition between them; with debt, the leader's default
+boundary is solved on the pre-entry claim including the anticipated
+dilution, so it lies above the monopoly boundary of
+Equation~\ref{eq-default-boundary} (Internet Appendix A, Proof of
+Proposition 3(i)). As with the default boundary, the follower's entry
+trigger \(X_F^*\) is computed using the unconditional \(A_{\text{eff}}\)
+framework and is not regime-contingent; a fully state-dependent
+formulation would feature separate triggers \((X_F^L, X_F^H)\) linked by
+the switching intensity. The unconditional formulation buys tractability
+at a price that Section~\ref{sec-conventions} quantifies: at baseline it
+displaces trigger levels by 53\% at the reduced-form policy and by 96\%
+once the policy is re-optimized, while leaving the value delivered by
+the policy within 2.6\% of the exact optimum.
 
 \textbf{Preemption trigger.} The duopoly is solved under common beliefs:
 both firms share the same \(\lambda\), and the equilibrium is symmetric.
@@ -3800,16 +3803,34 @@ strictly negative constant \(-(1-\ell)I(K_L)\) wherever the
 going-concern claim is worthless. Throughout, the leader's
 \((K_L, \phi_L)\) is held at the monopoly-phase optimum (the solution
 convention discussed after Proposition 1; Internet Appendix B quantifies
-its effect on \(X_P\)). Under limited liability, \(E_L(X_D) = 0\) at the
-default boundary. Define \(F(X)\) as the follower's option value at
-state \(X\): \(F(X) \propto X^{\beta_H}\), with \(F(0) = 0\).
+its effect on \(X_P\)). Before follower entry,
+\(E_L(X) = A_{\text{eff}} X - \delta K_L/r - C_D/r - \Delta_F (X/X_F^*)^{\beta_H} + C_1 X^{\beta_L^-}\),
+where \(\Delta_F\) is the drop in installed value at follower entry and
+the last term is the default option; value matching \(E_L(X_D) = 0\) and
+smooth pasting \(E_L'(X_D) = 0\) determine the leader's default boundary
+\(X_D\) and \(C_1\) jointly, so \(X_D\) is that of a firm anticipating
+entry and lies above the monopoly boundary of
+Equation~\ref{eq-default-boundary} (by about \(7\%\) at baseline
+leverage; Internet Appendix B). Under limited liability,
+\(E_L(X_D) = 0\) at that boundary. Define \(F(X)\) as the follower's
+option value at state \(X\): \(F(X) \propto X^{\beta_H}\), with
+\(F(0) = 0\).
 
 \emph{Continuity and monotonicity.} The leader value \(L(X)\) is
-continuous in \(X\). For \(X > X_D\), \(L(X)\) is increasing: L-regime
-revenue \(X \cdot [(1-\phi_L)K_L]^\alpha\) is linear in \(X\) and the
-H-regime transition adds a positive option component. For
-\(X \leq X_D\), the firm has defaulted and \(E_L = 0\), so
-\(L(X) = -(1 - \ell)I(K_L) < 0\). The follower option value
+continuous in \(X\) except at \(X_F^*\), where the pre-entry claim is
+not matched to the post-entry duopoly claim and the two differ by the
+difference between their default-option terms, a jump of order
+\(10^{-6}\) relative to \(L(X_F^*)\) at baseline (Internet Appendix B)
+that lies outside the interval on which the crossing is sought. On
+\((X_D, X_L^{\text{mono}}]\), the interval on which the crossing is
+sought, \(L(X)\) is increasing: L-regime revenue
+\(X \cdot [(1-\phi_L)K_L]^\alpha\) is linear in \(X\) and the H-regime
+transition adds a positive option component, while the dilution term
+\(\Delta_F (X/X_F^*)^{\beta_H}\) is still small (its convexity
+eventually turns the pre-entry claim down, but only at demand levels of
+order \(0.1\), more than twenty times \(X_L^{\text{mono}}\) at
+baseline). For \(X \leq X_D\), the firm has defaulted and \(E_L = 0\),
+so \(L(X) = -(1 - \ell)I(K_L) < 0\). The follower option value
 \(F(X) \propto X^{\beta_H}\) is continuous, increasing, and convex, with
 \(\beta_H > 1\).
 
@@ -3938,13 +3959,14 @@ Appendix B.
 (numerical finding).} Higher \(\lambda\) lowers the preemption trigger
 \(X_P\) (part iii) and also lowers the default boundary \(X_D\)
 (faith-based survival, Proposition 2(ii)); the trigger effect dominates,
-so the ratio \(X_P / X_D\) falls with \(\lambda\) (from \(\approx 2.8\)
-at \(\lambda = 0.05\) to \(\approx 2.6\) at \(\lambda = 0.20\) at
-baseline leverage \(\ell = 0.40\)). A more optimistic leader therefore
-enters closer to its default boundary, and the Leland credit spread at
-entry, which is monotonically decreasing in \(X_P/X_D\), is weakly
-increasing in \(\lambda\). This is verified computationally across all
-parameterizations tested. \(\square\)
+so the ratio \(X_P / X_D\) falls with \(\lambda\) (from \(\approx 2.6\)
+at \(\lambda = 0.05\) to \(\approx 2.4\) at \(\lambda = 0.20\) at
+baseline leverage \(\ell = 0.40\), with \(X_D\) the anticipating
+leader's boundary defined in part (i)). A more optimistic leader
+therefore enters closer to its default boundary, and the Leland credit
+spread at entry, which is monotonically decreasing in \(X_P/X_D\), is
+weakly increasing in \(\lambda\). This is verified computationally
+across all parameterizations tested. \(\square\)
 
 \subsubsection*{Numerical Finding 1 (Dario's
 dilemma)}\label{numerical-finding-1-darios-dilemma}
@@ -4222,15 +4244,24 @@ the pre-switch option value has the pure power form
 \(F_L \propto X^{\beta_H}\), so this convention prices state-contingent
 payoffs consistently with the model's own option valuation, rather than
 with a first-passage factor \((X/X_F^*)^{\beta_L^+}\) that would
-condition on no regime switch occurring before entry. A second, related
-approximation is that the follower's trigger is obtained from smooth
-pasting on the linear entry payoff
-\(A_{\text{eff}} X - \Theta_\ell(K)\), with \(\Theta_\ell\) the
-leverage-adjusted total cost defined below, omitting the (small)
-default-option term in the levered entry payoff; the omitted term is at
-most about 1.5\% of the default claim at the highest leverage considered
-(\((X_F^*/X_D)^{\beta_L^-} \approx 0.015\) at \(\ell = 0.65\)) and
-vanishes at zero leverage.
+condition on no regime switch occurring before entry. The levered
+leader's pre-entry claim carries its own default boundary, solved by
+value matching and smooth pasting on the full claim including the
+dilution term (Proof of Proposition 3(i)); at baseline leverage
+\(\ell = 0.40\) it lies \(7.3\%\) above the monopoly boundary
+(\(0.001401\) against \(0.001306\)) and moves \(X_P\) by less than
+\(1\%\) (\(0.003573\) against \(0.003594\) with the monopoly boundary).
+The pre-entry and post-entry claims are not matched at \(X_F^*\): they
+differ there by the difference between the monopoly-phase and duopoly
+default-option terms, \(5.6 \times 10^{-7}\) against
+\(L(X_F^*) = 0.0468\) at baseline. A second, related approximation is
+that the follower's trigger is obtained from smooth pasting on the
+linear entry payoff \(A_{\text{eff}} X - \Theta_\ell(K)\), with
+\(\Theta_\ell\) the leverage-adjusted total cost defined below, omitting
+the (small) default-option term in the levered entry payoff; the omitted
+term is at most about 1.5\% of the default claim at the highest leverage
+considered (\((X_F^*/X_D)^{\beta_L^-} \approx 0.015\) at
+\(\ell = 0.65\)) and vanishes at zero leverage.
 
 \textbf{Leader-scale convention: re-optimization sensitivity.} The paper
 holds the leader's \((K_L, \phi_L)\) at the monopoly-phase optimum of

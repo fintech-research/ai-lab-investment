@@ -1108,3 +1108,103 @@ class TestLeaderScaleConvention:
 
         assert abs(k_star(p.alpha) / K_L - 1.0) < 1e-6
         assert abs(k_star(alpha_eff) / K_F - 1.0) < 1e-6
+
+
+# ------------------------------------------------------------------
+# Anticipating leader's default boundary
+# ------------------------------------------------------------------
+
+
+class TestLeaderDefaultBoundary:
+    """The levered leader's pre-entry claim satisfies the boundary conditions
+    the paper attributes to it (Internet Appendix A, Proposition 3(i))."""
+
+    @pytest.fixture(scope="class", params=[0.20, 0.40, 0.70])
+    def levered_eq(self, request):
+        model = DuopolyModel(
+            ModelParameters(),
+            leverage=request.param,
+            coupon_rate=0.05,
+            bankruptcy_cost=0.30,
+        )
+        eq = model.solve_preemption_equilibrium("H")
+        return model, eq
+
+    @staticmethod
+    def _going_concern(model, eq, X):
+        contrib = (1.0 - eq["lev_leader"]) * model.investment_cost(eq["K_leader"])
+        return (
+            model._leader_value_at(
+                X, eq["K_leader"], eq["phi_leader"], eq["lev_leader"]
+            )
+            + contrib
+        )
+
+    def test_value_matching_and_smooth_pasting(self, levered_eq):
+        model, eq = levered_eq
+        X_D = eq["X_default_leader"]
+        assert X_D > 0
+        assert self._going_concern(model, eq, X_D) == pytest.approx(0.0, abs=1e-12)
+        h = 1e-6 * X_D
+        slope = (
+            self._going_concern(model, eq, X_D + h)
+            - self._going_concern(model, eq, X_D)
+        ) / h
+        scale = self._going_concern(model, eq, 2.0 * X_D) / X_D
+        assert abs(slope) < 1e-4 * scale
+
+    def test_nonnegative_above_boundary_increasing_on_search_interval(self, levered_eq):
+        """E_L >= 0 on (X_D, X_F); increasing on the interval (X_D, X_L^mono]
+        where the crossing is sought. Nearer X_F the convex dilution term
+        eventually dominates and the pre-entry claim turns down, well
+        above the equilibrium trigger."""
+        model, eq = levered_eq
+        X_D, X_F = eq["X_default_leader"], eq["X_follower"]
+        X_mono = eq["X_leader_monopolist"]
+        grid = np.geomspace(X_D * (1 + 1e-9), X_F * (1 - 1e-9), 60)
+        vals = np.array([self._going_concern(model, eq, x) for x in grid])
+        assert np.all(vals >= 0.0)
+        search = np.geomspace(X_D * (1 + 1e-9), X_mono, 40)
+        vals = np.array([self._going_concern(model, eq, x) for x in search])
+        assert np.all(np.diff(vals) > 0.0)
+
+    def test_boundary_above_monopoly_boundary(self, levered_eq):
+        """Anticipated dilution lowers equity, so the anticipating leader
+        defaults earlier than a monopolist with the same policy."""
+        model, eq = levered_eq
+        mono = model.default_boundary(
+            eq["phi_leader"], eq["K_leader"], 0.0, 0.0, eq["lev_leader"]
+        )
+        assert eq["X_default_leader"] > mono
+        assert eq["X_default_leader"] / mono - 1.0 < 0.15
+
+    def test_small_jump_at_follower_entry(self, levered_eq):
+        """The pre-entry claim is not matched to the post-entry claim at
+        X_F; the residual jump is the difference between the two
+        default-option terms there and is negligible relative to L(X_F)."""
+        model, eq = levered_eq
+        X_F = eq["X_follower"]
+        left = model._leader_value_at(
+            X_F * (1 - 1e-9), eq["K_leader"], eq["phi_leader"], eq["lev_leader"]
+        )
+        right = model._leader_value_at(
+            X_F, eq["K_leader"], eq["phi_leader"], eq["lev_leader"]
+        )
+        assert abs(right - left) < 1e-4 * abs(right)
+
+    def test_distance_to_default_pinned(self):
+        """Proposition 3(v) numbers at ell = 0.40: X_P / X_D falls in lambda."""
+        ratios = {}
+        for lam in (0.05, 0.10, 0.20):
+            m = DuopolyModel(
+                ModelParameters(lam=lam),
+                leverage=0.40,
+                coupon_rate=0.05,
+                bankruptcy_cost=0.30,
+            )
+            eq = m.solve_preemption_equilibrium("H")
+            ratios[lam] = eq["X_leader"] / eq["X_default_leader"]
+        assert ratios[0.05] == pytest.approx(2.63, abs=0.02)
+        assert ratios[0.10] == pytest.approx(2.55, abs=0.02)
+        assert ratios[0.20] == pytest.approx(2.44, abs=0.02)
+        assert ratios[0.05] > ratios[0.10] > ratios[0.20]
