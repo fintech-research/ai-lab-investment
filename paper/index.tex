@@ -758,8 +758,8 @@ fraction \(\phi\) is chosen at investment time and fixed thereafter;
 Section~\ref{sec-discussion} signs and bounds the resulting bias.
 
 Installed capacity incurs a continuous operating cost at rate
-\(\delta \geq 0\) per unit, representing power, cooling, maintenance,
-and personnel expenses.\footnote{This is distinct from \emph{economic
+\(\delta > 0\) per unit, representing power, cooling, maintenance, and
+personnel expenses.\footnote{This is distinct from \emph{economic
   depreciation} (physical decay or technological obsolescence of GPU
   hardware). In the model, capacity \(K\) remains constant once
   installed; \(\delta K\) is a perpetual flow cost, not a decay rate.
@@ -790,7 +790,7 @@ admissibility conditions.
 conditions are maintained throughout:}
 
 \emph{(A1) \(r > \mu_H > \mu_L \geq 0\), \(\sigma > 0\),
-\(\alpha \in (0,1)\), \(\gamma > 1\), \(c > 0\), \(\delta \geq 0\),
+\(\alpha \in (0,1)\), \(\gamma > 1\), \(c > 0\), \(\delta > 0\),
 \(\lambda > 0\).}
 
 \emph{(A2) The option premium condition
@@ -910,19 +910,25 @@ obvious. Cost convexity \(\gamma\) moves the trigger non-monotonically
 while reducing optimal capacity. A higher operating cost \(\delta\)
 raises \emph{both} the trigger and the optimal capacity; that comovement
 is a rescaling of the capacity unit rather than an economic sensitivity
-(Section~\ref{sec-calibration}). Table~\ref{tbl-elasticities} in the
-Internet Appendix reports the same objects as elasticities at the
-baseline.
+(Section~\ref{sec-calibration}). The linear operating-cost term is
+nonetheless what makes the scale interior: with \(\delta = 0\) the cost
+of capacity is purely convex, the option-value factor under (A2)
+declines monotonically in \(K\), and the closed form below collapses to
+\(K^* = 0\), which is why (A1) requires \(\delta > 0\).
+Table~\ref{tbl-elasticities} in the Internet Appendix reports the same
+objects as elasticities at the baseline.
 
 \textbf{Proposition 1} (Optimal capacity and training fraction;
 single-firm benchmark). \emph{The firm jointly chooses capacity \(K^*\)
 and training fraction \(\phi^*\) to maximize the option value. Under
-(A2), the optimal capacity is:} \[
+(A1) and (A2), and in particular for \(\delta > 0\), the optimal
+capacity is:} \[
 K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
-\] \emph{and \(K^*\) is independent of \(\phi\). The optimal \(\phi^*\)
-is determined separately by maximizing \(A_{\text{eff}}\) over \(\phi\),
-and the joint optimum \((K^*, \phi^*)\) yields the investment trigger
-via smooth pasting.}
+\] \emph{and \(K^*\) is independent of \(\phi\); it is the unique global
+maximizer of the capacity problem, not merely a critical point (Internet
+Appendix A, Step 4). The optimal \(\phi^*\) is determined separately by
+maximizing \(A_{\text{eff}}\) over \(\phi\), and the joint optimum
+\((K^*, \phi^*)\) yields the investment trigger via smooth pasting.}
 
 \emph{When the firm operates in the L-regime with the possibility of a
 regime switch and the option is priced with the simplified form
@@ -3322,15 +3328,16 @@ its mathematical library Mathlib. For Proposition 1, the formalization
 covers the investment trigger Equation~\ref{eq-trigger-phi}, the net
 present value at the trigger, the capacity first-order condition and its
 closed-form solution \(K^*\), which does not depend on the training
-fraction (Steps 1--4), and the reduction of the training-fraction
-first-order condition to the unique interior critical point \(\phi^*\)
-in closed form together with its comparative statics (Steps 5--6). It
-also covers the reduction of the homogeneous Euler ODE to the
-characteristic equation Equation~\ref{eq-beta-H} (a power solution
-\(X^\beta\) solves the ODE if and only if \(Q(\beta) = 0\)) and the
-sign, magnitude, and ordering of its roots, namely \(\beta_H > 1\),
-\(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\). For Proposition 2, it
-covers the quotient-rule derivative
+fraction (Steps 1--4; the limit argument that makes this root the global
+maximum is elementary calculus and is not formalized), and the reduction
+of the training-fraction first-order condition to the unique interior
+critical point \(\phi^*\) in closed form together with its comparative
+statics (Steps 5--6). It also covers the reduction of the homogeneous
+Euler ODE to the characteristic equation Equation~\ref{eq-beta-H} (a
+power solution \(X^\beta\) solves the ODE if and only if
+\(Q(\beta) = 0\)) and the sign, magnitude, and ordering of its roots,
+namely \(\beta_H > 1\), \(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\).
+For Proposition 2, it covers the quotient-rule derivative
 \(\partial A_{\text{eff}}/\partial \lambda\), the faith-based survival
 condition, the threshold \textbf{?@eq-phi-underbar}, the monotonicity of
 the default boundary in leverage and rival capacity, and, for the exact
@@ -3411,7 +3418,23 @@ is independent of \(\phi\). Solving for \(K\) yields the closed-form
 expression in Proposition 1, confirming that \(K^*\) depends only on the
 cost and technology parameters
 \((\alpha, \beta_H, \gamma, \delta, r, c)\), not on the training
-fraction.
+fraction. The critical point is the global maximum. At fixed \(\phi\),
+\(h \propto K^{\alpha\beta_H} / (cK^\gamma + \delta K/r)^{\beta_H - 1}\)
+is continuous and strictly positive on \((0, \infty)\). As \(K \to 0\)
+the linear term dominates the denominator and
+\(h \sim K^{\alpha\beta_H - (\beta_H - 1)} \to 0\), because the upper
+bound in (A2) gives \(\alpha\beta_H > \beta_H - 1\). As \(K \to \infty\)
+the convex term dominates and
+\(h \sim K^{\alpha\beta_H - \gamma(\beta_H - 1)} \to 0\), because the
+lower bound in (A2) gives \(\alpha\beta_H < \gamma(\beta_H - 1)\). A
+positive continuous function vanishing at both ends attains an interior
+maximum, and Equation~\ref{eq-foc-K} is linear in \(K^{\gamma - 1}\)
+with a single root, so that root is it. Both limits require
+\(\delta > 0\): at \(\delta = 0\) the denominator is \(cK^\gamma\)
+alone, \(h \sim K^{\alpha\beta_H - \gamma(\beta_H - 1)}\) is
+monotonically decreasing on the whole half-line, and no interior optimum
+exists (the closed form returns \(K^* = 0\)), which is why (A1) imposes
+\(\delta > 0\).
 
 \emph{Step 5: Existence of interior \(\phi^*\).}
 
