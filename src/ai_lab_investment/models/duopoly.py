@@ -1044,6 +1044,116 @@ class DuopolyModel:
     # Leader's problem
     # ------------------------------------------------------------------
 
+    def _leader_revenue_drop(
+        self, K_L: float, phi_L: float, K_F: float, phi_F: float, X_F: float
+    ) -> float:
+        """Drop in the leader's installed value when the follower enters."""
+        V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
+        V_duo_at_XF = self.installed_value_L(X_F, phi_L, K_L, phi_F, K_F)
+        return V_mono_at_XF - V_duo_at_XF
+
+    def leader_default_boundary(
+        self,
+        K_L: float,
+        phi_L: float,
+        lev_L: float,
+        K_F: float,
+        phi_F: float,
+        X_F: float,
+    ) -> tuple[float, float]:
+        """Default boundary of a leader that anticipates follower entry.
+
+        Before follower entry the leader's going-concern equity is
+
+            E_L(X) = A X - N - drop (X/X_F)^beta_H + C_1 X^beta_neg,
+
+        with A the monopoly-phase A_eff, N = C_D/r + delta K_L/r, drop the
+        installed-value loss at follower entry (discounted with the
+        paper's beta_H convention) and C_1 X^beta_neg the default option.
+        Value matching E_L(X_D) = 0 and smooth pasting E_L'(X_D) = 0
+        determine (X_D, C_1) jointly. The monopoly boundary of
+        `default_boundary` is the drop = 0 special case; because the
+        dilution term lowers equity, the anticipating leader's boundary
+        lies above it.
+
+        Returns:
+            (X_D, C_1); (0, 0) without debt.
+        """
+        if lev_L <= 0:
+            return 0.0, 0.0
+        cache_key = ("leader_default", K_L, phi_L, lev_L, K_F, phi_F, X_F)
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        p = self.params
+        c_D = self.coupon_payment(K_L, lev_L)
+        N = c_D / p.r + p.delta * K_L / p.r
+        A = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
+        drop = self._leader_revenue_drop(K_L, phi_L, K_F, phi_F, X_F)
+        beta_H = p.beta_H
+        beta_neg = self._negative_root("L", self.endogenous_lambda(phi_L, K_L, 0, 0))
+
+        def coefficient(X_D: float) -> float:
+            # Smooth pasting solved for C_1 at a candidate boundary.
+            slope_ex_option = A - drop * beta_H * X_D ** (beta_H - 1.0) / X_F**beta_H
+            return -slope_ex_option * X_D ** (1.0 - beta_neg) / beta_neg
+
+        def value_matching(X_D: float) -> float:
+            C_1 = coefficient(X_D)
+            return A * X_D - N - drop * (X_D / X_F) ** beta_H + C_1 * X_D**beta_neg
+
+        X_D_mono = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
+        lo, hi = X_D_mono * 0.5, min(X_F, X_D_mono * 4.0)
+        if value_matching(lo) * value_matching(hi) > 0:
+            grid = np.geomspace(X_D_mono * 1e-3, X_F * (1.0 - 1e-9), 400)
+            vals = np.array([value_matching(x) for x in grid])
+            idx = np.where(np.sign(vals[:-1]) != np.sign(vals[1:]))[0]
+            if idx.size == 0:
+                msg = "No default boundary for the anticipating leader"
+                raise RuntimeError(msg)
+            lo, hi = grid[idx[0]], grid[idx[0] + 1]
+        X_D = float(optimize.brentq(value_matching, lo, hi, xtol=1e-14))
+        out = (X_D, float(coefficient(X_D)))
+        self._cache[cache_key] = out
+        return out
+
+    def _leader_pre_entry_value(
+        self,
+        X: float,
+        K_L: float,
+        phi_L: float,
+        lev_L: float,
+        K_F: float,
+        phi_F: float,
+        X_F: float,
+    ) -> float:
+        """Leader's entry NPV at X < X_F (monopoly phase, entry anticipated).
+
+        Without debt this is the unlevered monopoly NPV net of the
+        discounted revenue drop at follower entry. With debt the
+        going-concern claim carries the default option of
+        `leader_default_boundary`, is floored at zero below that boundary,
+        and the sunk equity contribution is subtracted, matching the
+        equity convention of `equity_value`.
+        """
+        p = self.params
+        drop = self._leader_revenue_drop(K_L, phi_L, K_F, phi_F, X_F)
+        entry_factor = (X / X_F) ** p.beta_H if X_F > 0 else 1.0
+        if lev_L <= 0:
+            eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
+            return eq_mono - drop * entry_factor
+
+        X_D, C_1 = self.leader_default_boundary(K_L, phi_L, lev_L, K_F, phi_F, X_F)
+        equity_contribution = (1.0 - lev_L) * self.investment_cost(K_L)
+        if X <= X_D:
+            return -equity_contribution
+        c_D = self.coupon_payment(K_L, lev_L)
+        N = c_D / p.r + p.delta * K_L / p.r
+        A = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
+        beta_neg = self._negative_root("L", self.endogenous_lambda(phi_L, K_L, 0, 0))
+        going_concern = A * X - N - drop * entry_factor + C_1 * X**beta_neg
+        return max(going_concern, 0.0) - equity_contribution
+
     def _leader_value_at(
         self,
         X: float,
@@ -1058,40 +1168,25 @@ class DuopolyModel:
         2. Post-follower-entry, L-regime: duopoly revenues
         3. H-regime (after switch): duopoly quality-based revenue
 
-        Built from equity_value() so the Leland default option enters the
-        leader's value on the same terms as the follower's (the follower
-        side of the preemption gap is also an equity_value).
+        Before follower entry the claim is priced by
+        `_leader_pre_entry_value`, whose default boundary is that of a
+        leader anticipating entry (`leader_default_boundary`); after entry
+        it is the duopoly `equity_value`, so the Leland default option
+        enters on the same terms as the follower's. The pre-entry claim is
+        not matched to the post-entry claim at X_F: the two differ by the
+        difference between the monopoly-phase and duopoly default-option
+        terms there, a small jump reported in Internet Appendix B.
 
         Returns the leader's entry NPV L(X), net of the sunk equity
         contribution and therefore negative at low demand -- the L(0) < 0
         endpoint of the existence argument. No clamp is applied here; the
-        only limited-liability floor is the one inside equity_value(),
-        which applies to the going-concern claim.
-
-        Accounts for follower's entry changing lambda_tilde.
+        only limited-liability floor is the one on the going-concern
+        claim.
         """
-        p = self.params
-
-        # Follower's best response
         X_F, K_F, phi_F, _ = self.solve_follower(K_L, phi_L)
-
         if X >= X_F:
-            # Follower already entered — duopoly equity (with default option)
             return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
-
-        # Phase 1: Monopolist equity (with default option)
-        eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
-
-        # Phase 2: Revenue drop when follower enters
-        V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
-        V_duo_at_XF = self.installed_value_L(X_F, phi_L, K_L, phi_F, K_F)
-        revenue_drop = V_mono_at_XF - V_duo_at_XF
-
-        # Probability-weighted PV of revenue loss
-        beta = p.beta_H
-        entry_factor = (X / X_F) ** beta if X_F > 0 else 1.0
-
-        return eq_mono - revenue_drop * entry_factor
+        return self._leader_pre_entry_value(X, K_L, phi_L, lev_L, K_F, phi_F, X_F)
 
     def _leader_objective(
         self,
@@ -1269,8 +1364,10 @@ class DuopolyModel:
         X_L_mono, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
         X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
 
-        # Compute default boundaries
-        X_D_L = self.default_boundary(phi_L, K_L, 0.0, 0.0, lev_L)
+        # Default boundaries: the leader's is that of a firm anticipating
+        # follower entry (above the monopoly boundary), the follower's the
+        # duopoly boundary.
+        X_D_L, _ = self.leader_default_boundary(K_L, phi_L, lev_L, K_F, phi_F, X_F)
         X_D_F = self.default_boundary(phi_F, K_F, phi_L, K_L, lev_F)
 
         # Find the preemption point on (X_D, X_L^mono). The preemption
@@ -1407,20 +1504,11 @@ class DuopolyModel:
         Same three-phase construction as _leader_value_at(), but with the
         follower solved from a warm start (see _solve_follower_warm).
         """
-        p = self.params
         lev_L = self.leverage
-
         X_F, K_F, phi_F, _ = self._solve_follower_warm(K_L, phi_L, follower_x0)
-
         if X >= X_F:
             return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
-
-        eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
-        V_mono_at_XF = self.monopolist_value_L(X_F, phi_L, K_L)
-        V_duo_at_XF = self.installed_value_L(X_F, phi_L, K_L, phi_F, K_F)
-        revenue_drop = V_mono_at_XF - V_duo_at_XF
-        entry_factor = (X / X_F) ** p.beta_H if X_F > 0 else 1.0
-        return eq_mono - revenue_drop * entry_factor
+        return self._leader_pre_entry_value(X, K_L, phi_L, lev_L, K_F, phi_F, X_F)
 
     def reoptimized_leader_policy(
         self,
