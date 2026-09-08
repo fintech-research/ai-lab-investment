@@ -94,8 +94,11 @@ class TestValidationGuards:
         with pytest.raises(ValueError, match="delta"):
             ModelParameters(delta=-0.01)
 
-    def test_zero_delta_allowed(self):
-        assert ModelParameters(delta=0.0).delta == 0.0
+    def test_zero_delta_raises(self):
+        """delta = 0 removes the interior capacity optimum (Proposition 1's
+        closed form gives K* = 0 and the solver would return its guard)."""
+        with pytest.raises(ValueError, match="delta must be positive"):
+            ModelParameters(delta=0.0)
 
     def test_negative_lambda_raises(self):
         with pytest.raises(ValueError, match="lambda"):
