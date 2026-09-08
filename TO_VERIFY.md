@@ -36,10 +36,6 @@ exhibit, or consulting a source. Delete an entry once verified.
   It is now written as an open question. If a cartel-capacity computation
   exists in the code but is unexhibited, replace the sentence with the actual
   comparison.
-- [ ] **Duopoly asymmetry ratio** (`_appendix.qmd`, Internet Appendix E). The
-  new sentence says the ratio falls from about 4x to about 2x, computed by hand
-  from `@tbl-duopoly-dilemma` (26/6 against 38/17). Confirm against the
-  underlying numbers.
 - [ ] **`@tbl-duopoly-dilemma` leverage level.** The added note does not state
   $\ell$, because the text never does. If the exercise is the $\ell = 0$ case,
   add it.
@@ -50,10 +46,6 @@ exhibit, or consulting a source. Delete an entry once verified.
 - [ ] **Rounding of 2.64% to 2.6%** (`_appendix.qmd`, Internet Appendix B) and
   the 97.4%/2.6% pair in the same sentence. Confirm the exported numbers
   support one decimal.
-- [ ] **Fixed-pie payoff definition** (`_appendix.qmd`, Internet Appendix E).
-  The vague "regime-relevant capacity measure" was expanded to
-  $[(1-\phi_i)K_i]^\alpha$ in regime $L$ and $(\phi_i K_i)^\alpha$ in regime
-  $H$. Check against the fixed-pie code.
 - [ ] **Cost-scale invariance justification** (`_appendix.qmd`, Internet
   Appendix E). The claim that the four sweep objects are invariant to $\delta$
   and $c$ is now attributed to homogeneity of the value functions in the cost
@@ -84,3 +76,15 @@ exhibit, or consulting a source. Delete an entry once verified.
   statement of Proposition 3". That location is now a one-sentence pointer
   naming the four rather than a full restatement. Still accurate, but a
   co-author may want it softened.
+
+## Codex review round (2026-09-07), umbrella #135
+
+Author-only checks raised while verifying `reports/review_report_codex_20260907.md`. Each is also referenced from the sub-issue in parentheses.
+
+- [ ] **\$660--690B 2026 spending aggregate** (`_introduction.qmd`, opening paragraph). The footnote cites only Amazon, Alphabet, and Microsoft guidance, which cannot sum to a "laboratories and their compute partners" total. State the aggregation or cite the source that made it. (#144)
+- [ ] **Executive quotations in the introduction**: Pichai (Alphabet Q2 2024 call), Huang (GTC 2025, "easily 100x"), Musk (the x.com status ID `2025124840806514916` looks implausible for a 2025 post), LeCun/PYMNTS wording, Amodei/Dwarkesh wording and ellipsis, Stargate figures. Check exact wording and add URLs where missing. (#144)
+- [ ] **OpenAI \$3.7B/\$12.5B revenue** (`_appendix.qmd`, Internet Appendix C). The cited openai.com post gives ARR of \$2B/\$6B/\$20B+, not these figures. Supply the press source or switch to the ARR series. (#144)
+- [ ] **Epoch AI quotation** (`_appendix.qmd`, Internet Appendix C). The sentence in quotation marks paraphrases Epoch's wording; Epoch's \$2B research figure rests on an assumed two-year amortization of press reports. (#144)
+- [ ] **Management Science reviewer count.** `submission/README.md` says five suggested reviewers; web summaries of the current guidelines say six and three AEs. INFORMS pages returned 403 to automated fetches; confirm on the portal. (#148)
+- [ ] **Decision: C2 envelope re-solve.** A preliminary re-solve of the piecewise benchmark with the optimized post-switch scale finds no finite pre-switch trigger at baseline and a 6.9% policy loss instead of 2.6%. Needs independent reproduction and a decision on relabel vs re-solve before the appendix numbers are rewritten. (#136)
+- [ ] **Decision: cover letter** L24 verification claim, L26 AI-upload invitation, drafting-speed paragraph. Flagged again by Codex after the July decision to keep them. (#148)

@@ -36,6 +36,18 @@ The module also provides:
   expression ignores the same exercised-H forcing and overstates the bound);
 - `finite_difference_value`, an independent Brennan--Schwartz solve of the
   linear complementarity problem, used to verify the closed-form solution.
+
+Scale restriction of the closed form. The affine forcing above X_H* fixes the
+post-switch capacity at K_H*, the scale chosen for entry *at* X_H*. A firm that
+has not invested when the switch arrives at X > X_H* is not bound to that
+scale: its exercise payoff is the envelope max_K [A_H K^alpha X - delta K / r
+- I(K)], which exceeds the fixed-scale payoff for every X > X_H* (the two are
+tangent at X_H*). The closed-form solution above is therefore exact *within
+the class of policies that precommit the post-switch scale to K_H**, not for
+the unrestricted stopping problem. The `envelope_*` functions solve the
+unrestricted problem numerically (the envelope forcing is not affine, so the
+two-region closed form no longer applies) and `envelope_bias` reports how the
+paper's policy fares against it.
 """
 
 from dataclasses import dataclass
@@ -406,6 +418,155 @@ class PiecewiseOptionModel:
         return -sol.value(X_0)
 
     # ------------------------------------------------------------------
+    # Unrestricted post-switch scale: the exercise envelope
+    # ------------------------------------------------------------------
+
+    def envelope_capacity(self, X: np.ndarray | float) -> np.ndarray:
+        """Capacity maximizing the immediate H-regime NPV at demand X.
+
+        Solves alpha A_H X K^{alpha-1} = delta/r + c gamma K^{gamma-1}, whose
+        left side is decreasing and right side increasing in K, so the root
+        is unique. At X = X_H* it equals K_H*; above X_H* it exceeds K_H*.
+        """
+        p = self.params
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        out = np.empty_like(X_arr)
+        for i, x in enumerate(X_arr):
+
+            def foc(log_K: float, x: float = x) -> float:
+                K = np.exp(log_K)
+                marginal_revenue = p.alpha * p.A_H * x * K ** (p.alpha - 1.0)
+                marginal_cost = p.delta / p.r + p.c * p.gamma * K ** (p.gamma - 1.0)
+                return np.log(marginal_revenue) - np.log(marginal_cost)
+
+            out[i] = np.exp(optimize.brentq(foc, -40.0, 20.0, xtol=1e-14))
+        return out
+
+    def envelope_payoff(self, X: np.ndarray | float) -> np.ndarray:
+        """Exercise envelope max_K [A_H K^alpha X - delta K / r - I(K)]."""
+        p = self.params
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        K = self.envelope_capacity(X_arr)
+        return p.A_H * K**p.alpha * X_arr - p.delta * K / p.r - p.c * K**p.gamma
+
+    def regime_H_forcing(
+        self, X: np.ndarray, scale: str = "precommitted"
+    ) -> np.ndarray:
+        """Forcing term lambda F_H(X) on a demand grid.
+
+        Args:
+            X: Demand grid.
+            scale: ``"precommitted"`` fixes the post-switch capacity at K_H*
+                (the affine payoff a_H X - b_H above X_H*, the closed-form
+                case); ``"envelope"`` re-optimizes it at the switch.
+        """
+        p = self.params
+        below = self.B_H * X**self.beta_H
+        if scale == "precommitted":
+            above = self.a_H * X - self.b_H
+            return p.lam * np.where(X < self.X_H, below, above)
+        if scale != "envelope":
+            msg = f"scale must be 'precommitted' or 'envelope', got {scale!r}"
+            raise ValueError(msg)
+        forcing = below.copy()
+        mask = X >= self.X_H
+        if mask.any():
+            forcing[mask] = self.envelope_payoff(X[mask])
+        return p.lam * forcing
+
+    def envelope_asymptotic_value(self, X: float) -> float:
+        """Large-X particular solution under the envelope forcing.
+
+        For large X the envelope grows like X^{gamma/(gamma-alpha)} (the
+        convex-cost term dominates), and the particular solution of the
+        L-regime ODE with a power forcing lambda h X^p is lambda h X^p /
+        (-Q_L(p)), with Q_L the L-regime characteristic polynomial. Used as
+        the far-field boundary condition of the finite-difference solves.
+        """
+        p = self.params
+        pexp = p.gamma / (p.gamma - p.alpha)
+        s2 = 0.5 * p.sigma**2
+        Q = s2 * pexp * (pexp - 1.0) + p.mu_L * pexp - (p.r + p.lam)
+        forcing = float(self.regime_H_forcing(np.array([X]), "envelope")[0])
+        return forcing / (-Q)
+
+    def envelope_threshold_value(
+        self,
+        K: float,
+        phi: float,
+        X_stop: float,
+        X: float,
+        n_grid: int = 8001,
+    ) -> float:
+        """Value at X of "invest at X_stop with (K, phi)" under the envelope.
+
+        X_stop = inf prices the pure switching strategy (never invest before
+        the switch). Solved by finite differences; see
+        `finite_difference_value` for the discretization.
+        """
+        x_min, x_max = self._envelope_grid_range(X_stop)
+        grid, F, _ = self.finite_difference_value(
+            K, phi, n_grid, x_min, x_max, scale="envelope", X_stop=X_stop
+        )
+        return float(np.interp(np.log(X), np.log(grid), F))
+
+    def _envelope_grid_range(self, X_stop: float | None = None) -> tuple[float, float]:
+        """Log-demand grid scaled to the problem (X_H* sets the scale).
+
+        The far-field condition is asymptotic, so the top of the grid sits
+        four decades above X_H* (and above any finite threshold).
+        """
+        top = self.X_H
+        if X_stop is not None and np.isfinite(X_stop):
+            top = max(top, float(X_stop))
+        return 1e-5 * self.X_H, 1e4 * top
+
+    def envelope_free_boundary(
+        self, K: float, phi: float, n_grid: int = 8001
+    ) -> tuple[float, np.ndarray, np.ndarray]:
+        """Optimal trigger at fixed (K, phi) under the envelope forcing.
+
+        Returns:
+            (trigger, X grid, values); the trigger is inf when the pure
+            switching strategy dominates exercise at every grid point.
+        """
+        x_min, x_max = self._envelope_grid_range()
+        grid, F, boundary = self.finite_difference_value(
+            K, phi, n_grid, x_min, x_max, scale="envelope"
+        )
+        return boundary, grid, F
+
+    def envelope_optimal_capacity(
+        self,
+        phi: float,
+        X_0: float,
+        log_K_bounds: tuple[float, float] = (-12.0, 2.0),
+        n_grid: int = 4001,
+    ) -> tuple[float, float, float]:
+        """Best (K, trigger) for a finite-threshold policy under the envelope.
+
+        The training fraction phi maximizes A_eff at every K (Proposition 1,
+        Step 5) and enters the L-regime payoff only through A_eff, so it can
+        be held at phi* while capacity is searched. Returns (K, trigger,
+        value at X_0); the trigger is inf and the value equals the pure
+        switching value when no finite-threshold policy beats waiting.
+        """
+
+        def neg_value(log_K: float) -> float:
+            _, grid, F = self.envelope_free_boundary(np.exp(log_K), phi, n_grid)
+            return -float(np.interp(np.log(X_0), np.log(grid), F))
+
+        coarse = np.linspace(*log_K_bounds, 29)
+        vals = np.array([neg_value(v) for v in coarse])
+        i = int(np.argmin(vals))
+        lo = coarse[max(i - 1, 0)]
+        hi = coarse[min(i + 1, len(coarse) - 1)]
+        res = optimize.minimize_scalar(neg_value, bounds=(lo, hi), method="bounded")
+        K = float(np.exp(res.x))
+        boundary, grid, F = self.envelope_free_boundary(K, phi, n_grid)
+        return K, boundary, float(np.interp(np.log(X_0), np.log(grid), F))
+
+    # ------------------------------------------------------------------
     # Independent numerical verification
     # ------------------------------------------------------------------
 
@@ -416,16 +577,28 @@ class PiecewiseOptionModel:
         n_grid: int = 20001,
         x_min: float = 1e-7,
         x_max: float = 5.0,
+        scale: str = "precommitted",
+        X_stop: float | None = None,
     ) -> tuple[np.ndarray, np.ndarray, float]:
-        """Brennan--Schwartz solve of the same stopping problem.
+        """Brennan--Schwartz solve of the stopping problem.
 
         Discretizes the L-regime HJB in log demand and solves the linear
         complementarity problem exactly (the exercise region is the upper set
         [X*, inf), so the projected back-substitution is exact). Independent
         of the closed-form algebra above and used to verify it.
 
+        Args:
+            K, phi: Policy the exercise payoff is conditioned on.
+            n_grid, x_min, x_max: Log-demand grid.
+            scale: Post-switch scale convention of the forcing term; see
+                `regime_H_forcing`.
+            X_stop: When given, the exercise decision is not free: the firm
+                invests at X_stop (a threshold policy) and the linear ODE is
+                solved below it. ``inf`` prices the pure switching strategy.
+
         Returns:
-            (X grid, option values, estimated free boundary).
+            (X grid, option values, free boundary); the boundary is inf when
+            the firm never exercises on the grid.
         """
         p = self.params
         a_L, b_L = self.exercise_payoff_coeffs(K, phi)
@@ -439,16 +612,28 @@ class PiecewiseOptionModel:
         sup = -(s2 / dy**2 + (p.mu_L - s2) / (2.0 * dy))
 
         payoff = a_L * X - b_L
-        forcing = p.lam * np.where(
-            X < self.X_H, self.B_H * X**self.beta_H, self.a_H * X - self.b_H
-        )  # vectorized regime_H_option_value
+        forcing = self.regime_H_forcing(X, scale)
+        if scale == "precommitted":
+            far_field = self.g * X[-1] + self.k
+        else:
+            far_field = self.envelope_asymptotic_value(float(X[-1]))
 
         A = np.full(n_grid, sub)
         B = np.full(n_grid, diag)
         Cc = np.full(n_grid, sup)
         D = forcing.copy()
         B[0], Cc[0], D[0] = 1.0, 0.0, 0.0
-        B[-1], A[-1], D[-1] = 1.0, 0.0, payoff[-1]
+        if X_stop is None:
+            obstacle = payoff
+            B[-1], A[-1], D[-1] = 1.0, 0.0, max(payoff[-1], far_field)
+        else:
+            obstacle = np.full(n_grid, -np.inf)
+            if np.isfinite(X_stop):
+                j = int(np.searchsorted(X, X_stop))
+                B[j:], A[j:], Cc[j:] = 1.0, 0.0, 0.0
+                D[j:] = payoff[j:]
+            else:
+                B[-1], A[-1], D[-1] = 1.0, 0.0, far_field
 
         c_prime = np.empty(n_grid)
         d_prime = np.empty(n_grid)
@@ -460,10 +645,12 @@ class PiecewiseOptionModel:
             d_prime[i] = (D[i] - A[i] * d_prime[i - 1]) / den
 
         F = np.empty(n_grid)
-        F[-1] = max(d_prime[-1], payoff[-1])
+        F[-1] = max(d_prime[-1], obstacle[-1])
         for i in range(n_grid - 2, -1, -1):
-            F[i] = max(d_prime[i] - c_prime[i] * F[i + 1], payoff[i])
+            F[i] = max(d_prime[i] - c_prime[i] * F[i + 1], obstacle[i])
 
+        if X_stop is not None:
+            return X, F, float(X_stop)
         exercised = (payoff + 1e-18 >= F) & (payoff > 0.0)
         boundary = float(X[np.argmax(exercised)]) if exercised.any() else float("inf")
         return X, F, boundary
@@ -694,6 +881,166 @@ def dilemma_bias(
     return out
 
 
+def envelope_bias(
+    params: ModelParameters | None = None,
+    x0_ratio: float = 0.5,
+    n_grid: int = 8001,
+) -> dict[str, float]:
+    """The paper's policy against the unrestricted (envelope) stopping problem.
+
+    Prices three objects at X_0 = x0_ratio * X* under the envelope forcing,
+    all under the same arrival rate: the paper's own threshold policy
+    (invest at the reduced-form trigger with (K*, phi*)); the pure switching
+    strategy (never invest before the switch, choose scale at the switch);
+    and the best finite-threshold policy over capacity at phi = phi*. The
+    unrestricted optimum is the larger of the last two.
+
+    Returns:
+        Dict with the three values, the policy loss of the paper's policy
+        relative to the unrestricted optimum, the best finite trigger and
+        capacity (inf / nan when waiting dominates), and the free boundary at
+        the paper's own (K*, phi*). Percentages are relative to the
+        unrestricted optimum unless the key says otherwise.
+    """
+    if params is None:
+        params = ModelParameters()
+    rf = reduced_form_reference(params)
+    pw = PiecewiseOptionModel(params)
+    X_0 = x0_ratio * rf["X_star"]
+    K, phi, X_star = rf["K_star"], rf["phi_star"], rf["X_star"]
+
+    value_paper_policy = pw.envelope_threshold_value(K, phi, X_star, X_0, n_grid)
+    value_wait = pw.envelope_threshold_value(K, phi, float("inf"), X_0, n_grid)
+    boundary_fixed, _, _ = pw.envelope_free_boundary(K, phi, n_grid)
+    K_best, boundary_best, value_best = pw.envelope_optimal_capacity(
+        phi, X_0, n_grid=min(n_grid, 4001)
+    )
+    value_opt = max(value_wait, value_best)
+    invests = bool(np.isfinite(boundary_best) and value_best > value_wait)
+    value_rf = rf["smooth_fit_coeff"] * X_0**params.beta_H
+    value_precommitted = pw.threshold_value(K, phi, X_star, X_0)
+    return {
+        "X_0": X_0,
+        "X_star_reduced": X_star,
+        "value_reduced": value_rf,
+        "value_paper_policy_precommitted": value_precommitted,
+        "value_paper_policy_envelope": value_paper_policy,
+        "value_pure_switching_envelope": value_wait,
+        "value_unrestricted_opt": value_opt,
+        "reduced_formula_error_pct": 100.0 * (value_rf / value_paper_policy - 1.0),
+        "policy_loss_pct": 100.0 * (1.0 - value_paper_policy / value_opt),
+        "wait_over_paper_policy_pct": 100.0 * (value_wait / value_paper_policy - 1.0),
+        "invests_before_switch": float(invests),
+        "X_star_envelope_fixed_policy": boundary_fixed,
+        "X_star_envelope_opt": boundary_best if invests else float("inf"),
+        "K_envelope_opt": K_best if invests else float("nan"),
+        "value_bias_vs_reduced_pct": 100.0 * (value_opt / value_rf - 1.0),
+    }
+
+
+def envelope_sweep(
+    param_name: str,
+    values: np.ndarray,
+    base_params: ModelParameters | None = None,
+    x0_ratio: float = 0.5,
+    n_grid: int = 4001,
+) -> dict[str, np.ndarray]:
+    """`envelope_bias` across a parameter range (NaN where no solution)."""
+    if base_params is None:
+        base_params = ModelParameters()
+    keys = [
+        "policy_loss_pct",
+        "reduced_formula_error_pct",
+        "wait_over_paper_policy_pct",
+        "invests_before_switch",
+        "X_star_envelope_opt",
+        "X_star_reduced",
+    ]
+    out: dict[str, np.ndarray] = {k: np.full(len(values), np.nan) for k in keys}
+    out["param_values"] = np.asarray(values, dtype=float)
+    for i, val in enumerate(values):
+        try:
+            params = base_params.with_param(**{param_name: float(val)})
+            res = envelope_bias(params, x0_ratio=x0_ratio, n_grid=n_grid)
+        except (ValueError, RuntimeError, np.linalg.LinAlgError):
+            continue
+        for key in keys:
+            out[key][i] = res[key]
+    return out
+
+
+def envelope_dilemma(
+    params: ModelParameters | None = None,
+    lambda_true: float = 0.10,
+    lambda_invest_values: tuple[float, ...] = (0.02, 0.05, 0.20, 0.35, 0.50),
+    x0_ratio: float = 0.5,
+    n_grid: int = 4001,
+) -> dict[str, list[float]]:
+    """Dario's dilemma when each belief's policy solves the unrestricted problem.
+
+    Each belief's policy is the unrestricted optimum under that belief (a
+    finite-threshold policy or pure switching); both the true-belief and the
+    mismatched policy are then valued under lambda_true at one common
+    demand level X_0 = x0_ratio * X*(lambda_true), held fixed across
+    beliefs. Because pure switching is belief-invariant, a belief whose
+    unrestricted optimum is to wait incurs no loss when the true optimum is
+    also to wait.
+    """
+    if params is None:
+        params = ModelParameters()
+    p_true = params.with_param(lam=lambda_true)
+    pw_true = PiecewiseOptionModel(p_true)
+    rf_true = reduced_form_reference(p_true)
+    X_0 = x0_ratio * rf_true["X_star"]
+
+    def policy(p: ModelParameters) -> tuple[float, float, float]:
+        rf = reduced_form_reference(p)
+        pw = PiecewiseOptionModel(p)
+        K_rf, phi_rf = rf["K_star"], rf["phi_star"]
+        wait = pw.envelope_threshold_value(K_rf, phi_rf, np.inf, X_0, n_grid)
+        K, bd, best = pw.envelope_optimal_capacity(rf["phi_star"], X_0, n_grid=n_grid)
+        if np.isfinite(bd) and best > wait:
+            return K, rf["phi_star"], bd
+        return rf["K_star"], rf["phi_star"], float("inf")
+
+    K_t, phi_t, X_t = policy(p_true)
+    v_opt = pw_true.envelope_threshold_value(K_t, phi_t, X_t, X_0, n_grid)
+    out: dict[str, list[float]] = {
+        "lambda_invest": [],
+        "loss_envelope_pct": [],
+        "trigger_envelope": [],
+        "phi_envelope": [],
+    }
+    for lam_i in lambda_invest_values:
+        K_i, phi_i, X_i = policy(params.with_param(lam=lam_i))
+        v_mis = pw_true.envelope_threshold_value(K_i, phi_i, X_i, X_0, n_grid)
+        out["lambda_invest"].append(lam_i)
+        out["loss_envelope_pct"].append(100.0 * (v_opt - v_mis) / v_opt)
+        out["trigger_envelope"].append(X_i)
+        out["phi_envelope"].append(phi_i)
+    return out
+
+
+def format_envelope_report(params: ModelParameters | None = None) -> str:
+    """Human-readable report of the paper's policy vs the unrestricted problem."""
+    e = envelope_bias(params)
+    trig = e["X_star_envelope_opt"]
+    lines = [
+        "Paper's policy vs the unrestricted (envelope) stopping problem",
+        "=" * 62,
+        f"X_0 (evaluation demand)            {e['X_0']:.6f}",
+        f"paper policy, precommitted scale  {e['value_paper_policy_precommitted']:.6e}",
+        f"paper policy, envelope             {e['value_paper_policy_envelope']:.6e}",
+        f"pure switching, envelope           {e['value_pure_switching_envelope']:.6e}",
+        f"unrestricted optimum               {e['value_unrestricted_opt']:.6e}",
+        f"invests before the switch          {bool(e['invests_before_switch'])}",
+        f"unrestricted trigger               {trig:.6f}",
+        f"reduced-form formula error         {e['reduced_formula_error_pct']:+.2f}%",
+        f"value loss of the paper's policy   {e['policy_loss_pct']:.2f}%",
+    ]
+    return "\n".join(lines)
+
+
 def format_bias_report(params: ModelParameters | None = None) -> str:
     """Human-readable report of the piecewise-vs-reduced-form comparison."""
     if params is None:
@@ -779,6 +1126,8 @@ if __name__ == "__main__":  # pragma: no cover
     import sys
 
     print(format_bias_report())
+    print()
+    print(format_envelope_report())
     if "sweep" in sys.argv[1:]:
         print()
         print(format_sweep_report())
