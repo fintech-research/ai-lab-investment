@@ -554,3 +554,27 @@ class TestCalibrationSectionClaims:
         assert abs(X1 / X0 - X_ratio) / X_ratio < 1e-4
         assert abs(X1 - 0.0667) < 5e-4
         assert abs(K1 - 0.0747) < 5e-4
+
+
+class TestCapacityGlobalOptimum:
+    """Proposition 1, Step 4: the FOC root is the global maximum of the
+    reduced capacity objective, which vanishes at both ends for delta > 0."""
+
+    def test_objective_vanishes_at_both_ends(self):
+        model = SingleFirmModel(ModelParameters())
+        _, K_star, _ = model._solve_regime_H()
+        at_opt = -model._objective_K(np.log(K_star), "H")
+        for log_K in (-14.0, -10.0, 8.0, 12.0):
+            assert -model._objective_K(log_K, "H") < at_opt
+        # log objective falls without bound in both directions
+        assert -model._objective_K(-14.0, "H") < -model._objective_K(-10.0, "H")
+        assert -model._objective_K(12.0, "H") < -model._objective_K(8.0, "H")
+
+    def test_closed_form_scales_with_delta(self):
+        """K* is proportional to delta^{1/(gamma-1)}."""
+        base = ModelParameters()
+        _, K1, _ = SingleFirmModel(base)._solve_regime_H()
+        _, K2, _ = SingleFirmModel(
+            base.with_param(delta=2.0 * base.delta)
+        )._solve_regime_H()
+        assert pytest.approx(2.0 ** (1.0 / (base.gamma - 1.0)), rel=1e-6) == K2 / K1

@@ -123,8 +123,15 @@ class ModelParameters:
         if self.c <= 0:
             msg = f"Cost scale c must be positive, got {self.c}"
             raise ValueError(msg)
-        if self.delta < 0:
-            msg = f"Operating cost delta must be non-negative, got {self.delta}"
+        if self.delta <= 0:
+            # The interior capacity K* = [delta (...)/(r c (...))]^{1/(gamma-1)}
+            # of Proposition 1 collapses to zero at delta = 0: without the
+            # linear operating-cost term the reduced objective is monotone
+            # in K under (A2) and has no interior maximum.
+            msg = (
+                f"Operating cost delta must be positive for an interior "
+                f"capacity optimum (Assumption A1), got {self.delta}"
+            )
             raise ValueError(msg)
         if self.tau < 0:
             msg = f"Time-to-build tau must be non-negative, got {self.tau}"
