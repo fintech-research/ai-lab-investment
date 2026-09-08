@@ -194,13 +194,14 @@ The model yields analytical investment triggers and a semi-analytical
 preemption equilibrium in which competition compresses investment
 timing, while beliefs about AI timelines, not competitive position, pin
 down the training fraction. It also produces ``faith-based survival'':
-training raises the post-AGI continuation value and lowers the default
-boundary. The hope of AGI keeps the firm alive, though that hope is
-worthless to creditors in bankruptcy. Calibration to four AI lab
-archetypes shows how heterogeneous beliefs about AI timelines can
-generate cross-sectional differences in investment. In the calibrated
-model, conservative underinvestment is costlier in expected value, but
-aggressive overinvestment carries higher tail default risk.
+optimism about the switch, acting through the training allocation,
+raises the post-AGI continuation value and lowers the default boundary.
+The hope of AGI keeps the firm alive, though that hope is worthless to
+creditors in bankruptcy. Calibration to four AI lab archetypes shows how
+heterogeneous beliefs about AI timelines can generate cross-sectional
+differences in investment. In the calibrated model, conservative
+underinvestment is costlier in expected value, but aggressive
+overinvestment carries higher tail default risk.
 \end{abstract}
 
 % Keywords and JEL classification, displayed on the title page below the abstract.
@@ -525,8 +526,7 @@ growth option is not a decision variable and cannot be traded off
 against current cash flow. Here the firm chooses \(\phi\), and that
 choice determines both the regime-\(H\) continuation value and the
 regime-\(L\) coupon coverage, which is why the default boundary can be
-\emph{decreasing} in the training fraction
-(Equation~\ref{eq-phi-underbar}).
+\emph{decreasing} in the training fraction (\textbf{?@eq-phi-underbar}).
 
 The most closely related papers combining investment and default are
 \citet{hackbarth2014capital} (real options with endogenous default and
@@ -592,7 +592,7 @@ and (c) the allocation affects firm survival through the
 continuation-value channel in the default boundary.
 
 Two of the paper's results turn on this mechanism: a \emph{faith-based
-survival} condition (Equation~\ref{eq-phi-underbar}) in which training
+survival} condition (\textbf{?@eq-phi-underbar}) in which training
 investment lowers the default boundary by raising the expected post-AGI
 continuation value, and an asymmetric \emph{Dario's dilemma} in which
 the training channel makes conservative underinvestment costlier in
@@ -1451,16 +1451,24 @@ than the naive break-even condition.\footnote{The default boundary uses
 Crucially, \(A_{\text{eff},i}\) includes the H-regime continuation value
 through the \(\lambda\) term. This is the \emph{training-survival
 channel}, the route by which the allocation decision feeds back into
-solvency: a firm that invests heavily in training (high \(\phi_i\))
-increases the H-regime component of \(A_{\text{eff},i}\), which
-\emph{lowers} the default boundary. I call that default-boundary
-implication \emph{faith-based survival}. Optimism about transformative
-AI, backed by training investment, extends the firm's solvency by
-raising the equity value at any demand level. The single-boundary
-reduction noted above biases \(X_D\) upward, against this mechanism, and
-is therefore conservative. Conversely, a firm that allocates entirely to
-inference (\(\phi_i = 0\)) receives no H-regime upside, faces a higher
-default boundary, and is more vulnerable to demand downturns.
+solvency. At fixed \((K, \ell, \lambda)\) the boundary is
+\(X_D = MN/A_{\text{eff},i}\), so it moves inversely with the effective
+revenue coefficient: because \(A_{\text{eff},i}\) is single-peaked in
+\(\phi_i\), \(X_D\) is U-shaped in the training fraction, falling as
+training rises up to the allocation optimum \(\phi^*\) (\(\approx 0.70\)
+at baseline) and rising beyond it, where the sacrificed inference
+revenue outweighs the added continuation value. I call the
+default-boundary implication of optimism \emph{faith-based survival}: a
+higher arrival rate \(\lambda\) raises the weight on the H-regime
+continuation value in \(A_{\text{eff},i}\) and, when the firm trains
+enough for that term to matter, lowers the boundary. Optimism about
+transformative AI, backed by training investment, extends the firm's
+solvency by raising the equity value at any demand level. The
+single-boundary reduction noted above biases \(X_D\) upward, against
+this mechanism, and is therefore conservative. Conversely, a firm that
+allocates entirely to inference (\(\phi_i = 0\)) receives no H-regime
+upside, faces a higher default boundary, and is more vulnerable to
+demand downturns.
 
 The mechanism differs from the standard result that growth options lower
 default boundaries in Leland-type models. In models with exogenous
@@ -1469,23 +1477,25 @@ Here, the growth option value is endogenously controlled by \(\phi\),
 and raising \(\phi\) simultaneously reduces current inference revenue,
 creating a genuine trade-off between solvency through future
 continuation value and solvency through current cash flow. The
-faith-based survival thresholds (Equation~\ref{eq-phi-underbar} and
-Equation~\ref{eq-phi-tilde} below) characterize precisely when the
-training-survival channel operates and when it dominates the cash-flow
-sacrifice and the markup channel outright.\footnote{Within the
-  training-survival channel I distinguish the \(A_{\text{eff}}\)
-  channel, the direct effect of \(\lambda\) on the effective revenue
-  coefficient, from the markup channel that operates through the
-  discount root; the two thresholds differ in their dependence on
-  beliefs. The \(A_{\text{eff}}\)-channel threshold \(\underline{\phi}\)
-  (Equation~\ref{eq-phi-underbar}) is independent of \(\lambda\): it
-  characterizes the condition
+faith-based survival thresholds (\textbf{?@eq-phi-underbar} and
+\textbf{?@eq-phi-tilde} below) characterize precisely when higher
+\(\lambda\) lowers the boundary at a fixed allocation, through the
+\(A_{\text{eff}}\) channel alone and net of the markup channel. They are
+thresholds on the effect of \emph{beliefs} at a given \(\phi_i\), not on
+the effect of \(\phi_i\) itself, which at a given belief is the U-shape
+just described.\footnote{Within the training-survival channel I
+  distinguish the \(A_{\text{eff}}\) channel, the direct effect of
+  \(\lambda\) on the effective revenue coefficient, from the markup
+  channel that operates through the discount root; the two thresholds
+  differ in their dependence on beliefs. The \(A_{\text{eff}}\)-channel
+  threshold \(\underline{\phi}\) (\textbf{?@eq-phi-underbar}) is
+  independent of \(\lambda\): it characterizes the condition
   \(\partial A_{\text{eff},i}/\partial \lambda > 0\), which turns on the
   ratio of H-regime to L-regime revenue terms but not on the level of
   \(\lambda\), since \(\lambda\) appears symmetrically in the numerator
   and denominator of \(A_{\text{eff},i}\) at the threshold. The exact
-  net threshold \(\tilde{\phi}\) (Equation~\ref{eq-phi-tilde}), which
-  also absorbs the markup channel, does depend on \(\lambda\); see
+  net threshold \(\tilde{\phi}\) (\textbf{?@eq-phi-tilde}), which also
+  absorbs the markup channel, does depend on \(\lambda\); see
   Proposition 2(ii).}
 
 \textbf{Proposition 2} (Endogenous default with faith-based survival;
@@ -1499,22 +1509,20 @@ boundary \(X_D\) has the following properties:}
 \emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
 training allocation is sufficiently high, and the characterization is
 fully closed-form in the symmetric-shares case (\(s_i^L = s_i^H\), as
-under symmetric capacities or monopoly). Two channels operate. The
-\(A_{\text{eff}}\) channel (higher \(\lambda\) raises the weight on the
-H-regime continuation value, lowering \(X_D\)) is positive if and only
-if \(\phi_i\) exceeds}
-\begin{equation}\protect\phantomsection\label{eq-phi-underbar}{
+under symmetric capacities }and* allocations, or monopoly). Two channels
+operate. The \(A_{\text{eff}}\) channel (higher \(\lambda\) raises the
+weight on the H-regime continuation value, lowering \(X_D\)) is positive
+if and only if \(\phi_i\) exceeds\emph{ \[
 \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
-}\end{equation} \emph{An opposing markup channel operates through the
-discount root: higher \(\lambda\) raises the effective discount rate and
-pushes \(\beta_L^-/(\beta_L^- - 1)\) toward one, raising \(X_D\).
+\] \{\#eq-phi-underbar\} }An opposing markup channel operates through
+the discount root: higher \(\lambda\) raises the effective discount rate
+and pushes \(\beta_L^-/(\beta_L^- - 1)\) toward one, raising \(X_D\).
 Because the \(A_{\text{eff}}\)-channel semi-elasticity is linear in the
 L-regime flow and H-regime continuation terms, the net condition
 \(\partial X_D / \partial \lambda < 0\) also solves in closed form: it
-holds if and only if \(\phi_i\) exceeds the exact threshold}
-\begin{equation}\protect\phantomsection\label{eq-phi-tilde}{
+holds if and only if \(\phi_i\) exceeds the exact threshold\emph{ \[
 \tilde{\phi} = \frac{\tilde{\Omega}}{1 + \tilde{\Omega}}, \quad \tilde{\Omega} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
-}\end{equation} \emph{where \(\Delta = r - \mu_L + \lambda\) and
+\] \{\#eq-phi-tilde\} }where \(\Delta = r - \mu_L + \lambda\) and
 \(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_L^-(\beta_L^- - 1)D] > 0\)
 is the markup-channel semi-elasticity, with
 \(D = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\) (Internet
@@ -1527,7 +1535,7 @@ function, a larger training allocation is needed for the H-regime term
 to dominate), decreasing in \(\mu_H - \mu_L\) (a larger regime-switch
 growth premium amplifies the H-regime term, lowering the threshold), and
 increasing in \(r\) (higher discounting reduces the present value of the
-continuation opportunity).}
+continuation opportunity).*
 
 \emph{(iii) For a given capacity \(K\) and training fraction \(\phi_i\)
 below the interior maximizer of \(A_{\text{eff},i}(\cdot)\), there
@@ -1554,13 +1562,26 @@ qualification applies to Proposition 3(iv) and
 Section~\ref{sec-valuation}. If the firm were to re-optimize capacity,
 training, and leverage jointly in response to a change in \(\lambda\) or
 \(\ell\), additional channels would arise: higher \(\lambda\) also
-raises \(\phi^*\) (Proposition 1), which further lowers \(X_D\) through
-the \(A_{\text{eff}}\) denominator. The fixed-policy comparative statics
-isolate the direct mechanisms. Because the optimal training fraction is
-invariant to leverage, part (iii) carries an empirical caveat rather
-than a prediction: any observed comovement between leverage and the
-training allocation would reflect joint determination by beliefs about
-\(\lambda\) and by financing capacity rather than a causal link.
+raises \(\phi^*\) (Proposition 1), but because \(\phi^*\) maximizes
+\(A_{\text{eff}}\) this induced reallocation has no first-order effect
+on \(X_D\) (an envelope argument; at baseline it contributes about
+\(4\%\) of the direct effect of moving \(\lambda\) from \(0.10\) to
+\(0.11\)). The fixed-policy comparative statics isolate the direct
+mechanisms. Three experiments should be kept apart. Raising \(\lambda\)
+at a fixed policy lowers \(X_D\) if and only if
+\(\phi_i > \tilde{\phi}\) (part ii). Raising \(\phi_i\) at a fixed
+belief lowers \(X_D\) if and only if \(\phi_i < \phi^*\), and raises it
+beyond. Comparing firms that re-optimize under different beliefs
+combines the two: along the locus of optimal policies
+\(X_D(\phi^*(\lambda), \lambda)\) is decreasing in \(\lambda\) for
+\(\lambda \gtrsim 0.034\) at baseline (see below), so a more optimistic
+firm trains more \emph{and} sits further from default, but it is the
+belief, not the training fraction, that does the work. Because the
+optimal training fraction is invariant to leverage, part (iii) carries
+an empirical caveat rather than a prediction: any observed comovement
+between leverage and the training allocation would reflect joint
+determination by beliefs about \(\lambda\) and by financing capacity
+rather than a causal link.
 
 At the baseline calibration (\(r = 0.12\), \(\mu_H = 0.06\),
 \(\mu_L = 0.01\), \(\alpha = 0.40\)),
@@ -2457,41 +2478,42 @@ jointly generate endogenous credit risk; Internet Appendix H gives the
 spread and first-passage default-probability formulas, their measure
 qualifications, and the leverage curves (Figure~\ref{fig-credit-risk}).
 The training fraction \(\phi\) enters through two opposing channels:
-faith-based survival (Proposition 2) raises \(A_{\text{eff}}\) and
-lowers the default boundary \(X_D\), reducing the \emph{probability} of
-default, while the recovery specification (Section~\ref{sec-duopoly})
-makes a higher \(\phi\) shrink the inference business creditors can
-liquidate, raising the \emph{loss given default}, since the continuation
-value that keeps the firm alive is destroyed in bankruptcy and is
-worthless to creditors. At baseline the loss-given-default channel
-modestly dominates, so spreads are mildly increasing in \(\phi\) at a
-given leverage even as default probabilities fall. In structural credit
-models the size of the growth option is a parameter rather than a
-choice, so no single decision variable moves the default boundary and
-the liquidation collateral in opposite directions; here the training
-allocation does both, which is what testable prediction 1 in
-Section~\ref{sec-discussion} proposes to test. Quantitatively, at a
-fixed \(X = 0.10\) with \(K = 1\) and \(\phi = 0.5\), the spread is zero
-at \(\ell = 0.05\) (the small coupon claim is over-collateralized by the
-liquidation value of the inference business), turns positive around
-\(\ell \approx 0.13\), and rises to 12, 41, and 97 bps at
-\(\ell = 0.20\), \(0.40\), and \(0.70\), while the five-year default
-probability rises from 0.63\% to 1.80\%, 4.85\%, and 12.98\% over the
-same grid. Both are \emph{model-implied risk-adjusted} objects rather
-than risk-neutral (pricing-measure) quantities or market spreads: the
-spread is measured against the model's discount rate \(r\) rather than a
-risk-free rate, and the default probability is a first passage under the
-risk-adjusted L-regime drift. Because \(\ell\) and \(r_c\) are exogenous
-stress-test parameters (Section~\ref{sec-model}), the gradient is a
-response to an imposed debt burden, evaluated at a fixed
-\((X, K, \phi)\) rather than at the optimal policy. The contrast between
-the two gradients is itself informative: default is far from rare at
-high leverage, but creditor losses conditional on default are bounded by
-the inference-business collateral, so spreads remain moderate. Relative
-to the spreads they generate, the default probabilities are high, so
-creditors bear a comparatively likely but modest loss, while the
-catastrophic component (the destruction of the faith-based continuation
-value) is borne by shareholders.
+below the allocation optimum, a higher \(\phi\) raises
+\(A_{\text{eff}}\) and lowers the default boundary \(X_D\) (the
+training-survival channel of Proposition 2; the sign reverses above
+\(\phi^*\)), reducing the \emph{probability} of default, while the
+recovery specification (Section~\ref{sec-duopoly}) makes a higher
+\(\phi\) shrink the inference business creditors can liquidate, raising
+the \emph{loss given default}, since the continuation value that keeps
+the firm alive is destroyed in bankruptcy and is worthless to creditors.
+At baseline the loss-given-default channel modestly dominates, so
+spreads are mildly increasing in \(\phi\) at a given leverage even as
+default probabilities fall. In structural credit models the size of the
+growth option is a parameter rather than a choice, so no single decision
+variable moves the default boundary and the liquidation collateral in
+opposite directions; here the training allocation does both, which is
+what testable prediction 1 in Section~\ref{sec-discussion} proposes to
+test. Quantitatively, at a fixed \(X = 0.10\) with \(K = 1\) and
+\(\phi = 0.5\), the spread is zero at \(\ell = 0.05\) (the small coupon
+claim is over-collateralized by the liquidation value of the inference
+business), turns positive around \(\ell \approx 0.13\), and rises to 12,
+41, and 97 bps at \(\ell = 0.20\), \(0.40\), and \(0.70\), while the
+five-year default probability rises from 0.63\% to 1.80\%, 4.85\%, and
+12.98\% over the same grid. Both are \emph{model-implied risk-adjusted}
+objects rather than risk-neutral (pricing-measure) quantities or market
+spreads: the spread is measured against the model's discount rate \(r\)
+rather than a risk-free rate, and the default probability is a first
+passage under the risk-adjusted L-regime drift. Because \(\ell\) and
+\(r_c\) are exogenous stress-test parameters (Section~\ref{sec-model}),
+the gradient is a response to an imposed debt burden, evaluated at a
+fixed \((X, K, \phi)\) rather than at the optimal policy. The contrast
+between the two gradients is itself informative: default is far from
+rare at high leverage, but creditor losses conditional on default are
+bounded by the inference-business collateral, so spreads remain
+moderate. Relative to the spreads they generate, the default
+probabilities are high, so creditors bear a comparatively likely but
+modest loss, while the catastrophic component (the destruction of the
+faith-based continuation value) is borne by shareholders.
 
 \subsection{Dario's Dilemma}\label{darios-dilemma}
 
@@ -2766,17 +2788,24 @@ empirical counterpart of the model's endogenous \(\phi\).
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Training has two faces in credit risk: conditional on leverage, firms
-  with higher \(\hat{\phi}\) should exhibit \emph{lower default
-  probabilities} (Proposition 2, faith-based survival: the H-regime
-  option value provides a solvency floor for equity holders) but
-  \emph{higher losses given default} (the continuation value that
-  sustains solvency is destroyed in bankruptcy, leaving creditors only
-  the smaller inference business). The net effect on spreads is
-  theoretically ambiguous and mildly positive at the baseline
-  calibration; the sharper prediction is the decomposition itself, that
-  high-\(\hat{\phi}\) labs should default less often but recover less
-  for creditors when they do.
+  Training has two faces in credit risk. The prediction on default
+  probability is mediated by beliefs: a lab that trains more because it
+  expects the switch sooner (higher \(\hat{\phi}\) revealing higher
+  \(\lambda\), Section~\ref{sec-calibration}) should exhibit a
+  \emph{lower default probability} conditional on leverage, capacity,
+  and demand, because along the locus of optimal policies the default
+  boundary falls with \(\lambda\) (Proposition 2, faith-based survival).
+  Holding beliefs fixed, the same comparison is local: more training
+  lowers the boundary only for \(\hat{\phi}\) below the allocation
+  optimum and raises it beyond, so the model does not predict that
+  training as such reduces default risk. The prediction on recovery is
+  unconditional: higher \(\hat{\phi}\) implies \emph{higher losses given
+  default}, since the continuation value that sustains solvency is
+  destroyed in bankruptcy, leaving creditors only the smaller inference
+  business. The net effect on spreads is theoretically ambiguous and
+  mildly positive at the baseline calibration; the sharper prediction is
+  the decomposition itself, that optimistic, training-heavy labs should
+  default less often but recover less for creditors when they do.
 \item
   Firms with higher \(\hat{\phi}\) should have higher equity betas,
   because a larger share of their value derives from the H-regime upside
@@ -3015,10 +3044,13 @@ Second, \emph{growth-option upside versus leverage and default risk}:
 the \emph{faith-based survival} channel holds at the calibrated optimum
 but not throughout the parameter space. Its \(A_{\text{eff}}\)-channel
 threshold, \(\underline{\phi} \approx 0.18\), lies well below the
-optimal \(\phi^* \approx 0.70\), so at baseline a larger training
-allocation lowers the default boundary rather than raising it
-(Proposition 2); the channel reverses for beliefs below
-\(\lambda \approx 0.034\), where the optimal allocation is too
+optimal \(\phi^* \approx 0.70\), so at baseline optimism lowers the
+default boundary at the optimal allocation: a firm that trains more
+because it expects the switch sooner also sits further from default
+(Proposition 2). At a fixed belief, by contrast, the boundary is
+U-shaped in the training fraction with its minimum at \(\phi^*\), so
+training beyond the optimum raises it. The channel reverses for beliefs
+below \(\lambda \approx 0.034\), where the optimal allocation is too
 inference-heavy for the continuation-value gain to offset the sacrificed
 cash flow. A levered firm therefore faces a two-sided trade-off with an
 interior optimum: it must invest early enough to preempt its rival and
@@ -3264,7 +3296,7 @@ H-regime values & Derived (choices) \\
 \(C_D\) & Total coupon flow: \(C_D = r_c \, \ell \, I(K)\) & Derived
 (choices) \\
 \(\Omega\) & H-to-L present-value ratio setting \(\underline{\phi}\)
-(Equation~\ref{eq-phi-underbar}) & Derived (primitives) \\
+(\textbf{?@eq-phi-underbar}) & Derived (primitives) \\
 \(s_i^L, s_i^H\) & Tullock contest shares (L-regime inference, H-regime
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
@@ -3300,20 +3332,20 @@ sign, magnitude, and ordering of its roots, namely \(\beta_H > 1\),
 \(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\). For Proposition 2, it
 covers the quotient-rule derivative
 \(\partial A_{\text{eff}}/\partial \lambda\), the faith-based survival
-condition, the threshold Equation~\ref{eq-phi-underbar}, the
-monotonicity of the default boundary in leverage and rival capacity,
-and, for the exact net threshold \(\tilde{\phi}\), the markup channel's
-monotonicity in \(\lambda\) together with the net-condition
-rearrangement. For Proposition 3, it covers the scale-invariance of the
-Tullock contest share that underlies role-invariance, the separable
-reduction of the follower's revenue coefficient, the contest-derivative
-factorization, and the generic intermediate-value existence and
-strict-concavity single-crossing lemmas underlying the preemption
-trigger \(X_P\), conditional on the continuity, endpoint-sign, and
-(zero-leverage) concavity hypotheses the paper supplies. Each theorem is
-proved in full, depends only on the proof assistant's standard logical
-axioms, and is stated for arbitrary admissible parameters rather than
-the baseline calibration alone.
+condition, the threshold \textbf{?@eq-phi-underbar}, the monotonicity of
+the default boundary in leverage and rival capacity, and, for the exact
+net threshold \(\tilde{\phi}\), the markup channel's monotonicity in
+\(\lambda\) together with the net-condition rearrangement. For
+Proposition 3, it covers the scale-invariance of the Tullock contest
+share that underlies role-invariance, the separable reduction of the
+follower's revenue coefficient, the contest-derivative factorization,
+and the generic intermediate-value existence and strict-concavity
+single-crossing lemmas underlying the preemption trigger \(X_P\),
+conditional on the continuity, endpoint-sign, and (zero-leverage)
+concavity hypotheses the paper supplies. Each theorem is proved in full,
+depends only on the proof assistant's standard logical axioms, and is
+stated for arbitrary admissible parameters rather than the baseline
+calibration alone.
 
 The scope is the algebra and calculus \emph{downstream} of the
 optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE
@@ -3710,16 +3742,16 @@ holds (it does throughout the calibration ranges; if it fails, no
 allocation can deliver \(\partial X_D/\partial\lambda < 0\)). With
 symmetric shares,
 \(\Pi_H/\Pi_L = (\phi/(1-\phi))^\alpha / (r - \mu_H)\), giving the exact
-threshold \(\tilde{\phi}\) of Equation~\ref{eq-phi-tilde}. Since
-\(m > 0\), \(\tilde{\Omega} > \Omega\) and
-\(\tilde{\phi} > \underline{\phi}\); as \(m \to 0\) (no markup channel),
-\(\tilde{\phi} \to \underline{\phi}\). At the baseline calibration
-\(m \approx 0.77\) and \(\tilde{\phi} \approx 0.32\), between
-\(\underline{\phi} \approx 0.18\) and \(\phi^* \approx 0.70\); the
-numerically measured \(\beta\)-channel is about one-third of the
-\(A_{\text{eff}}\)-channel at \(\phi^*\), consistent with the closed
-form. The sign flip of \(\partial X_D/\partial \lambda\) at
-\(\tilde{\phi}\) is verified by finite differences.
+threshold \(\tilde{\phi}\) of \textbf{?@eq-phi-tilde}. Since \(m > 0\),
+\(\tilde{\Omega} > \Omega\) and \(\tilde{\phi} > \underline{\phi}\); as
+\(m \to 0\) (no markup channel), \(\tilde{\phi} \to \underline{\phi}\).
+At the baseline calibration \(m \approx 0.77\) and
+\(\tilde{\phi} \approx 0.32\), between \(\underline{\phi} \approx 0.18\)
+and \(\phi^* \approx 0.70\); the numerically measured \(\beta\)-channel
+is about one-third of the \(A_{\text{eff}}\)-channel at \(\phi^*\),
+consistent with the closed form. The sign flip of
+\(\partial X_D/\partial \lambda\) at \(\tilde{\phi}\) is verified by
+finite differences.
 
 \emph{Sign at the optimal allocation.} Because \(\tilde{\phi}\) depends
 on \(\lambda\) while \(\phi^*(\lambda)\) is increasing in \(\lambda\)
@@ -3742,23 +3774,36 @@ as \(X_D = \Psi(\ell) / A_{\text{eff},i}(\phi_i)\), where
 \(\Psi(\ell) = [\beta_L^- / (\beta_L^- - 1)] \cdot (r_c \ell I(K) / r + \delta K/r)\)
 is strictly increasing in leverage (note: \(\Psi\) absorbs the markup
 factor \(M\), unlike the cost term \(N\) in the
-\(\lambda\)-decomposition above). From the proof of Proposition 1 (Step
-5), \(A_{\text{eff},i}(\phi_i)\) is strictly concave in \(\phi_i\) with
-an interior maximizer \(\phi^*\): it is increasing on \((0, \phi^*)\)
-and decreasing on \((\phi^*, 1)\). For \(\phi_i < \phi^*\), a firm can
+\(\lambda\)-decomposition above). In the monopoly and common-allocation
+cases the contest shares are constant in \(\phi_i\), so
+\(A_{\text{eff},i}(\phi_i)\) is the single-firm coefficient of
+Proposition 1 (Step 5) up to a positive factor: strictly concave in
+\(\phi_i\) with the interior maximizer \(\phi^*\), increasing on
+\((0, \phi^*)\) and decreasing on \((\phi^*, 1)\). Against a rival at a
+different allocation the shares \(s_i^L\) and \(s_i^H\) themselves
+depend on \(\phi_i\), and Step 5 does not apply: the coefficient remains
+single-peaked numerically, but its maximizer moves with the rival's
+allocation (at equal baseline capacities under the Tullock contest, from
+about \(0.84\) when \(\phi_j = 0.10\) to \(0.60\) when
+\(\phi_j = 0.95\); under the arithmetic-mean contest of Internet
+Appendix E it is \(\phi^*\) for every \(\phi_j\)). Part (iii) is
+therefore stated relative to the maximizer of
+\(A_{\text{eff},i}(\cdot)\) given \((K_j, \phi_j)\), which is \(\phi^*\)
+in the symmetric and monopoly cases. For \(\phi_i < \phi^*\), a firm can
 maintain a given default boundary \(X_D\) while increasing leverage
 \(\ell\) (raising the numerator) by simultaneously increasing training
 allocation \(\phi_i\) (raising \(A_{\text{eff},i}\) in the denominator).
 For \(\phi_i > \phi^*\), the relationship reverses: further increases in
 \(\phi_i\) would \emph{lower} \(A_{\text{eff},i}\) and \emph{raise} the
 default boundary, so no such substitution is available. The economically
-relevant range lies below \(\phi^*\) (baseline \(\phi^* \approx 0.70\)),
-where the substitution applies. Note that this is a \emph{mechanical}
-relationship describing the iso-\(X_D\) locus, not a statement about
-optimality: higher \(\phi\) sacrifices L-regime revenue, and the net
-effect on equity value is ambiguous. Leverage affects the firm through
-the coupon obligation (numerator), while training allocation affects the
-firm through the expected revenue (denominator).
+relevant range lies below the maximizer (baseline
+\(\phi^* \approx 0.70\) in the symmetric case), where the substitution
+applies. Note that this is a \emph{mechanical} relationship describing
+the iso-\(X_D\) locus, not a statement about optimality: higher \(\phi\)
+sacrifices L-regime revenue, and the net effect on equity value is
+ambiguous. Leverage affects the firm through the coupon obligation
+(numerator), while training allocation affects the firm through the
+expected revenue (denominator).
 
 \emph{(iv) Default boundary increasing in rival capacity.} Both contest
 shares
@@ -5022,7 +5067,7 @@ zero-leverage duopoly equilibrium at the baseline calibration.
 \(X_P/X_L^{\text{mono}}\) is the preemption trigger relative to the
 leader's unconstrained trigger; \(\underline{\phi}\) is the faith-based
 survival threshold of
-Equation~\ref{eq-phi-underbar}.}\label{tbl-fixedpie}\tabularnewline
+\textbf{?@eq-phi-underbar}.}\label{tbl-fixedpie}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Object
