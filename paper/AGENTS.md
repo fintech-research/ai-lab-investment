@@ -35,7 +35,7 @@ The closed-form algebra of Propositions 1–3 is machine-checked in Lean 4/Mathl
 
 - Baseline: r=0.12, μ_L=0.01, μ_H=0.06, σ=0.25, λ=0.10, α=0.40, γ=1.50, δ=0.03
 - β_L⁺ ≈ 3.01, β_H ≈ 1.55 (positive characteristic roots)
-- Assumption A3: (1−1/β_L⁺)/α ≈ 1.67 ≥ 1 → simplified F_L = C·X^{β_H} valid at baseline
+- Assumption A3: (1−1/β_L⁺)/α ≈ 1.67 ≥ 1; the pure-power F_L ∝ X^{β_H} is a *convention* (A₁ = 0), not a consequence of A3. Internet Appendix B benchmarks it two ways (`piecewise_option.py`): with the post-switch scale precommitted to K_H* (closed form; paper's policy loses 2.6% at baseline) and unrestricted (envelope over K, finite differences; at baseline the optimum never invests before the switch and the paper's policy loses 6.9%). Keep the two labels distinct in prose.
 - φ̲ ≈ 0.18 (faith-based survival threshold, A_eff-channel), Ω ≈ 0.22; exact net threshold φ̃ ≈ 0.32 (both channels, eq-phi-tilde, λ-dependent); φ*(λ) > φ̃(λ) iff λ ≳ 0.034 at baseline
 - Baseline results: X* ≈ 0.0047, K* ≈ 0.0067, φ* ≈ 0.70 (single-firm); X_F ≈ 0.12, K_F ≈ 0.26, X_P ≈ 0.0027, X_L^mono = X* ≈ 0.0047, preemption discount X_P/X_L^mono ≈ 0.57 (duopoly, ℓ=0); φ is role-invariant (φ_L = φ_F = φ*)
 - Credit risk: spreads ≈0/12/41/97 bps at ℓ=0.05/0.20/0.40/0.70 (benchmark = r; recovery = inference liquidation value capped at C_D/r); 5-yr default (first-passage, L-regime drift) 0.63%/1.80%/4.85%/12.98% (evaluated at fixed X=0.10, K=1, φ=0.5)
