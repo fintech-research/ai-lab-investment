@@ -7,6 +7,8 @@ from ai_lab_investment.models.parameters import ModelParameters
 from ai_lab_investment.models.piecewise_option import (
     PiecewiseOptionModel,
     dilemma_bias,
+    envelope_bias,
+    envelope_dilemma,
     piecewise_bias,
     reduced_form_reference,
     smooth_fit_trigger,
@@ -251,3 +253,92 @@ class TestDilemmaRecheck:
         d = baseline_dilemma
         for rf_phi, pw_phi in zip(d["phi_reduced"], d["phi_piecewise"], strict=True):
             assert pw_phi == pytest.approx(rf_phi, rel=1e-5)
+
+
+class TestEnvelope:
+    """The unrestricted post-switch scale (exercise envelope).
+
+    The closed-form solution fixes the post-switch capacity at K_H*; a firm
+    that has not invested when the switch arrives above X_H* re-optimizes
+    scale. These tests pin the size of that restriction at baseline.
+    """
+
+    @pytest.fixture(scope="class")
+    def envelope(self):
+        return envelope_bias(ModelParameters())
+
+    def test_envelope_capacity_matches_K_H_at_trigger(self, model):
+        K = model.envelope_capacity(model.X_H)[0]
+        assert pytest.approx(model.K_H, rel=1e-5) == K
+
+    def test_envelope_exceeds_fixed_scale_payoff_above_trigger(self, model):
+        """At 2 X_H* re-optimizing scale raises the exercise NPV by ~13.6%."""
+        X = 2.0 * model.X_H
+        fixed = model.a_H * X - model.b_H
+        env = model.envelope_payoff(X)[0]
+        assert env / fixed - 1.0 == pytest.approx(0.1364, abs=0.002)
+        assert model.envelope_capacity(X)[0] > model.K_H
+
+    def test_forcing_agrees_below_trigger(self, model):
+        X = np.geomspace(1e-5, model.X_H * 0.999, 20)
+        pre = model.regime_H_forcing(X, "precommitted")
+        env = model.regime_H_forcing(X, "envelope")
+        np.testing.assert_allclose(pre, env)
+
+    def test_finite_difference_threshold_matches_closed_form(self, model, reduced):
+        """The generalized FD solver reproduces the affine closed forms for
+        a threshold policy and for the pure switching strategy."""
+        K, phi, X_star = reduced["K_star"], reduced["phi_star"], reduced["X_star"]
+        X_0 = 0.5 * X_star
+        grid, F, _ = model.finite_difference_value(K, phi, n_grid=8001, X_stop=X_star)
+        fd = float(np.interp(np.log(X_0), np.log(grid), F))
+        assert fd == pytest.approx(model.threshold_value(K, phi, X_star, X_0), rel=1e-4)
+        grid, F, _ = model.finite_difference_value(
+            K, phi, n_grid=8001, X_stop=float("inf")
+        )
+        fd = float(np.interp(np.log(X_0), np.log(grid), F))
+        assert fd == pytest.approx(model.pure_switching_value(X_0), rel=1e-4)
+
+    def test_waiting_dominates_at_baseline(self, envelope):
+        """Under the envelope the unrestricted optimum at baseline never
+        invests before the switch, at the paper's scale or any other."""
+        assert not bool(envelope["invests_before_switch"])
+        assert np.isinf(envelope["X_star_envelope_fixed_policy"])
+        assert (
+            envelope["value_pure_switching_envelope"]
+            > (envelope["value_paper_policy_envelope"])
+        )
+
+    def test_policy_loss_at_baseline(self, envelope):
+        """Pins the numbers quoted in Internet Appendix B: the paper's policy
+        delivers about 93% of the unrestricted optimum, against 97.4% of
+        the precommitted-scale optimum."""
+        assert envelope["policy_loss_pct"] == pytest.approx(6.9, abs=0.2)
+        assert envelope["reduced_formula_error_pct"] == pytest.approx(-15.1, abs=0.3)
+        assert envelope["value_bias_vs_reduced_pct"] == pytest.approx(26.5, abs=0.5)
+
+    def test_finite_trigger_survives_at_low_lambda(self):
+        """For lambda = 0.05 the unrestricted problem still has a finite
+        trigger (above X_H*, with a larger scale); for lambda = 0.02 the
+        trigger lies below X_H*, where the envelope is immaterial."""
+        e05 = envelope_bias(ModelParameters(lam=0.05), n_grid=4001)
+        assert bool(e05["invests_before_switch"])
+        assert e05["X_star_envelope_opt"] == pytest.approx(0.0173, abs=0.001)
+        assert e05["policy_loss_pct"] == pytest.approx(1.3, abs=0.2)
+        e02 = envelope_bias(ModelParameters(lam=0.02), n_grid=4001)
+        assert bool(e02["invests_before_switch"])
+        assert e02["X_star_envelope_opt"] < PiecewiseOptionModel(ModelParameters()).X_H
+        pre = piecewise_bias(ModelParameters(lam=0.02))["policy_loss_pct"]
+        assert e02["policy_loss_pct"] == pytest.approx(pre, abs=0.5)
+
+    def test_dilemma_degenerates_for_optimistic_beliefs(self):
+        """Beliefs whose unrestricted optimum is to wait share the
+        belief-invariant pure switching policy and incur no loss."""
+        d = envelope_dilemma(
+            ModelParameters(), lambda_invest_values=(0.02, 0.20), n_grid=2001
+        )
+        i_low = d["lambda_invest"].index(0.02)
+        i_high = d["lambda_invest"].index(0.20)
+        assert d["loss_envelope_pct"][i_low] == pytest.approx(42.7, abs=1.5)
+        assert d["loss_envelope_pct"][i_high] == pytest.approx(0.0, abs=1e-6)
+        assert np.isinf(d["trigger_envelope"][i_high])
