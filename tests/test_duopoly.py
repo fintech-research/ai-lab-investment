@@ -1208,3 +1208,48 @@ class TestLeaderDefaultBoundary:
         assert ratios[0.10] == pytest.approx(2.55, abs=0.02)
         assert ratios[0.20] == pytest.approx(2.44, abs=0.02)
         assert ratios[0.05] > ratios[0.10] > ratios[0.20]
+
+
+# ------------------------------------------------------------------
+# Default boundary in the training fraction (Proposition 2 prose)
+# ------------------------------------------------------------------
+
+
+class TestDefaultBoundaryInPhi:
+    """X_D = MN / A_eff is U-shaped in phi at fixed (K, ell, lambda), with
+    its minimum at the allocation optimum; against an asymmetric rival the
+    own-phi maximizer of A_eff moves with the rival's allocation."""
+
+    def test_monopoly_boundary_minimized_at_phi_star(self):
+        model = DuopolyModel(
+            ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        _, _, phi_star = SingleFirmModel(
+            ModelParameters()
+        ).optimal_trigger_capacity_phi()
+        grid = np.linspace(0.05, 0.95, 181)
+        X_D = np.array([
+            model.default_boundary(phi, 1.0, 0.0, 0.0, 0.40) for phi in grid
+        ])
+        assert grid[np.argmin(X_D)] == pytest.approx(phi_star, abs=0.006)
+        assert model.default_boundary(0.90, 1.0, 0.0, 0.0, 0.40) > (
+            model.default_boundary(phi_star, 1.0, 0.0, 0.0, 0.40)
+        )
+        assert model.default_boundary(0.50, 1.0, 0.0, 0.0, 0.40) > (
+            model.default_boundary(phi_star, 1.0, 0.0, 0.0, 0.40)
+        )
+
+    def test_duopoly_own_phi_maximizer_moves_with_rival(self):
+        model = DuopolyModel(ModelParameters())
+        grid = np.linspace(0.05, 0.95, 901)
+
+        def argmax(phi_j):
+            vals = [model._effective_revenue_coeff(p, 1.0, phi_j, 1.0) for p in grid]
+            return grid[int(np.argmax(vals))]
+
+        assert argmax(0.10) == pytest.approx(0.843, abs=0.005)
+        assert argmax(0.95) == pytest.approx(0.605, abs=0.005)
+        _, _, phi_star = SingleFirmModel(
+            ModelParameters()
+        ).optimal_trigger_capacity_phi()
+        assert argmax(phi_star) == pytest.approx(phi_star, abs=0.002)
