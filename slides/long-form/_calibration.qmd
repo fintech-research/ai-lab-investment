@@ -32,7 +32,7 @@ $\Rightarrow$ Extreme heterogeneity in investment intensity reflects heterogeneo
 
 ## Firm Comparison
 
-![](figures/fig_firm_comparison.png){width="90%"}
+![Illustrative archetypes (assigned inputs, not harmonized measurements); see the paper's Internet Appendix C.](figures/fig_firm_comparison.png){width="90%"}
 
 xAI-like compute racer at 20$\times$; other firms near or below parity; distinct clusters in growth-leverage space
 
