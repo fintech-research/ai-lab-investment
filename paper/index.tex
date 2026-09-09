@@ -1657,22 +1657,26 @@ the discount rate lowers the effective capital cost (see the capital
 structure discussion above), pushing optimal capacity up, and the larger
 commitment requires a higher demand level to justify: \(X_F^*\) rises
 from approximately \(0.12\) at \(\ell = 0.05\) to \(0.21\) at
-\(\ell = 0.65\), with \(K_F\) growing in step. Meanwhile, the default
-boundary \(X_D\) rises roughly threefold over the same range, as higher
-coupon payments increase the demand level at which equity holders
-abandon the firm. The shaded region between \(X_D\) and \(X_F^*\)
-represents the ``operating region'', the demand levels at which the firm
-has invested but has not defaulted. Although this region widens in
-absolute terms, the firm's \emph{relative} distance to default contracts
-sharply: \(X_F^*/X_D\) falls from approximately \(12\) at
-\(\ell = 0.05\) to \(6\) at \(\ell = 0.65\), so a levered entrant can
-tolerate a much smaller proportional demand decline before hitting the
-default boundary. The leader's trigger \(X_P\) lies well below the
-follower's, reflecting the preemption incentive. This compressed
-distance to default is the scenario Amodei describes: a firm that
-commits to trillion-dollar compute purchases faces bankruptcy if revenue
-falls even modestly short of projections, because ``there's no hedge on
-Earth'' that can bridge the gap \citep{amodei2026dwarkesh}.
+\(\ell = 0.65\), with \(K_F\) growing in step. Meanwhile, the follower's
+default boundary \(X_{D,F}\) rises roughly threefold over the same
+range, as higher coupon payments increase the demand level at which
+equity holders abandon the firm. The dashed line is the
+\emph{follower's} default boundary \(X_{D,F}\), and the shaded band
+between it and \(X_F^*\) is the follower's post-entry continuation band:
+once installed, the follower operates there and above \(X_F^*\); before
+entry it is waiting. The leader's boundary \(X_{D,L}\) (dash-dotted)
+lies far below, because the leader enters at its much smaller
+monopoly-phase scale. Although this region widens in absolute terms, the
+follower's \emph{relative} distance to default contracts sharply:
+\(X_F^*/X_{D,F}\) falls from approximately \(12\) at \(\ell = 0.05\) to
+\(6\) at \(\ell = 0.65\), so a levered entrant can tolerate a much
+smaller proportional demand decline before hitting the default boundary.
+The leader's trigger \(X_P\) lies well below the follower's, reflecting
+the preemption incentive. This compressed distance to default is the
+scenario Amodei describes: a firm that commits to trillion-dollar
+compute purchases faces bankruptcy if revenue falls even modestly short
+of projections, because ``there's no hedge on Earth'' that can bridge
+the gap \citep{amodei2026dwarkesh}.
 
 \begin{figure}[!htb]
 
@@ -1685,13 +1689,18 @@ Earth'' that can bridge the gap \citep{amodei2026dwarkesh}.
 \caption{\label{fig-default-boundaries}Investment and default boundaries
 as a function of leverage in the duopoly equilibrium. The solid line
 shows the follower's trigger \(X_F^*\); the dashed line shows the
-default boundary \(X_D\); the gray line shows the leader's preemption
-trigger \(X_P\). The shaded region is the ``operating region'' in which
-the firm has invested but has not defaulted. The equilibrium is
-re-solved at each of 40 leverage levels spanning
-\(\ell \in [0.05, 0.65]\): the follower's capacity and training fraction
-are re-optimized at every level, while the leader's are held at the
-monopoly-phase optimum under the leader-scale convention of
+follower's default boundary \(X_{D,F}\); the gray solid line shows the
+leader's preemption trigger \(X_P\) and the gray dash-dotted line the
+leader's default boundary \(X_{D,L}\) (the anticipating leader's
+boundary of Internet Appendix A). The shaded band between \(X_{D,F}\)
+and \(X_F^*\) is the follower's post-entry continuation band: an
+installed follower also operates above \(X_F^*\), and a follower that
+has not yet entered is waiting below it. The vertical axis is
+logarithmic, so vertical distances are proportional distances to
+default. The equilibrium is re-solved at each of 40 leverage levels
+spanning \(\ell \in [0.05, 0.65]\): the follower's capacity and training
+fraction are re-optimized at every level, while the leader's are held at
+the monopoly-phase optimum under the leader-scale convention of
 Section~\ref{sec-conventions}. Parameters: baseline calibration with
 coupon rate \(r_c = 0.05\) and bankruptcy cost \(b = 0.30\).}
 
@@ -1994,7 +2003,11 @@ trigger ratio \(X_P / X_L^{\text{mono}}\). The equilibrium is re-solved
 at each of 30 points on the grid \(\sigma \in [0.20, 0.30]\), which
 starts just above the admissibility bound of condition (A2) (Internet
 Appendix B). Zero-leverage duopoly; all other parameters at baseline
-values.}
+values. The leader's capacity and training fraction are held at the
+monopoly-phase optimum (the leader-scale convention of
+Section~\ref{sec-conventions}), on which the level of \(X_P\) depends:
+re-optimizing the leader's scale for entry at \(X_P\) roughly doubles
+the preemption discount (Internet Appendix B).}
 
 \end{figure}%
 
@@ -2741,10 +2754,13 @@ raises its default risk: the expected-value metric understates
 leverage's role, which shows up in the tail rather than the mean.
 
 Expected value is not the only margin on which the mismatch matters. The
-five-year default probability under the true demand process reveals a
-complementary asymmetry, evaluated at each firm's own optimal policy
-rather than at the fixed \(X = 0.10\), \(K = 1\), and \(\phi = 0.5\)
-used for the spreads above: at \(\ell = 0.40\), a conservative firm
+five-year default probability under the true demand process (a
+first-passage probability under the L-regime drift that omits the regime
+switch, and therefore an upper bound on the pre-switch probability;
+Internet Appendix H) reveals a complementary asymmetry, evaluated at
+each firm's own optimal policy rather than at the fixed \(X = 0.10\),
+\(K = 1\), and \(\phi = 0.5\) used for the spreads above: at
+\(\ell = 0.40\), a conservative firm
 (\(\lambda_{\text{invest}} = 0.02\)) faces a default probability of
 0.79\%, only slightly above the 0.64\% baseline, because it enters at a
 \emph{higher} trigger (\(X^* = 0.0055\) against \(0.0047\) at correct
@@ -2780,7 +2796,12 @@ line: unlevered (\(\ell = 0\)); dashed line: levered (\(\ell = 0.40\)),
 for which \(\text{NPV}\) denotes the value of the total claims
 \(E + D - I(K^*)\) under the unlevered policy. The shaded region is
 bounded above by the unlevered curve and marks the belief range over
-which that curve exceeds a 10\% loss. Parameters: baseline calibration.}
+which that curve exceeds a 10\% loss. The open circles mark the equal
+additive errors \(\lambda_{\text{invest}} = 0.02\) and \(0.18\) on the
+unlevered curve. Under- and overinvestment here mean later or earlier
+entry and less or more training: capacity \(K^*\) is invariant to the
+belief (Proposition 1), so no point on either curve involves over- or
+under-building. Parameters: baseline calibration.}
 
 \end{figure}%
 
@@ -3166,9 +3187,10 @@ true rate is \(\lambda = 0.10\), compared with roughly 23\% at
 \(\lambda_{\text{invest}} = 0.50\)
 (Figure~\ref{fig-investment-dilemma}). At the extreme end the five-year
 default probability at \(\ell = 0.40\) also rises to 5.04\%, nearly
-eight times the baseline. Both value-loss percentages are those of the
-reduced model, computed under the pure-power discounting convention used
-to price the option; re-solving the exact piecewise stopping problem
+eight times the baseline (both no-switch upper bounds on the pre-switch
+probability). Both value-loss percentages are those of the reduced
+model, computed under the pure-power discounting convention used to
+price the option; re-solving the exact piecewise stopping problem
 preserves the ranking but moves the magnitudes materially, raising the
 conservative loss to about 40\% and lowering the aggressive loss to
 about 0.5\% (Internet Appendix B). Commitments at that end of the range
@@ -4365,14 +4387,23 @@ physical-measure expected growth rates of demand \emph{minus} an
 appropriate risk premium, so that discounting the expected cash flow at
 rate \(r\) yields the correct present value; the volatility \(\sigma\)
 is the same under the physical and risk-adjusted measures (by Girsanov's
-theorem). The convention avoids specifying a complete asset pricing
-model and avoids double-counting risk premia, at the price recorded in
-the main-text footnote: because discounting is at the WACC and not at a
-risk-free rate, this is not a pricing measure, and every output of the
-model is a risk-adjusted object rather than a market price or a
-pricing-measure probability. The rate parameters \(r\), \(\mu_L\), and
-\(\mu_H\) are risk-adjusted throughout the paper; \(\sigma\) is common
-to both measures.
+theorem). Stated as an operator, every value in the paper is
+\(\mathbb{E}[\int_0^\infty e^{-rt}\,\pi_t\,dt]\) with the expectation
+taken under the dynamics \(dX_t/X_t = \mu_{s(t)}\,dt + \sigma\,dW_t\) at
+the risk-adjusted drifts and with the regime switch arriving at rate
+\(\lambda\); the option and default problems are optimal stopping
+problems for that functional. The convention avoids specifying a
+complete asset pricing model and is internally consistent as a
+reduced-form preference criterion, but it does not by itself establish
+that the premium embedded in \(r\) and the premium netted out of the
+drifts are mutually consistent, so the paper makes no claim of correct
+market pricing. The price of the convention is recorded in the main-text
+footnote: because discounting is at the WACC and not at a risk-free
+rate, this is not a pricing measure, and every output of the model is a
+risk-adjusted object rather than a market price or a pricing-measure
+probability. The rate parameters \(r\), \(\mu_L\), and \(\mu_H\) are
+risk-adjusted throughout the paper; \(\sigma\) is common to both
+measures.
 
 All numerical results are computed using SciPy 1.17 optimization
 routines in Python 3.13. The single-firm and duopoly optimizations use
@@ -5870,12 +5901,13 @@ level is fixed, compressing the distance to default.
 (a) Credit spread in basis points, measured relative to the model's
 discount rate \(r\) rather than a risk-free rate. (b) Model-implied
 risk-adjusted five-year default probability (first passage under the
-risk-adjusted L-regime drift). Neither panel reports a risk-neutral
-(pricing-measure) object or a market credit spread. Evaluated at a fixed
-demand level \(X = 0.10\) with capacity \(K = 1\) and training fraction
-\(\phi = 0.5\), using the Leland structural model with exogenous
-leverage, a stylized coupon rate \(r_c = 0.05\), and bankruptcy cost
-\(b = 0.30\). Parameters: baseline calibration.}
+risk-adjusted L-regime drift, with the regime switch omitted, so an
+upper bound on the pre-switch probability). Neither panel reports a
+risk-neutral (pricing-measure) object or a market credit spread.
+Evaluated at a fixed demand level \(X = 0.10\) with capacity \(K = 1\)
+and training fraction \(\phi = 0.5\), using the Leland structural model
+with exogenous leverage, a stylized coupon rate \(r_c = 0.05\), and
+bankruptcy cost \(b = 0.30\). Parameters: baseline calibration.}
 
 \end{figure}%
 

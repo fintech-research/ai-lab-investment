@@ -298,6 +298,7 @@ def create_default_boundaries() -> plt.Figure:
     X_F = np.full_like(leverages, np.nan)
     X_L = np.full_like(leverages, np.nan)
     X_D = np.full_like(leverages, np.nan)
+    X_DL = np.full_like(leverages, np.nan)
 
     for i, lev in enumerate(leverages):
         try:
@@ -306,6 +307,7 @@ def create_default_boundaries() -> plt.Figure:
             X_F[i] = eq["X_follower"]
             X_L[i] = eq["X_leader"]
             X_D[i] = eq["X_default_follower"]
+            X_DL[i] = eq["X_default_leader"]
         except (ValueError, RuntimeError):
             continue
 
@@ -318,7 +320,7 @@ def create_default_boundaries() -> plt.Figure:
         X_F[valid],
         alpha=0.15,
         color="steelblue",
-        label="Operating region",
+        label=r"Follower's post-entry band ($X_{D,F}$ to $X_F^*$)",
     )
     ax.plot(
         leverages[valid],
@@ -332,7 +334,7 @@ def create_default_boundaries() -> plt.Figure:
         X_D[valid],
         "k--",
         linewidth=1.3,
-        label=r"Default boundary $X_D$",
+        label=r"Follower default boundary $X_{D,F}$",
     )
     ax.plot(
         leverages[valid],
@@ -342,10 +344,20 @@ def create_default_boundaries() -> plt.Figure:
         linewidth=1.0,
         label=r"Leader trigger $X_P$",
     )
+    ax.plot(
+        leverages[valid],
+        X_DL[valid],
+        "-.",
+        color="0.5",
+        linewidth=1.0,
+        label=r"Leader default boundary $X_{D,L}$",
+    )
 
+    ax.set_yscale("log")
+    ax.set_ylim(1.5e-4, 0.4)
     ax.set_xlabel("Leverage (D/I)")
-    ax.set_ylabel(r"Demand level $X$")
-    ax.legend(loc="upper left", framealpha=0.9, fontsize="small")
+    ax.set_ylabel(r"Demand level $X$ (log scale)")
+    ax.legend(loc="lower right", framealpha=0.9, fontsize="small", ncol=2)
     fig.tight_layout()
     return fig
 
@@ -377,7 +389,7 @@ def create_credit_risk() -> plt.Figure:
             linewidth=1.5,
         )
     ax1.set_xlabel("Leverage (D/I)")
-    ax1.set_ylabel("Credit spread (bps)")
+    ax1.set_ylabel("Credit spread over $r$ (bps)")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     valid_d = ~np.isnan(result["default_probability"])
@@ -389,7 +401,7 @@ def create_credit_risk() -> plt.Figure:
             linewidth=1.5,
         )
     ax2.set_xlabel("Leverage (D/I)")
-    ax2.set_ylabel("5-yr default prob. (%)")
+    ax2.set_ylabel("5-yr default prob., no-switch upper bound (%)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     fig.tight_layout()
@@ -673,6 +685,24 @@ def create_investment_dilemma() -> plt.Figure:
 
     ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
 
+    # Equal additive belief errors (-0.08 / +0.08 around lambda_true)
+    matched = [fixed_true - 0.08, fixed_true + 0.08]
+    matched_losses = [
+        va.dario_dilemma(fixed_true, li)["value_loss_pct"] * 100 for li in matched
+    ]
+    ax.plot(
+        matched,
+        matched_losses,
+        linestyle="none",
+        marker="o",
+        markerfacecolor="white",
+        markeredgecolor="k",
+        markeredgewidth=1.3,
+        markersize=7,
+        zorder=5,
+        label=r"Equal errors $\pm 0.08$ ($\ell = 0$)",
+    )
+
     high_loss = losses_unlev_arr > 10
     if high_loss.any():
         ax.fill_between(
@@ -694,14 +724,14 @@ def create_investment_dilemma() -> plt.Figure:
     ax.set_ylim(0, 1.1 * y_max)
 
     ax.annotate(
-        "Underinvestment\n(conservative)",
+        "Underinvestment (conservative):\nlater entry, less training",
         xy=(0.045, 16),
         fontsize="small",
         ha="left",
         color="navy",
     )
     ax.annotate(
-        "Overinvestment\n(aggressive)",
+        "Overinvestment (aggressive):\nearlier entry, more training",
         xy=(0.35, 8),
         fontsize="small",
         ha="center",
