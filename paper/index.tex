@@ -3471,10 +3471,11 @@ the L-regime option value, which is a solution convention rather than a
 theorem (Step 5b below and Section~\ref{sec-conventions}). Results that
 are numerical in nature, the magnitude of \(\tilde{\phi}\) and the
 coupled-ODE, piecewise-stopping, and Dario's-dilemma computations
-(Internet Appendix B), are likewise not formalized. The Lean validation
-package, together with the code reproducing the numerical results, is
-available on request and will be made publicly available upon
-publication.
+(Internet Appendix B), are likewise not formalized. The Lean proof
+package accompanies the submission; the code reproducing the numerical
+results (Python source, locked environment, and the commands behind each
+exhibit) is in the public repository and will be archived with the paper
+upon publication.
 
 \subsubsection*{Proof of Proposition 1}\label{proof-of-proposition-1}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 1}
@@ -4420,25 +4421,26 @@ local optima, yielding 16 deterministic starting points in total.
 Convergence tolerances are \(10^{-8}\) on parameters and \(10^{-10}\) on
 function values. At zero leverage the duopoly leader-monopolist problem
 coincides with the single-firm problem of Proposition 1; the two solvers
-agree to a relative tolerance of \(10^{-8}\), which the replication
-package enforces as an automated check. For the preemption trigger
-\(X_P\), I evaluate \(L(X) - F(X)\) on a deterministic grid of 500
-points over \((X_D, X_L^{\text{mono}})\), check that the gap changes
-sign exactly once (from negative to positive), and refine the root with
-Brent's method on the bracketing interval; the check is enforced on
-every path that produces a reported number (the solver raises when it
-fails), and it certifies a single crossing at the grid's resolution
-rather than proving uniqueness. No case of multiple up-crossings was
-found across all parameterizations tested, varying each parameter over
-its (A2)-admissible range at the baseline values of the others:
-\(\sigma \in [0.20, 0.38]\), \(\alpha \in [0.37, 0.53]\),
-\(\gamma \in [1.15, 2.00]\), \(\lambda \in [0.01, 0.50]\),
-\(\ell \in [0, 0.70]\), and \(r \in [0.10, 0.13]\) (outside these ranges
-the leader's capacity problem has no interior optimum and the solvers
-raise an error). Running the duopoly optimization from the same 16
-deterministic starting points, all starts converge to the same solution.
-That is evidence that the optimizer is not stopping at distinct local
-optima; it is not a proof that the equilibrium is unique.
+agree to a relative tolerance of \(10^{-8}\), which the code
+repository's test suite enforces as an automated check. For the
+preemption trigger \(X_P\), I evaluate \(L(X) - F(X)\) on a
+deterministic grid of 500 points over \((X_D, X_L^{\text{mono}})\),
+check that the gap changes sign exactly once (from negative to
+positive), and refine the root with Brent's method on the bracketing
+interval; the check is enforced on every path that produces a reported
+number (the solver raises when it fails), and it certifies a single
+crossing at the grid's resolution rather than proving uniqueness. No
+case of multiple up-crossings was found across all parameterizations
+tested, varying each parameter over its (A2)-admissible range at the
+baseline values of the others: \(\sigma \in [0.20, 0.38]\),
+\(\alpha \in [0.37, 0.53]\), \(\gamma \in [1.15, 2.00]\),
+\(\lambda \in [0.01, 0.50]\), \(\ell \in [0, 0.70]\), and
+\(r \in [0.10, 0.13]\) (outside these ranges the leader's capacity
+problem has no interior optimum and the solvers raise an error). Running
+the duopoly optimization from the same 16 deterministic starting points,
+all starts converge to the same solution. That is evidence that the
+optimizer is not stopping at distinct local optima; it is not a proof
+that the equilibrium is unique.
 
 \textbf{Discounting conventions in the preemption game.} Consistent with
 the unconditional \(A_{\text{eff}}\) framework, all option-like terms in
@@ -4576,7 +4578,7 @@ and smooth pasting at the free boundary, determine
 \(X^*\), and the remaining slope condition at \(X_H^*\) is solved by
 Brent's method. When the resulting boundary falls below \(X_H^*\) the
 problem collapses to the single-region case, in which the pure-power
-forcing is exact. The solution is implemented in the replication package
+forcing is exact. The solution is implemented in the code repository
 (module \texttt{piecewise\_option.py}) and cross-checked against an
 independent Brennan--Schwartz solution of the associated linear
 complementarity problem on a log-demand grid, which reproduces the free
@@ -4767,10 +4769,10 @@ gain), so the follower's problem remains well-posed in part of the
 region where the single-firm problem degenerates. The scalar solution
 agrees with the two-dimensional Nelder-Mead optimizer to a relative
 tolerance of \(10^{-6}\) at baseline (with and without leverage), which
-the replication package enforces as an automated check; the elasticity
-wedge \(\alpha(2 - s_F) > \alpha\) is the analytical source of the large
-follower scale (\(K_F \gg K_L\)) discussed in Section~\ref{sec-duopoly}
-and Section~\ref{sec-calibration}.
+the code repository's test suite enforces as an automated check; the
+elasticity wedge \(\alpha(2 - s_F) > \alpha\) is the analytical source
+of the large follower scale (\(K_F \gg K_L\)) discussed in
+Section~\ref{sec-duopoly} and Section~\ref{sec-calibration}.
 
 The wedge accounts for the gap. At the baseline zero-leverage
 equilibrium \(s_F = 0.8115\), so the follower's effective revenue
@@ -5170,7 +5172,7 @@ optimal allocation \(\phi^*\), and the trigger ratio
 \(X_P/X_L^{\text{mono}}\). Draws that leave the admissible region are
 reported with the condition they violate rather than silently dropped,
 since it is the boundary behavior that dropping them would hide. The
-exercise is implemented in the replication package (module
+exercise is implemented in the code repository (module
 \texttt{robustness.py}).
 
 Thirteen of the eighteen draws are admissible and five violate the
