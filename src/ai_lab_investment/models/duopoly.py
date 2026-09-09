@@ -767,7 +767,8 @@ class DuopolyModel:
     ) -> float:
         """Debt value accounting for default risk.
 
-        D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg
+        D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg   (X > X_D)
+        D(X) = recovery                                               (X <= X_D)
 
         Recovery in default is (1 - alpha_bc) times the liquidation value
         of the *inference* business only: bankruptcy destroys the
@@ -796,6 +797,11 @@ class DuopolyModel:
         liq = self.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
         recovery = (1.0 - self.bankruptcy_cost) * liq
         recovery = min(recovery, c_D / p.r)
+        if X <= X_D:
+            # Default has occurred: creditors hold the realized recovery
+            # (the continuation formula below is not valid past the
+            # boundary and would extrapolate to zero).
+            return recovery
         default_loss = c_D / p.r - recovery
         debt = c_D / p.r - default_loss * (X / X_D) ** beta_neg
         return max(debt, 0.0)
@@ -1344,7 +1350,11 @@ class DuopolyModel:
                 built from the L-regime entry values throughout).
             strict: When True (the default, and what every paper,
                 figure, and pipeline path uses), a failure to bracket or
-                refine the rent-equalization root raises RuntimeError.
+                refine the rent-equalization root raises RuntimeError, and
+                so does a gap with more than one sign change on the
+                500-point search grid (``single_crossing`` False). The
+                grid check is evidence of a single up-crossing at the
+                resolution used, not a uniqueness proof.
                 When False, the routine falls back to the corresponding
                 endpoint of the search interval and logs a warning; the
                 returned dict then has ``bracket_failed = True``. The
@@ -1419,6 +1429,18 @@ class DuopolyModel:
                 X_P = X_L_mono
                 bracket_failed = True
                 reason = f"Brent's method failed on the bracketing interval: {exc}"
+        if not bracket_failed and not single_crossing:
+            # The root exists but the gap changes sign more than once on
+            # the search interval: the reported X_P is the first up-crossing
+            # and is not the unique candidate the paper describes.
+            msg = (
+                f"Preemption gap changes sign {int(sign_changes)} times on "
+                f"({X_low:.4g}, {X_high:.4g}); the first up-crossing "
+                f"X_P={X_P:.4g} is not a certified unique equilibrium."
+            )
+            if strict:
+                raise RuntimeError(msg + " Rerun with strict=False to accept it.")
+            logging.warning("%s (strict=False)", msg)
         if bracket_failed:
             if strict:
                 msg = (

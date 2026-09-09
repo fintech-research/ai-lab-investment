@@ -41,6 +41,36 @@ from ..models.base_model import SingleFirmModel
 from .data import CalibrationData, FirmData
 
 
+def _first_bracket(
+    gap, lam_bounds: tuple[float, float], n_grid: int = 25
+) -> tuple[float, float] | None:
+    """Smallest-lambda sign change of ``gap`` on a log grid over ``lam_bounds``.
+
+    The intensity moment is not globally monotone in lambda, so bracketing
+    the endpoints alone can miss an even number of interior roots or
+    silently pick one of several. Scanning a grid first and returning the
+    lowest bracket makes the choice explicit: the reported lambda is the
+    *smallest* belief consistent with the moment, and multiplicity, when
+    it occurs, is a property of the moment rather than of the solver.
+    Sentinel values (|gap| > 1e9) are treated as undefined.
+    """
+    grid = np.geomspace(lam_bounds[0], lam_bounds[1], n_grid)
+    values = []
+    for lam in grid:
+        g = gap(float(lam))
+        values.append(np.nan if abs(g) > 1e9 else g)
+    for lo, hi, g_lo, g_hi in zip(
+        grid[:-1], grid[1:], values[:-1], values[1:], strict=True
+    ):
+        if np.isnan(g_lo) or np.isnan(g_hi):
+            continue
+        if g_lo == 0.0:
+            return float(lo), float(lo)
+        if g_lo * g_hi < 0:
+            return float(lo), float(hi)
+    return None
+
+
 class RevealedBeliefs:
     """Inversion algorithm for revealed beliefs about AI arrival rate.
 
@@ -137,13 +167,10 @@ class RevealedBeliefs:
             return predicted - observed_intensity
 
         try:
-            g_lo = gap(lam_bounds[0])
-            g_hi = gap(lam_bounds[1])
-            if abs(g_lo) > 1e9 or abs(g_hi) > 1e9:
+            bracket = _first_bracket(gap, lam_bounds)
+            if bracket is None:
                 return None
-            if g_lo * g_hi > 0:
-                return None
-            return float(optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6))
+            return float(optimize.brentq(gap, *bracket, xtol=1e-6))
         except (ValueError, RuntimeError):
             return None
 
@@ -273,12 +300,9 @@ class RevealedBeliefs:
         lambda_implied = None
         phi_model = None
         try:
-            g_lo = gap(lam_bounds[0])
-            g_hi = gap(lam_bounds[1])
-            if abs(g_lo) <= 1e9 and abs(g_hi) <= 1e9 and g_lo * g_hi < 0:
-                lambda_implied = float(
-                    optimize.brentq(gap, lam_bounds[0], lam_bounds[1], xtol=1e-6)
-                )
+            bracket = _first_bracket(gap, lam_bounds)
+            if bracket is not None:
+                lambda_implied = float(optimize.brentq(gap, *bracket, xtol=1e-6))
                 _, phi_model = self._model_phi_intensity_at_lambda(
                     lambda_implied, X_ref
                 )

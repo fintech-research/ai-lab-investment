@@ -9,11 +9,13 @@ Solves for the optimal investment trigger X* and capacity K* under:
 Key economic results:
 - In regime H (post-adoption): well-defined interior trigger and capacity.
   The firm invests when demand reaches X_H* with capacity K_H*.
-- In regime L (pre-adoption): the trigger may or may not exist.
-  When phi_L = (1-1/beta_L)/alpha >= 1, the option to wait is so
-  valuable that the firm never exercises in L — it waits for the
-  regime switch to H. The option value in L derives entirely from
-  the probability of switching regimes.
+- In regime L (pre-adoption): the *standalone* L-regime scale problem
+  has no interior optimum when Phi_L = (1-1/beta_L)/alpha >= 1
+  (Assumption A3). That does not mean the firm never invests in L: the
+  paper's full model invests in L at a trigger set by the combined
+  coefficient A_eff, and the pure-power option value used for it is a
+  solution convention (A_1 = 0), not a consequence of A3. See
+  `_solve_regime_L` and the paper's Section 3 conventions.
 
 Training-inference allocation:
   The firm allocates fraction phi to training and (1-phi) to inference.
@@ -46,8 +48,9 @@ def multistart_minimize(
     """Deterministic Nelder-Mead multistart with convergence diagnostics.
 
     Runs ``objective`` from every point in ``starts`` and keeps the first
-    start attaining the lowest objective value (ties go to the earlier
-    start, so the result is independent of dict/set ordering).
+    *converged* start attaining the lowest objective value (ties go to
+    the earlier start, so the result is independent of dict/set
+    ordering); unconverged starts are never candidates.
 
     Unlike a bare loop over ``optimize.minimize``, this reports how many
     starts actually *converged*: a start counts as converged when SciPy
@@ -79,12 +82,16 @@ def multistart_minimize(
         except (ValueError, RuntimeError):
             continue
         n_evaluated += 1
-        if (
+        converged = (
             bool(result.success)
             and np.isfinite(result.fun)
             and result.fun < INFEASIBLE_OBJECTIVE / 10.0
-        ):
-            n_converged += 1
+        )
+        if not converged:
+            # An unconverged start (iteration cap, infeasible region) is
+            # never a candidate, however low its objective happens to be.
+            continue
+        n_converged += 1
         if result.fun < best_val:
             best_val = float(result.fun)
             best_x = result.x
@@ -144,8 +151,11 @@ class SingleFirmModel:
         """Check whether an interior investment trigger exists.
 
         The trigger exists when 1/gamma < Phi < 1, where
-        Phi = (1-1/beta)/alpha. When Phi >= 1, the option to wait
-        is too valuable and the firm never invests in this regime.
+        Phi = (1-1/beta)/alpha. When Phi >= 1 the standalone scale
+        problem of this regime has no interior optimum (the option
+        factor diverges as K -> 0); for regime L this is Assumption A3,
+        which does not by itself rule out investment in L in the full
+        model (see the module docstring).
         """
         Phi = self._option_premium_ratio(regime)
         return 1.0 / self.params.gamma < Phi < 1.0
@@ -249,9 +259,12 @@ class SingleFirmModel:
         """Solve for the regime L option.
 
         When an interior trigger exists (phi_L < 1), returns (X_L*, K_L*, D_L).
-        When no interior trigger exists (phi_L >= 1), the firm never invests
-        in regime L. Returns (None, None, 0.0) and the option value is
-        F_L(X) = C * X^beta_H (value from potential regime switch only).
+        When no interior standalone trigger exists (Phi_L >= 1, Assumption
+        A3), this *simple-mode* routine returns (None, None, 0.0) and
+        prices the option as F_L(X) = C * X^beta_H (the forced-ODE
+        particular solution). This is a convention for the simple mode,
+        not an economic result that the firm never invests in L; the
+        full model (`optimal_trigger_capacity_phi`) does invest in L.
 
         IMPORTANT -- the interior branch is a pure-power approximation.
         Under the paper's calibration and (A3), Phi_L >= 1 and the branch
@@ -659,6 +672,11 @@ class SingleFirmModel:
             raise RuntimeError(msg)
 
         K_star = np.exp(best_params[0])
+        # The optimizer searches phi on (0.01, 0.99). The closed form
+        # phi* = rho/(1+rho), rho = [lam/(r - mu_H)]^{1/(1-alpha)}, lies
+        # inside that interval for lam < (r - mu_H) 99^{1-alpha} (about
+        # 0.95 at baseline), which covers every range used in the paper;
+        # `closed_form_phi_star` gives the unclipped value.
         phi_star = np.clip(best_params[1], 0.01, 0.99)
 
         a_eff = self._effective_revenue_coeff_single(phi_star, K_star)
@@ -668,6 +686,17 @@ class SingleFirmModel:
 
         self._cache[cache_key] = (X_star, K_star, phi_star)
         return X_star, K_star, phi_star
+
+    def closed_form_phi_star(self) -> float:
+        """Closed-form optimal training fraction (Proposition 1, eq-phi-star).
+
+        phi* = rho / (1 + rho) with rho = [lambda / (r - mu_H)]^{1/(1-alpha)}.
+        Independent of K, and not subject to the optimizer's (0.01, 0.99)
+        guard.
+        """
+        p = self.params
+        rho = (p.lam / (p.r - p.mu_H)) ** (1.0 / (1.0 - p.alpha))
+        return float(rho / (1.0 + rho))
 
     def option_value_with_phi(self, X: float) -> float:
         """Option value when the firm optimizes over (K, phi).
