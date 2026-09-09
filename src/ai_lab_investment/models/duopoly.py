@@ -195,7 +195,13 @@ class DuopolyModel:
         phi_j: float,
         K_j: float,
     ) -> float:
-        """A_eff under fixed-pie contest (no revenue expansion).
+        """A_eff under the arithmetic-mean industry-revenue benchmark.
+
+        Called "fixed_pie" in the contest argument for backward
+        compatibility; the paper (Internet Appendix E) calls it the
+        arithmetic-mean industry-revenue benchmark, because the pie still
+        moves with both capacities and is fixed only against
+        share-stealing.
 
         The industry pie is the arithmetic mean of the firms' standalone
         revenues, X * (y_i + y_j) / 2 with y_i the regime-relevant
