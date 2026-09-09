@@ -247,7 +247,9 @@ class TestDilemmaRecheck:
         ratio_exact = d["loss_piecewise_pct"][i_low] / d["loss_piecewise_pct"][i_high]
         ratio_reduced = d["loss_reduced_pct"][i_low] / d["loss_reduced_pct"][i_high]
         assert ratio_exact > ratio_reduced
+        # Fixed reference demand X_0 = X*(lambda_true)/2 for every belief.
         assert d["loss_piecewise_pct"][i_low] == pytest.approx(39.8, abs=2.0)
+        assert d["loss_piecewise_pct"][i_high] == pytest.approx(0.63, abs=0.1)
 
     def test_training_fraction_unchanged(self, baseline_dilemma):
         d = baseline_dilemma

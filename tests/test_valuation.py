@@ -649,3 +649,41 @@ class TestOptionValueCurvatureInLambda:
         vals = np.array(vals)
         assert np.all(np.diff(vals) > 0)  # increasing in lambda
         assert np.all(np.diff(vals, 2) < 0)  # concave in lambda
+
+
+class TestDilemmaMatchedErrorsAndCurvature:
+    """Numerical Finding 1 at equal additive errors, and the W''' sign the
+    appendix's Taylor argument rests on, at a fixed reference demand."""
+
+    @pytest.fixture(scope="class")
+    def va(self):
+        return ValuationAnalysis(ModelParameters())
+
+    def test_matched_pair_losses(self, va):
+        cons = va.dario_dilemma(0.10, 0.02)["value_loss_pct"] * 100
+        aggr = va.dario_dilemma(0.10, 0.18)["value_loss_pct"] * 100
+        assert cons == pytest.approx(26.19, abs=0.2)
+        assert aggr == pytest.approx(4.15, abs=0.2)
+        assert cons / aggr == pytest.approx(6.3, abs=0.1)
+
+    def test_third_derivative_positive_and_step_stable(self, va):
+        w3 = {h: va.dilemma_third_derivative(0.10, h) for h in (0.005, 0.01, 0.02)}
+        assert all(v > 0 for v in w3.values())
+        assert w3[0.005] == pytest.approx(w3[0.01], rel=0.05)
+
+    def test_local_expansion_matches_small_errors(self, va):
+        """Delta V(-h) - Delta V(+h) ~ W''' h^3 / 3 for small h, in units of W."""
+        h = 0.02
+        X_true, _, _ = SingleFirmModel(ModelParameters()).optimal_trigger_capacity_phi()
+        X_0 = 0.5 * X_true
+        W0 = va.dilemma_policy_value(0.10, 0.10, X_0)
+        gap = (
+            va.dilemma_policy_value(0.10, 0.10 + h, X_0)
+            - va.dilemma_policy_value(0.10, 0.10 - h, X_0)
+        ) / W0
+        cubic = va.dilemma_third_derivative(0.10, 0.01, X_0) * h**3 / 3.0 / W0
+        assert gap == pytest.approx(cubic, rel=0.15)
+
+    def test_policy_value_rejects_x0_above_trigger(self, va):
+        with pytest.raises(ValueError, match="below the policy trigger"):
+            va.dilemma_policy_value(0.10, 0.10, 1.0)
