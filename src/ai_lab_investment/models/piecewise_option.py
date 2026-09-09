@@ -841,10 +841,12 @@ def dilemma_bias(
     reduced-form timing factor (X_0/X*)^{beta_H}. Here each belief's policy is
     obtained by solving the exact problem under that belief, and both policies
     are then valued exactly under the *true* arrival rate with
-    `threshold_value`. The reference demand is the paper's own,
-    X_0 = x0_ratio * min(X*, X*_mis) with reduced-form triggers (the paper
-    uses x0_ratio = 0.5), so that both columns are evaluated at the same
-    demand level.
+    `threshold_value`. The reference demand X_0 = x0_ratio * X*(lambda_true)
+    (reduced-form trigger; the paper uses x0_ratio = 0.5) is held fixed
+    across beliefs, so every loss on the curve is measured at one demand
+    level. (Percentage losses in the reduced form are X_0-invariant because
+    the common power cancels; here they are not, so X_0 must not move
+    between pairs.)
     """
     if params is None:
         params = ModelParameters()
@@ -863,11 +865,11 @@ def dilemma_bias(
         "phi_reduced": [],
         "phi_piecewise": [],
     }
+    X_0 = x0_ratio * rf_true["X_star"]
+    opt_true = pw_true.optimal_policy(X_0)
     for lam_i in lambda_invest_values:
         rf = va.dario_dilemma(lambda_true, lam_i)
         p_i = params.with_param(lam=lam_i)
-        X_0 = x0_ratio * min(rf_true["X_star"], reduced_form_reference(p_i)["X_star"])
-        opt_true = pw_true.optimal_policy(X_0)
         opt_i = PiecewiseOptionModel(p_i).optimal_policy(X_0)
         if opt_true is None or opt_i is None:
             continue

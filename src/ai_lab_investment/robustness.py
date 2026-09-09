@@ -52,7 +52,18 @@ GAP_K_FRACS: tuple[float, float] = (0.1, 0.3)
 """Installed-capacity fractions at which the capacity gap is evaluated."""
 
 DILEMMA_MISMATCH = (0.2, 2.0)
-"""Conservative / aggressive belief multiples relative to lambda_true."""
+"""Conservative / aggressive belief multiples relative to lambda_true.
+
+These are the paper's headline beliefs (0.02 and 0.20 at lambda_true =
+0.10), which are not equidistant from the truth: the conservative error
+is 0.8 lambda_true, the aggressive one 1.0 lambda_true.
+"""
+
+DILEMMA_MATCHED = (0.2, 1.8)
+"""Belief multiples with equal additive errors (-0.8 and +0.8 lambda_true)."""
+
+W3_STEPS = (0.1, 0.2)
+"""Finite-difference steps for W'''(lambda_true), as multiples of lambda_true."""
 
 
 @dataclass
@@ -62,6 +73,11 @@ class Headline:
     loss_conservative: float
     loss_aggressive: float
     dilemma_asymmetry: float
+    loss_conservative_matched: float
+    loss_aggressive_matched: float
+    dilemma_asymmetry_matched: float
+    w3_coarse: float
+    w3_fine: float
     gap_fraction_low: float
     gap_fraction_high: float
     phi_star: float
@@ -73,6 +89,10 @@ class Headline:
         """Evaluate the qualitative claims the appendix asserts are robust."""
         return SignChecks(
             dilemma_asymmetry=self.loss_conservative > self.loss_aggressive,
+            dilemma_asymmetry_matched=(
+                self.loss_conservative_matched > self.loss_aggressive_matched
+            ),
+            w3_positive=self.w3_coarse > 0.0 and self.w3_fine > 0.0,
             gap_positive=self.gap_fraction_high > 0.0,
             faith=0.0 < self.phi_underbar < self.phi_tilde < self.phi_star,
             preemption=0.0 < self.preemption_discount < 1.0,
@@ -84,6 +104,8 @@ class SignChecks:
     """Boolean sign claims evaluated at one parameterization."""
 
     dilemma_asymmetry: bool
+    dilemma_asymmetry_matched: bool
+    w3_positive: bool
     gap_positive: bool
     faith: bool
     preemption: bool
@@ -101,6 +123,11 @@ class SweepRow:
     loss_conservative: float | None = None
     loss_aggressive: float | None = None
     dilemma_asymmetry: float | None = None
+    loss_conservative_matched: float | None = None
+    loss_aggressive_matched: float | None = None
+    dilemma_asymmetry_matched: float | None = None
+    w3_coarse: float | None = None
+    w3_fine: float | None = None
     gap_fraction_low: float | None = None
     gap_fraction_high: float | None = None
     phi_star: float | None = None
@@ -108,6 +135,8 @@ class SweepRow:
     phi_tilde: float | None = None
     preemption_discount: float | None = None
     sign_dilemma_asymmetry: bool | None = None
+    sign_dilemma_asymmetry_matched: bool | None = None
+    sign_w3_positive: bool | None = None
     sign_gap_positive: bool | None = None
     sign_faith: bool | None = None
     sign_preemption: bool | None = None
@@ -115,13 +144,19 @@ class SweepRow:
 
 SIGN_FIELDS: tuple[str, ...] = (
     "sign_dilemma_asymmetry",
+    "sign_dilemma_asymmetry_matched",
+    "sign_w3_positive",
     "sign_gap_positive",
     "sign_faith",
     "sign_preemption",
 )
 
 SIGN_LABELS = {
-    "sign_dilemma_asymmetry": "conservative loss > aggressive loss",
+    "sign_dilemma_asymmetry": "conservative loss > aggressive loss (0.2, 2.0 x lambda)",
+    "sign_dilemma_asymmetry_matched": (
+        "conservative loss > aggressive loss at matched errors (0.2, 1.8 x lambda)"
+    ),
+    "sign_w3_positive": "W'''(lambda_true) > 0 at fixed X_0 (both step sizes)",
     "sign_gap_positive": "capacity-gap fraction > 0 at K/K* = 0.3",
     "sign_faith": "0 < phi_underbar < phi_tilde < phi* (faith mechanism operative)",
     "sign_preemption": "0 < X_P / X_L^mono < 1",
@@ -158,6 +193,12 @@ def _headline_objects(params: ModelParameters) -> Headline:
     aggressive = valuation.dario_dilemma(lam_true, DILEMMA_MISMATCH[1] * lam_true)
     loss_conservative = float(conservative["value_loss_pct"])
     loss_aggressive = float(aggressive["value_loss_pct"])
+    matched_cons = valuation.dario_dilemma(lam_true, DILEMMA_MATCHED[0] * lam_true)
+    matched_aggr = valuation.dario_dilemma(lam_true, DILEMMA_MATCHED[1] * lam_true)
+    loss_cons_matched = float(matched_cons["value_loss_pct"])
+    loss_aggr_matched = float(matched_aggr["value_loss_pct"])
+    w3_coarse = valuation.dilemma_third_derivative(lam_true, W3_STEPS[1] * lam_true)
+    w3_fine = valuation.dilemma_third_derivative(lam_true, W3_STEPS[0] * lam_true)
 
     gap = valuation.capacity_gap_decomposition(np.array(GAP_K_FRACS))
     gap_low, gap_high = (float(x) for x in gap["gap_fraction"])
@@ -174,6 +215,15 @@ def _headline_objects(params: ModelParameters) -> Headline:
             if loss_aggressive != 0
             else float("nan")
         ),
+        loss_conservative_matched=loss_cons_matched,
+        loss_aggressive_matched=loss_aggr_matched,
+        dilemma_asymmetry_matched=(
+            loss_cons_matched / loss_aggr_matched
+            if loss_aggr_matched != 0
+            else float("nan")
+        ),
+        w3_coarse=w3_coarse,
+        w3_fine=w3_fine,
         gap_fraction_low=gap_low,
         gap_fraction_high=gap_high,
         phi_star=float(phi_star),
@@ -246,6 +296,11 @@ def evaluate_draw(
         loss_conservative=headline.loss_conservative,
         loss_aggressive=headline.loss_aggressive,
         dilemma_asymmetry=headline.dilemma_asymmetry,
+        loss_conservative_matched=headline.loss_conservative_matched,
+        loss_aggressive_matched=headline.loss_aggressive_matched,
+        dilemma_asymmetry_matched=headline.dilemma_asymmetry_matched,
+        w3_coarse=headline.w3_coarse,
+        w3_fine=headline.w3_fine,
         gap_fraction_low=headline.gap_fraction_low,
         gap_fraction_high=headline.gap_fraction_high,
         phi_star=headline.phi_star,
@@ -253,6 +308,8 @@ def evaluate_draw(
         phi_tilde=headline.phi_tilde,
         preemption_discount=headline.preemption_discount,
         sign_dilemma_asymmetry=signs.dilemma_asymmetry,
+        sign_dilemma_asymmetry_matched=signs.dilemma_asymmetry_matched,
+        sign_w3_positive=signs.w3_positive,
         sign_gap_positive=signs.gap_positive,
         sign_faith=signs.faith,
         sign_preemption=signs.preemption,
@@ -282,6 +339,11 @@ VALUE_FIELDS: tuple[str, ...] = (
     "loss_conservative",
     "loss_aggressive",
     "dilemma_asymmetry",
+    "loss_conservative_matched",
+    "loss_aggressive_matched",
+    "dilemma_asymmetry_matched",
+    "w3_coarse",
+    "w3_fine",
     "gap_fraction_low",
     "gap_fraction_high",
     "phi_star",
@@ -362,6 +424,8 @@ def format_sweep_table(rows: list[SweepRow]) -> str:
         ("loss_conservative", "loss_cons"),
         ("loss_aggressive", "loss_aggr"),
         ("dilemma_asymmetry", "asym"),
+        ("dilemma_asymmetry_matched", "asym_m"),
+        ("w3_fine", "W3"),
         ("gap_fraction_low", "gap@0.1"),
         ("gap_fraction_high", "gap@0.3"),
         ("phi_star", "phi*"),

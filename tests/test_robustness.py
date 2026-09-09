@@ -145,6 +145,12 @@ class TestPaperNumbers:
     def test_reported_ranges(self, summary):
         low, high = summary.ranges["dilemma_asymmetry"]
         assert (low, high) == pytest.approx((3.6, 6.0), abs=0.1)
+        low, high = summary.ranges["dilemma_asymmetry_matched"]
+        assert (low, high) == pytest.approx((5.0, 8.0), abs=0.1)
+        # W''' is not scale-free (delta and c draws rescale W), so only its
+        # sign is a headline object; the ranges' lower ends are positive.
+        assert summary.ranges["w3_fine"][0] > 0.0
+        assert summary.ranges["w3_coarse"][0] > 0.0
         assert summary.ranges["preemption_discount"] == pytest.approx(
             (0.53, 0.63), abs=0.01
         )

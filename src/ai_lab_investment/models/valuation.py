@@ -386,6 +386,59 @@ class ValuationAnalysis:
             "is_conservative": lambda_invest < lambda_true,
         }
 
+    def dilemma_policy_value(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        X_0: float,
+    ) -> float:
+        """W(lambda_invest) = NPV(lambda_true, lambda_invest) at a fixed X_0.
+
+        The unlevered value, at demand X_0, of following the policy optimal
+        under lambda_invest when the true arrival rate is lambda_true:
+        NPV(X*) (X_0 / X*)^beta_H with the reduced-form timing factor. X_0
+        must lie below the policy's trigger. Unlike `dario_dilemma`, which
+        picks X_0 per pair (harmless for percentage losses because the
+        common power cancels), this evaluator holds X_0 fixed so that W
+        can be differentiated in lambda_invest.
+        """
+        p_true = self.params.with_param(lam=lambda_true)
+        model_true = SingleFirmModel(p_true)
+        model_invest = SingleFirmModel(self.params.with_param(lam=lambda_invest))
+        X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+        if X_inv <= X_0:
+            msg = f"X_0 = {X_0:.4g} must lie below the policy trigger {X_inv:.4g}"
+            raise ValueError(msg)
+        npv = model_true.installed_value_with_phi(
+            X_inv, phi_inv, K_inv, "L"
+        ) - model_true.investment_cost(K_inv)
+        return float(npv * (X_0 / X_inv) ** p_true.beta_H)
+
+    def dilemma_third_derivative(
+        self,
+        lambda_true: float,
+        step: float,
+        X_0: float | None = None,
+    ) -> float:
+        """Central finite-difference W'''(lambda_true) at a fixed X_0.
+
+        Uses the five-point stencil (W(l+2h) - 2W(l+h) + 2W(l-h) - W(l-2h))
+        / (2h^3). Callers should compare two step sizes; the sign is what
+        the appendix's asymmetry argument uses. X_0 defaults to half the
+        true-belief trigger, which lies below every trigger on the
+        stencil for the calibrations considered.
+        """
+        if X_0 is None:
+            X_true, _, _ = SingleFirmModel(
+                self.params.with_param(lam=lambda_true)
+            ).optimal_trigger_capacity_phi()
+            X_0 = 0.5 * X_true
+        W = [
+            self.dilemma_policy_value(lambda_true, lambda_true + k * step, X_0)
+            for k in (-2, -1, 1, 2)
+        ]
+        return float((W[3] - 2.0 * W[2] + 2.0 * W[1] - W[0]) / (2.0 * step**3))
+
     def dario_dilemma_leveraged(
         self,
         lambda_true: float,
