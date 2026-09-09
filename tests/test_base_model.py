@@ -613,3 +613,30 @@ class TestGammaComparativeStatic:
         assert K[1.50] == pytest.approx(0.00673, rel=1e-3)
         assert K[2.00] == pytest.approx(0.03523, rel=1e-3)
         assert K[1.35] < K[1.50] < K[1.20] < K[2.00]
+
+
+class TestMultistartSelection:
+    """multistart_minimize must never return an unconverged start as the
+    incumbent, even when its objective is lower."""
+
+    def test_mixed_success_picks_converged_start(self, monkeypatch):
+        from types import SimpleNamespace
+
+        from ai_lab_investment.models import base_model as bm
+
+        results = iter([
+            SimpleNamespace(success=True, fun=1.0, x=np.array([1.0])),
+            SimpleNamespace(success=False, fun=0.0, x=np.array([0.0])),
+        ])
+        monkeypatch.setattr(bm.optimize, "minimize", lambda *a, **k: next(results))
+        best_x, best_val, diag = bm.multistart_minimize(
+            lambda x: 0.0, [np.array([1.0]), np.array([0.0])]
+        )
+        assert diag["n_converged"] == 1
+        assert best_val == 1.0
+        assert best_x is not None and best_x[0] == 1.0
+
+    def test_closed_form_phi_star_matches_solver(self, model):
+        _, _, phi_star = model.optimal_trigger_capacity_phi()
+        assert model.closed_form_phi_star() == pytest.approx(phi_star, abs=1e-6)
+        assert model.closed_form_phi_star() == pytest.approx(0.700856, abs=1e-5)

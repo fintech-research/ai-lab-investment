@@ -767,7 +767,8 @@ class DuopolyModel:
     ) -> float:
         """Debt value accounting for default risk.
 
-        D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg
+        D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg   (X > X_D)
+        D(X) = recovery                                               (X <= X_D)
 
         Recovery in default is (1 - alpha_bc) times the liquidation value
         of the *inference* business only: bankruptcy destroys the
@@ -796,6 +797,11 @@ class DuopolyModel:
         liq = self.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
         recovery = (1.0 - self.bankruptcy_cost) * liq
         recovery = min(recovery, c_D / p.r)
+        if X <= X_D:
+            # Default has occurred: creditors hold the realized recovery
+            # (the continuation formula below is not valid past the
+            # boundary and would extrapolate to zero).
+            return recovery
         default_loss = c_D / p.r - recovery
         debt = c_D / p.r - default_loss * (X / X_D) ** beta_neg
         return max(debt, 0.0)
@@ -1344,7 +1350,11 @@ class DuopolyModel:
                 built from the L-regime entry values throughout).
             strict: When True (the default, and what every paper,
                 figure, and pipeline path uses), a failure to bracket or
-                refine the rent-equalization root raises RuntimeError.
+                refine the rent-equalization root raises RuntimeError, and
+                so does a gap with more than one sign change on the
+                500-point search grid (``single_crossing`` False). The
+                grid check is evidence of a single up-crossing at the
+                resolution used, not a uniqueness proof.
                 When False, the routine falls back to the corresponding
                 endpoint of the search interval and logs a warning; the
                 returned dict then has ``bracket_failed = True``. The
@@ -1419,6 +1429,18 @@ class DuopolyModel:
                 X_P = X_L_mono
                 bracket_failed = True
                 reason = f"Brent's method failed on the bracketing interval: {exc}"
+        if not bracket_failed and not single_crossing:
+            # The root exists but the gap changes sign more than once on
+            # the search interval: the reported X_P is the first up-crossing
+            # and is not the unique candidate the paper describes.
+            msg = (
+                f"Preemption gap changes sign {int(sign_changes)} times on "
+                f"({X_low:.4g}, {X_high:.4g}); the first up-crossing "
+                f"X_P={X_P:.4g} is not a certified unique equilibrium."
+            )
+            if strict:
+                raise RuntimeError(msg + " Rerun with strict=False to accept it.")
+            logging.warning("%s (strict=False)", msg)
         if bracket_failed:
             if strict:
                 msg = (
@@ -1561,16 +1583,28 @@ class DuopolyModel:
         best_x, best_val, diagnostics = multistart_minimize(
             objective, starts, xatol=1e-9, fatol=1e-12
         )
+        if best_x is None and x0 is not None:
+            # A warm start may stop at the iteration cap while already
+            # sitting on the optimum (it begins there); multistart_minimize
+            # accepts converged starts only, so fall back to the cold
+            # six-point multistart rather than reuse the unconverged point.
+            cold = [
+                np.array([log_K0, phi0])
+                for log_K0 in (-8.0, -5.0, -2.0)
+                for phi0 in (0.35, 0.70)
+            ]
+            best_x, best_val, diagnostics = multistart_minimize(
+                objective, cold, xatol=1e-9, fatol=1e-12
+            )
+            diagnostics["warm_start_fallback"] = True
         self.solver_diagnostics["leader_reoptimized"] = diagnostics
 
         if best_x is None or best_val >= 1e19:
             msg = f"Leader re-optimization failed at X={X:.6g}"
             raise RuntimeError(msg)
-        # The convergence requirement applies to the cold multistart. A
-        # warm start may legitimately stop at the iteration cap while
-        # already sitting on the optimum (it begins there), and the fixed
-        # point reached that way is cross-checked against the 16-start
-        # solve_follower() at the end of the calling routine.
+        # The fixed point reached from a warm start is cross-checked
+        # against the 16-start solve_follower() at the end of the calling
+        # routine.
         if x0 is None and diagnostics["n_converged"] == 0:
             msg = (
                 f"Leader re-optimization did not converge from any of the "

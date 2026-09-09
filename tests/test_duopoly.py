@@ -1270,3 +1270,38 @@ class TestContestShareProperties:
         s = np.array([model.contest_share(zi, 1.0) for zi in z])
         assert np.all(np.diff(s) > 0)
         assert np.all(np.diff(s, 2) < 0)
+
+
+class TestDebtBelowDefault:
+    def test_debt_equals_recovery_at_and_below_boundary(self):
+        model = DuopolyModel(
+            ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi, K = 0.5, 1.0
+        X_D = model.default_boundary(phi, K, 0.0, 0.0, 0.40)
+        at = model.debt_value(X_D, phi, K, 0.0, 0.0, 0.40)
+        below = model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0, 0.40)
+        assert at > 0.0
+        assert below == pytest.approx(at, rel=1e-12)
+        above = model.debt_value(1.5 * X_D, phi, K, 0.0, 0.0, 0.40)
+        assert above > at
+
+
+class TestSingleCrossingEnforced:
+    def test_strict_mode_raises_on_multiple_sign_changes(self, model, monkeypatch):
+        """A gap with two sign changes on the grid is not reported as an
+        equilibrium in strict mode."""
+        X_mono, _, _, _ = model.solve_leader_monopolist("H")
+
+        def wiggly_gap(X, regime="H"):
+            # negative, then positive, then negative, then positive
+            return np.sin(3.0 * np.pi * X / X_mono) - 0.2
+
+        monkeypatch.setattr(model, "_preemption_gap", wiggly_gap)
+        model._cache = {
+            k: v for k, v in model._cache.items() if k[0] != "preemption_3d"
+        }
+        with pytest.raises(RuntimeError, match="changes sign"):
+            model.solve_preemption_equilibrium("H", strict=True)
+        eq = model.solve_preemption_equilibrium("H", strict=False)
+        assert eq["single_crossing"] is False

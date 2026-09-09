@@ -242,3 +242,19 @@ class TestPhiInversion:
     def test_inadmissible_phi_returns_none(self, revealed_beliefs):
         assert revealed_beliefs.infer_lambda_from_phi(0.0) is None
         assert revealed_beliefs.infer_lambda_from_phi(1.0) is None
+
+
+class TestFirstBracket:
+    def test_returns_lowest_sign_change(self):
+        from ai_lab_investment.calibration.revealed_beliefs import _first_bracket
+
+        # two roots at 0.05 and 0.3: endpoint bracketing (0.01, 0.5) would
+        # see no sign change; the grid scan returns the lower one.
+        gap = lambda lam: (lam - 0.05) * (lam - 0.3)  # noqa: E731
+        bracket = _first_bracket(gap, (0.01, 0.5))
+        assert bracket is not None
+        lo, hi = bracket
+        assert lo < 0.05 < hi
+        assert hi < 0.3
+        assert _first_bracket(lambda lam: 1.0, (0.01, 0.5)) is None
+        assert _first_bracket(lambda lam: 1e12, (0.01, 0.5)) is None

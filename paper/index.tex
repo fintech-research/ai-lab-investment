@@ -4055,9 +4055,11 @@ dilution term over the verification domain.
 For \(\ell > 0\), uniqueness is therefore verified computationally: at
 each parameterization, \(L(X) - F(X)\) is evaluated on a grid of 500
 points over \((X_D, X_L^{\text{mono}})\) and exactly one up-crossing is
-confirmed (see Internet Appendix B for details). As in the standard
-preemption literature, the gap \(L - F\) eventually turns negative again
-at demand levels far above the equilibrium path, because
+checked on that grid, and the solver raises rather than reports when the
+check fails (see Internet Appendix B for details); the grid check is
+evidence at the resolution used, not a uniqueness proof. As in the
+standard preemption literature, the gap \(L - F\) eventually turns
+negative again at demand levels far above the equilibrium path, because
 \((K_L, \phi_L)\) is held at the monopoly-phase optimum, which is too
 small a scale for entry at very high demand. That second (down-)crossing
 lies well above \(X_L^{\text{mono}}\), on the region where rent
@@ -4390,12 +4392,15 @@ coincides with the single-firm problem of Proposition 1; the two solvers
 agree to a relative tolerance of \(10^{-8}\), which the replication
 package enforces as an automated check. For the preemption trigger
 \(X_P\), I evaluate \(L(X) - F(X)\) on a deterministic grid of 500
-points over \((X_D, X_L^{\text{mono}})\), confirm exactly one
-up-crossing (sign change from negative to positive), and refine the root
-with Brent's method on the bracketing interval. No case of multiple
-up-crossings was found across all parameterizations tested, varying each
-parameter over its (A2)-admissible range at the baseline values of the
-others: \(\sigma \in [0.20, 0.38]\), \(\alpha \in [0.37, 0.53]\),
+points over \((X_D, X_L^{\text{mono}})\), check that the gap changes
+sign exactly once (from negative to positive), and refine the root with
+Brent's method on the bracketing interval; the check is enforced on
+every path that produces a reported number (the solver raises when it
+fails), and it certifies a single crossing at the grid's resolution
+rather than proving uniqueness. No case of multiple up-crossings was
+found across all parameterizations tested, varying each parameter over
+its (A2)-admissible range at the baseline values of the others:
+\(\sigma \in [0.20, 0.38]\), \(\alpha \in [0.37, 0.53]\),
 \(\gamma \in [1.15, 2.00]\), \(\lambda \in [0.01, 0.50]\),
 \(\ell \in [0, 0.70]\), and \(r \in [0.10, 0.13]\) (outside these ranges
 the leader's capacity problem has no interior optimum and the solvers
