@@ -586,7 +586,8 @@ class TestAppendixERobustness:
         """tbl-dynamic-phi: phi_1 at or below the static optimum, rising
         back toward it as reallocation gets costlier; phi_H at the training
         corner when kappa = 0; value gains declining in the adjustment
-        cost; phi_underbar unchanged.
+        cost. The routine also returns the static threshold phi_underbar
+        for reference; it does not solve the default problem.
 
         The table prints phi to two decimals and value gains to one, so
         the tolerances (0.005 on phi, 0.03pp on gains) are set to fail on
@@ -608,7 +609,7 @@ class TestAppendixERobustness:
             assert r["phi_H_dynamic"] == pytest.approx(phi_H, abs=0.005)
             assert r["phi_L2_dynamic"] == pytest.approx(phi_L2, abs=0.005)
             assert r["value_gain_pct"] == pytest.approx(gain, abs=0.03)
-            assert r["phi_underbar"] == pytest.approx(0.1801, abs=5e-4)
+            assert r["phi_underbar_static"] == pytest.approx(0.1801, abs=5e-4)
             # the reallocation option never raises the initial allocation
             assert r["phi_1_dynamic"] <= r["phi_static"] + 1e-3
             gains.append(r["value_gain_pct"])

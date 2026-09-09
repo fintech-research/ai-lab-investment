@@ -1026,16 +1026,20 @@ class ValuationAnalysis:
         val_dynamic = _period_value(phi_1_opt, phi_H_opt, phi_L2_opt)
         val_static = _period_value(phi_s, phi_s, phi_s)
 
-        # Faith-based survival threshold under dynamic phi
+        # The static faith-based survival threshold (eq-phi-underbar). It
+        # is a function of the parameters only and is reported for
+        # reference; this routine solves allocation and value, not the
+        # default problem, so it says nothing about the threshold under
+        # dynamic phi.
         R = ((p.r - p.mu_H) / (p.r - p.mu_L)) ** (1.0 / p.alpha)
-        phi_underbar = R / (1.0 + R)
+        phi_underbar_static = R / (1.0 + R)
 
         return {
             "phi_static": phi_s,
             "phi_1_dynamic": phi_1_opt,
             "phi_H_dynamic": phi_H_opt,
             "phi_L2_dynamic": phi_L2_opt,
-            "phi_underbar": phi_underbar,
+            "phi_underbar_static": phi_underbar_static,
             "value_dynamic": val_dynamic,
             "value_static": val_static,
             "value_gain_pct": (val_dynamic - val_static) / abs(val_static) * 100
