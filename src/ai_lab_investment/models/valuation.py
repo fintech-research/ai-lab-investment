@@ -448,9 +448,13 @@ class ValuationAnalysis:
         """Quantify belief-mismatch cost with leverage (default risk).
 
         Uses total firm value (E + D) from the Leland structural model,
-        so deadweight bankruptcy costs (b * V(X_D)) are captured. This
-        shows how leverage amplifies the cost of overinvestment through
-        endogenous default risk.
+        so deadweight bankruptcy costs (b * V(X_D)) are captured. In the
+        total-claim metric the shareholders' default option is worth
+        *more* to the overinvesting firm (it enters closer to its default
+        boundary), so the levered percentage loss from overinvestment is
+        slightly *smaller* than the unlevered one at baseline (Internet
+        Appendix A); what leverage raises is default risk, not the
+        expected-value loss.
 
         Important: both the benchmark and the mismatched operating
         policies (X*, K*, phi*) come from the *unleveraged*

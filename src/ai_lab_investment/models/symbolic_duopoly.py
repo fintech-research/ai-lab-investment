@@ -336,15 +336,15 @@ def l_regime_option_value_full(syms):
 def when_is_A1_zero(syms):
     """Analyze when the homogeneous term A1 vanishes.
 
-    A1 = 0 occurs when:
-    1. There is no interior trigger in L (the firm never invests in L,
-       only waits for the regime switch). In this case, there are no
-       value-matching / smooth-pasting conditions to determine A1,
-       and the option value is purely F_L(X) = C * X^{beta_H}.
-
-    2. The condition (1 - 1/beta_L_plus)/alpha >= 1, i.e., the option
-       premium ratio in L exceeds 1, meaning the option to wait is so
-       valuable the firm never exercises in L.
+    A1 = 0 is the paper's *solution convention* (Section 3 conventions;
+    Internet Appendix A, Step 5b). It is imposed when the standalone
+    L-regime scale problem has no interior optimum, i.e. when
+    (1 - 1/beta_L_plus)/alpha >= 1 (Assumption A3), because that problem
+    then supplies no value-matching / smooth-pasting conditions to pin A1
+    down. It is not a theorem that the firm never invests in L: the full
+    model invests in L at a trigger set by the combined coefficient
+    A_eff, and Internet Appendix B benchmarks the convention against the
+    piecewise stopping problem.
 
     The code in base_model.py checks this via has_interior_trigger("L").
     When this returns False (common for baseline parameters), A1 = 0
