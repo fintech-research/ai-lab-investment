@@ -210,58 +210,75 @@ def create_comparative_statics() -> plt.Figure:
 # ── Figure 4: Regime switch value vs lambda ──────────────────────
 
 
-def create_lambda_option_value() -> plt.Figure:
-    """Two-panel: F_L vs lambda and switching coefficient C vs lambda."""
+def lambda_option_value_curve(
+    lam_vals: np.ndarray, X_ref: float = 0.002
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Full-model option value and allocation across arrival rates.
+
+    For each lambda the firm re-optimizes (X*, K*, phi*) and the option
+    value is read at the common demand level X_ref (below every trigger
+    on the grid). Also returns the faith-based survival threshold
+    phi_underbar, which is lambda-independent: by the envelope theorem
+    dF/dlambda has the sign of dA_eff/dlambda at (K*, phi*), positive iff
+    phi* > phi_underbar, so the value falls in lambda where the optimal
+    allocation is too inference-heavy and rises beyond.
+    """
     from ..models.base_model import SingleFirmModel
+    from ..models.duopoly import DuopolyModel
     from ..models.parameters import ModelParameters
 
-    lam_vals = np.linspace(0.01, 0.80, 60)
-    # Evaluate below the (lambda-independent) H-regime trigger X_H* ~ 0.0028 so
-    # that both F_L and F_H are option values: above X_H* the H firm has already
-    # invested and F_H(X) becomes installed NPV, which F_L = C*X^{beta_H} (the
-    # extrapolated option form) overshoots, producing a spurious crossing.
-    X_ref = 0.002
-
-    F_L_vals = np.full_like(lam_vals, np.nan)
-    F_H_vals = np.full_like(lam_vals, np.nan)
-    C_vals = np.full_like(lam_vals, np.nan)
-
+    values = np.full_like(lam_vals, np.nan)
+    phis = np.full_like(lam_vals, np.nan)
     for i, lam in enumerate(lam_vals):
         try:
-            p = ModelParameters(lam=lam)
-            model = SingleFirmModel(p)
-            F_L_vals[i] = model.option_value_L(X_ref)
-            F_H_vals[i] = model.option_value_H(X_ref)
-            C_vals[i] = model.particular_solution_coeff()
+            model = SingleFirmModel(ModelParameters(lam=lam))
+            _, _, phi_star = model.optimal_trigger_capacity_phi()
+            values[i] = model.option_value_with_phi(X_ref)
+            phis[i] = phi_star
         except (ValueError, RuntimeError):
             continue
+    phi_underbar = float(DuopolyModel(ModelParameters()).faith_threshold())
+    return values, phis, phi_underbar
+
+
+def create_lambda_option_value() -> plt.Figure:
+    """Two-panel: full-model option value and phi* against lambda.
+
+    Unlike the H-regime illustrations, this figure uses the full model
+    with the joint (K, phi) optimization: it is the object whose
+    curvature the text discusses. The vertical line marks the arrival
+    rate at which phi*(lambda) crosses phi_underbar, the minimum of the
+    value in lambda.
+    """
+    lam_vals = np.linspace(0.005, 0.80, 80)
+    X_ref = 0.002
+    values, phis, phi_underbar = lambda_option_value_curve(lam_vals, X_ref)
+    valid = ~np.isnan(values)
+    lam_turn = float(np.interp(phi_underbar, phis[valid], lam_vals[valid]))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
-    valid = ~np.isnan(F_L_vals)
-    ax1.plot(
-        lam_vals[valid],
-        F_L_vals[valid],
-        "k-",
-        linewidth=1.5,
-        label=r"$F_L(X)$ (regime $L$)",
+    ax1.plot(lam_vals[valid], values[valid], "k-", linewidth=1.5)
+    ax1.axvline(lam_turn, color="0.5", linestyle=":", linewidth=1.0)
+    ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
+    ax1.set_ylabel(f"Option value $F(X)$ at $X={X_ref}$")
+    ax1.set_title("(a)", loc="left", fontweight="bold")
+
+    ax2.plot(
+        lam_vals[valid], phis[valid], "k-", linewidth=1.5, label=r"$\phi^*(\lambda)$"
     )
-    ax1.axhline(
-        F_H_vals[0],
+    ax2.axhline(
+        phi_underbar,
         color="0.5",
         linestyle="--",
         linewidth=1.0,
-        label=r"$F_H(X)$ (regime $H$)",
+        label=r"faith threshold $\phi$ (Prop. 2)",
     )
-    ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
-    ax1.set_ylabel(f"Option value at $X={X_ref}$")
-    ax1.legend()
-    ax1.set_title("(a)", loc="left", fontweight="bold")
-
-    valid_c = ~np.isnan(C_vals)
-    ax2.plot(lam_vals[valid_c], C_vals[valid_c], "k-", linewidth=1.5)
+    ax2.axvline(lam_turn, color="0.5", linestyle=":", linewidth=1.0)
     ax2.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
-    ax2.set_ylabel(r"Switching value coefficient $C$")
+    ax2.set_ylabel(r"Optimal training fraction $\phi^*$")
+    ax2.set_ylim(0, 1)
+    ax2.legend(loc="center right")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     fig.tight_layout()

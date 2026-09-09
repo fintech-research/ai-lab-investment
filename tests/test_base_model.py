@@ -578,3 +578,24 @@ class TestCapacityGlobalOptimum:
             base.with_param(delta=2.0 * base.delta)
         )._solve_regime_H()
         assert pytest.approx(2.0 ** (1.0 / (base.gamma - 1.0)), rel=1e-6) == K2 / K1
+
+
+class TestOptionValueInLambda:
+    """Remark 3: the full-model option value is non-monotone in lambda, with
+    its minimum where phi*(lambda) crosses the faith threshold phi_underbar."""
+
+    def test_turning_point_at_faith_threshold(self):
+        from ai_lab_investment.figures.paper import lambda_option_value_curve
+
+        lams = np.linspace(0.005, 0.10, 39)
+        values, phis, phi_underbar = lambda_option_value_curve(lams, X_ref=0.002)
+        i_min = int(np.argmin(values))
+        assert 0 < i_min < len(lams) - 1
+        assert lams[i_min] == pytest.approx(0.025, abs=0.005)
+        lam_cross = float(np.interp(phi_underbar, phis, lams))
+        assert lam_cross == pytest.approx(lams[i_min], abs=0.005)
+        # increasing and concave over the policy range
+        hi = np.linspace(0.10, 0.50, 17)
+        v, _, _ = lambda_option_value_curve(hi, X_ref=0.002)
+        assert np.all(np.diff(v) > 0)
+        assert np.all(np.diff(v, 2) < 0)
