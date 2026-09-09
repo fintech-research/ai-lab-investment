@@ -190,18 +190,19 @@ and how to split it between inference (current revenue) and training
 (future capability). I develop a real-options model with regime
 switching, duopoly competition, endogenous default, and diminishing
 returns to capacity whose curvature is calibrated to AI scaling laws.
-The model yields analytical investment triggers and a semi-analytical
-preemption equilibrium in which competition compresses investment
-timing, while beliefs about AI timelines, not competitive position, pin
-down the training fraction. It also produces ``faith-based survival'':
-optimism about the switch, acting through the training allocation,
-raises the post-AGI continuation value and lowers the default boundary.
-The hope of AGI keeps the firm alive, though that hope is worthless to
-creditors in bankruptcy. Calibration to four AI lab archetypes shows how
-heterogeneous beliefs about AI timelines can generate cross-sectional
-differences in investment. In the calibrated model, conservative
-underinvestment is costlier in expected value, but aggressive
-overinvestment carries higher tail default risk.
+Under a stated pricing convention the model yields analytical investment
+triggers and a semi-analytical preemption equilibrium in which
+competition compresses investment timing, while beliefs about AI
+timelines, not competitive position, pin down the training fraction. It
+also produces ``faith-based survival'': optimism about the switch,
+acting through the training allocation, raises the post-AGI continuation
+value and lowers the default boundary. The hope of AGI keeps the firm
+alive, though that hope is worthless to creditors in bankruptcy.
+Calibration to four AI lab archetypes shows how heterogeneous beliefs
+about AI timelines can generate cross-sectional differences in
+investment. In the calibrated model, conservative underinvestment is
+costlier in expected value, but aggressive overinvestment carries higher
+tail default risk.
 \end{abstract}
 
 % Keywords and JEL classification, displayed on the title page below the abstract.
@@ -328,26 +329,28 @@ component models do not generate individually. The results fall into
 three categories.
 
 First, I characterize the optimal training fraction, investment trigger,
-and capacity analytically. The firm chooses not only when to invest and
-how much capacity to install, but how to split that capacity between
-model training, which builds capability for the future, and inference
-serving, which generates revenue today. In regime \(L\), the current
-low-demand regime, revenue depends on inference capacity through a
-Tullock contest, in which a firm's revenue share equals its share of
-industry inference capacity; in regime \(H\), the post-AGI regime,
-revenue depends on training quality. This regime-specific competition
-creates a strategic trade-off absent from standard capacity models: a
-firm that allocates too much to training sacrifices current revenue and
-risks default, while a firm that allocates too little sacrifices its
-competitive position once AGI arrives. Duopoly preemption operates on
-the timing margin: at baseline volatility, and conditional on the
-convention that the leader installs the monopoly-phase optimal scale,
-the leader invests at a trigger roughly 43\% below the monopoly
-benchmark. It does not operate on the allocation margin. Because the
-regime-specific contests depend on the same relative capacities when
-allocations are common, the contest shares cancel from the allocation
-first-order condition, and leader, follower, and monopolist all choose
-the same training fraction.
+and capacity analytically, under a pricing convention for the
+pre-investment option that Section~\ref{sec-model} states and Internet
+Appendix B benchmarks against the unrestricted stopping problem. The
+firm chooses not only when to invest and how much capacity to install,
+but how to split that capacity between model training, which builds
+capability for the future, and inference serving, which generates
+revenue today. In regime \(L\), the current low-demand regime, revenue
+depends on inference capacity through a Tullock contest, in which a
+firm's revenue share equals its share of industry inference capacity; in
+regime \(H\), the post-AGI regime, revenue depends on training quality.
+This regime-specific competition creates a strategic trade-off absent
+from standard capacity models: a firm that allocates too much to
+training sacrifices current revenue and risks default, while a firm that
+allocates too little sacrifices its competitive position once AGI
+arrives. Duopoly preemption operates on the timing margin: at baseline
+volatility, and conditional on the convention that the leader installs
+the monopoly-phase optimal scale, the leader invests at a trigger
+roughly 43\% below the monopoly benchmark. It does not operate on the
+allocation margin. Because the regime-specific contests depend on the
+same relative capacities when allocations are common, the contest shares
+cancel from the allocation first-order condition, and leader, follower,
+and monopolist all choose the same training fraction.
 
 Second, the interaction of training allocation with leverage and default
 risk produces a \emph{faith-based survival} mechanism: training
@@ -896,15 +899,15 @@ resulting option value against the NPV of immediate investment and the
 smooth-pasting tangency at \(X_H^*\)
 (Figure~\ref{fig-option-value}).\footnote{The H-regime illustrations
   (Figure~\ref{fig-option-value} and
-  Figure~\ref{fig-comparative-statics}, both in Internet Appendix F, and
-  Figure~\ref{fig-lambda-option-value} below) solve the H-regime
-  sub-problem with revenue \(X K^\alpha\), i.e., all installed capacity
-  treated as productive training capacity (equivalently \(\phi = 1\) in
-  Equation~\ref{eq-revenue-H}). This is without loss of generality
-  within the absorbing H-regime, where inference capacity generates no
-  revenue and the standalone optimum is \(\phi = 1\). All quantitative
-  results in the paper use the full model with the joint \((K, \phi)\)
-  optimization.}
+  Figure~\ref{fig-comparative-statics}, both in Internet Appendix F)
+  solve the H-regime sub-problem with revenue \(X K^\alpha\), i.e., all
+  installed capacity treated as productive training capacity
+  (equivalently \(\phi = 1\) in Equation~\ref{eq-revenue-H}). This is
+  without loss of generality within the absorbing H-regime, where
+  inference capacity generates no revenue and the standalone optimum is
+  \(\phi = 1\). All quantitative results in the paper, and
+  Figure~\ref{fig-lambda-option-value} below, use the full model with
+  the joint \((K, \phi)\) optimization.}
 
 Internet Appendix F also reports the comparative statics of \(X_H^*\)
 and \(K_H^*\) in \(\sigma\), \(\alpha\), \(\gamma\), and \(\delta\)
@@ -997,10 +1000,7 @@ is instead the coordinate system in which the joint problem separates
 along economic margins: by Proposition 1, scale is set by the cost
 function and the option premium and allocation by beliefs, whereas the
 first-order conditions for \((K_T, K_I)\) are coupled through the convex
-cost. In the duopoly of Section~\ref{sec-duopoly}, the endogenous
-arrival rate adds a further interaction: training compute accelerates
-the regime switch, which changes the rate at which inference revenue is
-discounted.}
+cost.}
 
 \subsubsection{\texorpdfstring{Option value in regime
 \(L\)}{Option value in regime L}}\label{option-value-in-regime-l}
@@ -1109,31 +1109,40 @@ the firm invests sooner. Second, higher \(\lambda\) shifts the optimal
 training fraction \(\phi^*\) upward, because the marginal value of
 training compute (which determines H-regime revenue) increases relative
 to the marginal value of inference compute (which determines L-regime
-revenue). Third, higher \(\lambda\) raises the option value
-monotonically. Capacity \(K^*\) is independent of \(\lambda\) by
-Proposition 1, although duopoly capacity can differ through the contest
-function. Read through the belief interpretation of \(\lambda\), the
-model therefore predicts that a firm holding a shorter AGI timeline
-invests earlier and allocates more compute to training.}
+revenue). Third, higher \(\lambda\) raises the option value whenever the
+optimal allocation trains enough for the switch to be good news,
+\(\phi^*(\lambda) > \underline{\phi}\) (\textbf{?@eq-phi-underbar};
+\(\lambda \gtrsim 0.025\) at baseline): by the envelope theorem the
+derivative of the value in \(\lambda\) has the sign of
+\(\partial A_{\text{eff}}/\partial \lambda\) at the optimum, which is
+positive above that threshold and negative below it, where a faster
+switch mainly truncates the inference revenue of a firm that has
+allocated little to training. Capacity \(K^*\) is independent of
+\(\lambda\) by Proposition 1, although duopoly capacity can differ
+through the contest function. Read through the belief interpretation of
+\(\lambda\), the model therefore predicts that a firm holding a shorter
+AGI timeline invests earlier and allocates more compute to training.}
 
 Figure~\ref{fig-lambda-option-value} quantifies the effect of
-\(\lambda\) on the low-regime option value. Panel (a) shows that
-\(F_L(X)\) increases concavely in \(\lambda\): the option is worth more
-at higher \(\lambda\) because the high-demand regime is expected sooner.
-The dashed line shows the post-AGI option value \(F_H(X)\), which does
-not depend on \(\lambda\). The regime-\(L\) value \(F_L\) approaches it
-from below as the expected switch time shrinks, and this saturation of
-the switching option makes \(F_L\) \emph{concave} in \(\lambda\) over
-the policy-relevant range \(\lambda \in [0.1, 0.5]\). Numerically,
-\(F_L\) is convex in \(\lambda\) only for \(\lambda \lesssim 0.08\),
-below the range implied by the executive timeline statements cited
-above. The curvature is identical at every demand level, because
-\(\beta_H\) does not depend on \(\lambda\). That concavity is the basis
-of testable prediction 3 in Section~\ref{sec-discussion}. Panel (b)
-plots the particular-solution coefficient \(C\), which captures the
-additional value from regime switching; it increases monotonically in
-\(\lambda\), illustrating that the mechanism operates through the
-continuation-value channel.
+\(\lambda\) on the pre-investment option value in the full model, with
+\((X^*, K^*, \phi^*)\) re-optimized at each arrival rate and the value
+read at a common demand level. Panel (a) shows the value falling in
+\(\lambda\) up to \(\lambda \approx 0.025\), where \(\phi^*(\lambda)\)
+crosses \(\underline{\phi}\) (panel (b)), and rising beyond it: the
+option is worth more at higher \(\lambda\) once the firm trains enough
+to profit from an earlier switch. Above the minimum the value first
+rises convexly and then, for \(\lambda \gtrsim 0.085\),
+\emph{concavely}, as the switching option saturates; over the
+policy-relevant range \(\lambda \in [0.1, 0.5]\) it is increasing and
+concave. Because \(\beta_H\) does not depend on \(\lambda\) and the
+value below the trigger is proportional to \(X^{\beta_H}\), the
+curvature is the same at every demand level below the lowest trigger on
+the grid. That concavity is the basis of testable prediction 3 in
+Section~\ref{sec-discussion}, and the low-\(\lambda\) decline is why the
+prediction is stated for the concave range only. Panel (b) plots the
+allocation \(\phi^*(\lambda)\) against the threshold
+\(\underline{\phi}\) of Proposition 2; the two cross where the value
+turns.
 
 \begin{figure}[!htb]
 
@@ -1144,15 +1153,17 @@ continuation-value channel.
 }
 
 \caption{\label{fig-lambda-option-value}Effect of the regime-switch
-arrival rate \(\lambda\) on the regime-\(L\) option value. (a) Option
-value \(F_L(X)\) in regime \(L\) (solid) and \(F_H(X)\) in regime \(H\)
-(dashed, independent of \(\lambda\)), both evaluated at \(X = 0.002\).
-(b) Particular-solution coefficient \(C\) of
-Equation~\ref{eq-particular-C}. Both panels sweep \(\lambda\) over a
-60-point grid on \([0.01, 0.80]\), holding all other parameters at the
-baseline calibration; the H-regime sub-problem is solved with all
-capacity treated as training capacity, as described in the footnote in
-Section~\ref{sec-single-firm}.}
+arrival rate \(\lambda\) on the pre-investment option value and the
+training allocation in the full model. (a) Option value \(F(X)\) at
+\(X = 0.002\), with \((X^*, K^*, \phi^*)\) re-optimized at each
+\(\lambda\). (b) Optimal training fraction \(\phi^*(\lambda)\) (solid)
+and the faith-based survival threshold \(\underline{\phi}\) of
+\textbf{?@eq-phi-underbar} (dashed). The dotted vertical line in both
+panels marks the arrival rate at which \(\phi^*\) crosses
+\(\underline{\phi}\), the minimum of the value in \(\lambda\). Both
+panels sweep \(\lambda\) over an 80-point grid on \([0.005, 0.80]\),
+holding all other parameters at the baseline calibration; \(X = 0.002\)
+lies below every trigger on the grid.}
 
 \end{figure}%
 
@@ -2852,8 +2863,11 @@ empirical counterpart of the model's endogenous \(\phi\).
   sized positive news increases them, and the asymmetry should be
   largest where the value function is steepest, at the pessimistic end
   of the concave region. The claim does not extend to the smallest
-  arrival rates, where the option value is convex in \(\lambda\), so the
-  prediction is silent about firms priced on very long timelines.
+  arrival rates: below \(\lambda \approx 0.085\) the option value is
+  convex in \(\lambda\), and below \(\lambda \approx 0.025\), where the
+  optimal allocation falls under the faith-based survival threshold
+  \(\underline{\phi}\), it \emph{decreases} in \(\lambda\) (Remark 3),
+  so the prediction is silent about firms priced on very long timelines.
   High-\(\hat{\phi}\) firms carry the larger exposure, through the level
   of the H-regime component of their value, and the training allocation
   channel reinforces the level effect (at higher \(\lambda\) firms
