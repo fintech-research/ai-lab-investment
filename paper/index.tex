@@ -2243,16 +2243,17 @@ parameters.
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}@{}}
-\caption{Stylized firm archetypes: calibration inputs. Revenue covers
-AI-related activities; CapEx includes cloud compute commitments
-(Anthropic-like and OpenAI-like archetypes) and total infrastructure
-spending (Google-like and xAI-like archetypes). \(\hat{\phi}\) is the
-observed training fraction assigned to each archetype and is distinct
-from the model's endogenous training fraction \(\phi\); its values are
-set from executive statements \citep{amodei2026dwarkesh}, the Epoch AI
-compute analysis, and Deloitte's TMT Predictions 2026. All values are
-order-of-magnitude composites, not precise
-calibrations.}\label{tbl-firms}\tabularnewline
+\caption{Stylized firm archetypes: calibration inputs, as of Q4 2025--Q1
+2026. Revenue covers AI-related activities; the CapEx row mixes cloud
+compute commitments (Anthropic-like and OpenAI-like archetypes) with
+total infrastructure spending (Google-like and xAI-like archetypes).
+\(\hat{\phi}\) is the training fraction \emph{assigned} to each
+archetype by judgment from three kinds of evidence (executive statements
+\citep{amodei2026dwarkesh}, Epoch AI's reconstruction of OpenAI's 2024
+compute, and Deloitte's TMT Predictions 2026; Internet Appendix C); it
+is not an observed quantity and is distinct from the model's endogenous
+training fraction \(\phi\). All values are order-of-magnitude
+composites, not precise calibrations.}\label{tbl-firms}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Calibration input
@@ -2287,7 +2288,7 @@ Reference firm (illustrative) & Anthropic-like & OpenAI-like &
 Google-like & xAI-like \\
 Revenue 2024 (\$B) & 0.9 & 3.7 & 43.0 & 0.2 \\
 Revenue 2025 (\$B) & 4.5 & 12.5 & 60.0 & 0.5 \\
-CapEx 2025 (\$B) & 3.0 & 12.0 & 91.0 & 10.0 \\
+CapEx or compute commitments 2025 (\$B) & 3.0 & 12.0 & 91.0 & 10.0 \\
 CapEx / Revenue & 0.67 & 0.96 & 1.52 & 20.0 \\
 Leverage (debt / total capital) & 0.05 & 0.05 & 0.10 & 0.15 \\
 WACC (per year) & 0.15 & 0.14 & 0.10 & 0.18 \\
@@ -2302,12 +2303,13 @@ underlying sources. Each archetype's revenue entry covers AI-related
 activities rather than diversified corporate totals, but the concept
 behind that label differs across archetypes: segment revenue for the
 Google-like hyperscaler, firm-wide AI revenue for the other three. For
-the two archetypes modelled on privately held firms (Anthropic-like and
-xAI-like), the values rest on press reports and carry lower confidence
-than publicly disclosed data; they should be read as order-of-magnitude
-inputs. Because the revenue and CapEx concepts are not harmonized across
-the four archetypes (sector revenue versus segment revenue, cloud
-commitments versus owned infrastructure), the columns of
+the three archetypes modelled on privately held firms (Anthropic-like,
+OpenAI-like, and xAI-like), the values rest on press reports and company
+communications rather than audited filings and carry lower confidence
+than the Google-like archetype's; they should be read as
+order-of-magnitude inputs. Because the revenue and CapEx concepts are
+not harmonized across the four archetypes (sector revenue versus segment
+revenue, cloud commitments versus owned infrastructure), the columns of
 Table~\ref{tbl-firms} should be read one at a time as inputs to the
 model, not compared with each other as measured cross-sectional moments;
 the discussion below therefore describes the archetypes as design
@@ -2317,18 +2319,20 @@ these inputs within the admissible parameter region; the levels of
 \(X^*\) and \(K^*\) are not (Table~\ref{tbl-elasticities} in the
 Internet Appendix; Internet Appendix E).
 
-The training fraction \(\hat{\phi}\) values represent the approximate
-share of compute allocated to model training rather than to inference
-serving. They are inherently uncertain, because firms do not publicly
-disclose precise training-inference breakdowns. I triangulate the
-entries in Table~\ref{tbl-firms} from three types of evidence: executive
-statements, the only firm-level compute decomposition with primary
-documentation that I could locate (Epoch AI's analysis of OpenAI's 2024
-spend), and industry-wide trajectory estimates. Internet Appendix C sets
-out each in detail. The xAI-like compute racer allocates the most to
-training (\(\hat{\phi} = 0.75\)), consistent with a strategy of
-dedicating owned compute (the Colossus supercluster) to frontier model
-training while outsourcing inference to cloud providers.\footnote{\url{https://x.com/elonmusk/status/1947701807389515912}.}
+The training fraction \(\hat{\phi}\) values represent my assignment of
+the approximate share of compute allocated to model training rather than
+to inference serving. They are inherently uncertain, because firms do
+not publicly disclose precise training-inference breakdowns. I
+triangulate the entries in Table~\ref{tbl-firms} from three types of
+evidence: executive statements, the only firm-level compute
+decomposition I could locate (Epoch AI's reconstruction of OpenAI's 2024
+spend from investor documents shared with journalists and from press
+reports, with an assumed amortization schedule), and industry-wide
+trajectory estimates. Internet Appendix C sets out each in detail. The
+xAI-like compute racer allocates the most to training
+(\(\hat{\phi} = 0.75\)), consistent with a strategy of dedicating owned
+compute (the Colossus supercluster) to frontier model training while
+outsourcing inference to cloud providers.\footnote{\url{https://x.com/elonmusk/status/1947701807389515912}.}
 The Google-like hyperscaler allocates the least (\(\hat{\phi} = 0.35\)),
 which is meant to capture the need to serve inference to billions of
 users across Search, Gmail, and YouTube; Google's seventh-generation
@@ -2364,7 +2368,11 @@ OpenAI-like \(>\) Anthropic-like \(>\) Google-like in implied
 \(\pm 0.10\) bands of adjacent archetypes overlap, so independent errors
 could reorder neighboring pairs (though not the endpoints). The
 cross-sectional variation (\(\hat{\phi}\) ranging from 0.35 to 0.75) is
-more informative than any individual value.
+more informative than any individual value. Because the \(\hat{\phi}\)
+values are assigned rather than measured, the inversion is a scenario
+map from allocations to the beliefs that would rationalize them within
+the model; it is not evidence that beliefs explain observed differences
+across firms.
 
 The boundary between ``training'' and ``inference'' is also blurring.
 Inference-time scaling (chain-of-thought reasoning, search-augmented
@@ -2382,20 +2390,21 @@ times its revenue, a setting meant to capture a strategy of building
 training clusters ahead of monetization, while the Google-like
 hyperscaler commits 1.52 times revenue and the Anthropic-like and
 OpenAI-like archetypes sit closer to parity. The second is leverage,
-which is low by construction throughout: the two archetypes modelled on
-private labs are effectively all-equity funded (\(\ell = 0.05\)), and
-even the hyperscaler carries only modest debt (\(\ell = 0.10\)). This
-low-leverage structure is meant to capture the venture-backed financing
-of AI labs and the availability of equity capital at high valuations;
-were these firms to mature and take on traditional debt (revolving
-credit facilities, secured notes, data center ABS), leverage ratios
-would rise toward the Leland framework's domain.\footnote{The leverage
-  ratios in Table~\ref{tbl-firms} are round assumptions informed by
-  qualitative evidence rather than measured market-value debt-to-capital
-  ratios, which none of the private archetypes publishes: Anthropic is
-  effectively all-equity; OpenAI secured a \$4B revolving credit
-  facility; Alphabet carries modest net debt; xAI arranged \$5B+ in
-  secured notes and term loans
+which is low by construction throughout: the Anthropic-like and
+OpenAI-like archetypes are effectively all-equity funded
+(\(\ell = 0.05\)), the xAI-like archetype carries \(\ell = 0.15\) on its
+secured debt, and even the hyperscaler carries only modest debt
+(\(\ell = 0.10\)). This low-leverage structure is meant to capture the
+venture-backed financing of AI labs and the availability of equity
+capital at high valuations; were these firms to mature and take on
+traditional debt (revolving credit facilities, secured notes, data
+center ABS), leverage ratios would rise toward the Leland framework's
+domain.\footnote{The leverage ratios in Table~\ref{tbl-firms} are round
+  assumptions informed by qualitative evidence rather than measured
+  market-value debt-to-capital ratios, which none of the private
+  archetypes publishes: Anthropic is effectively all-equity; OpenAI
+  secured a \$4B revolving credit facility; Alphabet carries modest net
+  debt; xAI arranged \$5B+ in secured notes and term loans
   (\url{https://www.bloomberg.com/news/articles/2026-01-09/musk-s-xai-reports-higher-quarterly-loss-plans-to-power-optimus}).
   They should be read with the same order-of-magnitude caveat as the
   other firm-level inputs.} The third is the training fraction, which
@@ -2444,8 +2453,16 @@ one would set \(c\) so that \(I(K) = cK^\gamma\) matches observed CapEx
 for a given archetype. Setting \(c \approx \$23\text{B}\), for example,
 maps the duopoly follower's investment cost
 \(I(K_F) = K_F^{1.5} \approx 0.13\) to approximately \$3B, the
-Anthropic-like archetype's annual CapEx. Rescaling \(c\) in this way
-affects no ratio, percentage, or spread reported in the paper.
+Anthropic-like archetype's annual CapEx. Rescaling \(c\) in this way is
+a change of units: with \(\kappa = c^{1/(\gamma-1)}\), the optimal
+policy transforms as \(K \to K/\kappa\) and
+\(X \to X/\kappa^{1-\alpha}\) and values scale by \(\kappa\), so every
+ratio and percentage reported in the paper is unchanged. The credit
+spreads and default probabilities of Section~\ref{sec-valuation} and
+Internet Appendix H are evaluated at a fixed \((X, K)\) and are
+invariant only if that evaluation point is rescaled with the units;
+changing \(c\) alone at fixed \((X = 0.10, K = 1)\) changes the debt
+face value \(\ell c K^\gamma\) and with it the spread.
 
 Strategic interaction accelerates investment: the preemption discount is
 43\%, with a preemption trigger of \(X_P \approx 0.0027\) against the
@@ -4883,7 +4900,9 @@ Source
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Revenue (2024--2025) & Alphabet 10-K; OpenAI CFO disclosure;\footnote{\url{https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/}.}
+Revenue (2024--2025) & Alphabet 10-K; OpenAI: recognized revenue from
+press reports, annualized run rates from the CFO's
+disclosure;\footnote{\url{https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence/}.}
 Anthropic ARR press reports;\footnote{\url{https://www.forbes.com/sites/jonmarkman/2026/02/13/anthropic-the-380-billion-powerhouse-hiding-in-plain-sight/}.}
 xAI: press reports of quarterly revenue \\
 Capital expenditure & Alphabet 10-K; OpenAI Azure spend, press
@@ -4915,9 +4934,14 @@ collected revenue of \$4.5B rather than the annualized run rate (\$9B
 ARR at year-end 2025, rising to \$14B ARR by February 2026), and CapEx
 is annual cloud compute commitments, primarily AWS (\$2.66B through
 September 2025) and Google Cloud TPUs. For the OpenAI-like platform,
-revenue is \$3.7B in 2024 and \$12.5B in 2025, following the CFO's
-January 2026 disclosure (\$20B ARR at year-end), and CapEx is \$12B of
-Azure inference and training spend. For the Google-like hyperscaler,
+revenue is \$3.7B in 2024 and \$12.5B in 2025, recognized-revenue
+figures reported in the press; the CFO's January 2026 post gives
+annualized run rates of \$2B, \$6B, and \$20B+ for 2023--2025 and does
+not itself report recognized revenue, so the two series are not
+interchangeable (the run-rate series would raise the 2025 figure and
+lower the CapEx/Revenue ratio below one). CapEx is \$12B of Azure
+inference and training spend, an operating commitment to cloud capacity
+rather than owned infrastructure. For the Google-like hyperscaler,
 revenue is Google Cloud revenue (\$43.2B in 2024, growing 37--39\% to
 \$59--60B in 2025 per the Alphabet SEC filing) rather than Alphabet-wide
 revenue (\$403B), and CapEx is total Alphabet capital expenditure
@@ -4958,16 +4982,22 @@ estimated that inference workloads would require ``easily 100 times
 more'' compute than anticipated, with inference accounting for more than
 40\% of AI-related revenue by late 2025.
 
-\emph{Firm-specific data.} The only company-level decomposition with
-primary documentation is Epoch AI's analysis of OpenAI's 2024 compute:
-of approximately \$7B in total cloud compute, roughly \$3B went to
-training, \$2B to research and experimentation, and \$1.8B to
-inference.\footnote{\url{https://epoch.ai/data-insights/openai-compute-spend}.}
-Combined R\&D (training plus research) was approximately 71\%, inference
-approximately 26\%. Epoch AI's own reading is that ``the majority of
-OpenAI's R\&D compute was likely allocated to research and experimental
-training runs, rather than the final training runs of released models'';
-the model's \(\hat{\phi}\) subsumes both.
+\emph{Firm-specific data.} The only company-level decomposition I could
+locate is Epoch AI's reconstruction of OpenAI's 2024 compute, a
+secondary source assembled from investor documents shared with
+journalists in September 2024 and from press reports: of approximately
+\$7B in total cloud compute, roughly \$3B went to training, \$1.8B to
+inference, and about \$1B per year to research and experimentation,
+which Epoch AI amortizes over an assumed two years to arrive at roughly
+\$2B.\footnote{\url{https://epoch.ai/data-insights/openai-compute-spend}.
+  Epoch AI cautions that the underlying figures rely on projections for
+  the final quarter of 2024 and should not be treated as fully reliable.}
+On that reconstruction, combined R\&D (training plus research) was
+approximately 71\% and inference approximately 26\%. Epoch AI's own
+reading is that most of the R\&D compute likely went to research,
+experimental training runs, and training runs for unreleased models
+rather than to the final training runs of released models; the model's
+\(\hat{\phi}\) subsumes both.
 
 \emph{Industry trajectory.} Deloitte's TMT Predictions 2026 estimates
 that the industry-wide split shifted from roughly two-thirds training to
