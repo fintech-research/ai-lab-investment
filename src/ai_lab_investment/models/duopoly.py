@@ -1583,16 +1583,28 @@ class DuopolyModel:
         best_x, best_val, diagnostics = multistart_minimize(
             objective, starts, xatol=1e-9, fatol=1e-12
         )
+        if best_x is None and x0 is not None:
+            # A warm start may stop at the iteration cap while already
+            # sitting on the optimum (it begins there); multistart_minimize
+            # accepts converged starts only, so fall back to the cold
+            # six-point multistart rather than reuse the unconverged point.
+            cold = [
+                np.array([log_K0, phi0])
+                for log_K0 in (-8.0, -5.0, -2.0)
+                for phi0 in (0.35, 0.70)
+            ]
+            best_x, best_val, diagnostics = multistart_minimize(
+                objective, cold, xatol=1e-9, fatol=1e-12
+            )
+            diagnostics["warm_start_fallback"] = True
         self.solver_diagnostics["leader_reoptimized"] = diagnostics
 
         if best_x is None or best_val >= 1e19:
             msg = f"Leader re-optimization failed at X={X:.6g}"
             raise RuntimeError(msg)
-        # The convergence requirement applies to the cold multistart. A
-        # warm start may legitimately stop at the iteration cap while
-        # already sitting on the optimum (it begins there), and the fixed
-        # point reached that way is cross-checked against the 16-start
-        # solve_follower() at the end of the calling routine.
+        # The fixed point reached from a warm start is cross-checked
+        # against the 16-start solve_follower() at the end of the calling
+        # routine.
         if x0 is None and diagnostics["n_converged"] == 0:
             msg = (
                 f"Leader re-optimization did not converge from any of the "
