@@ -364,20 +364,23 @@ Third, I quantify the cost of \emph{Dario's dilemma}, the loss a firm
 incurs by investing on a belief about the AGI arrival intensity
 \(\lambda\) that differs from its true value. If a firm invests as
 though AGI were less likely to arrive than it is, it invests too late
-and loses first-mover advantage; if it invests as though AGI were more
-likely, it overbuilds and risks default. The training allocation
-sharpens both sides: a pessimistic firm under-allocates to training and
-forgoes most of the post-AGI option value, while an optimistic firm
-over-allocates and sacrifices the inference revenue it needs to survive.
-Anthropic CEO Dario Amodei describes the overbuilding side: ``I could
-buy \$1 trillion of compute that starts at the end of 2027\ldots{}
-there's no hedge on Earth that could stop me from going bankrupt''
-\citep{amodei2026dwarkesh}. In a stylized calibration to four AI lab
-archetypes, the asymmetry can be substantial (Numerical Finding 1):
-investing as though \(\lambda = 0.02\) when the true intensity is
-\(0.10\) costs roughly 26\% of firm value, against about 6\% for
-investing as though \(\lambda = 0.20\). The dilemma is nonetheless
-two-sided, because overinvestment concentrates risk in the tail: at
+and, against a rival, cedes the lead; if it invests as though AGI were
+more likely, it invests too early and risks default. Capacity is not the
+margin on which either error is made: the optimal scale is invariant to
+the belief, so the mistakes run through timing and allocation. The
+training allocation sharpens both sides: a pessimistic firm
+under-allocates to training and forgoes most of the post-AGI option
+value, while an optimistic firm over-allocates and sacrifices the
+inference revenue it needs to survive. Anthropic CEO Dario Amodei
+describes the overbuilding side: ``I could buy \$1 trillion of compute
+that starts at the end of 2027\ldots{} there's no hedge on Earth that
+could stop me from going bankrupt'' \citep{amodei2026dwarkesh}. In a
+stylized calibration to four AI lab archetypes, the asymmetry can be
+substantial (Numerical Finding 1): investing as though
+\(\lambda = 0.02\) when the true intensity is \(0.10\) costs roughly
+26\% of firm value, against about 6\% for investing as though
+\(\lambda = 0.20\). The dilemma is nonetheless two-sided, because
+overinvestment concentrates risk in the tail: at
 \(\lambda_{\text{invest}} = 0.50\) and leverage \(\ell = 0.40\), the
 five-year default probability is nearly eight times its value under
 correct beliefs.
@@ -2567,8 +2570,11 @@ the exercise keeps the same operating policy and changes only the claim
 being valued: the firm still chooses \((X^*, K^*, \phi^*)\) from the
 unlevered problem given its belief (leverage is exogenous in this model
 and is layered on top of an investment policy chosen on NPV grounds),
-and \(\text{NPV}\) then denotes the value of the total claims
-\(E + D - \ell I(K^*)\) under that policy. Because the policy is not
+and \(\text{NPV}\) then denotes the value of the total claims net of the
+investment outlay, \(E + D - I(K^*)\) with \(E\) the going-concern
+equity of Section~\ref{sec-duopoly} (equivalently, the equity holders'
+entry NPV \(E - (1-\ell)I\) plus the debt proceeds' claim
+\(D - \ell I\)), under that policy. Because the policy is not
 re-optimized against the levered objective, the levered value function
 is not maximized at \(\lambda_{\text{invest}} = \lambda_{\text{true}}\)
 by construction, only very nearly so. At \(\ell = 0.40\) its maximizer
@@ -2589,12 +2595,17 @@ under-allocates to training
 (\(\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})\)),
 forgoing the H-regime option value that accounts for most of the firm's
 value. At baseline parameters with \(\lambda_{\text{true}} = 0.10\), a
-conservative firm investing as if \(\lambda = 0.02\) loses approximately
-26\% of value, while an aggressive firm investing as if
-\(\lambda = 0.20\) loses only about 6\%. At \(\ell = 0.40\), the
-expected-value asymmetry is essentially unchanged; leverage's
-distinctive contribution is to the tail risk of overinvestment,
-discussed below.}
+conservative firm investing as if \(\lambda = 0.02\) (a belief error of
+\(-0.08\)) loses approximately 26\% of value, while an aggressive firm
+making the equal and opposite error, investing as if \(\lambda = 0.18\),
+loses about 4\%; at \(\lambda = 0.20\), the aggressive belief used in
+the exhibits below, the loss is about 6\%. The comparison depends on the
+coordinate in which errors are deemed equal: in the log of the arrival
+rate, the aggressive firm must believe \(\lambda = 0.50\), five times
+the truth, to lose the 23\% that the conservative firm loses at one
+fifth of it. At \(\ell = 0.40\), the expected-value asymmetry is
+essentially unchanged; leverage's distinctive contribution is to the
+tail risk of overinvestment, discussed below.}
 
 The optimal training fraction \(\phi^* \approx 0.70\) at baseline
 reflects the high value of H-regime positioning. A conservative firm
@@ -2612,21 +2623,22 @@ policies under the true arrival rate, with no \((X_0/X^*)^{\beta_H}\)
 timing factor. With the post-switch scale precommitted to \(K_H^*\), the
 closed-form case, this preserves the ranking and sharpens it: the
 conservative loss rises from 26\% to about 40\% and the aggressive loss
-falls from 6\% to about 0.5\%, so the ratio of the two losses widens
-from 4.7 (26.2\% against 5.6\%) to roughly 80. When the firm may instead
-choose its scale at the switch, the optimum under any belief
-\(\lambda_{\text{invest}} \geq 0.10\) is to wait for the switch, so
-optimistic mismatches cost nothing at baseline while the conservative
-loss rises to about 43\% (Internet Appendix B). The magnitudes reported
-here are therefore those of the reduced model; the ranking survives
-every version of the problem. The training fractions \(\phi^*(\lambda)\)
-that drive the asymmetry are identical in the two problems, which is why
-the mechanism survives intact; the headline percentages reported here
-are those of the pure-power discounting convention. The Amodei scenario,
-``I could buy \$1 trillion of compute that starts at the end of
-2027\ldots{} there's no hedge on Earth that could stop me from going
-bankrupt'' \citep{amodei2026dwarkesh}, points to a risk this percentage
-comparison does not capture, taken up under Implications below.
+falls from 6\% to about 0.6\%, so the ratio of the two losses widens
+from 4.7 (26.2\% against 5.6\%) to roughly 60 at a fixed reference
+demand. When the firm may instead choose its scale at the switch, the
+optimum under any belief \(\lambda_{\text{invest}} \geq 0.10\) is to
+wait for the switch, so optimistic mismatches cost nothing at baseline
+while the conservative loss rises to about 43\% (Internet Appendix B).
+The magnitudes reported here are therefore those of the reduced model;
+the ranking survives every version of the problem. The training
+fractions \(\phi^*(\lambda)\) that drive the asymmetry are identical in
+the two problems, which is why the mechanism survives intact; the
+headline percentages reported here are those of the pure-power
+discounting convention. The Amodei scenario, ``I could buy \$1 trillion
+of compute that starts at the end of 2027\ldots{} there's no hedge on
+Earth that could stop me from going bankrupt''
+\citep{amodei2026dwarkesh}, points to a risk this percentage comparison
+does not capture, taken up under Implications below.
 
 Figure~\ref{fig-investment-dilemma} visualizes the asymmetry by plotting
 the value loss \(\Delta V\) as a function of \(\lambda_{\text{invest}}\)
@@ -2647,7 +2659,7 @@ conservative side and lies slightly \emph{below} the unlevered curve on
 the aggressive side (21\% versus 23\% at
 \(\lambda_{\text{invest}} = 0.50\)). The entire wedge between the two
 curves is the shareholders' default option: the levered claim value
-\(E + D - \ell I\) exceeds the unlevered NPV by exactly
+\(E + D - I\) exceeds the unlevered NPV by exactly
 \([R(X_D) + \delta K / r - A_{\text{eff}} X_D](X^*/X_D)^{\beta_L^-}\).
 At this calibration the recovery cap binds (\(R(X_D) = C_D/r\), so
 creditors are made whole in value terms), leaving the bracket equal to
@@ -2705,7 +2717,7 @@ against the investment belief \(\lambda_{\text{invest}}\) over
 \([0.005, 0.50]\) for a fixed \(\lambda_{\text{true}} = 0.10\). Solid
 line: unlevered (\(\ell = 0\)); dashed line: levered (\(\ell = 0.40\)),
 for which \(\text{NPV}\) denotes the value of the total claims
-\(E + D - \ell I(K^*)\) under the unlevered policy. The shaded region is
+\(E + D - I(K^*)\) under the unlevered policy. The shaded region is
 bounded above by the unlevered curve and marks the belief range over
 which that curve exceeds a 10\% loss. Parameters: baseline calibration.}
 
@@ -2747,10 +2759,11 @@ Appendix E), a conservative firm faces an additional strategic penalty:
 by investing later and allocating less to training, it cedes the leader
 position to a well-calibrated rival, forfeiting the monopoly-phase rents
 that drive the preemption equilibrium (Proposition 3). This competitive
-channel amplifies the underinvestment cost from 26\% (single-firm) to
-38\% (duopoly), while overinvestment costs rise from 6\% to 17\%, so the
-asymmetry is preserved and quantitatively reinforced
-(Table~\ref{tbl-duopoly-dilemma} in the Internet Appendix).
+channel raises the underinvestment cost from 26\% (single-firm) to 38\%
+(duopoly) and the overinvestment cost from 6\% to 17\%: competition
+raises both losses, and the ranking survives, but the ratio of the two
+narrows from about 4.6 to about 2.2 (and from 6.3 to 3.0 at the matched
+pair; Table~\ref{tbl-duopoly-dilemma} in the Internet Appendix).
 
 \section{Discussion}\label{sec-discussion}
 
@@ -4053,7 +4066,8 @@ operating policy \((X^*, K^*, \phi^*)\) is always the solution to the
 sizes and times its investment on NPV grounds, and exogenous leverage
 \(\ell\) is layered on afterwards. For \(\ell = 0\), \(W\) is the
 unlevered NPV of that policy; for \(\ell > 0\), \(W\) is the value of
-the levered claims \(E + D - \ell I(K^*)\) evaluated under the same
+the levered claims net of the outlay, \(E + D - I(K^*)\) with \(E\) the
+going-concern equity, evaluated under the same
 belief-\(\lambda_{\text{invest}}\) operating policy.
 
 \emph{Optimality.} At \(\ell = 0\) the policy
@@ -4085,11 +4099,23 @@ three orders of magnitude smaller than the effects it describes.
 \emph{Source of asymmetry.} The asymmetry arises from odd-order terms in
 the Taylor expansion, principally
 \(W'''(\lambda_{\text{true}}) \neq 0\). The following heuristic argument
-identifies three contributing channels. All signs are verified
-computationally at the baseline calibration and at each admissible draw
-of the \(\pm 25\%\) one-at-a-time parameter sweep reported in Internet
-Appendix E; that sweep, and not a search over the joint parameter space,
-is what the robustness of these signs rests on.
+identifies three contributing channels. The sign of \(W'''\) is verified
+computationally by central finite differences at a fixed reference
+demand \(X_0 = X^*(\lambda_{\text{true}})/2\), with two step sizes
+(\(0.1\lambda_{\text{true}}\) and \(0.2\lambda_{\text{true}}\)) that
+must agree; the loss ranking is verified at the matched pair
+\(\lambda_{\text{true}}(1 \pm 0.8)\) and at the exhibit pair
+\((0.2, 2.0)\lambda_{\text{true}}\). Both checks are run at the baseline
+calibration and at each admissible draw of the \(\pm 25\%\)
+one-at-a-time parameter sweep reported in Internet Appendix E; that
+sweep, and not a search over the joint parameter space, is what the
+robustness of these signs rests on. The expansion is local: a positive
+third derivative orders the losses for small equal errors,
+\(\Delta V(-h) - \Delta V(+h) = \tfrac{1}{3}W'''(\lambda_{\text{true}})h^3 + O(h^5)\),
+and at the baseline that term accounts for the whole gap at \(h = 0.02\)
+(\(0.65\%\) against \(0.43\%\)) but not at \(h = 0.08\), where the
+losses are \(26\%\) and \(4\%\); the finite-error ranking is what the
+matched-pair check establishes.
 
 \emph{Case \(\ell = 0\) (unlevered).} The loss decomposes into a timing
 channel and a \emph{training allocation channel}:
@@ -4130,9 +4156,11 @@ channel and a \emph{training allocation channel}:
 
 The training allocation channel dominates, so the computed
 \(W'''(\lambda_{\text{true}})\) is positive at the baseline calibration
-and at every admissible draw of the sweep, and underinvestment
+(\(1.17\) and \(1.28\) per unit of \(X_0^{\beta_H}\) at the two step
+sizes) and at every admissible draw of the sweep, and underinvestment
 (\(\lambda_{\text{invest}} < \lambda_{\text{true}}\)) produces a larger
-expected-value loss than overinvestment of equal magnitude.
+expected-value loss than overinvestment of equal magnitude, at the
+matched pair in every draw.
 
 \emph{Case \(\ell > 0\) (levered).} Leverage operates through the
 default channel. Because \(K^*\) is belief-independent, the coupon
@@ -4146,13 +4174,13 @@ that boundary. The two effects compound and compress the distance to
 default at entry, whereas underinvestment moves the trigger \emph{away}
 from the boundary, largely offsetting the allocation distortion.
 
-In the total-claim metric \(E + D - \ell I\) this compression registers
-as a small \emph{gain}, not a loss: it raises the value of the
-shareholders' default option, which is the only term separating the
-levered from the unlevered objective and which is worth \(1.8\%\) of NPV
-to the overinvesting firm against \(0.3\%\) at correct beliefs. Both
-levered loss curves therefore lie marginally below their unlevered
-counterparts (at baseline, \(26.1\%\) and \(21.4\%\) at
+In the total-claim metric \(E + D - I\) this compression registers as a
+small \emph{gain}, not a loss: it raises the value of the shareholders'
+default option, which is the only term separating the levered from the
+unlevered objective and which is worth \(1.8\%\) of NPV to the
+overinvesting firm against \(0.3\%\) at correct beliefs. Both levered
+loss curves therefore lie marginally below their unlevered counterparts
+(at baseline, \(26.1\%\) and \(21.4\%\) at
 \(\lambda_{\text{invest}} = 0.02\) and \(0.50\), against \(26.2\%\) and
 \(22.6\%\) at \(\ell = 0\)), and what leverage amplifies is the
 \emph{ratio} of the two losses (from \(1.16\) to \(1.22\)), not their
@@ -4563,15 +4591,25 @@ Dario's dilemma (Numerical Finding 1) is re-checked in the same way,
 first within the precommitted-scale class. Each belief's policy is
 re-solved inside that problem under that belief, and both the correct
 and the mismatched policy are then valued under
-\(\lambda_{\text{true}} = 0.10\) at the common reference demand, which
+\(\lambda_{\text{true}} = 0.10\) at one reference demand
+\(X_0 = X^*(\lambda_{\text{true}})/2\), held fixed across beliefs, which
 replaces the reduced form's \((X_0/X^*)^{\beta_H}\) timing factor
-entirely. The asymmetry survives and widens: at
+entirely (unlike the reduced-form percentages, these are not invariant
+to \(X_0\), so the same demand level must be used for every point on the
+curve). The asymmetry survives and widens: at
 \(\lambda_{\text{invest}} = 0.02\) the loss rises from \(26.2\%\) to
 \(39.8\%\), at \(\lambda_{\text{invest}} = 0.20\) it falls from
-\(5.6\%\) to \(0.5\%\), and at \(\lambda_{\text{invest}} = 0.50\) from
-\(22.6\%\) to \(2.6\%\), so the conservative-to-aggressive loss ratio
-widens from \(4.7\) to \(81\) for these two beliefs, which sit \(0.08\)
-below and \(0.10\) above the true rate. The optimal training fractions
+\(5.6\%\) to \(0.6\%\), and at \(\lambda_{\text{invest}} = 0.50\) from
+\(22.6\%\) to \(4.5\%\), so the conservative-to-aggressive loss ratio
+widens from \(4.7\) to about \(60\) for the first two beliefs, which sit
+\(0.08\) below and \(0.10\) above the true rate. Two cautions apply to
+the conservative point. At \(\lambda_{\text{invest}} = 0.02\) the
+belief's own optimum in this problem is a corner (a small-scale
+investment as soon as demand is positive, the counterpart of the failing
+(A2) noted above), so the \(39.8\%\) measures the distance between that
+corner policy and the true optimum rather than the cost of a delayed
+trigger; and the ratio is a function of the reference demand, since the
+conservative loss grows as \(X_0\) falls. The optimal training fractions
 coincide in the two problems at every belief considered, which is why
 the mechanism behind the finding is unaffected; the losses reported in
 Section~\ref{sec-valuation} are those of the reduced model, which
@@ -5040,9 +5078,13 @@ these two parameters therefore move \(K^*\) and \(X^*\) but leave the
 normalized quantities unchanged. This sweep is also the reproducible
 content of the statements elsewhere in this Internet Appendix that a
 sign holds ``across all parameterizations,'' including the \(W''' > 0\)
-sign underlying Numerical Finding 1: those are one-at-a-time
-perturbations of this kind around the baseline calibration, not a search
-over the joint parameter space.
+sign underlying Numerical Finding 1, which the sweep computes directly
+by finite differences at a fixed reference demand (positive at both step
+sizes in every admissible draw), and the loss ranking at the matched
+pair \(\lambda_{\text{true}}(1 \pm 0.8)\), which holds in every draw
+with a ratio between \(5.0\) and \(8.0\) (baseline \(6.3\)): those are
+one-at-a-time perturbations of this kind around the baseline
+calibration, not a search over the joint parameter space.
 
 \textbf{Alternative contest functions.} The Tullock contest is a reduced
 form, so the concern is that the duopoly results are artifacts of its
