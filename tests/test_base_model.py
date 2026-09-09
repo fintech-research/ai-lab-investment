@@ -599,3 +599,17 @@ class TestOptionValueInLambda:
         v, _, _ = lambda_option_value_curve(hi, X_ref=0.002)
         assert np.all(np.diff(v) > 0)
         assert np.all(np.diff(v, 2) < 0)
+
+
+class TestGammaComparativeStatic:
+    """Section 3 and Internet Appendix F: K_H* is U-shaped in gamma at fixed c."""
+
+    def test_capacity_non_monotone_in_gamma(self):
+        K = {}
+        for g in (1.20, 1.35, 1.50, 2.00):
+            _, K[g], _ = SingleFirmModel(ModelParameters(gamma=g))._solve_regime_H()
+        assert K[1.20] == pytest.approx(0.01072, rel=1e-3)
+        assert K[1.35] == pytest.approx(0.00337, rel=1e-3)
+        assert K[1.50] == pytest.approx(0.00673, rel=1e-3)
+        assert K[2.00] == pytest.approx(0.03523, rel=1e-3)
+        assert K[1.35] < K[1.50] < K[1.20] < K[2.00]

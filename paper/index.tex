@@ -189,7 +189,7 @@ build under uncertain arrival of Artificial General Intelligence (AGI),
 and how to split it between inference (current revenue) and training
 (future capability). I develop a real-options model with regime
 switching, duopoly competition, endogenous default, and diminishing
-returns to capacity whose curvature is calibrated to AI scaling laws.
+returns to capacity whose curvature is motivated by AI scaling laws.
 Under a stated pricing convention the model yields analytical investment
 triggers and a semi-analytical preemption equilibrium in which
 competition compresses investment timing, while beliefs about AI
@@ -317,9 +317,9 @@ much capacity to install, and what fraction to devote to training versus
 inference, facing regime-switching demand \citep{guo2005investment},
 duopoly preemption \citep{grenadier2002option, huisman2015strategic},
 endogenous default \citep{leland1994corporate}, and diminishing returns
-to capacity, with the curvature parameter calibrated to empirical
-scaling laws \citep{kaplan2020scaling, hoffmann2022training}. The
-primary contribution is the identification and characterization of the
+to capacity, with the curvature parameter motivated by empirical scaling
+laws \citep{kaplan2020scaling, hoffmann2022training}. The primary
+contribution is the identification and characterization of the
 training-survival channel: because the same capacity serves both current
 revenue and future capability, the allocation decision links a firm's
 growth option value to its default boundary, producing mechanisms
@@ -418,13 +418,16 @@ optimal timing of irreversible investment and
   \citet{bernanke1983irreversibility}.} \citet{guo2005investment} model
 demand with regime-dependent drift and volatility, showing large
 investment jumps upon favorable regime arrival;
-\citet{decamps2006irreversible} study irreversible investment with
-alternative projects under regime switching, using a two-regime
-structure with an absorbing state that is close to the present paper's
-\(L \to H\) transition. The key difference is that their framework does
-not include strategic interaction, training-inference allocation, or
-default risk. The capacity-choice side of the problem is also the
-subject of a large operations management literature, surveyed by
+\citet{decamps2006irreversible} study the choice between two
+irreversible projects of different scale under a single geometric
+Brownian output price, with an extension in which the firm may later
+switch from the smaller to the larger project; the present paper's scale
+choice is in that tradition, while its \(L \to H\) transition is an
+exogenous Poisson regime switch rather than a project switch chosen by
+the firm. The key difference is that their framework does not include
+strategic interaction, training-inference allocation, or default risk.
+The capacity-choice side of the problem is also the subject of a large
+operations management literature, surveyed by
 \citet{vanmieghem2003capacity}, which studies how much capacity to
 install under demand uncertainty and how flexible that capacity should
 be. The closest construct there is resource flexibility:
@@ -911,11 +914,16 @@ smooth-pasting tangency at \(X_H^*\)
 
 Internet Appendix F also reports the comparative statics of \(X_H^*\)
 and \(K_H^*\) in \(\sigma\), \(\alpha\), \(\gamma\), and \(\delta\)
-(Figure~\ref{fig-comparative-statics}). Two of the signs are not
-obvious. Cost convexity \(\gamma\) moves the trigger non-monotonically
-while reducing optimal capacity. A higher operating cost \(\delta\)
-raises \emph{both} the trigger and the optimal capacity; that comovement
-is a rescaling of the capacity unit rather than an economic sensitivity
+(Figure~\ref{fig-comparative-statics}). Two of the patterns are not
+obvious. Cost convexity \(\gamma\) moves both the trigger and the
+optimal capacity non-monotonically: on the plotted range \(K_H^*\) falls
+from \(0.0107\) at \(\gamma = 1.2\) to a minimum near \(\gamma = 1.3\)
+and rises to \(0.035\) at \(\gamma = 2\), because changing \(\gamma\) at
+a fixed cost scale \(c\) raises marginal cost for capacities above the
+normalized unit \(K = 1\) and lowers it below, and the optimum sits far
+below that unit. A higher operating cost \(\delta\) raises \emph{both}
+the trigger and the optimal capacity; that comovement is a rescaling of
+the capacity unit rather than an economic sensitivity
 (Section~\ref{sec-calibration}). The linear operating-cost term is
 nonetheless what makes the scale interior: with \(\delta = 0\) the cost
 of capacity is purely convex, the option-value factor under (A2)
@@ -933,8 +941,14 @@ K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H 
 \] \emph{and \(K^*\) is independent of \(\phi\); it is the unique global
 maximizer of the capacity problem, not merely a critical point (Internet
 Appendix A, Step 4). The optimal \(\phi^*\) is determined separately by
-maximizing \(A_{\text{eff}}\) over \(\phi\), and the joint optimum
-\((K^*, \phi^*)\) yields the investment trigger via smooth pasting.}
+maximizing \(A_{\text{eff}}\) over \(\phi\) and is also in closed form,}
+\begin{equation}\protect\phantomsection\label{eq-phi-star}{
+\phi^* = \frac{\rho}{1 + \rho}, \qquad \rho \equiv \left(\frac{\lambda}{r - \mu_H}\right)^{\frac{1}{1-\alpha}},
+}\end{equation} \emph{so beliefs enter the allocation only through the
+ratio of the arrival rate to the H-regime net discount rate; at baseline
+\(\rho \approx 2.34\) and \(\phi^* \approx 0.70\). Substituting
+\((K^*, \phi^*)\) into the smooth-pasting condition gives the investment
+trigger explicitly.}
 
 \emph{When the firm operates in the L-regime with the possibility of a
 regime switch and the option is priced with the simplified form
@@ -1057,12 +1071,12 @@ coefficient \(A_1\) would be determined by value-matching and
 smooth-pasting at a standalone L-regime investment trigger. Assumption
 (A3), the option premium ratio
 \(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha \geq 1\), which holds with a
-wide margin at baseline (\(\Phi_L \approx 1.67\)), states that L-regime
-revenue by itself would not justify investment at any scale, so that
-problem has no interior optimal scale to pin \(A_1\) down. It does not
-by itself imply \(A_1 = 0\). Internet Appendix A (Step 5b of the Proof
-of Proposition 1) shows that the replication argument that suggests
-itself does not sign the coefficient: the candidate bound
+wide margin at baseline (\(\Phi_L \approx 1.67\)), states that the
+standalone L-regime scale problem has no interior optimum (the option
+factor diverges as \(K \to 0\)), so that problem cannot pin \(A_1\)
+down. It does not by itself imply \(A_1 = 0\). Internet Appendix A (Step
+5b of the Proof of Proposition 1) shows that the replication argument
+that suggests itself does not sign the coefficient: the candidate bound
 \(F_L \geq C X^{\beta_H}\) fails, because the pure switching strategy
 faces the same piecewise forcing. Solving the piecewise problem
 numerically gives an exact coefficient that is \emph{negative} at
@@ -1091,11 +1105,12 @@ Under this convention, the investment trigger for the joint
 X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
 }\end{equation} which generalizes Equation~\ref{eq-trigger-H} by
 replacing the H-regime revenue coefficient with the effective
-coefficient \(A_{\text{eff}}\) that combines both regimes. Note that
-Equation~\ref{eq-trigger-phi} is an implicit equation:
-\(A_{\text{eff}}(\phi^*, K^*)\) itself depends on the optimal policy, so
-the trigger is determined jointly with \((K^*, \phi^*)\) through the
-system of first-order conditions (Internet Appendix A). The option
+coefficient \(A_{\text{eff}}\) that combines both regimes. Because
+\(K^*\) and \(\phi^*\) are both in closed form (Proposition 1 and
+Equation~\ref{eq-phi-star}), Equation~\ref{eq-trigger-phi} is explicit
+once they are substituted: the trigger is the option premium times the
+ratio of the total cost to the effective revenue coefficient, both
+evaluated at the optimal policy (Internet Appendix A). The option
 premium \(\beta_H / (\beta_H - 1) > 1\) still applies, reflecting the
 value of waiting, but the relevant revenue metric now accounts for both
 L-regime inference earnings and the expected H-regime training prize.
@@ -1951,10 +1966,12 @@ discount rises from \(43\%\) to \(86\%\) (a trigger ratio of
 unchanged at \(\phi^* \approx 0.70\) and the follower still enters at
 roughly \(47\) times the leader's trigger (Internet Appendix B). The
 convention therefore \emph{understates} the preemption effect. The sign,
-that the leader enters strictly earlier and increasingly so as
-\(\sigma\) rises, is robust to the convention; the magnitude is not. For
-the leader, and by construction, competition in this solution affects
-\emph{timing} rather than \emph{scale}: the leader installs the
+that the leader enters strictly earlier, is robust to the convention;
+the magnitude is not, and neither is the monotone widening in
+\(\sigma\): the re-optimized discount is \(94\%\) at \(\sigma = 0.20\),
+\(86\%\) at \(0.25\), and \(87\%\) at \(0.30\) (Internet Appendix B).
+For the leader, and by construction, competition in this solution
+affects \emph{timing} rather than \emph{scale}: the leader installs the
 monopoly-phase optimal capacity under the leader-scale convention
 introduced at the start of this section, and the training fraction is
 role-invariant (Proposition 3(ii)). The follower's scale does respond to
@@ -3596,15 +3613,21 @@ the combined revenue coefficient. Assumption (A3) does not eliminate it.
 What (A3) rules out is an interior optimal \emph{scale} for the
 standalone, no-switching L-regime problem: at a fixed capacity \(K\)
 that problem has the finite trigger
-\(X_L^{\text{pure}}(K) = [\beta_L^+/(\beta_L^+ - 1)] \cdot [\delta K/r + I(K)]/(A_L K^\alpha)\)
-with \(A_L = 1/(r - \mu_L)\), and an interior optimum over \(K\)
-requires the option premium ratio
-\(\Phi_L \equiv (1 - 1/\beta_L^+)/\alpha < 1\) (the L-regime analogue of
-condition (A2): the marginal value of capacity, \(\alpha\), must be
-large enough relative to the markup-adjusted payout share
-\(1 - 1/\beta_L^+\)). Assumption (A3) imposes the opposite,
-\(\Phi_L \geq 1\), so no scale of a purely L-regime project is worth
-building; it does not follow that the coefficient on the homogeneous
+\(X_L^{\text{pure}}(K) = [\beta_L^0/(\beta_L^0 - 1)] \cdot [\delta K/r + I(K)]/(A_L K^\alpha)\)
+with \(A_L = 1/(r - \mu_L)\) and \(\beta_L^0 \approx 2.33\) the positive
+root of the characteristic equation discounted at \(r\) (no switching),
+and an interior optimum over \(K\) requires the option premium ratio
+\((1 - 1/\beta_L^0)/\alpha < 1\) (the L-regime analogue of condition
+(A2): the marginal value of capacity, \(\alpha\), must be large enough
+relative to the markup-adjusted payout share). At baseline that ratio is
+\(1.43\), and the hazard-adjusted version in (A3),
+\(\Phi_L = (1 - 1/\beta_L^+)/\alpha \approx 1.67\) with \(\beta_L^+\)
+the root at \(r + \lambda\), is larger still; either way the standalone
+L-regime scale problem has no interior optimum. That is a statement
+about the absence of an optimal scale, not about profitability: small
+standalone L-regime projects have positive value at positive demand, and
+the option factor diverges as \(K \to 0\), which is exactly why no scale
+is optimal. It does not follow that the coefficient on the homogeneous
 root vanishes. Nor can the sign be settled by the replication argument
 that suggests itself, namely that the firm can always follow the pure
 switching strategy (never exercise in regime \(L\), wait for the
@@ -4328,7 +4351,7 @@ pricing-measure probability. The rate parameters \(r\), \(\mu_L\), and
 \(\mu_H\) are risk-adjusted throughout the paper; \(\sigma\) is common
 to both measures.
 
-All numerical results are computed using SciPy 1.14 optimization
+All numerical results are computed using SciPy 1.17 optimization
 routines in Python 3.13. The single-firm and duopoly optimizations use
 Nelder--Mead over \((\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]\),
 with leverage fixed at its exogenous value and the trigger \(X^*\)
@@ -5501,10 +5524,12 @@ low demand levels. At \(X = X_H^*\) the two curves meet tangentially
 (smooth pasting), and for \(X > X_H^*\) the firm invests immediately, so
 the option value equals the NPV. The figure illustrates the core
 real-options result: for \(X < X_H^*\) the firm strictly prefers to
-wait, and the value of waiting exceeds the NPV by a factor of two or
-more at demand levels well below the trigger, which is the geometric
-counterpart of the option premium factor
-\(\beta_H/(\beta_H - 1) \approx 2.8\) in Equation~\ref{eq-trigger-H}.
+wait, and the value of waiting is the whole of the option value where
+the NPV is negative (below about \(0.36 X_H^*\) at baseline) and still
+exceeds half the NPV at \(X = 0.5 X_H^*\); the option premium factor
+\(\beta_H/(\beta_H - 1) \approx 2.8\) in Equation~\ref{eq-trigger-H} is
+its geometric counterpart at the trigger, where the two curves become
+tangent.
 
 \begin{figure}[!htb]
 
@@ -5539,10 +5564,15 @@ is larger. Panel (b) shows the effect of revenue elasticity \(\alpha\):
 higher \(\alpha\) (less diminishing returns) raises the trigger and
 substantially increases capacity, since the marginal value of additional
 capacity is higher. Panel (c) shows that greater cost convexity
-\(\gamma\) has a non-monotone effect on the trigger while sharply
-reducing optimal capacity, reflecting the rapidly increasing marginal
-cost of building at scale. Panel (d) shows that higher operating cost
-\(\delta\) raises both the trigger and the optimal capacity. As
+\(\gamma\) has a non-monotone effect on both the trigger and the optimal
+capacity: \(K_H^*\) is \(0.0107\) at \(\gamma = 1.20\), \(0.0034\) at
+\(1.35\), \(0.0067\) at \(1.50\), and \(0.035\) at \(2.00\), with the
+trigger tracing a similar U-shape. With the cost scale \(c\) held fixed,
+a higher exponent lowers the marginal cost \(c\gamma K^{\gamma-1}\) for
+capacities below the normalized unit \(K = 1\), where the optimum lies,
+once \(\gamma\) is large enough for the exponent effect to dominate the
+factor \(\gamma\). Panel (d) shows that higher operating cost \(\delta\)
+raises both the trigger and the optimal capacity. As
 Section~\ref{sec-calibration} notes, this panel is a rescaling of the
 capacity unit rather than an economic sensitivity: \(\delta\) enters
 only through the total cost \(b(K) = \delta K/r + cK^\gamma\), so
