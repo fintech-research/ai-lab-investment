@@ -43,6 +43,17 @@ Results are stated for abstract parameters under the paper's admissibility
 assumptions, so each theorem holds for *every* admissible parameter value,
 not just the baseline calibration.
 
+**What this package is not.** It is the *proof* package only. The numerical
+results (triggers, equilibria, the robustness sweep, the piecewise and
+coupled-boundary verifications, and every figure and table) are produced by
+the Python code in the public repository, whose test suite pins the printed
+numbers; the Internet Appendix refers to that repository, not to this zip,
+wherever it says a check is enforced automatically. A self-contained
+numerical supplement (source, `pyproject.toml` and `uv.lock`, configuration,
+and the commands behind each exhibit) can be assembled from the repository
+with `just build-replication-package` extended accordingly, and will be
+archived with the paper upon publication.
+
 **Not formalized** (see `lean/README.md` for the precise list): the derivation
 of the HJB equation from stochastic-calculus primitives and the
 optimal-stopping verification theorem (taken as the starting point, as in the

@@ -2,7 +2,7 @@
 
 Documents supporting journal submission of *Capacity, Training, and Default in the Race to Artificial General Intelligence*.
 
-- `cover-letter.md` — letter to the editor, currently targeted at Management Science (addressed generically to "Dear Editor"); swap the journal name and fit paragraph to retarget.
+- `cover-letter.md` — letter to the editor, currently targeted at Management Science (addressed generically to "Dear Editor"), with the abstract included; swap the journal name and fit paragraph to retarget. `cover-letter-notes.md` holds the editorial notes and the record of what was changed or deliberately kept.
 - `ai-disclosure.md` — declaration of generative AI use: a short-form Elsevier-style statement (to be inserted in the manuscript before the references for Elsevier targets) and a detailed long-form disclosure.
 - `replication/` — referee-facing machine-checked proof package (issue #108): a README for referees, `extract_equations.py` (generates `equations.tex`, the complete labeled equation listing, from the paper sources), and `just build-replication-package` to assemble the zip (Lean project + README + equations listing).
 
@@ -33,8 +33,15 @@ losslessly with `pdfjam`). Every cross-reference therefore resolves in both arti
 
 Verified against the Management Science author guidelines (fetched 2026-07-25):
 double-anonymous with no title page, ≥ 1.5 line spacing, 11pt, 1-inch-plus margins,
-3–5 keywords, abstract ≤ 250 words (~178), alphabetical author–year references,
-supplementary material as a separate e-companion.
+3–5 keywords, abstract ≤ 250 words (158 as of 2026-09-08), alphabetical author–year
+references, supplementary material as a separate e-companion.
+
+**Length.** The guidelines set no hard page limit for an initial submission but
+allow rejection for excessive length, and cap *invited revisions* at 32 pages at
+1.5 spacing (47 double-spaced), excluding the e-companion. The blind manuscript
+was 67 pages (plus a 49-page e-companion) in the 2026-08-08 build; issue #149
+targets the revision length before submission. Re-measure with `just render-blind`
+after every content change.
 
 ### Reference style decision (2026-07-25)
 
@@ -53,7 +60,8 @@ drop `informs2014.bst` (from the INFORMS LaTeX author package) into `paper/` and
 - [ ] Choose the department (Finance vs. Operations Management — see
       `../reports/review_report_consolidated.md`)
 - [ ] Upload the two blind PDFs; **do not** upload a title page
-- [ ] Five suggested reviewers
+- [ ] Suggested reviewers (the July guideline fetch said five; a September
+      web summary said six — confirm the count on the portal)
 - [ ] Three associate editor nominations
 - [ ] Submitting author's ORCID
 - [ ] Abstract pasted into the cover letter (`cover-letter.md`)
