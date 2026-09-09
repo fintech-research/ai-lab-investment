@@ -3019,14 +3019,18 @@ observed \(\hat{\phi}\) is correspondingly \emph{higher} under the
 dynamic model. That option is modest in value, worth 5.1\% of gross
 revenue value when re-purposing is free and 0.2\% when it is costly,
 with the pre-switch training fraction \(\phi_1\) falling to \(0.60\) at
-a moderate adjustment cost and \(\underline{\phi} \approx 0.18\)
-unchanged. The headline mechanisms accordingly attenuate but survive:
-both the Proposition 2 solvency floor and the Numerical Finding 1
-asymmetry run through the \emph{level} of training investment rather
-than its adjustability. One consideration that exercise does not capture
-is the emergence of \emph{inference-time scaling} (chain-of-thought
-reasoning, search-augmented generation), which blurs the
-training-inference boundary that the model treats as sharp.
+a moderate adjustment cost and to the lower bound when re-purposing is
+free. The exercise solves allocation and value only, not default or
+belief mismatch, so what it says about the headline mechanisms is a
+conjecture rather than a result: because the Proposition 2 solvency
+floor and the Numerical Finding 1 asymmetry run through the \emph{level}
+of pre-switch training investment, the lower \(\phi_1\) would attenuate
+both, and the small value gain does not bound that attenuation, since
+the observable \(\phi_1\) moves far more than the value does. One
+consideration that exercise does not capture is the emergence of
+\emph{inference-time scaling} (chain-of-thought reasoning,
+search-augmented generation), which blurs the training-inference
+boundary that the model treats as sharp.
 
 The regime-specific revenue structure, inference in \(L\) and training
 in \(H\), is deliberately extreme, chosen to generate a clean
@@ -4505,13 +4509,13 @@ A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-
 single-boundary root as \(C_2 \to 0\)) is computed by Brent's method. A
 first-order expansion in the small coefficient \(C_2\) around the
 single-boundary root \(X_D^0\) gives the closed-form relative bias \[
-\frac{X_D^0 - X_D}{X_D^0} \;\approx\; \kappa = \frac{C_2\,(\beta_L^- - \beta_H^-)\,(X_D^0)^{\beta_H^- - 1}}{A_{\text{eff}}\,(\beta_L^- - 1)} > 0,
+\frac{X_D^0 - X_D}{X_D^0} \;\approx\; \eta = \frac{C_2\,(\beta_L^- - \beta_H^-)\,(X_D^0)^{\beta_H^- - 1}}{A_{\text{eff}}\,(\beta_L^- - 1)} > 0,
 \] positive because \(C_2 < 0\) at calibration values. The expansion
 therefore gives a closed-form explanation of the direction of the bias,
 namely that the single-boundary formula overstates default risk, with
 the sign of \(C_2\) evaluated at calibration values rather than signed
 in general. At baseline the exact relative bias is 3.1\% and the
-first-order \(\kappa\) is 2.9\%, uniform across leverage levels; the
+first-order \(\eta\) is 2.9\%, uniform across leverage levels; the
 closed-form boundary exceeds the coupled-system boundary by
 approximately 3\% throughout, in the conservative direction.
 
@@ -5278,19 +5282,28 @@ fixed forever, so each branch continues with the corresponding
 perpetuity. Capacity is held at the static optimum \(K^*\), which
 isolates the allocation margin, and reallocation incurs a quadratic
 adjustment cost \(\kappa \cdot (\Delta\phi)^2\) charged in the branch in
-which it occurs. Writing \(\rho = r - \mu_L + \lambda\) for the
-hazard-adjusted net discount rate of the L-regime (written \(\Delta\) in
-the proof of Proposition 2), the value per unit of \(X_0\) decomposes
-into the survival-adjusted L-regime flow over the first period (weight
-\((1 - e^{-\rho \, dt})/\rho\)), the H-regime flow earned between an
-in-period switch and the revision date at the \emph{pre-switch}
-allocation, the H perpetuity at the readjusted allocation in the
-switched state, and the L perpetuity at the readjusted allocation in the
-no-switch state (weight \(e^{-\rho \, dt}\)). The decomposition is exact
-rather than approximate: at \(\phi_1 = \phi_H = \phi_{L2}\) the four
-terms collapse to the perpetual \(A_{\text{eff}}\) of
-Equation~\ref{eq-a-eff}, so the \(\kappa = \infty\) row is the static
-model itself and the value gains are measured against it.
+which it occurs. All values in the exercise, including \(\kappa\), are
+measured per unit of demand \(X_0\) at the fixed capacity \(K^*\), in
+the same units as the revenue coefficients; the static revenue value is
+\(1.33\) per unit of \(X_0\), so on the grid
+\(\kappa \in \{0.5, 2, 10\}\) a full reversal of the baseline allocation
+(\(\Delta\phi \approx 0.4\) at \(\kappa = 0.5\)) costs about \(6\%\) of
+that value at the cheapest setting and \(\kappa = 10\) makes any
+revision larger than a few points prohibitive, which spans the range
+from nearly free to effectively static. Writing
+\(\rho = r - \mu_L + \lambda\) for the hazard-adjusted net discount rate
+of the L-regime (written \(\Delta\) in the proof of Proposition 2), the
+value per unit of \(X_0\) decomposes into the survival-adjusted L-regime
+flow over the first period (weight \((1 - e^{-\rho \, dt})/\rho\)), the
+H-regime flow earned between an in-period switch and the revision date
+at the \emph{pre-switch} allocation, the H perpetuity at the readjusted
+allocation in the switched state, and the L perpetuity at the readjusted
+allocation in the no-switch state (weight \(e^{-\rho \, dt}\)). The
+decomposition is exact rather than approximate: at
+\(\phi_1 = \phi_H = \phi_{L2}\) the four terms collapse to the perpetual
+\(A_{\text{eff}}\) of Equation~\ref{eq-a-eff}, so the
+\(\kappa = \infty\) row is the static model itself and the value gains
+are measured against it.
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
@@ -5307,8 +5320,9 @@ the training fraction chosen at investment, \(\phi_H\) the fraction
 after a switch to regime \(H\), and \(\phi_{L2}\) the fraction after a
 first period with no switch. \(\phi^* = 0.70\) in the static model;
 \(\phi_1\) and \(\phi_H\) are constrained to \([0.01, 0.99]\), and the
-\(\kappa = 0\) row attains both bounds. Value gains are relative to the
-static revenue coefficient
+\(\kappa = 0\) row attains both bounds (the unconstrained optimum at
+\(\kappa = 0\) is \(\phi_1 \approx 0.007\), and the objective is nearly
+flat there). Value gains are relative to the static revenue coefficient
 \(A_{\text{eff}}(\phi^*, K^*)\).}\label{tbl-dynamic-phi}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
@@ -5368,10 +5382,19 @@ and is used mainly after the switch: the gain over the static allocation
 is \(5.1\%\) of the gross revenue value at fixed capacity under free
 reallocation, falling to \(0.2\%\) when adjustment costs are high, and
 the post-switch allocation goes to the training corner
-(\(\phi_H \to 0.99\) at \(\kappa = 0\)). Third, the faith-based survival
-threshold \(\underline{\phi} \approx 0.18\) is unchanged: it depends on
-the level of \(A_{\text{eff}}\) relative to costs, not on whether
-\(\phi\) is static or dynamic.
+(\(\phi_H \to 0.99\) at \(\kappa = 0\)). Third, and by way of scope, the
+exercise solves the allocation and the gross revenue value only; it does
+not solve the default problem or the belief-mismatch comparison under a
+revisable allocation, so it establishes nothing about the faith-based
+survival threshold or the Dario's dilemma asymmetry in a dynamic model.
+The static threshold \(\underline{\phi} \approx 0.18\) of
+\textbf{?@eq-phi-underbar} is a function of the parameters alone and is
+unaffected by construction. Note also that a \(5\%\) gain in gross
+revenue value coexists with a large change in the very observable used
+to infer beliefs: under free reallocation the pre-switch training
+fraction collapses to the bound, so a small value distortion does not
+imply a small distortion in \(\phi_1\) or in the \(\lambda\) it would
+reveal.
 
 These numbers bound the bias from one side. The exercise ties the H
 prize to the \emph{contemporaneous} training capacity, which makes
