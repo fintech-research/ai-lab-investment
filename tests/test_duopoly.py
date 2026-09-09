@@ -1253,3 +1253,20 @@ class TestDefaultBoundaryInPhi:
             ModelParameters()
         ).optimal_trigger_capacity_phi()
         assert argmax(phi_star) == pytest.approx(phi_star, abs=0.002)
+
+
+class TestContestShareProperties:
+    """Section 3 prose on the Tullock share at alpha = 0.4."""
+
+    def test_share_below_capacity_fraction_and_concave(self):
+        model = DuopolyModel(ModelParameters())
+        s4 = model.contest_share(4.0, 1.0)
+        assert s4 == pytest.approx(0.6352, abs=1e-3)
+        assert s4 < 0.8
+        rev_share = 4.0**0.8 / (1.0 + 4.0**0.8)
+        assert rev_share == pytest.approx(0.7519, abs=1e-3)
+        assert s4 < rev_share < 0.8
+        z = np.linspace(0.2, 8.0, 200)
+        s = np.array([model.contest_share(zi, 1.0) for zi in z])
+        assert np.all(np.diff(s) > 0)
+        assert np.all(np.diff(s, 2) < 0)
