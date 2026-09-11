@@ -40,9 +40,10 @@ references, supplementary material as a separate e-companion.
 allow rejection for excessive length, and cap *invited revisions* at 32 pages at
 1.5 spacing (47 double-spaced), excluding the e-companion. The blind manuscript
 was 67 pages (plus a 49-page e-companion) in the 2026-08-08 build and 47 pages
-(plus a 70-page e-companion) after the #149 consolidation of 2026-09-10; the
-remaining gap to 32 pages is left to the final prose pass (#150). Re-measure with
-`just render-blind` after every content change.
+(plus a 70-page e-companion) after the #149 consolidation and the #150 prose pass
+of 2026-09-10; whether to cut further toward the 32-page revision cap before the
+initial submission is an open author decision (see `../TO_VERIFY.md`). Re-measure
+with `just render-blind` after every content change.
 
 ### Reference style decision (2026-07-25)
 
