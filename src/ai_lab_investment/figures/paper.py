@@ -511,8 +511,9 @@ def create_firm_comparison() -> plt.Figure:
         ax.set_xticks(x)
 
     # Upper axis: show the outlier region
-    ax_top.set_ylim(18, 22)
-    ax_top.set_yticks([18, 20, 22])
+    top_lo = int(max(capex_int)) - 2
+    ax_top.set_ylim(top_lo, top_lo + 4)
+    ax_top.set_yticks([top_lo, top_lo + 2, top_lo + 4])
     ax_top.set_xticklabels([])
     ax_top.tick_params(bottom=False)
     ax_top.set_title("(a)", loc="left", fontweight="bold")
