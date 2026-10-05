@@ -1,6 +1,6 @@
 # Submission materials (issue #95)
 
-Documents supporting journal submission of *Capacity, Training, and Default in the Race to Artificial General Intelligence*.
+Documents supporting journal submission of *Investing in Artificial General Intelligence*.
 
 - `cover-letter.md` — letter to the editor, currently targeted at Management Science (addressed generically to "Dear Editor"), with the abstract included; swap the journal name and fit paragraph to retarget. `cover-letter-notes.md` holds the editorial notes and the record of what was changed or deliberately kept.
 - `ai-disclosure.md` — declaration of generative AI use: a short-form Elsevier-style statement (to be inserted in the manuscript before the references for Elsevier targets) and a detailed long-form disclosure.
@@ -41,7 +41,8 @@ allow rejection for excessive length, and cap *invited revisions* at 32 pages at
 1.5 spacing (47 double-spaced), excluding the e-companion. The blind manuscript
 was 67 pages (plus a 49-page e-companion) in the 2026-08-08 build and 47 pages
 (plus a 70-page e-companion) after the #149 consolidation and the #150 prose pass
-of 2026-09-10; whether to cut further toward the 32-page revision cap before the
+of 2026-09-10, then 45 pages (plus a 66-page e-companion) once Internet Appendix I
+and the references only it cited were removed on 2026-10-04; whether to cut further toward the 32-page revision cap before the
 initial submission is an open author decision (see `../TO_VERIFY.md`). Re-measure
 with `just render-blind` after every content change.
 
