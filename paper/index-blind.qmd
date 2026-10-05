@@ -15,7 +15,7 @@
 # IMPORTANT: `title`, `abstract`, and `keywords` below are *content* and must stay
 # identical to `index.qmd`. Quarto has no per-document metadata include, so the
 # parity is enforced by `tests/test_paper_metadata.py` instead.
-title: "Capacity, Training, and Default in the Race to Artificial General Intelligence"
+title: "Investing in Artificial General Intelligence"
 date: today
 date-format: long
 format:

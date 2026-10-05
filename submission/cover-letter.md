@@ -2,7 +2,7 @@
 
 Dear Editor,
 
-I am pleased to submit my manuscript, "Capacity, Training, and Default in the Race to Artificial General Intelligence," for consideration at *Management Science*. The abstract follows.
+I am pleased to submit my manuscript, "Investing in Artificial General Intelligence," for consideration at *Management Science*. The abstract follows.
 
 > Frontier AI laboratories must decide how much irreversible capacity to build under uncertain arrival of Artificial General Intelligence (AGI), and how to split it between inference (current revenue) and training (future capability). I develop a real-options model with regime switching, duopoly competition, endogenous default, and diminishing returns to capacity whose curvature is motivated by AI scaling laws. Under a stated pricing convention the model yields analytical investment triggers and a semi-analytical preemption equilibrium in which competition compresses investment timing, while beliefs about AI timelines, not competitive position, pin down the training fraction. It also produces "faith-based survival": optimism about the switch, acting through the training allocation, raises the post-AGI continuation value and lowers the default boundary. The hope of AGI keeps the firm alive, though that hope is worthless to creditors in bankruptcy. Calibration to four AI lab archetypes shows how heterogeneous beliefs about AI timelines can generate cross-sectional differences in investment. In the calibrated model, conservative underinvestment is costlier in expected value, but aggressive overinvestment carries higher tail default risk.
 

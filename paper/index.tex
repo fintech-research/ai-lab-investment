@@ -103,6 +103,8 @@
 
 
 \setkomafont{disposition}{\rmfamily\bfseries}
+\usepackage{etoc}
+\AtBeginDocument{\etocdepthtag.toc{main}}
 \usepackage{url}
 \usepackage[noblocks]{authblk}
 \renewcommand*{\Authsep}{, }
@@ -158,7 +160,7 @@
 \@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
 \makeatother
 \hypersetup{
-  pdftitle={Capacity{,} Training{,} and Default in the Race to Artificial General Intelligence},
+  pdftitle={Investing in Artificial General Intelligence},
   pdfkeywords={\xmpquote{real options}, \xmpquote{irreversible capacity
 investment}, \xmpquote{artificial intelligence}, \xmpquote{duopoly
 preemption}, \xmpquote{default risk}},
@@ -170,16 +172,16 @@ preemption}, \xmpquote{default risk}},
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Capacity, Training, and Default in the Race to Artificial General
-Intelligence\thanks{I thank Armand Jr Brunelle, Tolga Cenesizoglu,
-Joshua Gans, Charles Martineau, and Piotr Orłowski for helpful comments.
-AI assistance was used extensively in writing this paper; the code for
-the project and details on the use of AI tools are available at
+\title{Investing in Artificial General Intelligence\thanks{I thank
+Armand Jr Brunelle, Tolga Cenesizoglu, Joshua Gans, Charles Martineau,
+and Piotr Orłowski for helpful comments. AI assistance was used
+extensively in writing this paper; the code for the project and details
+on the use of AI tools are available at
 \url{https://github.com/fintech-research/ai-lab-investment}. Vincent
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{September 10, 2026}
+\date{October 4, 2026}
 
 \begin{document}
 \maketitle
@@ -430,8 +432,8 @@ the default boundary and the liquidation collateral in opposite
 directions. The training fraction \(\phi\) does exactly that here: below
 the allocation optimum, raising it lowers the default boundary through
 the expected post-AGI continuation value (\emph{faith-based survival},
-whose belief-side thresholds are \textbf{?@eq-phi-underbar} and
-\textbf{?@eq-phi-tilde}), while shrinking the inference business
+whose belief-side thresholds are Equation~\ref{eq-phi-underbar} and
+Equation~\ref{eq-phi-tilde}), while shrinking the inference business
 creditors can liquidate, so the value that keeps the firm alive is
 worthless in bankruptcy. That opposition is what makes belief errors
 asymmetric in \emph{Dario's dilemma}, with optimism acting through the
@@ -442,8 +444,7 @@ firm cannot buy survival by sacrificing current revenue, and the
 allocation problems closest in structure
 \citep{akcigit2018growth, chod2005resource} are solved for firms whose
 survival is not at stake. The investment-financing framework follows
-\citet{hackbarth2012corporate}; Internet Appendix I collects additional
-antecedents and the empirical motivation for the duopoly setting.
+\citet{hackbarth2012corporate}.
 
 The paper proceeds as follows. Section~\ref{sec-model} presents the
 model environment, the single-firm benchmark, and the duopoly
@@ -805,7 +806,7 @@ training compute (which determines H-regime revenue) increases relative
 to the marginal value of inference compute (which determines L-regime
 revenue). Third, higher \(\lambda\) raises the option value whenever the
 optimal allocation trains enough for the switch to be good news,
-\(\phi^*(\lambda) > \underline{\phi}\) (\textbf{?@eq-phi-underbar};
+\(\phi^*(\lambda) > \underline{\phi}\) (Equation~\ref{eq-phi-underbar};
 \(\lambda \gtrsim 0.025\) at baseline): by the envelope theorem the
 derivative of the value in \(\lambda\) has the sign of
 \(\partial A_{\text{eff}}/\partial \lambda\) at the optimum, which is
@@ -840,12 +841,13 @@ training allocation as a function of the arrival rate \(\lambda\) in the
 full model. (a) Option value \(F(X)\) at \(X = 0.002\), with
 \((X^*, K^*, \phi^*)\) re-optimized at each \(\lambda\). (b) Optimal
 training fraction \(\phi^*(\lambda)\) (solid) and the faith-based
-survival threshold \(\underline{\phi}\) of \textbf{?@eq-phi-underbar}
-(dashed). The dotted vertical line in both panels marks the arrival rate
-at which \(\phi^*\) crosses \(\underline{\phi}\), the minimum of the
-value in \(\lambda\). Both panels sweep \(\lambda\) over an 80-point
-grid on \([0.005, 0.80]\), holding all other parameters at the baseline
-calibration; \(X = 0.002\) lies below every trigger on the grid.}
+survival threshold \(\underline{\phi}\) of
+Equation~\ref{eq-phi-underbar} (dashed). The dotted vertical line in
+both panels marks the arrival rate at which \(\phi^*\) crosses
+\(\underline{\phi}\), the minimum of the value in \(\lambda\). Both
+panels sweep \(\lambda\) over an 80-point grid on \([0.005, 0.80]\),
+holding all other parameters at the baseline calibration; \(X = 0.002\)
+lies below every trigger on the grid.}
 
 \end{figure}%
 
@@ -1112,20 +1114,22 @@ boundary \(X_D\) has the following properties:}
 \emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
 training allocation is sufficiently high, and the characterization is
 fully closed-form in the symmetric-shares case (\(s_i^L = s_i^H\), as
-under symmetric capacities }and* allocations, or monopoly). Two channels
-operate. The \(A_{\text{eff}}\) channel (higher \(\lambda\) raises the
-weight on the H-regime continuation value, lowering \(X_D\)) is positive
-if and only if \(\phi_i\) exceeds\emph{ \[
+under symmetric capacities} and \emph{allocations, or monopoly). Two
+channels operate. The \(A_{\text{eff}}\) channel (higher \(\lambda\)
+raises the weight on the H-regime continuation value, lowering \(X_D\))
+is positive if and only if \(\phi_i\) exceeds}
+\begin{equation}\protect\phantomsection\label{eq-phi-underbar}{
 \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
-\] \{\#eq-phi-underbar\} }An opposing markup channel operates through
-the discount root: higher \(\lambda\) raises the effective discount rate
-and pushes \(\beta_L^-/(\beta_L^- - 1)\) toward one, raising \(X_D\).
+}\end{equation} \emph{An opposing markup channel operates through the
+discount root: higher \(\lambda\) raises the effective discount rate and
+pushes \(\beta_L^-/(\beta_L^- - 1)\) toward one, raising \(X_D\).
 Because the \(A_{\text{eff}}\)-channel semi-elasticity is linear in the
 L-regime flow and H-regime continuation terms, the net condition
 \(\partial X_D / \partial \lambda < 0\) also solves in closed form: it
-holds if and only if \(\phi_i\) exceeds the exact threshold\emph{ \[
+holds if and only if \(\phi_i\) exceeds the exact threshold}
+\begin{equation}\protect\phantomsection\label{eq-phi-tilde}{
 \tilde{\phi} = \frac{\tilde{\Omega}}{1 + \tilde{\Omega}}, \quad \tilde{\Omega} \equiv \left[\frac{(r - \mu_H)\,(1 + m\Delta)}{(r - \mu_L) - m\lambda\Delta}\right]^{1/\alpha},
-\] \{\#eq-phi-tilde\} }where \(\Delta = r - \mu_L + \lambda\) and
+}\end{equation} \emph{where \(\Delta = r - \mu_L + \lambda\) and
 \(m = \mathrm{d}\ln M / \mathrm{d}\lambda = 1/[\beta_L^-(\beta_L^- - 1)\mathcal{R}] > 0\)
 is the markup-channel semi-elasticity, with
 \(\mathcal{R} = \sqrt{(\mu_L - \sigma^2/2)^2 + 2\sigma^2(r+\lambda)}\)
@@ -1138,7 +1142,7 @@ the revenue function, a larger training allocation is needed for the
 H-regime term to dominate), decreasing in \(\mu_H - \mu_L\) (a larger
 regime-switch growth premium amplifies the H-regime term, lowering the
 threshold), and increasing in \(r\) (higher discounting reduces the
-present value of the continuation opportunity).*
+present value of the continuation opportunity).}
 
 \emph{(iii) For a given capacity \(K\) and training fraction \(\phi_i\)
 below the interior maximizer of \(A_{\text{eff},i}(\cdot)\), there
@@ -2127,12 +2131,19 @@ is too bold.
 \clearpage
 \thispagestyle{empty}
 \begin{center}
-\vspace*{0.18\textheight}
+\vspace*{0.08\textheight}
 {\Large\bfseries Internet Appendix for}\\[1.2em]
-{\Large\bfseries ``Capacity, Training, and Default in the Race to Artificial General Intelligence''}\\[3em]
+{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
 {\large\itshape Supplementary material intended for online publication as an e-companion}
 \label{ia-cover}%
 \end{center}
+\vspace{3em}
+% Appendix-only contents: entries after the `ia` tag (set below the Internet
+% Appendix heading) are listed; main-text entries carry the `main` tag.
+\etocsettagdepth{main}{none}
+\etocsettagdepth{ia}{subsubsection}
+\etocsettocstyle{\noindent{\large\bfseries Contents}\par\medskip}{}
+\tableofcontents
 
 \clearpage
 \setcounter{page}{1}
@@ -2145,6 +2156,8 @@ is too bold.
 
 \section*{Internet Appendix}\label{internet-appendix}
 \addcontentsline{toc}{section}{Internet Appendix}
+
+\etocdepthtag.toc{ia}
 
 This Internet Appendix collects the proofs, numerical methods,
 calibration sources, robustness exercises, and supporting exhibits
@@ -2289,7 +2302,7 @@ H-regime values & Derived (choices) \\
 \(C_D\) & Total coupon flow: \(C_D = r_c \, \ell \, I(K)\) & Derived
 (choices) \\
 \(\Omega\) & H-to-L present-value ratio setting \(\underline{\phi}\)
-(\textbf{?@eq-phi-underbar}) & Derived (primitives) \\
+(Equation~\ref{eq-phi-underbar}) & Derived (primitives) \\
 \(s_i^L, s_i^H\) & Tullock contest shares (L-regime inference, H-regime
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
@@ -2326,20 +2339,20 @@ power solution \(X^\beta\) solves the ODE if and only if
 namely \(\beta_H > 1\), \(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\).
 For Proposition 2, it covers the quotient-rule derivative
 \(\partial A_{\text{eff}}/\partial \lambda\), the faith-based survival
-condition, the threshold \textbf{?@eq-phi-underbar}, the monotonicity of
-the default boundary in leverage and rival capacity, and, for the exact
-net threshold \(\tilde{\phi}\), the markup channel's monotonicity in
-\(\lambda\) together with the net-condition rearrangement. For
-Proposition 3, it covers the scale-invariance of the Tullock contest
-share that underlies role-invariance, the separable reduction of the
-follower's revenue coefficient, the contest-derivative factorization,
-and the generic intermediate-value existence and strict-concavity
-single-crossing lemmas underlying the preemption trigger \(X_P\),
-conditional on the continuity, endpoint-sign, and (zero-leverage)
-concavity hypotheses the paper supplies. Each theorem is proved in full,
-depends only on the proof assistant's standard logical axioms, and is
-stated for arbitrary admissible parameters rather than the baseline
-calibration alone.
+condition, the threshold Equation~\ref{eq-phi-underbar}, the
+monotonicity of the default boundary in leverage and rival capacity,
+and, for the exact net threshold \(\tilde{\phi}\), the markup channel's
+monotonicity in \(\lambda\) together with the net-condition
+rearrangement. For Proposition 3, it covers the scale-invariance of the
+Tullock contest share that underlies role-invariance, the separable
+reduction of the follower's revenue coefficient, the contest-derivative
+factorization, and the generic intermediate-value existence and
+strict-concavity single-crossing lemmas underlying the preemption
+trigger \(X_P\), conditional on the continuity, endpoint-sign, and
+(zero-leverage) concavity hypotheses the paper supplies. Each theorem is
+proved in full, depends only on the proof assistant's standard logical
+axioms, and is stated for arbitrary admissible parameters rather than
+the baseline calibration alone.
 
 The scope is the algebra and calculus \emph{downstream} of the
 optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE
@@ -2761,16 +2774,16 @@ holds (it does throughout the calibration ranges; if it fails, no
 allocation can deliver \(\partial X_D/\partial\lambda < 0\)). With
 symmetric shares,
 \(\Pi_H/\Pi_L = (\phi/(1-\phi))^\alpha / (r - \mu_H)\), giving the exact
-threshold \(\tilde{\phi}\) of \textbf{?@eq-phi-tilde}. Since \(m > 0\),
-\(\tilde{\Omega} > \Omega\) and \(\tilde{\phi} > \underline{\phi}\); as
-\(m \to 0\) (no markup channel), \(\tilde{\phi} \to \underline{\phi}\).
-At the baseline calibration \(m \approx 0.77\) and
-\(\tilde{\phi} \approx 0.32\), between \(\underline{\phi} \approx 0.18\)
-and \(\phi^* \approx 0.70\); the numerically measured \(\beta\)-channel
-is about one-third of the \(A_{\text{eff}}\)-channel at \(\phi^*\),
-consistent with the closed form. The sign flip of
-\(\partial X_D/\partial \lambda\) at \(\tilde{\phi}\) is verified by
-finite differences.
+threshold \(\tilde{\phi}\) of Equation~\ref{eq-phi-tilde}. Since
+\(m > 0\), \(\tilde{\Omega} > \Omega\) and
+\(\tilde{\phi} > \underline{\phi}\); as \(m \to 0\) (no markup channel),
+\(\tilde{\phi} \to \underline{\phi}\). At the baseline calibration
+\(m \approx 0.77\) and \(\tilde{\phi} \approx 0.32\), between
+\(\underline{\phi} \approx 0.18\) and \(\phi^* \approx 0.70\); the
+numerically measured \(\beta\)-channel is about one-third of the
+\(A_{\text{eff}}\)-channel at \(\phi^*\), consistent with the closed
+form. The sign flip of \(\partial X_D/\partial \lambda\) at
+\(\tilde{\phi}\) is verified by finite differences.
 
 \emph{Sign at the optimal allocation.} Because \(\tilde{\phi}\) depends
 on \(\lambda\) while \(\phi^*(\lambda)\) is increasing in \(\lambda\)
@@ -4624,7 +4637,7 @@ the baseline calibration. \(\phi_F^*\) is the follower's optimal
 training fraction; \(X_P/X_L^{\text{mono}}\) is the preemption trigger
 relative to the leader's unconstrained trigger; \(\underline{\phi}\) is
 the faith-based survival threshold of
-\textbf{?@eq-phi-underbar}.}\label{tbl-fixedpie}\tabularnewline
+Equation~\ref{eq-phi-underbar}.}\label{tbl-fixedpie}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Object
@@ -4784,8 +4797,8 @@ not solve the default problem or the belief-mismatch comparison under a
 revisable allocation, so it establishes nothing about the faith-based
 survival threshold or the Dario's dilemma asymmetry in a dynamic model.
 The static threshold \(\underline{\phi} \approx 0.18\) of
-\textbf{?@eq-phi-underbar} is a function of the parameters alone and is
-unaffected by construction. Note also that a \(5\%\) gain in gross
+Equation~\ref{eq-phi-underbar} is a function of the parameters alone and
+is unaffected by construction. Note also that a \(5\%\) gain in gross
 revenue value coexists with a large change in the very observable used
 to infer beliefs: under free reallocation the pre-switch training
 fraction collapses to the bound, so a small value distortion does not
@@ -5371,156 +5384,6 @@ with exogenous leverage, a stylized coupon rate \(r_c = 0.05\), and
 bankruptcy cost \(b = 0.30\). Parameters: baseline calibration.}
 
 \end{figure}%
-
-\newpage
-
-\subsection*{I. Supplementary Literature and
-Motivation}\label{i.-supplementary-literature-and-motivation}
-\addcontentsline{toc}{subsection}{I. Supplementary Literature and
-Motivation}
-
-This section collects empirical motivation and literature detail that
-supported earlier drafts of Section~\ref{sec-introduction} and
-Section~\ref{sec-literature} but was cut to hold the main text near the
-target length; it does not introduce new results.
-
-\textbf{Duopoly as the strategic setting.} Section~\ref{sec-model} fixes
-duopoly as the strategic environment; the choice is motivated
-empirically. Frontier AI training competition is concentrated: on public
-accounts, the largest training runs to date have been conducted by a
-handful of laboratories, often backed by or partnered with a single
-cloud provider (e.g., Anthropic--Amazon, OpenAI--Microsoft) or building
-proprietary clusters (e.g., xAI's Colossus). The dominant strategic
-margin is therefore not atomistic competition but rivalry among a few
-labs, each making multi-billion-dollar capacity commitments, and duopoly
-is the minimal model that captures the resulting forces, strategic
-preemption, race-like training-allocation incentives, and
-continuation-value effects under leverage, while keeping the closed-form
-characterization tractable.\footnote{An \(N>2\) extension along the
-  lines of \citet{bouis2009multistage} may be feasible but would
-  sacrifice the closed-form characterization that makes the duopoly
-  results transparent.}
-
-\textbf{A modeling caveat on the capacity variable.} The capacity
-variable \(K\) in Section~\ref{sec-model} is a reduced form for the AI
-infrastructure investment bundle, not solely for compute
-hardware.\footnote{In practice, AI infrastructure investment also
-  encompasses substantial expenditure on power generation and
-  transmission (dedicated natural gas plants, long-term power purchase
-  agreements, on-site substations) required to supply the hundreds of
-  megawatts that a single training cluster demands. For tractability,
-  the model treats all of these complementary investments as a single
-  capital outlay in ``compute capacity,'' with the cost function
-  \(I(K) = cK^\gamma\) absorbing the full cost of bringing a unit of
-  capacity online, including its power supply.}
-
-\textbf{Annotated literature note.} The paragraphs below extend the
-discussion in Section~\ref{sec-literature} with additional antecedents
-and detail that did not fit the space constraint of the main text.
-
-\emph{Real options and capacity choice.} Beyond the timing foundations
-in \citet{mcdonald1986value} and \citet{pindyck1988irreversible}, other
-foundational contributions include \citet{brennan1985evaluating} and
-\citet{bernanke1983irreversibility}. The capacity-choice problem is also
-the subject of a large operations management literature surveyed by
-\citet{vanmieghem2003capacity}; its closest construct, resource
-flexibility, is developed by \citet{chod2005resource}, who show that a
-flexible resource allocated across products \emph{after} demand is
-observed substitutes for capacity and interacts with pricing. On the
-strategic side, \citet{weeds2002strategic} study R\&D delay under a
-real-options framework and \citet{fudenberg1985preemption} supply the
-game-theoretic foundations for preemption.
-\citet{aguerrevere2003equilibrium} shows that operating flexibility can
-make firms \emph{expand}, rather than contract, in response to greater
-uncertainty, and \citet{aguerrevere2009real} draws out the asset-pricing
-implication that installed capacity and competitive intensity jointly
-determine the composition of firm value between assets in place and
-growth options, and hence expected returns; here the risk composition
-shifts with the \emph{split} of a given capacity rather than with its
-level. The paper's emphasis on heterogeneous beliefs about the arrival
-rate \(\lambda\) connects to the literature on disagreement and
-speculation
-\citep{harrison1978speculative, scheinkman2003overconfidence}, though
-here disagreement enters through comparative statics in \(\lambda\)
-rather than through equilibrium trading under heterogeneous priors.
-\citet{grenadier2011real} develop real-options signaling games in which
-investment timing conveys private information, which bears on the
-dynamic belief updating raised as a future direction in
-Section~\ref{sec-conclusion}, and \citet{bouis2009multistage} provide an
-\(N\)-firm sequential-entry framework that could extend the duopoly
-analysis of this appendix and of Section~\ref{sec-model}.
-
-\emph{R\&D races.} \citet{loury1979market} models firms choosing R\&D
-intensity to accelerate a stochastic Poisson breakthrough, showing that
-competition leads to socially excessive duplication of effort, and
-\citet{reinganum1982strategic} extends the framework to asymmetric
-firms, showing that the frontrunner invests more aggressively; the
-parallel with the leader's earlier entry in the preemption equilibrium
-of Proposition 3 is loose, because Reinganum's frontrunner is defined by
-its technological position, whereas here the leader's role is itself an
-outcome of the timing game. \citet{harris1987racing} model R\&D as a
-race with position-dependent investment incentives, producing a
-discouragement effect for lagging firms, and \citet{grossman1986optimal}
-study simultaneous timing and scale choices in R\&D competition under
-uncertainty, combining elements of the capacity and timing decisions
-modeled here.
-
-\emph{Structural credit risk.} \citet{blackcox1976valuing} extend the
-Merton framework to a first-passage setting.
-\citet{hackbarth2006capital} let cash flows depend on a two-state
-macroeconomic regime and derive default and financing policies that
-adapt to the cycle, reproducing countercyclical leverage ratios and
-strictly positive short-maturity credit spreads;
-\citet{chen2010macroeconomic} and \citet{bhamra2010levered} add a
-consumption-based pricing kernel, so that risk prices, leverage, and
-regime-contingent default boundaries are determined jointly. That
-regime-switching literature makes the default boundary depend on the
-state, but the regime governs the cash-flow process exogenously, so the
-size of the growth option is not a decision variable and cannot be
-traded off against current cash flow; here the firm chooses the training
-fraction \(\phi\), and that choice determines both the regime-\(H\)
-continuation value and the regime-\(L\) coupon coverage, which is why
-the default boundary can be \emph{decreasing} in the training fraction
-(\textbf{?@eq-phi-underbar}). The most closely related papers combining
-investment and default are \citet{hackbarth2014capital}, who study real
-options with endogenous default and product-market competition, and
-\citet{kumar2018optimal}, who show that joint leverage and irreversible
-capacity choice are substitutes; \citet{sundaresan2015dynamic} model
-growth options with default risk and \citet{bolton2019investment} model
-financial constraints on investment. The present model builds on
-\citet{hackbarth2012corporate} for the investment-financing framework
-and integrates endogenous default into the strategic capacity-choice
-game.
-
-\emph{Economics of AI.} \citet{jones1995rdbased} and
-\citet{bloom2020ideas} study diminishing returns in idea production.
-\citet{babina2024artificial} and \citet{eisfeldt2023generative} provide
-empirical context on AI investment and valuations; these papers could in
-principle discipline certain calibration inputs (e.g., AI firm betas,
-investment intensities), though the rapidly evolving nature of the
-sector limits the stability of such inputs. The Baumol mechanism in
-\citet{aghion2019artificial}, under which growth is limited by the tasks
-that remain essential and hard to automate, plays a role loosely
-analogous to the diminishing returns \(\alpha < 1\) imposed at the firm
-level here; the present paper is partial equilibrium and therefore
-complements these general-equilibrium analyses by providing a
-micro-founded model of the firm-level investment and allocation
-decisions that aggregate into the industry dynamics those papers study.
-\citet{novymarx2007operating} shows that operating leverage amplifies
-systematic risk, relevant to the operating cost parameter \(\delta\).
-
-\emph{Marginal contribution, restated.} Each adjacent literature is
-missing one ingredient of the mechanism at the center of the paper: the
-models that combine capacity choice with endogenous default
-\citep{hackbarth2014capital, kumar2018optimal} treat installed capital
-as homogeneous, so there is no split to choose; the regime-switching
-credit models
-\citep{hackbarth2006capital, chen2010macroeconomic, bhamra2010levered}
-take the cash-flow process, and with it the size of the growth option,
-as exogenous; and the allocation problems closest in structure
-\citep{akcigit2018growth, chod2005resource} are solved for firms whose
-survival is not at stake. The contribution is the joint presence of the
-three, not any one of them.
 
 
 

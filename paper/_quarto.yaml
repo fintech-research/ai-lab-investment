@@ -43,6 +43,8 @@ format:
     include-in-header:
       text: |
         \setkomafont{disposition}{\rmfamily\bfseries}
+        \usepackage{etoc}
+        \AtBeginDocument{\etocdepthtag.toc{main}}
         \usepackage{url}
         \usepackage[noblocks]{authblk}
         \renewcommand*{\Authsep}{, }

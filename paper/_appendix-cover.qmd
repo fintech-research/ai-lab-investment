@@ -2,10 +2,17 @@
 \clearpage
 \thispagestyle{empty}
 \begin{center}
-\vspace*{0.18\textheight}
+\vspace*{0.08\textheight}
 {\Large\bfseries Internet Appendix for}\\[1.2em]
-{\Large\bfseries ``Capacity, Training, and Default in the Race to Artificial General Intelligence''}\\[3em]
+{\Large\bfseries ``Investing in Artificial General Intelligence''}\\[3em]
 {\large\itshape Supplementary material intended for online publication as an e-companion}
 \label{ia-cover}%
 \end{center}
+\vspace{3em}
+% Appendix-only contents: entries after the `ia` tag (set below the Internet
+% Appendix heading) are listed; main-text entries carry the `main` tag.
+\etocsettagdepth{main}{none}
+\etocsettagdepth{ia}{subsubsection}
+\etocsettocstyle{\noindent{\large\bfseries Contents}\par\medskip}{}
+\tableofcontents
 ```
