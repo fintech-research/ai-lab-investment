@@ -241,7 +241,7 @@ The mechanism differs from models in which the growth option is exogenous, where
 
 *(i) $X_D$ is increasing in leverage $\ell$ and the coupon rate $r_c$.*
 
-*(ii) $X_D$ is decreasing in $\lambda$ precisely when the training allocation is sufficiently high, and the characterization is fully closed-form in the symmetric-shares case ($s_i^L = s_i^H$, as under symmetric capacities *and* allocations, or monopoly). Two channels operate. The $A_{\text{eff}}$ channel (higher $\lambda$ raises the weight on the H-regime continuation value, lowering $X_D$) is positive if and only if $\phi_i$ exceeds*
+*(ii) $X_D$ is decreasing in $\lambda$ precisely when the training allocation is sufficiently high, and the characterization is fully closed-form in the symmetric-shares case ($s_i^L = s_i^H$, as under symmetric capacities* and *allocations, or monopoly). Two channels operate. The $A_{\text{eff}}$ channel (higher $\lambda$ raises the weight on the H-regime continuation value, lowering $X_D$) is positive if and only if $\phi_i$ exceeds*
 $$
 \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 $$ {#eq-phi-underbar}
