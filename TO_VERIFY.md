@@ -19,8 +19,6 @@ exhibit, or consulting a source. Delete an entry once verified.
   $\hat{\phi}$ evidence block). Now marked as trade-press reports rather than
   filings, but still lack a source, date, and venue. "AI revenue" is also
   undefined (whose, measured how).
-- [ ] **xAI CapEx row in `@tbl-sources`**. Labelled "press reports", but the
-  body says CapEx is not separately disclosed for that archetype. Reconcile.
 - [ ] **Four cite keys dropped from the bibliography.** The literature review's
   catalogue footnotes were cut, so `@bloom2009impact`, `@jovanovic2005general`,
   `@katz1986technology`, and `@farrell1986installed` are no longer cited
@@ -94,3 +92,43 @@ Author-only checks raised while verifying `reports/review_report_codex_20260907.
 - [ ] **Two sentences introduced during consolidation** to confirm you are happy with: the limitations list's "Training is a flow allocation of installed capacity rather than an accumulated stock of capability, so there is no learning curve" (`_discussion.qmd`), and the Internet Appendix I omission of the `sastry2024computing` compute-governance footnote. (#149)
 - [ ] **Symbol renames** from the collision cleanup, in case they clash with the slides or the Lean README: discriminant $D 	o \mathcal{R}$ (Proposition 2 statement and proof), piecewise coefficients $D_1, D_2, D_w 	o G_1, G_2, G_w$, debt face value $D_0 	o P$, forced-ODE coefficient $C 	o \Gamma$ (label `eq-particular-C` unchanged). (#150)
 - [ ] **Final read of the rendered blind PDF** page by page before upload: `just render-blind`, then `paper/_output/ai_lab_investment_blind.pdf` and the e-companion. The automated checks cover unresolved references, metadata parity, and the house conventions; they do not cover figure placement or page breaks. (#150)
+
+## 2026 calibration update (issue #167)
+
+Figures added from web research on 2026-10-04; the evidence and URLs are in
+`references/calibration_update_2026-10.md`. Paywalled outlets could not be
+opened directly, so several figures come through secondary write-ups.
+
+- [ ] **Anthropic draft-prospectus figures** (`_appendix.qmd`, Internet
+  Appendix C; `_introduction.qmd`; `calibration/data.py`): 2024 revenue \$386M,
+  2025 revenue \$4.59B, 2025 compute spending \$7.33B, \$518B forward compute
+  commitments. All from press reports of the draft S-1. Re-check against the
+  public S-1 on EDGAR once it posts; the two research passes disagreed on
+  whether it was public by September 28.
+- [ ] **OpenAI 2025 revenue \$13.07B**: from press reports of leaked audited
+  statements (FT-checked). The OpenAI-like CapEx stays at the \$12B Azure
+  figure; no comparable 2025 number was found.
+- [ ] **xAI FY2025 figures from the SpaceX S-1**: standalone AI revenue
+  \$0.92B (AI solutions \$465M + subscriptions \$365M + data licensing
+  \$88M) and AI capex \$12.7B. Confirm the segment line items in the filing,
+  and that "AI capex" excludes X. Also confirm the 59.5% single-customer share
+  in the Q2 2026 10-Q.
+- [ ] **Intro capex total, \$720--745B**: Alphabet \$195--205B, Amazon
+  ~\$220B, Meta \$130--145B, Microsoft ~\$175B. Check whether Microsoft's
+  ~\$175B is calendar 2026 or FY2027 (sources disagree), and that the original
+  \$660--690B was the same four-firm total.
+- [ ] **Cloud growth Q2 2026**: Google Cloud +82% (8-K), AWS +37%, Azure +43%
+  constant currency (press).
+- [ ] **CAPM inputs** (Internet Appendix C, Discount rate): Damodaran January
+  2026 WACCs (9.34% system and application software, 10.66% internet software,
+  10.55% semiconductors) came from parsing his wacc.xls. The 4.5% ERP is a
+  back-of-envelope figure, not Damodaran's published implied ERP; substitute
+  his number if you prefer.
+- [ ] **Credit-market figures** (Internet Appendix C, leverage paragraph):
+  Oracle BBB- (S&P, July 9, 2026); CoreWeave 5-year CDS ~850 bp (July 2026);
+  Meta SPV spreads ~230 bp; ~\$500B AI-related debt issuance in 2026 (Goldman,
+  via search summary only); Anthropic \$15B revolver and Texas project debt
+  (Bloomberg). All press.
+- [ ] **Hassabis timeline, possible update**: a secondary source reports
+  "2030 plus or minus a year" (Axios, May 26, 2026). If confirmed, it implies
+  λ above the 0.10--0.15 range in `_calibration.qmd`. Not changed in the text.
