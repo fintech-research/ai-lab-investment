@@ -20,12 +20,14 @@ where:
 - C * X^{beta_H} is the particular solution from the regime-switching
   term lambda * F_H(X)
 
-The simplified form F_L = C * X^{beta_H} (A1 = 0) applies when no
-interior trigger exists in regime L, i.e., when the option premium ratio
-(1 - 1/beta_L_plus)/alpha >= 1 (Assumption A3 in the paper). At the
-baseline calibration, beta_L_plus ≈ 3.01 gives a ratio ≈ 1.67 > 1,
-so the simplified form is valid. The paper derives and states this
-condition explicitly (see eq-option-L-general and Assumption 1(A3)).
+The simplified form F_L = C * X^{beta_H} (A1 = 0) is a solution
+convention that the paper imposes, not a consequence of Assumption A3.
+A3, (1 - 1/beta_L_plus)/alpha >= 1 (about 1.67 at the baseline, where
+beta_L_plus ≈ 3.01), rules out an interior optimal scale in the
+standalone L-regime problem; it does not make A1 vanish, and the
+precommitted-scale piecewise problem gives A1 < 0 at the baseline
+(Internet Appendix A, remark on the pure-power form after the Proof of
+Proposition 1; Internet Appendix B benchmarks the convention).
 
 References:
 - Guo, Miao & Morellec (2005): "Irreversible Investment with Regime Shifts"
@@ -336,15 +338,15 @@ def l_regime_option_value_full(syms):
 def when_is_A1_zero(syms):
     """Analyze when the homogeneous term A1 vanishes.
 
-    A1 = 0 is the paper's *solution convention* (Section 3 conventions;
-    Internet Appendix A, Step 5b). It is imposed when the standalone
-    L-regime scale problem has no interior optimum, i.e. when
-    (1 - 1/beta_L_plus)/alpha >= 1 (Assumption A3), because that problem
-    then supplies no value-matching / smooth-pasting conditions to pin A1
-    down. It is not a theorem that the firm never invests in L: the full
-    model invests in L at a trigger set by the combined coefficient
-    A_eff, and Internet Appendix B benchmarks the convention against the
-    piecewise stopping problem.
+    A1 = 0 is the paper's *solution convention* (solution conventions
+    subsection; Internet Appendix A, remark on the pure-power form). It is
+    imposed when the standalone L-regime scale problem has no interior
+    optimum, i.e. when (1 - 1/beta_L_plus)/alpha >= 1 (Assumption A3),
+    because that problem then supplies no value-matching / smooth-pasting
+    conditions to pin A1 down. It is not a theorem that the firm never
+    invests in L: the full model invests in L at a trigger set by the
+    combined coefficient A_eff, and Internet Appendix B benchmarks the
+    convention against the piecewise stopping problem.
 
     The code in base_model.py checks this via has_interior_trigger("L").
     When this returns False (common for baseline parameters), A1 = 0
