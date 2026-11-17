@@ -63,8 +63,17 @@ class ValuationAnalysis:
     risk metrics, and scenario analyses.
     """
 
-    def __init__(self, params: ModelParameters):
+    def __init__(self, params: ModelParameters, recovery_rule: str = "net"):
+        """Initialize the analysis.
+
+        Args:
+            params: Model parameters.
+            recovery_rule: Recovery rule of the credit block (see
+                `DuopolyModel.recovery_value`); "gross" reproduces the
+                credit numbers of the draft that preceded issue #177.
+        """
         self.params = params
+        self.recovery_rule = recovery_rule
 
     # ------------------------------------------------------------------
     # Growth option decomposition
@@ -141,6 +150,125 @@ class ValuationAnalysis:
     # distance-to-default comparisons across leverage levels.
     CREDIT_RISK_DEMAND_LEVEL = 0.10
 
+    # Leverage at which the zero-leverage limit of a debt quantity is
+    # evaluated (the spread on an infinitesimal issue).
+    ZERO_LEVERAGE_LIMIT = 1e-6
+
+    def _credit_model(self, leverage: float) -> DuopolyModel:
+        return DuopolyModel(
+            self.params,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
+        )
+
+    def _issuance_coupon(
+        self,
+        duo: DuopolyModel,
+        X: float,
+        K: float,
+        phi: float,
+        debt_convention: str,
+    ) -> float:
+        """Coupon under the chosen debt convention, for debt issued at X."""
+        if debt_convention == "par":
+            return duo.coupon_payment(K)
+        if debt_convention == "fair":
+            return duo.fair_coupon(X, phi, K)
+        msg = f"Unknown debt convention: {debt_convention!r}"
+        raise ValueError(msg)
+
+    def credit_metrics(
+        self,
+        leverage: float,
+        X: float,
+        K: float,
+        phi: float,
+        debt_convention: str = "par",
+        horizon: float = 5.0,
+    ) -> dict[str, float]:
+        """Credit primitives of a single firm with policy (K, phi) at X.
+
+        Debt is issued at X. Under "par" the coupon is CREDIT_COUPON_RATE
+        times the face value leverage * I(K) (the paper's convention);
+        under "fair" it is the coupon at which the debt is worth
+        leverage * I(K) at issuance (`DuopolyModel.fair_coupon`).
+
+        At leverage = 0 there is no debt: X_D is the shutdown boundary
+        and the default probability is the probability of reaching it;
+        the recovery rate, spread and coupon-to-proceeds ratio are the
+        limits as leverage goes to zero, evaluated at
+        ZERO_LEVERAGE_LIMIT.
+
+        Returns:
+            Dict with "coupon", "X_D", "distance" (X / X_D), "debt_value",
+            "recovery_rate" (fraction of the default-free claim c_D/r),
+            "spread" (c_D / D - r, absolute), "coupon_rate" (c_D over the
+            proceeds leverage * I(K)) and "default_probability".
+        """
+        if not 0.0 <= leverage <= 1.0:
+            msg = f"Leverage must be in [0, 1], got {leverage}"
+            raise ValueError(msg)
+        p = self.params
+        priced_lev = max(leverage, self.ZERO_LEVERAGE_LIMIT)
+        priced = self._credit_model(priced_lev)
+        priced_coupon = self._issuance_coupon(priced, X, K, phi, debt_convention)
+        D = priced.debt_value(X, phi, K, 0.0, 0.0, coupon=priced_coupon)
+        spread = max(priced_coupon / D - p.r, 0.0) if D > 0 else float("nan")
+
+        coupon = priced_coupon if leverage > 0 else 0.0
+        duo = self._credit_model(leverage)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0, coupon=coupon)
+        return {
+            "coupon": coupon,
+            "X_D": X_D,
+            "distance": X / X_D if X_D > 0 else float("inf"),
+            "debt_value": D if leverage > 0 else 0.0,
+            "recovery_rate": priced.recovery_rate(
+                phi, K, 0.0, 0.0, coupon=priced_coupon
+            ),
+            "spread": spread,
+            "coupon_rate": priced_coupon / (priced_lev * priced.investment_cost(K)),
+            "default_probability": self._first_passage_probability(
+                X, X_D, "L", horizon
+            ),
+        }
+
+    def credit_table(
+        self,
+        X: float,
+        K: float,
+        phi: float,
+        leverages: tuple[float, ...] = (0.0, 0.01, 0.05, 0.20, 0.40, 0.70),
+    ) -> list[dict[str, float]]:
+        """`credit_metrics` under both debt conventions across leverage.
+
+        One row per leverage, with keys "leverage" and, for each
+        convention c in ("par", "fair"), "c_X_D", "c_recovery_rate",
+        "c_spread", "c_coupon_rate" and "c_default_probability". A fair
+        coupon that does not exist (proceeds above the debt capacity)
+        gives nan entries.
+        """
+        rows = []
+        for lev in leverages:
+            row: dict[str, float] = {"leverage": lev}
+            for convention in ("par", "fair"):
+                try:
+                    metrics = self.credit_metrics(lev, X, K, phi, convention)
+                except ValueError:
+                    metrics = {}
+                for key in (
+                    "X_D",
+                    "recovery_rate",
+                    "spread",
+                    "coupon_rate",
+                    "default_probability",
+                ):
+                    row[f"{convention}_{key}"] = metrics.get(key, float("nan"))
+            rows.append(row)
+        return rows
+
     def credit_spread(
         self,
         leverage: float,
@@ -148,6 +276,8 @@ class ValuationAnalysis:
         phi: float = 0.5,
         regime: str = "L",
         risk_free_rate: float | None = None,
+        X: float | None = None,
+        debt_convention: str = "par",
     ) -> float:
         """Compute credit spread for a levered firm.
 
@@ -160,84 +290,41 @@ class ValuationAnalysis:
         therefore zero when default risk is absent and measures only the
         default-risk component.
 
+        At leverage = 0 the returned value is the limit as leverage goes
+        to zero (the spread on an infinitesimal issue). It is positive
+        whenever the shutdown boundary can be reached, because the
+        unlevered firm also stops operating there.
+
         Args:
             leverage: Debt-to-investment ratio.
             K: Capacity level.
             phi: Training fraction (default 0.5).
             regime: Demand regime (unused; debt is an L-regime claim).
             risk_free_rate: Benchmark rate (defaults to the model's r).
+            X: Demand at which the debt is issued and priced (defaults
+                to CREDIT_RISK_DEMAND_LEVEL).
+            debt_convention: "par" (coupon rate CREDIT_COUPON_RATE on the
+                face value) or "fair" (debt worth its proceeds at X).
 
         Returns:
             Credit spread in absolute terms (e.g., 0.02 = 200 bps).
         """
-        if leverage <= 0:
-            return 0.0
+        if X is None:
+            X = self.CREDIT_RISK_DEMAND_LEVEL
+        metrics = self.credit_metrics(leverage, X, K, phi, debt_convention)
+        spread = metrics["spread"]
+        if risk_free_rate is not None:
+            spread += self.params.r - risk_free_rate
+        return max(spread, 0.0) if np.isfinite(spread) else 0.0
 
-        if risk_free_rate is None:
-            risk_free_rate = self.params.r
-
-        duo = DuopolyModel(
-            self.params,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-        )
-
-        X = self.CREDIT_RISK_DEMAND_LEVEL
-
-        coupon = duo.coupon_payment(K)
-        D = duo.debt_value(X, phi, K, 0.0, 0.0)
-
-        if D <= 0 or coupon <= 0:
-            return 0.0
-
-        yield_risky = coupon / D
-        spread = yield_risky - risk_free_rate
-        return max(spread, 0.0)
-
-    def default_probability(
-        self,
-        X_current: float,
-        K: float,
-        leverage: float,
-        phi: float = 0.5,
-        regime: str = "L",
-        horizon: float = 5.0,
+    def _first_passage_probability(
+        self, X_current: float, X_D: float, regime: str, horizon: float
     ) -> float:
-        """Approximate probability of default within horizon.
-
-        Uses the first-passage probability that GBM hits the default
-        boundary within the given time horizon. The default boundary
-        X_D is an L-regime object (the firm defaults pre-switch), so the
-        L-regime drift mu_L is the consistent choice and the default.
-        The calculation abstracts from the regime switch itself: a
-        switch to H before hitting X_D would effectively remove default
-        risk, so the figure is an upper bound on the pre-switch hazard.
-
-        Args:
-            X_current: Current demand level.
-            K: Capacity.
-            leverage: Debt-to-investment ratio.
-            phi: Training fraction (default 0.5).
-            regime: Demand regime governing the drift (default "L").
-            horizon: Time horizon in years.
-
-        Returns:
-            Probability of default [0, 1].
-        """
-        if leverage <= 0:
+        """Probability that GBM started at X_current reaches X_D by horizon."""
+        if X_D <= 0:
             return 0.0
-
-        duo = DuopolyModel(
-            self.params,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-        )
-        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
-        if X_D <= 0 or X_current <= X_D:
-            return 1.0 if X_D > 0 else 0.0
-
+        if X_current <= X_D:
+            return 1.0
         if horizon <= 0:
             return 0.0
 
@@ -263,6 +350,53 @@ class ValuationAnalysis:
             prob += (X_D / X_current) ** (2 * nu / sigma**2) * norm.cdf(-d2)
 
         return float(np.clip(prob, 0.0, 1.0))
+
+    def default_probability(
+        self,
+        X_current: float,
+        K: float,
+        leverage: float,
+        phi: float = 0.5,
+        regime: str = "L",
+        horizon: float = 5.0,
+        debt_convention: str = "par",
+    ) -> float:
+        """Approximate probability of default within horizon.
+
+        Uses the first-passage probability that GBM hits the default
+        boundary within the given time horizon. The default boundary
+        X_D is an L-regime object (the firm defaults pre-switch), so the
+        L-regime drift mu_L is the consistent choice and the default.
+        The calculation abstracts from the regime switch itself: a
+        switch to H before hitting X_D would effectively remove default
+        risk, so the figure is an upper bound on the pre-switch hazard.
+
+        Without debt the boundary is the shutdown boundary of the
+        unlevered firm (the zero-coupon case of the same formula), so
+        the probability is continuous as leverage goes to zero and is
+        the probability that the firm stops operating.
+
+        Args:
+            X_current: Current demand level.
+            K: Capacity.
+            leverage: Debt-to-investment ratio.
+            phi: Training fraction (default 0.5).
+            regime: Demand regime governing the drift (default "L").
+            horizon: Time horizon in years.
+            debt_convention: "par" or "fair" (debt issued at X_current
+                and worth its proceeds there).
+
+        Returns:
+            Probability of default [0, 1].
+        """
+        duo = self._credit_model(leverage)
+        coupon = (
+            self._issuance_coupon(duo, X_current, K, phi, debt_convention)
+            if leverage > 0
+            else 0.0
+        )
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0, coupon=coupon)
+        return self._first_passage_probability(X_current, X_D, regime, horizon)
 
     def credit_spread_curve(
         self,
@@ -490,6 +624,7 @@ class ValuationAnalysis:
             leverage=leverage,
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
         )
         try:
             X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
@@ -532,7 +667,7 @@ class ValuationAnalysis:
 
         # Conditional default probabilities under true dynamics
         # Use the full first-passage formula (consistent with default_probability())
-        va_true = ValuationAnalysis(p_true)
+        va_true = ValuationAnalysis(p_true, self.recovery_rule)
         dp_optimal = va_true.default_probability(
             X_current=X_true,
             K=K_true,
@@ -805,6 +940,7 @@ class ValuationAnalysis:
             leverage=leverage,
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
         )
 
         try:
@@ -1085,6 +1221,7 @@ class ValuationAnalysis:
             leverage=leverage,
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
         )
         try:
             eq_tullock = duo_tullock.solve_preemption_equilibrium()
@@ -1108,6 +1245,7 @@ class ValuationAnalysis:
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
             contest="fixed_pie",
+            recovery_rule=self.recovery_rule,
         )
 
         try:

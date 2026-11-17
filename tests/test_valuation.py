@@ -72,27 +72,21 @@ class TestGrowthOptionDecomposition:
 
 
 class TestCreditRisk:
-    def test_zero_leverage_zero_spread(self, va):
-        """Unlevered firm has zero spread."""
-        spread = va.credit_spread(leverage=0.0)
-        assert spread == 0.0
+    # The zero-leverage cases live in
+    # tests/test_duopoly.py::TestUnleveredFirm.
 
     def test_positive_leverage_positive_spread(self, va):
-        """Levered firm has strictly positive spread once the coupon claim
-        outgrows the inference collateral (baseline: above ell ~ 0.13)."""
-        spread = va.credit_spread(leverage=0.4)
-        assert spread > 0.0
+        """A levered firm has a strictly positive spread at every
+        leverage: recovery is net of operating costs, so debt is never
+        default-free."""
+        for lev in (0.01, 0.13, 0.4):
+            assert va.credit_spread(leverage=lev) > 0.0
 
     def test_higher_leverage_higher_spread(self, va):
         """Higher leverage should produce strictly higher spread."""
         s1 = va.credit_spread(leverage=0.2)
         s2 = va.credit_spread(leverage=0.6)
         assert s2 > s1 > 0.0
-
-    def test_zero_leverage_zero_default_prob(self, va):
-        """Unlevered firm has zero default probability."""
-        prob = va.default_probability(X_current=1.0, K=1.0, leverage=0.0)
-        assert prob == 0.0
 
     def test_default_prob_in_range(self, va):
         """Default probability should be in [0, 1]."""
@@ -114,9 +108,24 @@ class TestCreditRisk:
         assert len(result["default_probability"]) == 5
 
     def test_high_leverage_strictly_positive_spread(self, va):
-        """Once the coupon claim outgrows the inference liquidation value,
-        the spread must be strictly positive."""
+        """The spread is strictly positive at high leverage, under the
+        netted rule and under the pre-#177 gross rule alike."""
         assert va.credit_spread(leverage=0.7) > 0.0
+        gross = ValuationAnalysis(va.params, recovery_rule="gross")
+        assert 0.0 < gross.credit_spread(leverage=0.7) < va.credit_spread(leverage=0.7)
+
+    def test_unknown_debt_convention_raises(self, va):
+        with pytest.raises(ValueError, match="debt convention"):
+            va.credit_spread(leverage=0.4, debt_convention="market")
+
+    def test_leverage_out_of_range_raises(self, va):
+        with pytest.raises(ValueError, match="Leverage"):
+            va.credit_metrics(1.2, 0.10, 1.0, 0.5)
+
+    def test_spread_against_other_benchmark_rate(self, va):
+        base = va.credit_spread(leverage=0.4)
+        shifted = va.credit_spread(leverage=0.4, risk_free_rate=va.params.r - 0.01)
+        assert shifted == pytest.approx(base + 0.01)
 
     def test_first_passage_probability_against_monte_carlo(self, va):
         """Verify the closed-form barrier-hitting probability by simulation.
@@ -170,31 +179,42 @@ class TestCreditRisk:
 
 
 class TestPublishedCreditLevels:
-    """Pin the credit levels printed in section 5.2 and fig-credit-risk.
+    """Pin the credit levels of fig-credit-risk at its evaluation point.
 
     The formula itself is Monte-Carlo verified above; these pins guard the
-    *published levels* against silent drift. Everything here is a
-    deterministic closed-form evaluation at the figure's own conventions
-    (X = CREDIT_RISK_DEMAND_LEVEL, K = 1, phi = 0.5), so the tolerances
-    are tight enough to catch a one-digit change in the printed value.
+    levels against silent drift. Everything here is a deterministic
+    closed-form evaluation at the figure's own conventions
+    (X = CREDIT_RISK_DEMAND_LEVEL, K = 1, phi = 0.5, par debt at r_c).
+
+    Re-pinned in issue #177 for mechanics: with recovery net of operating
+    costs the spread is 28/46/79/147 bps at ell = 0.05/0.20/0.40/0.70
+    (0/12/41/97 under the gross rule of the earlier draft, which
+    `recovery_rule="gross"` still reproduces). The evaluation point and
+    the levels the paper publishes are settled in issue #179.
     """
 
     def test_spread_levels_at_quoted_leverages(self, va):
-        """Paper: 'approximately 40 bps at ell = 0.40 and 100 bps at
-        ell = 0.70'."""
-        assert va.credit_spread(leverage=0.40) * 1e4 == pytest.approx(41.34, abs=0.2)
-        assert va.credit_spread(leverage=0.70) * 1e4 == pytest.approx(97.13, abs=0.5)
+        assert va.credit_spread(leverage=0.05) * 1e4 == pytest.approx(27.66, abs=0.2)
+        assert va.credit_spread(leverage=0.20) * 1e4 == pytest.approx(45.57, abs=0.2)
+        assert va.credit_spread(leverage=0.40) * 1e4 == pytest.approx(78.78, abs=0.2)
+        assert va.credit_spread(leverage=0.70) * 1e4 == pytest.approx(146.78, abs=0.5)
 
-    def test_spread_turns_positive_near_leverage_013(self, va):
-        """Paper: the spread turns positive 'around ell ~ 0.13'."""
-        assert va.credit_spread(leverage=0.13) < 1e-9
-        assert va.credit_spread(leverage=0.14) * 1e4 == pytest.approx(1.05, abs=0.1)
-        assert va.credit_spread(leverage=0.15) * 1e4 == pytest.approx(3.07, abs=0.1)
+    def test_earlier_draft_levels_under_gross_recovery(self, params):
+        """The draft's 'approximately 40 bps at ell = 0.40 and 100 bps
+        at ell = 0.70', with a spread that turns positive 'around
+        ell ~ 0.13'."""
+        gross = ValuationAnalysis(params, recovery_rule="gross")
+        assert gross.credit_spread(leverage=0.40) * 1e4 == pytest.approx(41.34, abs=0.2)
+        assert gross.credit_spread(leverage=0.70) * 1e4 == pytest.approx(97.13, abs=0.5)
+        assert gross.credit_spread(leverage=0.13) < 1e-9
+        assert gross.credit_spread(leverage=0.14) * 1e4 == pytest.approx(1.05, abs=0.1)
+        assert gross.credit_spread(leverage=0.15) * 1e4 == pytest.approx(3.07, abs=0.1)
 
     def test_default_probability_levels(self, va):
-        """Paper: the 5-year default probability 'rises from approximately
-        0.6% at low leverage to approximately 13% at ell = 0.70'. The
-        figure's leverage grid starts at 0.05."""
+        """The 5-year default probability rises from approximately 0.6%
+        at low leverage to approximately 13% at ell = 0.70 (unchanged by
+        issue #177: the levered boundary did not move). The figure's
+        leverage grid starts at 0.05."""
         pd = va.default_probability
         X = va.CREDIT_RISK_DEMAND_LEVEL
         assert pd(X, 1.0, 0.05) * 100 == pytest.approx(0.627, abs=0.01)
@@ -207,13 +227,90 @@ class TestPublishedCreditLevels:
         result = va.credit_spread_curve(np.linspace(0.05, 0.70, 30))
         spreads_bps = result["credit_spread"] * 1e4
         pds_pct = result["default_probability"] * 100
-        assert spreads_bps[0] == pytest.approx(0.0, abs=1e-9)
-        assert spreads_bps[-1] == pytest.approx(97.13, abs=0.5)
+        assert spreads_bps[0] == pytest.approx(27.66, abs=0.2)
+        assert spreads_bps[-1] == pytest.approx(146.78, abs=0.5)
         assert pds_pct[0] == pytest.approx(0.627, abs=0.01)
         assert pds_pct[-1] == pytest.approx(12.979, abs=0.05)
-        # Panel shapes: spread weakly increasing, default prob strictly so.
-        assert np.all(np.diff(spreads_bps) >= -1e-12)
+        # Panel shapes: both strictly increasing.
+        assert np.all(np.diff(spreads_bps) > 0)
         assert np.all(np.diff(pds_pct) > 0)
+
+
+CREDIT_TABLE_LEVERAGES = (0.0, 0.01, 0.05, 0.20, 0.40, 0.70)
+
+# leverage -> (X_D par, spread par bps, X_D fair, spread fair bps)
+CREDIT_TABLE_RECORD = {
+    0.0: (0.001478, 16.78, 0.001478, 16.78),
+    0.01: (0.001482, 16.87, 0.001486, 16.99),
+    0.05: (0.001494, 17.20, 0.001516, 17.81),
+    0.20: (0.001540, 18.50, 0.001630, 21.14),
+    0.40: (0.001602, 20.31, 0.001782, 26.16),
+    0.70: (0.001695, 23.22, 0.002014, 35.05),
+}
+CREDIT_TABLE_PURE_POWER = {
+    0.0: (0.000886, 24.63, 0.000886, 24.63),
+    0.01: (0.000887, 24.71, 0.000889, 24.83),
+    0.05: (0.000892, 25.04, 0.000901, 25.63),
+    0.20: (0.000910, 26.27, 0.000946, 28.77),
+    0.40: (0.000935, 27.97, 0.001006, 33.33),
+    0.70: (0.000971, 30.64, 0.001097, 41.06),
+}
+
+
+class TestCreditPrimitivesTable:
+    """The table issue #177 reports: X_D, recovery rate and spread at
+    entry for ell in {0, 0.01, 0.05, 0.20, 0.40, 0.70}, under par debt at
+    r_c and under fairly priced debt, at two single-firm policies."""
+
+    @pytest.mark.parametrize("which", ["record", "pure_power"])
+    def test_table(self, va, params, which):
+        model = SingleFirmModel(params)
+        if which == "record":
+            X, K, phi = model.optimal_trigger_capacity_phi()
+            expected = CREDIT_TABLE_RECORD
+        else:
+            X, K, phi = model.pure_power_trigger_capacity_phi()
+            expected = CREDIT_TABLE_PURE_POWER
+        rows = va.credit_table(X, K, phi, CREDIT_TABLE_LEVERAGES)
+        assert [row["leverage"] for row in rows] == list(CREDIT_TABLE_LEVERAGES)
+        for row in rows:
+            xd_par, s_par, xd_fair, s_fair = expected[row["leverage"]]
+            assert row["par_X_D"] == pytest.approx(xd_par, abs=1e-6)
+            assert row["fair_X_D"] == pytest.approx(xd_fair, abs=1e-6)
+            assert row["par_spread"] * 1e4 == pytest.approx(s_par, abs=0.02)
+            assert row["fair_spread"] * 1e4 == pytest.approx(s_fair, abs=0.02)
+            # Recovery is zero at the firm's own policy at every leverage.
+            assert row["par_recovery_rate"] == 0.0
+            assert row["fair_recovery_rate"] == 0.0
+            # Fairly priced debt pays r plus the spread on its proceeds.
+            assert row["fair_coupon_rate"] == pytest.approx(
+                params.r + row["fair_spread"], rel=1e-9
+            )
+
+    def test_table_columns_increase_in_leverage(self, va, params):
+        X, K, phi = SingleFirmModel(params).optimal_trigger_capacity_phi()
+        rows = va.credit_table(X, K, phi, CREDIT_TABLE_LEVERAGES)
+        for key in ("par_X_D", "fair_X_D", "par_spread", "fair_spread"):
+            assert np.all(np.diff([row[key] for row in rows]) > 0)
+        # The fair coupon exceeds the par coupon, so its boundary is higher.
+        for row in rows[1:]:
+            assert row["fair_X_D"] > row["par_X_D"]
+            assert row["fair_default_probability"] > row["par_default_probability"]
+
+    def test_missing_fair_coupon_is_reported_as_nan(self, va):
+        """At the figure's off-policy point no coupon raises 70% of I(K)."""
+        (row,) = va.credit_table(0.10, 1.0, 0.5, (0.70,))
+        assert np.isnan(row["fair_spread"])
+        assert row["par_spread"] * 1e4 == pytest.approx(146.78, abs=0.5)
+        assert row["par_recovery_rate"] == pytest.approx(0.0413, abs=5e-4)
+
+    def test_fair_default_probability_matches_metrics(self, va, params):
+        X, K, phi = SingleFirmModel(params).optimal_trigger_capacity_phi()
+        metrics = va.credit_metrics(0.40, X, K, phi, "fair")
+        pd = va.default_probability(X, K, 0.40, phi, debt_convention="fair")
+        assert pd == pytest.approx(metrics["default_probability"], rel=1e-12)
+        assert pd * 100 == pytest.approx(0.552, abs=0.005)
+        assert metrics["distance"] == pytest.approx(X / metrics["X_D"])
 
 
 # ------------------------------------------------------------------
@@ -337,6 +434,35 @@ class TestDarioDilemmaLeveraged:
             X_D = duo.default_boundary(phi, K, 0.0, 0.0)
             assert pytest.approx(dd_exp, abs=0.01) == X / X_D
 
+    def test_continuous_at_zero_leverage(self, va):
+        """C21 (issue #177): the levered/unlevered wedge used to appear in
+        full at ell = 0.01 (loss 21.58% against 22.58% unlevered, default
+        probabilities 0.48% / 4.06% against zero). With the shutdown
+        boundary at ell = 0 the loss and both probabilities are
+        continuous, and the aggressive-to-correct ratio is 8.4 without
+        any debt (7.8 at ell = 0.40)."""
+        zero = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.0)
+        small = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.01)
+        high = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        assert zero["value_loss_pct"] * 100 == pytest.approx(21.585, abs=0.005)
+        assert small["value_loss_pct"] == pytest.approx(
+            zero["value_loss_pct"], abs=1e-6
+        )
+        assert high["value_loss_pct"] == pytest.approx(zero["value_loss_pct"], abs=1e-4)
+        assert zero["default_prob_optimal"] * 100 == pytest.approx(0.481, abs=0.002)
+        assert zero["default_prob_mismatch"] * 100 == pytest.approx(4.036, abs=0.005)
+        assert small["default_prob_optimal"] * 100 == pytest.approx(0.485, abs=0.002)
+        assert small["default_prob_mismatch"] * 100 == pytest.approx(4.059, abs=0.005)
+        ratio = [
+            d["default_prob_mismatch"] / d["default_prob_optimal"]
+            for d in (zero, small, high)
+        ]
+        assert ratio == pytest.approx([8.39, 8.37, 7.84], abs=0.01)
+        # The unlevered dilemma of `dario_dilemma` values the claim
+        # without the shutdown option (22.58%); issue #180 reconciles it.
+        plain = va.dario_dilemma(0.10, 0.50)["value_loss_pct"]
+        assert plain * 100 == pytest.approx(22.578, abs=0.005)
+
     def test_aggressive_higher_default_prob(self, va):
         """Aggressive overinvestment has higher default probability."""
         r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
@@ -371,7 +497,9 @@ class TestDilemmaAsymmetry:
     def test_asymmetry_invariant_to_delta(self):
         """Section 4's delta = 0.10 robustness check: delta is a capacity
         normalization, so the dilemma percentages and the preemption
-        discount are numerically unchanged."""
+        discount are numerically unchanged. The ratio X_P / X_L^mono is
+        0.555 (0.573 before the unlevered claims carried the shutdown
+        option, issue #177)."""
         from ai_lab_investment.models.duopoly import DuopolyModel
 
         losses, discounts = [], []
@@ -388,7 +516,7 @@ class TestDilemmaAsymmetry:
         assert losses[1][0] == pytest.approx(losses[0][0], rel=1e-4)
         assert losses[1][1] == pytest.approx(losses[0][1], rel=1e-4)
         assert discounts[1] == pytest.approx(discounts[0], rel=1e-4)
-        assert discounts[0] == pytest.approx(0.57, abs=0.01)
+        assert discounts[0] == pytest.approx(0.555, abs=0.005)
 
 
 # ------------------------------------------------------------------
@@ -536,15 +664,17 @@ class TestAppendixERobustness:
     """
 
     def test_fixed_pie_table(self, va):
-        """tbl-fixedpie: phi_F = 0.70 under both contests; preemption
-        discount 0.57 (Tullock) vs 0.63 (fixed pie); phi_underbar 0.18."""
+        """tbl-fixedpie: phi_F = 0.70 under both contests; X_P / X_L^mono
+        0.555 (Tullock) vs 0.606 (fixed pie); phi_underbar 0.18. The two
+        ratios were 0.573 and 0.628 before the unlevered claims carried
+        the shutdown option (issue #177)."""
         result = va.fixed_pie_robustness(leverage=0.0)
         assert "error" not in result
         assert "fixedpie_error" not in result
         assert abs(result["tullock_phi_F"] - 0.70) < 0.01
         assert abs(result["fixedpie_phi_F"] - 0.70) < 0.01
-        assert abs(result["tullock_preemption_discount"] - 0.573) < 0.01
-        assert abs(result["fixedpie_preemption_discount"] - 0.628) < 0.01
+        assert abs(result["tullock_preemption_discount"] - 0.555) < 0.005
+        assert abs(result["fixedpie_preemption_discount"] - 0.606) < 0.005
         assert abs(result["tullock_phi_underbar"] - 0.180) < 0.005
 
     def test_duopoly_dilemma_table(self, va):

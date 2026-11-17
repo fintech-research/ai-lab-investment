@@ -601,7 +601,9 @@ class TestDiagnosticReport:
         row = preemption_diagnostic(params, "envelope", reoptimize=False)
         assert row["single_invests"] == 0.0
         assert row["paper_exists"] == 0.0
-        assert row["reduced_X_P"] == pytest.approx(0.002704, rel=1e-3)
+        # 0.002704 before the unlevered claims carried the shutdown option
+        # (issue #177).
+        assert row["reduced_X_P"] == pytest.approx(0.002621, rel=1e-3)
         assert row["mono_exists"] == 1.0
         assert row["mono_X_P"] == pytest.approx(GRID[0.10, 1.5, "envelope"]["mono_X_P"])
         table = format_diagnostic_table([{"scale": "envelope", **row}])

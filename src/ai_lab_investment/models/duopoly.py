@@ -7,7 +7,8 @@ firms under:
 - Regime-specific contest functions:
     L-regime: share over inference capacity [(1-phi)*K]^alpha
     H-regime: share over training compute [phi*K]^alpha
-- Endogenous default boundary (Leland 1994)
+- Endogenous default boundary (Leland 1994), which is a shutdown
+  boundary for the unlevered firm (coupon zero in the same formula)
 - Preemption equilibrium (Huisman & Kort 2015)
 
 An endogenous arrival rate extension is plumbed through but switched
@@ -43,6 +44,9 @@ _KPHI_STARTS: tuple[tuple[float, float], ...] = tuple(
 )
 """Deterministic (log K, phi) multistart grid shared by both roles."""
 
+RECOVERY_RULES: tuple[str, ...] = ("net", "net_until_switch", "gross")
+"""Recovery rules accepted by DuopolyModel (see `recovery_value`)."""
+
 
 class DuopolyModel:
     """Duopoly investment game with endogenous lambda and training allocation.
@@ -66,6 +70,7 @@ class DuopolyModel:
         coupon_rate: float = 0.05,
         bankruptcy_cost: float = 0.30,
         contest: str = "tullock",
+        recovery_rule: str = "net",
     ):
         """Initialize the duopoly model.
 
@@ -78,9 +83,20 @@ class DuopolyModel:
             contest: Revenue-sharing specification, "tullock" (default) or
                 "fixed_pie" (same Tullock shares, no revenue expansion
                 under asymmetry).
+            recovery_rule: What creditors seize in default, before the
+                bankruptcy cost and the caps (see `recovery_value`):
+                "net" (default) is the inference business net of the
+                operating cost of its capacity, floored at zero;
+                "net_until_switch" nets that cost only until the regime
+                switch; "gross" is the pre-#177 rule, inference revenue
+                gross of operating costs, kept so the earlier draft's
+                credit numbers stay reproducible.
         """
         if contest not in ("tullock", "fixed_pie"):
             msg = f"Unknown contest specification: {contest!r}"
+            raise ValueError(msg)
+        if recovery_rule not in RECOVERY_RULES:
+            msg = f"Unknown recovery rule: {recovery_rule!r}"
             raise ValueError(msg)
         if not 0.0 <= leverage <= 1.0:
             msg = f"Leverage must be in [0, 1], got {leverage}"
@@ -96,6 +112,7 @@ class DuopolyModel:
         self.coupon_rate = coupon_rate
         self.bankruptcy_cost = bankruptcy_cost
         self.contest = contest
+        self.recovery_rule = recovery_rule
         self._cache: dict = {}
         #: Multistart convergence diagnostics, keyed by sub-problem.
         self.solver_diagnostics: dict[str, dict] = {}
@@ -386,16 +403,28 @@ class DuopolyModel:
     # ------------------------------------------------------------------
 
     def coupon_payment(self, K: float, leverage: float | None = None) -> float:
-        """Annual coupon payment on debt.
+        """Annual coupon under the par-debt convention.
 
-        Debt face value = leverage * I(K).
-        Coupon = coupon_rate * face_value.
+        Debt face value = leverage * I(K), coupon = coupon_rate * face
+        value. The lender advances the face value, so with coupon_rate
+        below r the debt is worth less than the proceeds (a financing
+        subsidy). `fair_coupon` solves instead for the coupon at which
+        the debt is worth its proceeds at issuance.
         """
         lev = leverage if leverage is not None else self.leverage
         if lev <= 0:
             return 0.0
         face_value = lev * self.investment_cost(K)
         return self.coupon_rate * face_value
+
+    def _resolve_coupon(self, K: float, lev: float, coupon: float | None) -> float:
+        """Coupon in force: an explicit one, else the par-debt coupon."""
+        if coupon is None:
+            return self.coupon_payment(K, lev)
+        if coupon < 0:
+            msg = f"Coupon must be non-negative, got {coupon}"
+            raise ValueError(msg)
+        return float(coupon)
 
     def default_boundary(
         self,
@@ -404,6 +433,7 @@ class DuopolyModel:
         phi_j: float,
         K_j: float,
         leverage: float | None = None,
+        coupon: float | None = None,
     ) -> float:
         """Endogenous default boundary X_D (Leland 1994).
 
@@ -417,16 +447,25 @@ class DuopolyModel:
         the sunk equity contribution, which is irrelevant for the default
         decision).
 
-        Returns 0 if no debt (leverage = 0).
+        The unlevered firm is the c_D = 0 case of the same formula: it
+        stops operating at the shutdown boundary
+        [beta_neg / (beta_neg - 1)] * (delta*K/r) / A_eff, so X_D is
+        continuous as leverage goes to zero. With debt the object is a
+        default boundary, without debt a shutdown (abandonment) boundary.
+
+        Args:
+            coupon: Explicit coupon flow; defaults to the par-debt coupon
+                `coupon_payment(K_i, leverage)`.
         """
         self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
-        if lev <= 0:
-            return 0.0
 
         p = self.params
-        c_D = self.coupon_payment(K_i, lev)
-        if c_D <= 0:
+        c_D = self._resolve_coupon(K_i, lev, coupon)
+        fixed_claims = c_D / p.r + p.delta * K_i / p.r
+        if fixed_claims <= 0:
+            # Neither a coupon nor an operating cost: nothing to walk
+            # away from.
             return 0.0
 
         is_monopolist = K_j <= 0
@@ -441,12 +480,18 @@ class DuopolyModel:
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
         beta_neg = self._negative_root("L", lam_tilde)
 
-        X_D = (
-            (beta_neg / (beta_neg - 1.0))
-            * (c_D / p.r + p.delta * K_i / p.r)
-            / revenue_coeff
-        )
+        X_D = (beta_neg / (beta_neg - 1.0)) * fixed_claims / revenue_coeff
         return max(X_D, 0.0)
+
+    def shutdown_boundary(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+    ) -> float:
+        """Shutdown boundary of the unlevered firm: X_D at a zero coupon."""
+        return self.default_boundary(phi_i, K_i, phi_j, K_j, 0.0, coupon=0.0)
 
     def default_boundary_coupled(
         self,
@@ -480,11 +525,7 @@ class DuopolyModel:
         """
         self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
-        if lev <= 0:
-            return 0.0
-
-        c_D = self.coupon_payment(K_i, lev)
-        if c_D <= 0:
+        if self.coupon_payment(K_i, lev) + self.params.delta * K_i <= 0:
             return 0.0
 
         terms = self._coupled_boundary_terms(phi_i, K_i, phi_j, K_j, lev)
@@ -584,11 +625,11 @@ class DuopolyModel:
         the analytical counterpart of the ~3% overstatement reported in
         the paper. Returns kappa (positive when the single-boundary
         formula overstates the coupled boundary). Returns 0.0 when the
-        firm is unlevered or has no H-regime revenue.
+        firm has no H-regime revenue or no fixed claim to walk away from.
         """
         self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
-        if lev <= 0 or self.coupon_payment(K_i, lev) <= 0:
+        if self.coupon_payment(K_i, lev) + self.params.delta * K_i <= 0:
             return 0.0
         terms = self._coupled_boundary_terms(phi_i, K_i, phi_j, K_j, lev)
         if terms is None:
@@ -675,6 +716,62 @@ class DuopolyModel:
     # Equity and debt valuation with default
     # ------------------------------------------------------------------
 
+    def _installed_value(
+        self, X: float, phi_i: float, K_i: float, phi_j: float, K_j: float
+    ) -> float:
+        """L-regime installed value, monopoly when the rival has no capacity."""
+        if K_j > 0:
+            return self.installed_value_L(X, phi_i, K_i, phi_j, K_j)
+        return self.monopolist_value_L(X, phi_i, K_i)
+
+    def _going_concern(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        c_D: float,
+    ) -> float:
+        """Going-concern equity claim at coupon c_D, floored at zero.
+
+        V(X) - c_D/r + [c_D/r - V(X_D)] (X/X_D)^beta_neg above X_D and
+        zero at or below it. At c_D = 0 this is the unlevered asset value
+        including the option to shut down.
+        """
+        p = self.params
+        V_X = self._installed_value(X, phi_i, K_i, phi_j, K_j)
+        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, 0.0, coupon=c_D)
+        if X_D <= 0:
+            # No fixed claim to walk away from: a plain perpetuity.
+            return V_X - c_D / p.r
+        if X <= X_D:
+            return 0.0
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        beta_neg = self._negative_root("L", lam_tilde)
+        V_XD = self._installed_value(X_D, phi_i, K_i, phi_j, K_j)
+        # Put-like value of walking away: V(X_D) - c_D/r + claim = 0.
+        default_option = (c_D / p.r - V_XD) * (X / X_D) ** beta_neg
+        return max(V_X - c_D / p.r + default_option, 0.0)
+
+    def unlevered_asset_value(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+    ) -> float:
+        """Value of the installed assets to an all-equity owner.
+
+        V(X) plus the option to stop operating at the shutdown boundary
+        (the c_D = 0 case of the going-concern claim); zero at or below
+        that boundary. This is Leland's (1994) unlevered asset value for
+        a firm whose assets carry an operating cost.
+        """
+        self._check_phi(phi_i, phi_j)
+        return self._going_concern(X, phi_i, K_i, phi_j, K_j, 0.0)
+
     def equity_value(
         self,
         X: float,
@@ -683,6 +780,7 @@ class DuopolyModel:
         phi_j: float,
         K_j: float,
         leverage: float | None = None,
+        coupon: float | None = None,
     ) -> float:
         """Entry NPV of the equity claim: going concern minus contribution.
 
@@ -707,54 +805,86 @@ class DuopolyModel:
         trigger uses; clamping the net object at zero would contradict
         it.
 
-        Without debt, the going-concern value is the unlevered
-        perpetuity V(X) (no abandonment option, as stated in the paper)
-        and the entry NPV is V(X) - I(K).
+        Without debt the same formula applies at a zero coupon: the
+        going concern is the unlevered asset value, which includes the
+        option to shut down at the shutdown boundary, and the entry NPV
+        is that value minus I(K). Equity is therefore continuous as
+        leverage goes to zero.
+
+        Args:
+            coupon: Explicit coupon flow; defaults to the par-debt coupon.
         """
         self._check_phi(phi_i, phi_j)
-        p = self.params
         lev = leverage if leverage is not None else self.leverage
+        c_D = self._resolve_coupon(K_i, lev, coupon)
+        equity_contribution = self.investment_cost(K_i) * (1.0 - lev)
+        going_concern = self._going_concern(X, phi_i, K_i, phi_j, K_j, c_D)
+        return going_concern - equity_contribution
 
-        if K_j > 0:
-            V_X = self.installed_value_L(X, phi_i, K_i, phi_j, K_j)
-        else:
-            V_X = self.monopolist_value_L(X, phi_i, K_i)
+    def recovery_value(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        leverage: float | None = None,
+        coupon: float | None = None,
+    ) -> float:
+        """What creditors receive at the default boundary.
 
-        if lev <= 0:
-            return V_X - self.investment_cost(K_i)
+        Bankruptcy destroys the H-regime continuation value embedded in
+        A_eff (the speculative post-AGI payoff requires the going concern
+        -- its researchers, models, and training program -- and does not
+        survive liquidation), so creditors seize the inference business
+        only. Under the default rule ("net") recovery is
 
-        c_D = self.coupon_payment(K_i, lev)
-        I_K = self.investment_cost(K_i)
-        equity_contribution = I_K * (1.0 - lev)
+            (1 - alpha_bc) * min{ max(Lambda_net(X_D), 0), U(X_D) },
 
-        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        capped at the default-free value of the claim c_D/r, where
+        Lambda_net is `liquidation_value`, the inference business net of
+        the operating cost of its capacity, and U is
+        `unlevered_asset_value`. The cap at U keeps recovery inside the
+        value of the assets the creditors take over: inference capacity
+        alone can be worth more than the whole firm when its revenue
+        share exceeds its capacity share, and the firm of the model
+        cannot shed training capacity either. "net_until_switch" differs
+        only in `liquidation_value`. "gross" is the pre-#177 rule,
+        (1 - alpha_bc) times inference revenue gross of operating costs,
+        capped at c_D/r only.
+        """
+        self._check_phi(phi_i, phi_j)
+        lev = leverage if leverage is not None else self.leverage
+        p = self.params
+        c_D = self._resolve_coupon(K_i, lev, coupon)
+        if c_D <= 0:
+            return 0.0
+        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev, coupon=c_D)
+        if not np.isfinite(X_D) or X_D <= 0:
+            return 0.0
+        liq = max(self.liquidation_value(X_D, phi_i, K_i, phi_j, K_j), 0.0)
+        if self.recovery_rule != "gross":
+            liq = min(liq, self.unlevered_asset_value(X_D, phi_i, K_i, phi_j, K_j))
+        return min((1.0 - self.bankruptcy_cost) * liq, c_D / p.r)
 
-        if X_D <= 0:
-            # No reachable default boundary: the going concern is the
-            # levered perpetuity, with no default option.
-            return V_X - c_D / p.r - equity_contribution
+    def recovery_rate(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float,
+        K_j: float,
+        leverage: float | None = None,
+        coupon: float | None = None,
+    ) -> float:
+        """Recovery as a fraction of the default-free claim c_D/r.
 
-        if X <= X_D:
-            # Default has occurred: the going-concern claim is worthless
-            # and the sunk equity contribution is lost.
-            return -equity_contribution
-
-        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
-        beta_neg = self._negative_root("L", lam_tilde)
-
-        if K_j > 0:
-            V_XD = self.installed_value_L(X_D, phi_i, K_i, phi_j, K_j)
-        else:
-            V_XD = self.monopolist_value_L(X_D, phi_i, K_i)
-
-        # Default option value (put-like: value of walking away)
-        # Ongoing equity at X_D: V(X_D) - c_D/r + default_claim = 0
-        # Since V_XD = A_eff*X_D - delta*K/r already includes operating costs:
-        default_claim = c_D / p.r - V_XD
-        default_option = default_claim * (X / X_D) ** beta_neg
-
-        going_concern = V_X - c_D / p.r + default_option
-        return max(going_concern, 0.0) - equity_contribution
+        Returns nan when there is no debt.
+        """
+        lev = leverage if leverage is not None else self.leverage
+        c_D = self._resolve_coupon(K_i, lev, coupon)
+        if c_D <= 0:
+            return float("nan")
+        recovery = self.recovery_value(phi_i, K_i, phi_j, K_j, lev, coupon=c_D)
+        return recovery / (c_D / self.params.r)
 
     def debt_value(
         self,
@@ -764,29 +894,31 @@ class DuopolyModel:
         phi_j: float,
         K_j: float,
         leverage: float | None = None,
+        coupon: float | None = None,
     ) -> float:
         """Debt value accounting for default risk.
 
         D(X) = coupon/r - [coupon/r - recovery] * (X/X_D)^beta_neg   (X > X_D)
         D(X) = recovery                                               (X <= X_D)
 
-        Recovery in default is (1 - alpha_bc) times the liquidation value
-        of the *inference* business only: bankruptcy destroys the
-        H-regime continuation value embedded in A_eff (the speculative
-        post-AGI payoff requires the going concern -- its researchers,
-        models, and training program -- and does not survive
-        liquidation). Recovery is further capped at the riskless value of
-        the coupon claim c_D/r (absolute priority: creditors cannot
-        recover more than their claim is worth default-free).
+        Recovery is `recovery_value`: (1 - alpha_bc) times the
+        inference-only liquidation value net of operating costs, never
+        more than the unlevered asset value at X_D, and capped at the
+        riskless value of the coupon claim c_D/r (absolute priority:
+        creditors cannot recover more than their claim is worth
+        default-free).
+
+        Args:
+            coupon: Explicit coupon flow; defaults to the par-debt coupon.
         """
         self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
-        if lev <= 0:
+        p = self.params
+        c_D = self._resolve_coupon(K_i, lev, coupon)
+        if c_D <= 0:
             return 0.0
 
-        p = self.params
-        c_D = self.coupon_payment(K_i, lev)
-        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev)
+        X_D = self.default_boundary(phi_i, K_i, phi_j, K_j, lev, coupon=c_D)
 
         if X_D <= 0:
             return c_D / p.r
@@ -794,9 +926,7 @@ class DuopolyModel:
         lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
         beta_neg = self._negative_root("L", lam_tilde)
 
-        liq = self.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
-        recovery = (1.0 - self.bankruptcy_cost) * liq
-        recovery = min(recovery, c_D / p.r)
+        recovery = self.recovery_value(phi_i, K_i, phi_j, K_j, lev, coupon=c_D)
         if X <= X_D:
             # Default has occurred: creditors hold the realized recovery
             # (the continuation formula below is not valid past the
@@ -821,7 +951,18 @@ class DuopolyModel:
         L-regime revenue stream until the regime switch, capitalized at
         the effective rate r - mu_L + lambda. The H-regime continuation
         value (the faith-based component of A_eff) is destroyed in
-        bankruptcy. Gross of operating costs, following Leland (1994).
+        bankruptcy.
+
+        The value is net of the operating cost of the inference capacity
+        (1 - phi) K, as an unlevered asset value is in Leland (1994),
+        whose asset value V is the value of the firm's activities. Under
+        "net" that cost is the same perpetual commitment the firm itself
+        carries, delta (1 - phi) K / r, so the firm's installed value is
+        exactly this object plus the training business. Under
+        "net_until_switch" the buyer stops paying at the switch, when
+        the inference stream ends: delta (1 - phi) K / (r + lambda).
+        Under "gross" (the pre-#177 rule) no operating cost is netted.
+        The value can be negative; `recovery_value` applies the floor.
         """
         self._check_phi(phi_i, phi_j)
         p = self.params
@@ -831,7 +972,11 @@ class DuopolyModel:
             return 0.0
         inf_cap = (1.0 - phi_i) * K_i
         s_L = 1.0 if K_j <= 0 else self.contest_share_L(phi_i, K_i, phi_j, K_j)
-        return inf_cap**p.alpha * s_L * X / denom_L
+        revenue = inf_cap**p.alpha * s_L * X / denom_L
+        if self.recovery_rule == "gross":
+            return revenue
+        horizon_rate = p.r if self.recovery_rule == "net" else p.r + lam_tilde
+        return revenue - p.delta * inf_cap / horizon_rate
 
     def firm_value(
         self,
@@ -841,11 +986,82 @@ class DuopolyModel:
         phi_j: float,
         K_j: float,
         leverage: float | None = None,
+        coupon: float | None = None,
     ) -> float:
         """Total firm value = equity + debt."""
-        return self.equity_value(X, phi_i, K_i, phi_j, K_j, leverage) + self.debt_value(
-            X, phi_i, K_i, phi_j, K_j, leverage
+        return self.equity_value(
+            X, phi_i, K_i, phi_j, K_j, leverage, coupon
+        ) + self.debt_value(X, phi_i, K_i, phi_j, K_j, leverage, coupon)
+
+    def fair_coupon(
+        self,
+        X: float,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+        leverage: float | None = None,
+    ) -> float:
+        """Coupon at which debt issued at demand X is worth its proceeds.
+
+        Solves D(X; c_D) = leverage * I(K) for c_D, with the default
+        boundary and the recovery re-determined at each candidate coupon.
+        This is the fairly priced counterpart of the par-debt convention
+        of `coupon_payment`, in which the lender advances leverage * I(K)
+        against a coupon of coupon_rate * leverage * I(K), worth less
+        than the proceeds whenever coupon_rate < r.
+
+        Debt value is not monotone in the coupon (a higher coupon raises
+        the default boundary), so the smallest root is returned, found by
+        scanning from the riskless coupon r * leverage * I(K) to the
+        coupon at which the firm would default at issuance.
+
+        Raises:
+            ValueError: If the proceeds exceed the debt capacity at X,
+                or the firm has no revenue.
+        """
+        self._check_phi(phi_i, phi_j)
+        lev = leverage if leverage is not None else self.leverage
+        if lev <= 0:
+            return 0.0
+        p = self.params
+        proceeds = lev * self.investment_cost(K_i)
+
+        def gap(c_D: float) -> float:
+            return (
+                self.debt_value(X, phi_i, K_i, phi_j, K_j, lev, coupon=c_D) - proceeds
+            )
+
+        riskless = p.r * proceeds
+        if gap(riskless) >= 0:
+            # Default-free at this coupon (possible under "gross").
+            return riskless
+
+        a_eff = self._effective_revenue_coeff(
+            phi_i, K_i, phi_j, K_j, monopolist=K_j <= 0
         )
+        if a_eff <= 0:
+            msg = "No fair coupon: the firm has no revenue"
+            raise ValueError(msg)
+        beta_neg = self._negative_root(
+            "L", self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        )
+        # Coupon at which the default boundary reaches X.
+        ceiling = p.r * ((beta_neg - 1.0) / beta_neg * a_eff * X) - p.delta * K_i
+        if ceiling > riskless:
+            grid = np.geomspace(riskless, ceiling, 400)
+            gaps = np.array([gap(c) for c in grid])
+            crossing = np.flatnonzero(gaps >= 0)
+            if crossing.size:
+                k = int(crossing[0])
+                return float(
+                    optimize.brentq(gap, grid[k - 1], grid[k], xtol=1e-16, rtol=1e-12)
+                )
+        msg = (
+            f"No fair coupon: proceeds {proceeds:.6g} exceed the debt "
+            f"capacity at X = {X:.6g} (leverage {lev:.3f})"
+        )
+        raise ValueError(msg)
 
     # ------------------------------------------------------------------
     # Follower's problem (3D: K, phi, leverage)
@@ -1088,11 +1304,13 @@ class DuopolyModel:
         dilution term lowers equity, the anticipating leader's boundary
         lies above it.
 
+        Without debt (c_D = 0) the same system gives the leader's
+        shutdown boundary.
+
         Returns:
-            (X_D, C_1); (0, 0) without debt.
+            (X_D, C_1); (0, 0) when there is neither a coupon nor an
+            operating cost.
         """
-        if lev_L <= 0:
-            return 0.0, 0.0
         cache_key = ("leader_default", K_L, phi_L, lev_L, K_F, phi_F, X_F)
         if cache_key in self._cache:
             return self._cache[cache_key]
@@ -1100,6 +1318,8 @@ class DuopolyModel:
         p = self.params
         c_D = self.coupon_payment(K_L, lev_L)
         N = c_D / p.r + p.delta * K_L / p.r
+        if N <= 0:
+            return 0.0, 0.0
         A = self._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
         drop = self._leader_revenue_drop(K_L, phi_L, K_F, phi_F, X_F)
         beta_H = p.beta_H
@@ -1141,22 +1361,20 @@ class DuopolyModel:
     ) -> float:
         """Leader's entry NPV at X < X_F (monopoly phase, entry anticipated).
 
-        Without debt this is the unlevered monopoly NPV net of the
-        discounted revenue drop at follower entry. With debt the
-        going-concern claim carries the default option of
-        `leader_default_boundary`, is floored at zero below that boundary,
-        and the sunk equity contribution is subtracted, matching the
-        equity convention of `equity_value`.
+        The going-concern claim carries the default option of
+        `leader_default_boundary` (the shutdown option when there is no
+        debt), is floored at zero below that boundary, and the sunk
+        equity contribution is subtracted, matching the equity convention
+        of `equity_value`.
         """
         p = self.params
         drop = self._leader_revenue_drop(K_L, phi_L, K_F, phi_F, X_F)
         entry_factor = (X / X_F) ** p.beta_H if X_F > 0 else 1.0
-        if lev_L <= 0:
-            eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
-            return eq_mono - drop * entry_factor
-
         X_D, C_1 = self.leader_default_boundary(K_L, phi_L, lev_L, K_F, phi_F, X_F)
         equity_contribution = (1.0 - lev_L) * self.investment_cost(K_L)
+        if X_D <= 0:
+            eq_mono = self.equity_value(X, phi_L, K_L, 0.0, 0.0, lev_L)
+            return eq_mono - drop * entry_factor
         if X <= X_D:
             return -equity_contribution
         c_D = self.coupon_payment(K_L, lev_L)
@@ -1766,6 +1984,8 @@ class DuopolyModel:
                     leverage=self.leverage,
                     coupon_rate=self.coupon_rate,
                     bankruptcy_cost=self.bankruptcy_cost,
+                    contest=self.contest,
+                    recovery_rule=self.recovery_rule,
                 )
                 eq = m.solve_preemption_equilibrium(regime)
                 for key in [
@@ -1815,6 +2035,8 @@ class DuopolyModel:
                     leverage=lev,
                     coupon_rate=self.coupon_rate,
                     bankruptcy_cost=self.bankruptcy_cost,
+                    contest=self.contest,
+                    recovery_rule=self.recovery_rule,
                 )
                 eq = m.solve_preemption_equilibrium(regime)
                 for key in [
