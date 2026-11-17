@@ -71,18 +71,12 @@ exhibit, or consulting a source. Delete an entry once verified.
   exhibit is *not* a growth-option decomposition, but the Quarto label and the
   generated file are still `fig_growth_decomposition`. Renaming needs a
   `paper.py` edit plus a figure regeneration.
-- [ ] **Internet Appendix A cross-reference to the conventions.** It says the
-  four solution conventions "are also collected immediately before the
-  statement of Proposition 3". That location is now a one-sentence pointer
-  naming the four rather than a full restatement. Still accurate, but a
-  co-author may want it softened.
-
 ## Codex review round (2026-09-07), umbrella #135
 
 Author-only checks raised while verifying `reports/review_report_codex_20260907.md`. Each is also referenced from the sub-issue in parentheses.
 
 - [ ] **\$660--690B 2026 spending aggregate** (`_introduction.qmd`, opening paragraph). The footnote cites only Amazon, Alphabet, and Microsoft guidance, which cannot sum to a "laboratories and their compute partners" total. State the aggregation or cite the source that made it. (#144)
-- [ ] **Executive quotations in the introduction**: Pichai (Alphabet Q2 2024 call), Huang (GTC 2025, "easily 100x"), Musk (the x.com status ID `2025124840806514916` looks implausible for a 2025 post), LeCun/PYMNTS wording, Amodei/Dwarkesh wording and ellipsis, Stargate figures. Check exact wording and add URLs where missing. (#144)
+- [ ] **Executive quotations in the introduction**: Pichai (Alphabet Q2 2024 call), Huang (GTC 2025, "easily 100x"), Musk (year corrected to 2026 in #172; see the November 2026 section below), LeCun/PYMNTS wording, Amodei/Dwarkesh wording and ellipsis, Stargate figures. Check exact wording and add URLs where missing. (#144)
 - [ ] **OpenAI \$3.7B/\$12.5B revenue** (`_appendix.qmd`, Internet Appendix C). The cited openai.com post gives ARR of \$2B/\$6B/\$20B+, not these figures. Supply the press source or switch to the ARR series. (#144)
 - [ ] **Management Science reviewer count.** `submission/README.md` says five suggested reviewers; web summaries of the current guidelines say six and three AEs. INFORMS pages returned 403 to automated fetches; confirm on the portal. (#148)
 - [ ] **Decision: reframing after the C2 envelope result.** #152 reproduced the finding independently (no finite pre-switch trigger at baseline in the unrestricted problem; 6.9% policy loss) and disclosed it in Internet Appendix B and the conventions paragraph. Still open: whether to reframe the A₁ = 0 discussion and the introduction around the fact that the L-regime trigger is a feature of the convention at baseline, or leave the disclosure as is. (#136, #149)
@@ -94,6 +88,13 @@ Author-only checks raised while verifying `reports/review_report_codex_20260907.
 - [ ] **A sentence introduced during consolidation** to confirm you are happy with: the limitations list's "Training is a flow allocation of installed capacity rather than an accumulated stock of capability, so there is no learning curve" (`_discussion.qmd`). (#149)
 - [ ] **Symbol renames** from the collision cleanup, in case they clash with the slides or the Lean README: discriminant $D 	o \mathcal{R}$ (Proposition 2 statement and proof), piecewise coefficients $D_1, D_2, D_w 	o G_1, G_2, G_w$, debt face value $D_0 	o P$, forced-ODE coefficient $C 	o \Gamma$ (label `eq-particular-C` unchanged). (#150)
 - [ ] **Final read of the rendered blind PDF** page by page before upload: `just render-blind`, then `paper/_output/ai_lab_investment_blind.pdf` and the e-companion. The automated checks cover unresolved references, metadata parity, and the house conventions; they do not cover figure placement or page breaks. (#150)
+
+## Review round 2026-11-01, mechanical fixes (#172, umbrella #171)
+
+- [ ] **Musk "AGI in 2026" post** (`_introduction.qmd`, footnote). The status ID `2025124840806514916` decodes (X snowflake timestamp) to 2026-02-21 08:26 UTC, so the footnote year is now 2026. Open <https://x.com/elonmusk/status/2025124840806514916> and confirm the date and that the post says "AGI in 2026". (#172)
+- [ ] **Literature citations added without Zotero records.** `@weeds2002strategic` (patent race in a real-options duopoly; "competition can delay rather than hasten investment") and `@sundaresan2015dynamic` (cited among the investment-plus-default papers with homogeneous capital) were already in `references.bib` but are not in the Zotero library, so neither the bib metadata nor the one-line characterization was checked against the paper. Add both to Zotero and confirm. `@mauer2005real` was added from the Zotero record. (#172)
+- [ ] **Other suggested references not in Zotero.** The review also suggested Lambrecht (2001) and Grenadier (1996); neither is in the Zotero library, so neither was added (Grenadier 2002, already cited, is the Zotero Grenadier entry). Add them to Zotero if wanted and cite in `_literature.qmd`. (#172)
+- [ ] **GPU depreciation source for the `_model.qmd` operating-cost footnote.** `@deepseek2025r1` did not support the hardware-obsolescence pointer and was dropped from that footnote (the entry stays, cited in the conclusion); Zotero has no GPU-depreciation source. The 20--33\% per year / 3--5 year useful-life figures in Internet Appendix C remain unsourced. (#172)
 
 ## Capability-stock prototype (issue #174, `capability_stock.py`)
 

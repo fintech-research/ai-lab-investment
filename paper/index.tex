@@ -181,7 +181,7 @@ on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{October 4, 2026}
+\date{November 17, 2026}
 
 \begin{document}
 \maketitle
@@ -265,7 +265,7 @@ compute \citep{amodei2024machines}. Executive forecasts of its arrival
 run from ``superintelligence in a few thousand days''
 \citep{altman2024intelligence} and 2026--2027
 \citep{amodei2024machines}, through ``AGI in 2026,''\footnote{Elon Musk,
-  post on X, 2025:
+  post on X, 2026:
   \url{https://x.com/elonmusk/status/2025124840806514916}.} to ``not
 with current architectures.''\footnote{PYMNTS, ``Meta: Large Language
   Models Will Not Get to Human-Level Intelligence,'' 2025.}
@@ -388,10 +388,13 @@ and \citet{harris1987racing} derive a discouragement effect for lagging
 firms that echoes the follower's delayed entry in the duopoly
 equilibrium; in the present model the \emph{allocation} margin is immune
 to this discouragement (Proposition 3(ii)), so position affects when
-firms invest, not how they split capacity. The key departure is the dual
-role of capacity: in standard races, investment during the race is pure
-cost, whereas here installed capacity generates inference revenue before
-AGI arrives and training quality determines position afterwards.
+firms invest, not how they split capacity. \citet{weeds2002strategic}
+places a winner-take-all patent race in a real-options duopoly with
+irreversible investment and shows that competition can delay rather than
+hasten investment. The key departure is the dual role of capacity: in
+standard races, investment during the race is pure cost, whereas here
+installed capacity generates inference revenue before AGI arrives and
+training quality determines position afterwards.
 
 The firm's default decision follows the structural credit-risk tradition
 of \citet{merton1974pricing} and \citet{leland1994corporate}, a
@@ -426,7 +429,8 @@ compute allocation problem.
 
 The marginal contribution is a result the closest models do not
 generate. In the papers that combine irreversible investment with
-endogenous default \citep{kumar2018optimal, hackbarth2014capital},
+endogenous default
+\citep{mauer2005real, hackbarth2014capital, sundaresan2015dynamic, kumar2018optimal},
 installed capital is homogeneous, so no single decision variable moves
 the default boundary and the liquidation collateral in opposite
 directions. The training fraction \(\phi\) does exactly that here: below
@@ -553,9 +557,9 @@ Installed capacity incurs a continuous operating cost at rate
 \(\delta > 0\) per unit: power, cooling, maintenance, and
 personnel.\footnote{This is distinct from \emph{economic depreciation}:
   \(K\) is constant once installed, and \(\delta K\) is a perpetual flow
-  cost, not a decay rate. Section~\ref{sec-calibration} discusses the
-  relation to accounting depreciation and to hardware obsolescence
-  \citep{deepseek2025r1}.}
+  cost, not a decay rate. Section~\ref{sec-calibration} and Internet
+  Appendix C discuss the relation to accounting depreciation of GPU
+  hardware.}
 
 Table~\ref{tbl-parameters} and Table~\ref{tbl-notation}, in the
 Parameters and Notation section of the Internet Appendix, summarize all
@@ -1628,8 +1632,9 @@ investment trigger \(X^* \approx 0.0047\), capacity
 \(K^* \approx 0.0067\), and training fraction \(\phi^* \approx 0.70\),
 where the effective revenue coefficient \(A_{\text{eff}}\)
 (Equation~\ref{eq-a-eff}) combines L-regime inference value and H-regime
-training value. By the solution convention discussed after Proposition
-1, the duopoly leader's monopoly policy coincides with this optimum, so
+training value. By the leader-scale convention of
+Section~\ref{sec-conventions}, the duopoly leader's monopoly policy
+coincides with this optimum, so
 \(X_L^{\text{mono}} = X^* \approx 0.0047\); the zero-leverage duopoly
 equilibrium produces a follower policy of \(X_F^* \approx 0.12\),
 \(K_F \approx 0.26\), and \(\phi_F^* \approx 0.70\), with the leader
@@ -1980,7 +1985,7 @@ in \(\lambda\) would raise the default boundary and cut equity value
 simultaneously; with no asset market and no feedback from liquidation
 onto prices, the model cannot take the further step to fire sales or
 contagion. On competition policy, preemption cuts the leader's trigger
-well below the monopolist's (Section~\ref{sec-calibration}), so capacity
+well below the monopolist's (Section~\ref{sec-duopoly}), so capacity
 announcements are weak evidence about demand expectations: a firm racing
 a rival and a firm expecting an early switch both enter early. On
 disclosure, \(\phi\) jointly determines the default boundary and the
@@ -2042,7 +2047,8 @@ model toward stronger competition effects; the Cournot alternative is
 discussed in Section~\ref{sec-duopoly} and Internet Appendix E. All
 valuation uses the reduced-form risk-adjusted framework of
 Section~\ref{sec-model} and Internet Appendix B, a certainty-equivalent
-convention rather than a pricing measure, so physical default
+convention rather than a pricing measure, so, with a positive risk
+premium on demand and the default boundary held fixed, physical default
 probabilities would be lower.
 
 \section{Conclusion}\label{sec-conclusion}
@@ -2364,7 +2370,8 @@ follow. The stochastic-calculus derivation of the HJB equation itself,
 and the optimal-stopping argument that the candidate value functions are
 optimal, are not formalized; nor is the pure-power (\(A_1 = 0\)) form of
 the L-regime option value, which is a solution convention rather than a
-theorem (Step 5b below and Section~\ref{sec-conventions}). Results that
+theorem (the remark on the pure-power form after the Proof of
+Proposition 1 below, and Section~\ref{sec-conventions}). Results that
 are numerical in nature, the magnitude of \(\tilde{\phi}\) and the
 coupled-ODE, piecewise-stopping, and Dario's-dilemma computations
 (Internet Appendix B), are likewise not formalized. The Lean proof
@@ -2379,8 +2386,9 @@ upon publication.
 \emph{Maintained assumptions.} The proof requires Assumption 1, in
 particular conditions (A2)--(A4). It applies in the parameter region
 where the paper adopts the simplified option value
-\(F_L \propto X^{\beta_H}\) (condition A3; see Step 5b and
-Section~\ref{sec-conventions}). The firm maximizes the option value
+\(F_L \propto X^{\beta_H}\) (condition A3; see the remark on the
+pure-power form after this proof, and Section~\ref{sec-conventions}).
+The firm maximizes the option value
 \(F(X_0) = (V(X^*, K, \phi) - I(K))(X_0/X^*)^{\beta_H}\) by choosing
 \(X^*\), \(K\), and \(\phi\) jointly.
 
@@ -2507,10 +2515,9 @@ strictly concave in \(\phi\) with interior maximizer \(\phi^*\), and
   \(\mu_L\). \(\square\)
 \end{enumerate}
 
-\emph{Step 5b: The pure-power form of \(F_L\) (solution convention).}
+\emph{Remark on the pure-power form of \(F_L\) (solution convention).}
 
-This block justifies the option-value form assumed in Step 1; it is
-placed after the proof rather than interrupting it.
+This remark examines the option-value form assumed in Step 1.
 
 The general L-regime option value
 \(F_L(X) = A_1 X^{\beta_L^+} + \Gamma X^{\beta_H}\)
@@ -2851,16 +2858,15 @@ boundary. \(\square\)
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 3}
 
 \emph{Maintained assumptions.} Assumption 1(A1)--(A2) and the four
-solution conventions of Section~\ref{sec-conventions}, which are also
-collected immediately before the statement of Proposition 3. Throughout
-this proof \(F\) denotes the follower's option value, not the
-single-firm option value of Proposition 1. Part (i) separates existence
-(analytical, conditional on a computationally verified endpoint sign)
-from uniqueness (analytical at \(\ell = 0\), computational for
-\(\ell > 0\)). Part (ii) establishes an exact critical point
-analytically and confirms global optimality computationally. Parts
-(iii)--(v) are numerical findings, established by the computations
-described in Internet Appendix B.
+solution conventions of Section~\ref{sec-conventions}, under which
+Proposition 3 is stated. Throughout this proof \(F\) denotes the
+follower's option value, not the single-firm option value of Proposition
+1. Part (i) separates existence (analytical, conditional on a
+computationally verified endpoint sign) from uniqueness (analytical at
+\(\ell = 0\), computational for \(\ell > 0\)). Part (ii) establishes an
+exact critical point analytically and confirms global optimality
+computationally. Parts (iii)--(v) are numerical findings, established by
+the computations described in Internet Appendix B.
 
 \emph{Part (i): Existence of \(X_P\) (conditional analytical).} The
 argument follows \citet{huisman2015strategic}, Theorem 1, applied to the
@@ -2878,9 +2884,9 @@ option). This is the equity convention of Section~\ref{sec-model}:
 limited liability floors \(E_L\), not \(L\), so \(L\) inherits the
 strictly negative constant \(-(1-\ell)I(K_L)\) wherever the
 going-concern claim is worthless. Throughout, the leader's
-\((K_L, \phi_L)\) is held at the monopoly-phase optimum (the solution
-convention discussed after Proposition 1; Internet Appendix B quantifies
-its effect on \(X_P\)). Before follower entry,
+\((K_L, \phi_L)\) is held at the monopoly-phase optimum (the
+leader-scale convention of Section~\ref{sec-conventions}; Internet
+Appendix B quantifies its effect on \(X_P\)). Before follower entry,
 \(E_L(X) = A_{\text{eff}} X - \delta K_L/r - C_D/r - \Delta_F (X/X_F^*)^{\beta_H} + C_1 X^{\beta_L^-}\),
 where \(\Delta_F\) is the drop in installed value at follower entry and
 the last term is the default option; value matching \(E_L(X_D) = 0\) and
@@ -3249,10 +3255,10 @@ on a grid across the parameterizations tested; and ``numerical''
 indicates optimization-based computation with no closed-form expression.
 All rows are statements about the model defined by the solution
 conventions of Section~\ref{sec-conventions}, in particular the
-unconditional-\(A_{\text{eff}}\) discounting convention (Step 5b above),
-which underlies every trigger in the paper, and the single-boundary
-default reduction used in Proposition
-2.}\label{tbl-result-taxonomy}\tabularnewline
+unconditional-\(A_{\text{eff}}\) discounting convention (remark on the
+pure-power form after the Proof of Proposition 1), which underlies every
+trigger in the paper, and the single-boundary default reduction used in
+Proposition 2.}\label{tbl-result-taxonomy}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Result
@@ -3310,20 +3316,20 @@ parameterizations tested \\
 Methods}\label{b.-numerical-verification-methods}
 \addcontentsline{toc}{subsection}{B. Numerical Verification Methods}
 
-\textbf{Derivations demoted from the main text.} This block collects six
-derivations and discussions that the 2026 consolidation of the main text
-reduced to a stated result and a pointer here: the installed-value
-formulas of Section~\ref{sec-single-firm} and Section~\ref{sec-duopoly},
-which the main text writes down without deriving; the smooth-pasting
-derivation of the H-regime trigger Equation~\ref{eq-trigger-H}; the
-preemption game's primitives and the two conditions from
-\citet{huisman2015strategic} and \citet{pawlina2006real} that underwrite
-the preemption construction of Section~\ref{sec-duopoly}, which the main
-text says are ``verified computationally'' without stating them; the
-arithmetic of the par-debt financing subsidy; and the Tullock contest
-properties that go beyond what Section~\ref{sec-duopoly}'s discussion of
-revenue expansion needs. It does not repeat the pure-power L-regime
-option discussion, which Step 5b of the Proof of Proposition 1 above
+\textbf{Derivations supporting the main text.} This block collects six
+derivations and discussions for which the main text gives a stated
+result and a pointer here: the installed-value formulas of
+Section~\ref{sec-single-firm} and Section~\ref{sec-duopoly}, which the
+main text writes down without deriving; the smooth-pasting derivation of
+the H-regime trigger Equation~\ref{eq-trigger-H}; the preemption game's
+primitives and the two conditions from \citet{huisman2015strategic} and
+\citet{pawlina2006real} that underwrite the preemption construction of
+Section~\ref{sec-duopoly}, which the main text reports as verified
+computationally and which are stated here; the arithmetic of the
+par-debt financing subsidy; and the Tullock contest properties that go
+beyond what Section~\ref{sec-duopoly}'s discussion of revenue expansion
+needs. It does not repeat the pure-power L-regime option discussion,
+which the remark on the pure-power form after the Proof of Proposition 1
 already covers in full (the range of validity of the forcing term and
 the sign of the homogeneous coefficient \(A_1\)), nor the four solution
 conventions of Section~\ref{sec-conventions}, which
@@ -3458,7 +3464,7 @@ on these terms; it is meant to stand in for the below-market financing
 that several archetypes calibrated in Section~\ref{sec-calibration}
 appear to receive, without taking a position on its exact pricing.
 
-\emph{Tullock contest properties beyond revenue expansion.} Two
+\emph{Tullock contest properties beyond revenue expansion.} Three
 properties of the regime-specific contests, in addition to the
 revenue-expansion channel discussed in Section~\ref{sec-duopoly}, are
 used elsewhere in the paper. First, the wedge between the contest share
@@ -3561,29 +3567,30 @@ the L-regime are valued with the H-regime exponent \(\beta_H\): the
 follower's option is \(B_F X^{\beta_H}\), and the leader's
 monopoly-phase value subtracts the present value of the revenue drop at
 follower entry using the factor \((X/X_F^*)^{\beta_H}\). Under the
-pure-power convention adopted in the Proof of Proposition 1 (Step 5b),
-the pre-switch option value has the pure power form
-\(F_L \propto X^{\beta_H}\), so this convention prices state-contingent
-payoffs consistently with the model's own option valuation, rather than
-with a first-passage factor \((X/X_F^*)^{\beta_L^+}\) that would
-condition on no regime switch occurring before entry. The levered
-leader's pre-entry claim carries its own default boundary, solved by
-value matching and smooth pasting on the full claim including the
-dilution term (Proof of Proposition 3(i)); at baseline leverage
-\(\ell = 0.40\) it lies \(7.3\%\) above the monopoly boundary
-(\(0.001401\) against \(0.001306\)) and moves \(X_P\) by less than
-\(1\%\) (\(0.003573\) against \(0.003594\) with the monopoly boundary).
-The pre-entry and post-entry claims are not matched at \(X_F^*\): they
-differ there by the difference between the monopoly-phase and duopoly
-default-option terms, \(5.6 \times 10^{-7}\) against
-\(L(X_F^*) = 0.0468\) at baseline. A second, related approximation is
-that the follower's trigger is obtained from smooth pasting on the
-linear entry payoff \(A_{\text{eff}} X - \Theta_\ell(K)\), with
-\(\Theta_\ell\) the leverage-adjusted total cost defined below, omitting
-the (small) default-option term in the levered entry payoff; the omitted
-term is at most about 1.5\% of the default claim at the highest leverage
-considered (\((X_F^*/X_D)^{\beta_L^-} \approx 0.015\) at
-\(\ell = 0.65\)) and vanishes at zero leverage.
+pure-power convention adopted in the Proof of Proposition 1 (remark on
+the pure-power form), the pre-switch option value has the pure power
+form \(F_L \propto X^{\beta_H}\), so this convention prices
+state-contingent payoffs consistently with the model's own option
+valuation, rather than with a first-passage factor
+\((X/X_F^*)^{\beta_L^+}\) that would condition on no regime switch
+occurring before entry. The levered leader's pre-entry claim carries its
+own default boundary, solved by value matching and smooth pasting on the
+full claim including the dilution term (Proof of Proposition 3(i)); at
+baseline leverage \(\ell = 0.40\) it lies \(7.3\%\) above the monopoly
+boundary (\(0.001401\) against \(0.001306\)) and moves \(X_P\) by less
+than \(1\%\) (\(0.003573\) against \(0.003594\) with the monopoly
+boundary). The pre-entry and post-entry claims are not matched at
+\(X_F^*\): they differ there by the difference between the
+monopoly-phase and duopoly default-option terms, \(5.6 \times 10^{-7}\)
+against \(L(X_F^*) = 0.0468\) at baseline. A second, related
+approximation is that the follower's trigger is obtained from smooth
+pasting on the linear entry payoff
+\(A_{\text{eff}} X - \Theta_\ell(K)\), with \(\Theta_\ell\) the
+leverage-adjusted total cost defined below, omitting the (small)
+default-option term in the levered entry payoff; the omitted term is at
+most about 1.5\% of the default claim at the highest leverage considered
+(\((X_F^*/X_D)^{\beta_L^-} \approx 0.015\) at \(\ell = 0.65\)) and
+vanishes at zero leverage.
 
 \textbf{Leader-scale convention: re-optimization sensitivity.} The paper
 holds the leader's \((K_L, \phi_L)\) at the monopoly-phase optimum of
@@ -3671,19 +3678,20 @@ closed-form boundary exceeds the coupled-system boundary by
 approximately 3\% throughout, in the conservative direction.
 
 \textbf{Piecewise L-regime stopping problem, precommitted post-switch
-scale.} The pure-power convention for the pre-investment option (Proof
-of Proposition 1, Step 5b) is verified against the piecewise
-free-boundary problem, in the same spirit as the coupled default
-boundary above. The version solved first fixes the post-switch scale at
-\(K_H^*\), the capacity optimal for entry at \(X_H^*\); it is exact
-within the class of policies that precommit that scale, and it has a
-closed form. Below \(X_H^*\) the forcing term in Equation~\ref{eq-hjb-L}
-is the H-regime option value and the continuation value is
-\(A_1 X^{\beta_L^+} + \Gamma X^{\beta_H}\), the negative root being
-removed by \(F_L(0) = 0\). Above \(X_H^*\) a switch is followed by
-immediate exercise at that scale, so the forcing is affine,
-\(\lambda\,[p_H X - q_H]\) with \(p_H = A_H (K_H^*)^\alpha\) and
-\(q_H = \delta K_H^*/r + I(K_H^*)\), and the continuation value is \[
+scale.} The pure-power convention for the pre-investment option
+(Internet Appendix A, remark on the pure-power form after the Proof of
+Proposition 1) is verified against the piecewise free-boundary problem,
+in the same spirit as the coupled default boundary above. The version
+solved first fixes the post-switch scale at \(K_H^*\), the capacity
+optimal for entry at \(X_H^*\); it is exact within the class of policies
+that precommit that scale, and it has a closed form. Below \(X_H^*\) the
+forcing term in Equation~\ref{eq-hjb-L} is the H-regime option value and
+the continuation value is \(A_1 X^{\beta_L^+} + \Gamma X^{\beta_H}\),
+the negative root being removed by \(F_L(0) = 0\). Above \(X_H^*\) a
+switch is followed by immediate exercise at that scale, so the forcing
+is affine, \(\lambda\,[p_H X - q_H]\) with \(p_H = A_H (K_H^*)^\alpha\)
+and \(q_H = \delta K_H^*/r + I(K_H^*)\), and the continuation value is
+\[
 G_1 X^{\beta_L^+} + G_2 X^{\beta_L^-} + \frac{\lambda p_H}{r + \lambda - \mu_L}\,X - \frac{\lambda q_H}{r + \lambda}.
 \] Value and slope matching at \(X_H^*\), together with value matching
 and smooth pasting at the free boundary, determine
@@ -4063,14 +4071,21 @@ xAI: press reports of quarterly revenue \\
 Capital expenditure & Alphabet 10-K; OpenAI Azure spend, press
 reports;\footnote{\url{https://finance.yahoo.com/news/leaked-documents-shed-light-much-004741535.html}.}
 Anthropic cloud commitments (AWS, GCP); xAI: press reports \\
-Training fraction (\(\hat{\phi}\)) & \citet{amodei2026dwarkesh}
-(\$\sim\(50/50); Epoch AI (OpenAI 2024 breakdown); Deloitte TMT Predictions 2026 (industry trajectory) |
-| Leverage ratios | Anthropic: no public debt outstanding; OpenAI: press reports; Google: Alphabet 10-K; xAI: press reports of \$5B+ secured debt |
-| WACC | Damodaran industry estimates; CAPM with an equity beta of 1.5--2.5 for private labs |
-| Demand growth (\)\mu\() | Cloud revenue growth rates: Google Cloud +37\%, AWS +24\%, Azure +39\% |
-| Demand volatility (\)\sigma\$) \\
+Training fraction (\(\hat{\phi}\)) & \citet{amodei2026dwarkesh} (about
+50/50); Epoch AI (OpenAI 2024 breakdown); Deloitte TMT Predictions 2026
+(industry trajectory) \\
+Leverage ratios & Anthropic: no public debt outstanding; OpenAI: press
+reports; Google: Alphabet 10-K; xAI: press reports of \$5B+ secured
+debt \\
+WACC & Damodaran industry estimates; CAPM with an equity beta of
+1.5--2.5 for private labs \\
+Demand growth (\(\mu\)) & Cloud revenue growth rates: Google Cloud
++37\%, AWS +24\%, Azure +39\% \\
+Demand volatility (\(\sigma\)) & Quarterly revenue volatility of cloud
+providers (order of magnitude only; \(X\) has no directly observable
+counterpart) \\
 Operating cost rate (\(\delta\)) & Industry estimates: annual operating
-cost \$\approx\$30--40\% of hardware CapEx; hyperscaler PPA rates
+cost of about 30--40\% of hardware CapEx; hyperscaler PPA rates
 \$0.03--0.06/kWh. These motivate a positive operating flow but do not
 pin down \(\delta\), which is a flow per unit of the abstract capacity
 index \(K\) and is jointly normalized with \(c\)
@@ -4365,10 +4380,10 @@ direction of bias from this simplification).
 single-firm model with training-inference allocation produces an
 investment trigger \(X^* \approx 0.0047\), capacity
 \(K^* \approx 0.0067\), and training fraction \(\phi^* \approx 0.70\).
-By the solution convention discussed after Proposition 1, the duopoly
-leader's unconstrained (monopoly) policy coincides with this single-firm
-optimum, so \(X_L^{\text{mono}} = X^* \approx 0.0047\). The duopoly
-equilibrium with zero leverage produces a follower policy of
+By the leader-scale convention of Section~\ref{sec-conventions}, the
+duopoly leader's unconstrained (monopoly) policy coincides with this
+single-firm optimum, so \(X_L^{\text{mono}} = X^* \approx 0.0047\). The
+duopoly equilibrium with zero leverage produces a follower policy of
 \(X_F^* \approx 0.12\), \(K_F \approx 0.26\), and
 \(\phi_F^* \approx 0.70\), with the leader preempting at
 \(X_P \approx 0.0027\). Internet Appendix B (``Separable reduction of
@@ -4680,39 +4695,38 @@ preserved because it operates through the training allocation channel,
 which is independent of the contest form.
 
 \textbf{Dynamic training reallocation.} Holding \(\phi\) fixed for the
-life of the project is the limitation of the model most often raised,
-and the concern is that it biases \(\phi^*\). To quantify the direction
-and magnitude of the bias, I solve a two-period extension in which the
-firm commits to \(\phi_1\) at investment time and may revise the
-allocation once, at the end of the first period, conditioning on what it
-has observed: to \(\phi_H\) if the regime switch has occurred by then,
-to \(\phi_{L2}\) if it has not. After the revision the allocation is
-fixed forever, so each branch continues with the corresponding
-perpetuity. Capacity is held at the static optimum \(K^*\), which
-isolates the allocation margin, and reallocation incurs a quadratic
-adjustment cost \(\kappa \cdot (\Delta\phi)^2\) charged in the branch in
-which it occurs. All values in the exercise, including \(\kappa\), are
-measured per unit of demand \(X_0\) at the fixed capacity \(K^*\), in
-the same units as the revenue coefficients; the static revenue value is
-\(1.33\) per unit of \(X_0\), so on the grid
-\(\kappa \in \{0.5, 2, 10\}\) a full reversal of the baseline allocation
-(\(\Delta\phi \approx 0.4\) at \(\kappa = 0.5\)) costs about \(6\%\) of
-that value at the cheapest setting and \(\kappa = 10\) makes any
-revision larger than a few points prohibitive, which spans the range
-from nearly free to effectively static. Writing
-\(\rho = r - \mu_L + \lambda\) for the hazard-adjusted net discount rate
-of the L-regime (written \(\Delta\) in the proof of Proposition 2), the
-value per unit of \(X_0\) decomposes into the survival-adjusted L-regime
-flow over the first period (weight \((1 - e^{-\rho \, dt})/\rho\)), the
-H-regime flow earned between an in-period switch and the revision date
-at the \emph{pre-switch} allocation, the H perpetuity at the readjusted
-allocation in the switched state, and the L perpetuity at the readjusted
-allocation in the no-switch state (weight \(e^{-\rho \, dt}\)). The
-decomposition is exact rather than approximate: at
-\(\phi_1 = \phi_H = \phi_{L2}\) the four terms collapse to the perpetual
-\(A_{\text{eff}}\) of Equation~\ref{eq-a-eff}, so the
-\(\kappa = \infty\) row is the static model itself and the value gains
-are measured against it.
+life of the project is a central limitation of the model, and the
+concern is that it biases \(\phi^*\). To quantify the direction and
+magnitude of the bias, I solve a two-period extension in which the firm
+commits to \(\phi_1\) at investment time and may revise the allocation
+once, at the end of the first period, conditioning on what it has
+observed: to \(\phi_H\) if the regime switch has occurred by then, to
+\(\phi_{L2}\) if it has not. After the revision the allocation is fixed
+forever, so each branch continues with the corresponding perpetuity.
+Capacity is held at the static optimum \(K^*\), which isolates the
+allocation margin, and reallocation incurs a quadratic adjustment cost
+\(\kappa \cdot (\Delta\phi)^2\) charged in the branch in which it
+occurs. All values in the exercise, including \(\kappa\), are measured
+per unit of demand \(X_0\) at the fixed capacity \(K^*\), in the same
+units as the revenue coefficients; the static revenue value is \(1.33\)
+per unit of \(X_0\), so on the grid \(\kappa \in \{0.5, 2, 10\}\) a full
+reversal of the baseline allocation (\(\Delta\phi \approx 0.4\) at
+\(\kappa = 0.5\)) costs about \(6\%\) of that value at the cheapest
+setting and \(\kappa = 10\) makes any revision larger than a few points
+prohibitive, which spans the range from nearly free to effectively
+static. Writing \(\rho = r - \mu_L + \lambda\) for the hazard-adjusted
+net discount rate of the L-regime (written \(\Delta\) in the proof of
+Proposition 2), the value per unit of \(X_0\) decomposes into the
+survival-adjusted L-regime flow over the first period (weight
+\((1 - e^{-\rho \, dt})/\rho\)), the H-regime flow earned between an
+in-period switch and the revision date at the \emph{pre-switch}
+allocation, the H perpetuity at the readjusted allocation in the
+switched state, and the L perpetuity at the readjusted allocation in the
+no-switch state (weight \(e^{-\rho \, dt}\)). The decomposition is exact
+rather than approximate: at \(\phi_1 = \phi_H = \phi_{L2}\) the four
+terms collapse to the perpetual \(A_{\text{eff}}\) of
+Equation~\ref{eq-a-eff}, so the \(\kappa = \infty\) row is the static
+model itself and the value gains are measured against it.
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
