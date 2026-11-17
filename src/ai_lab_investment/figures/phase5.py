@@ -24,7 +24,8 @@ def plot_growth_option_decomposition(
 
     params = ModelParameters()
     model = SingleFirmModel(params)
-    X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+    # Interim pin (issue #176): pure-power policy; regenerated in issue #184.
+    X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
 
     # Vary installed capacity from near 0 to 1.5 * K_star
     K_ratios = np.linspace(0.01, 1.5, 40)

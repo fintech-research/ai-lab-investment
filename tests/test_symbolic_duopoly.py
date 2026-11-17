@@ -206,15 +206,25 @@ class TestOptionValueStructure:
 
 
 class TestBaselineSimplification:
-    def test_baseline_simplified_form_valid(self):
-        """Paper's F_L = C*X^{beta_H} is valid at baseline."""
+    """The pure-power form is an approximation of the model of record.
+
+    Rewritten for issue #176: the earlier version asserted that the form
+    was valid at baseline because the option premium ratio exceeds one.
+    Issue #185 brings the rest of the symbolic module in line.
+    """
+
+    def test_pure_power_form_is_not_exact_at_baseline(self):
+        """The exact solution carries A_1 != 0 on X^{beta_L^+}."""
         result = verify_baseline_simplification()
-        assert result["simplified_form_valid"]
+        assert not result["pure_power_form_exact"]
+        assert result["A_1_exact"] < 0.0
 
     def test_option_premium_ratio_exceeds_one(self):
-        """phi_L >= 1 at baseline (so no interior trigger in L)."""
+        """The standalone L-regime scale problem has no interior optimum;
+        that is a description, not a licence for the pure-power form."""
         result = verify_baseline_simplification()
         assert result["option_premium_ratio_L"] >= 1.0
+        assert not result["has_interior_L_trigger"]
 
 
 # =====================================================================
@@ -329,7 +339,7 @@ class TestFullPipeline:
 
         # Baseline check
         bl_result = verify_baseline_simplification()
-        assert bl_result["simplified_form_valid"]
+        assert not bl_result["pure_power_form_exact"]
 
     def test_verify_all_high_alpha(self, high_alpha_params):
         """Run verification for params with interior L-trigger."""

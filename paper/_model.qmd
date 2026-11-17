@@ -44,7 +44,7 @@ Installed capacity incurs a continuous operating cost at rate $\delta > 0$ per u
 
 ### Single-Firm Benchmark {#sec-single-firm}
 
-A single firm holds an option to invest and chooses the trigger $X^*$, the capacity $K^*$, and the training fraction $\phi^*$ that maximize its value, under the following conditions.
+A single firm holds an option to invest once, before or after the regime switch, and chooses when to invest, the capacity to install, and the training fraction, under the following conditions.
 
 **Assumption 1** (Parameter admissibility). *The following conditions are maintained throughout:*
 
@@ -52,11 +52,13 @@ A single firm holds an option to invest and chooses the trigger $X^*$, the capac
 
 *(A2) The option premium condition $1/\gamma < (\beta_H - 1)/(\alpha \beta_H) < 1$ holds, ensuring an interior capacity solution in regime $H$, where $\beta_H$ is the positive root of the H-regime characteristic equation @eq-beta-H below.*
 
-*(A3) The L-regime insufficiency condition $(1 - 1/\beta_L^+)/\alpha \geq 1$ holds, where $\beta_L^+$ is the positive root of the L-regime characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$ derived below; this is the condition under which the paper adopts the simplified option value $F_L \propto X^{\beta_H}$ (@sec-conventions). This means that L-regime revenue alone would not justify investment; the firm may still invest while in regime $L$, but only because the combined effective revenue coefficient $A_{\text{eff}}$, which includes the H-regime prospect, makes the investment worthwhile.*
+*Both conditions are satisfied at the baseline calibration and verified computationally at all parameter values used in the paper. Internet Appendix B provides the boundary analysis, including the sensitivity of (A2) to archetype-specific WACCs.*
 
-*(A4) $A_{\text{eff}}(\phi, K)$ is twice continuously differentiable in $\phi \in (0,1)$ for fixed $K > 0$.*
-
-*All four conditions are satisfied at the baseline calibration ($\beta_L^+ \approx 3.01$, $(1 - 1/\beta_L^+)/\alpha \approx 1.67$) and verified computationally at all parameter values used in the paper. Internet Appendix B provides the full boundary analysis, including sensitivity of (A2) and (A3) to archetype-specific WACCs and the treatment when (A3) fails.*
+Two further properties hold without being assumed. The effective revenue coefficient $A_{\text{eff}}(\phi, K)$ defined below is twice continuously differentiable in $\phi \in (0,1)$ for every $K > 0$, as a property of its functional form. And at the baseline the *L-regime insufficiency condition*
+$$
+\frac{1 - 1/\beta_L^+}{\alpha} \geq 1
+$$ {#eq-l-insufficiency}
+holds (the ratio is $1.67$, with $\beta_L^+ \approx 3.01$ the positive root of the L-regime characteristic equation given below). It is a description, not an assumption: it says that the standalone L-regime scale problem has no interior optimum, so L-regime revenue alone does not pin down an investment. It plays no role in the solution that follows and licenses no simplification of the option value. At the baseline values of the other parameters it holds wherever (A2) does, since (A2) requires $\alpha < 0.534$ and @eq-l-insufficiency requires $\alpha \leq 0.67$.
 
 #### Installed value
 
@@ -93,80 +95,94 @@ X_H^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{(r - \mu_H)}{(\phi K)^{\alpha}} 
 $$ {#eq-trigger-H}
 so the trigger exceeds the Marshallian (NPV = 0) level by the *option premium* factor $\beta_H/(\beta_H - 1) > 1$, about $2.8$ at baseline.
 
-The linear operating-cost term is what makes the scale interior: with $\delta = 0$ the cost of capacity is purely convex, the option-value factor under (A2) declines monotonically in $K$, and the closed form below collapses to $K^* = 0$, which is why (A1) requires $\delta > 0$. Internet Appendix F plots the option value against the NPV of immediate investment (@fig-option-value) and the comparative statics of $X_H^*$ and $K_H^*$ (@fig-comparative-statics).^[Those illustrations set $\phi = 1$ in @eq-revenue-H, without loss of generality in the absorbing H-regime.]
-
-**Proposition 1** (Optimal capacity and training fraction; single-firm benchmark). *The firm jointly chooses capacity $K^*$ and training fraction $\phi^*$ to maximize the option value. Under (A1) and (A2), and in particular for $\delta > 0$, the optimal capacity is:*
-$$
-K^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
-$$
-*and $K^*$ is independent of $\phi$; it is the unique global maximizer of the capacity problem, not merely a critical point (Internet Appendix A, Step 4). The optimal $\phi^*$ is determined separately by maximizing $A_{\text{eff}}$ over $\phi$ and is also in closed form,*
-$$
-\phi^* = \frac{\rho}{1 + \rho}, \qquad \rho \equiv \left(\frac{\lambda}{r - \mu_H}\right)^{\frac{1}{1-\alpha}},
-$$ {#eq-phi-star}
-*so beliefs enter the allocation only through the ratio of the arrival rate to the H-regime net discount rate; at baseline $\rho \approx 2.34$ and $\phi^* \approx 0.70$. Substituting $(K^*, \phi^*)$ into the smooth-pasting condition gives the investment trigger explicitly.*
-
-*When the firm operates in the L-regime with the possibility of a regime switch and the option is priced with the simplified form $F_L \propto X^{\beta_H}$ (Assumption 1, condition A3; @sec-conventions), it jointly optimizes $(K^*, \phi^*)$ to maximize the option value $F(X_0) \propto A_{\text{eff}}(\phi, K)^{\beta_H} / [\delta K/r + cK^\gamma]^{\beta_H - 1}$, where $A_{\text{eff}}$ is defined in @eq-a-eff. The optimal training fraction $\phi^*$ is interior (strictly between 0 and 1) and:*
-
-*(i) $\phi^*$ is increasing in $\lambda$: a higher arrival rate shifts allocation toward training.*
-
-*(ii) $\phi^*$ is increasing in the H-regime growth rate $\mu_H$: a higher post-AGI growth rate increases the relative value of training, shifting the optimal allocation toward training. Also, $\phi^*$ is independent of $\mu_L$: L-regime drift affects both inference revenue and the regime-switching discount symmetrically through the common factor $1/(r - \mu_L + \lambda)$, leaving the ratio $w_H/w_L = \lambda / (r - \mu_H)$ unchanged.*
-
-*Proof.* The joint optimization over $(K, \phi)$ is in Internet Appendix A. Interiority of $\phi^*$ follows from the Inada conditions: $\partial A_{\text{eff}}/\partial \phi \to +\infty$ as $\phi \to 0^+$ and $\partial A_{\text{eff}}/\partial \phi \to -\infty$ as $\phi \to 1^-$ (since $\alpha \in (0,1)$). Uniqueness follows from strict concavity of $A_{\text{eff}}$ in $\phi$ (see Internet Appendix A, Step 5, for the second-derivative argument). The comparative statics follow from implicit differentiation of the first-order condition; see Internet Appendix A, Steps 5--6. $\square$
-
-The multiplicative form $A_{\text{eff}} = g(\phi) \cdot K^\alpha$ makes the problem separable, since the $\phi$-dependent factor cancels from the first-order condition for $K$: cost and the option premium govern scale, beliefs govern allocation.
-
-**Remark 2** (Allocation versus two separate investments). *Because $\phi$ is fixed at installation, choosing $(K, \phi)$ is a change of variables from choosing training capacity $K_T = \phi K$ and inference capacity $K_I = (1-\phi)K$ directly, and revenue is additive across the two uses (@eq-a-eff has no cross term). The joint problem nevertheless does not reduce to two independent investment problems, for two reasons. First, the investment cost $c(K_T + K_I)^\gamma$ is convex in total compute, so each unit of training capacity raises the marginal cost of inference capacity: the convexity prices the total fleet (power, sites, GPU supply), not each workload separately. Second, both capacities are installed at a single trigger; if each could be timed on its own, inference capacity, which earns revenue immediately in regime $L$, and training capacity, which pays off only through the regime switch, would generically be installed at different thresholds. With separable costs, separate timing, and exogenous $\lambda$, the model would decompose into independent training and inference investments. The $(K, \phi)$ parameterization is instead the coordinate system in which the joint problem separates along economic margins: by Proposition 1, scale is set by the cost function and the option premium and allocation by beliefs, whereas the first-order conditions for $(K_T, K_I)$ are coupled through the convex cost.*
+The linear operating-cost term is what makes the scale interior: with $\delta = 0$ the cost of capacity is purely convex, the option-value factor under (A2) declines monotonically in $K$, and the closed form for $K_H^*$ in Proposition 1 collapses to zero, which is why (A1) requires $\delta > 0$. Internet Appendix F plots the option value against the NPV of immediate investment (@fig-option-value) and the comparative statics of $X_H^*$ and $K_H^*$ (@fig-comparative-statics).^[Those illustrations set $\phi = 1$ in @eq-revenue-H, without loss of generality in the absorbing H-regime.]
 
 #### Option value in regime $L$
 
-In the low regime, the option value satisfies the Hamilton-Jacobi-Bellman equation incorporating the regime-switching term:
+In the low regime, the value $F_L$ of a firm that has not yet invested satisfies the Hamilton-Jacobi-Bellman equation incorporating the regime-switching term:
 $$
 \tfrac{1}{2}\sigma^2 X^2 F_L'' + \mu_L X F_L' + \lambda\bigl[F_H(X) - F_L(X)\bigr] - r\, F_L = 0,
 $$ {#eq-hjb-L}
-where $F_H(X) = B_H X^{\beta_H}$ is the H-regime *option* value of @eq-option-H, not the installed value $V_H$. Rearranging gives a second-order Euler ODE:
-$$
-\tfrac{1}{2}\sigma^2 X^2 F_L'' + \mu_L X F_L' - (r + \lambda)\, F_L + \lambda B_H X^{\beta_H} = 0.
-$$
+where $F_H$ is the value the firm holds if the switch arrives before it has invested, not the installed value $V_H$. That value has two branches. Below the H-regime trigger it is the option value $B_H X^{\beta_H}$ of @eq-option-H. At or above it the firm invests at once, so $F_H$ is an exercise payoff: $p_H X - q_H$, with $p_H = A_H (K_H^*)^\alpha$ and $q_H = \delta K_H^*/r + I(K_H^*)$, if the scale installed after a switch is precommitted to $K_H^*$, and the envelope $\max_K [A_H K^\alpha X - \delta K/r - I(K)]$ if the firm chooses its scale when the switch arrives. The forcing term in @eq-hjb-L is therefore piecewise, and so is the solution.
 
-Its homogeneous solution has characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$ with positive root $\beta_L^+$, and its particular solution has the form $\Gamma \cdot X^{\beta_H}$:
+The homogeneous equation has characteristic equation $\tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda) = 0$, with roots $\beta_L^+ > 1$ and $\beta_L^- < 0$. Below $X_H^*$ the particular solution has the form $\Gamma \cdot X^{\beta_H}$,
 $$
-\Gamma = \frac{-\lambda\, B_H}{Q_L(\beta_H)}, \quad Q_L(\beta) \equiv \tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda).
+\Gamma = \frac{-\lambda\, B_H}{Q_L(\beta_H)}, \quad Q_L(\beta) \equiv \tfrac{1}{2}\sigma^2 \beta(\beta - 1) + \mu_L \beta - (r + \lambda),
 $$ {#eq-particular-C}
-Applying the boundary condition $F_L(0) = 0$, which eliminates the negative root, yields:
+and the boundary condition $F_L(0) = 0$ eliminates the negative root:
 $$
-F_L(X) = A_1 X^{\beta_L^+} + \Gamma \cdot X^{\beta_H}, \quad X < X^*.
+F_L(X) = A_1 X^{\beta_L^+} + \Gamma \cdot X^{\beta_H}, \quad X < \min\{X_H^*, X^*\}.
 $$ {#eq-option-L-general}
-
-Setting $A_1 = 0$ is a *solution convention* rather than a consequence of (A3), and the paper adopts it throughout. The pre-investment option then keeps the pure power form $F_L(X) \propto X^{\beta_H}$ on all of $(0, X^*)$, with its coefficient fixed by value-matching at $X^*$ rather than by @eq-particular-C. Two qualifications delimit the form. First, @eq-particular-C is exact only below the H-regime trigger: a switch above it is followed by immediate exercise, whose payoff is the fixed-scale value if the post-switch scale is precommitted and the larger envelope over scale if the firm chooses it on arrival. Second, (A3) rules out the standalone L-regime scale problem that would otherwise pin $A_1$ down, without itself implying $A_1 = 0$. This is the *unconditional-$A_{\text{eff}}$ convention* that also governs the default boundary and the preemption game (@sec-conventions, @tbl-domains, Internet Appendix B).
-
-Under this convention, the investment trigger for the joint $(K^*, \phi^*)$ optimization satisfies:
+Above $X_H^*$, with the post-switch scale precommitted, the forcing is affine and
 $$
-X^* = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K^*/r + c(K^*)^\gamma}{A_{\text{eff}}(\phi^*, K^*)},
+F_L(X) = G_1 X^{\beta_L^+} + G_2 X^{\beta_L^-} + \frac{\lambda p_H}{r + \lambda - \mu_L}\,X - \frac{\lambda q_H}{r + \lambda}, \quad X_H^* \leq X < X^*.
+$$ {#eq-option-L-upper}
+The coefficients $(A_1, G_1, G_2)$ and the trigger $X^*$ are pinned down by value and slope matching at $X_H^*$ and by value matching and smooth pasting at $X^*$. With the envelope in place of the affine payoff the upper branch has no elementary form, and the problem is solved through one scalar equation (Internet Appendix B).
+
+**Proposition 1** (Allocation, post-switch scale, and the pre-switch policy; single-firm benchmark). *Under (A1) and (A2), and in particular for $\delta > 0$:*
+
+*(i) (Allocation; closed form.) Write $A_{\text{eff}}(\phi, K) = g(\phi) K^\alpha$, with $g(\phi) = [(1-\phi)^\alpha + \lambda A_H \phi^\alpha]/(r - \mu_L + \lambda)$. At every capacity, installed value in regime $L$ is maximized by the training fraction*
+$$
+\phi^* = \frac{\rho}{1 + \rho}, \qquad \rho \equiv \left(\frac{\lambda}{r - \mu_H}\right)^{\frac{1}{1-\alpha}},
+$$ {#eq-phi-star}
+*which is interior, unique, and independent of $K$; at baseline $\rho \approx 2.34$ and $\phi^* \approx 0.70$. It is increasing in $\lambda$ and in the H-regime growth rate $\mu_H$, and independent of $\mu_L$, which affects inference revenue and the regime-switching discount through the common factor $1/(r - \mu_L + \lambda)$. Because the allocation enters the firm's problem only through $A_{\text{eff}}$, $\phi^*$ is the optimal allocation of any investment made before the switch, whatever the trigger and the capacity.*
+
+*(ii) (Post-switch policy; closed form.) A firm that has not invested when the switch arrives devotes all capacity to training. If demand is then below $X_H^*$, it invests when demand first reaches $X_H^*$ (@eq-trigger-H at $\phi = 1$), with capacity*
+$$
+K_H^* = \left[\frac{\delta\,(\alpha \beta_H - \beta_H + 1)}{r\,c\,(\gamma(\beta_H - 1) - \alpha \beta_H)}\right]^{\frac{1}{\gamma - 1}},
+$$ {#eq-K-H}
+*the unique global maximizer of the capacity problem, not merely a critical point (Internet Appendix A, Step 4); if demand is already at or above $X_H^*$, it invests at once. At baseline $X_H^* \approx 0.0028$ and $K_H^* \approx 0.0067$.*
+
+*(iii) (Pre-switch policy; a system of conditions.) Let the scale installed after a switch be precommitted to $K_H^*$, so that $F_L$ is given by @eq-option-L-general and @eq-option-L-upper. An interior pre-switch policy $(X^*, K^*)$ satisfies value matching and smooth pasting at $X^*$ against the payoff $A_{\text{eff}}(\phi^*, K^*) X - \delta K^*/r - I(K^*)$, value and slope matching at $X_H^*$, and the scale condition*
+$$
+\alpha\, A_{\text{eff}}(\phi^*, K^*)\, X^* = K^* \left(\frac{\delta}{r} + c \gamma (K^*)^{\gamma - 1}\right),
+$$ {#eq-scale-foc}
+*which says that $K^*$ is the capacity a firm investing at demand $X^*$ would choose. When the system returns $X^* < X_H^*$ the upper branch is absent and the scale assumption is immaterial.*
+
+*Proof.* Internet Appendix A. Interiority of $\phi^*$ follows from the Inada conditions on $g$ and uniqueness from its strict concavity (Steps 5--6); part (ii) is the absorbing H-regime problem (Steps 1--4); part (iii) collects the first-order conditions of the precommitted-scale stopping problem (Step 7). $\square$
+
+Parts (i) and (ii) are closed forms. Part (iii) is a characterization, and the system is solved numerically: it reduces to a one-dimensional search over capacity, on which I find a single maximum at every parameterization examined, a numerical finding and not a proof of uniqueness. At baseline $X^* \approx 0.0093$ and $K^* \approx 0.0158$, so the firm that invests before the switch does so later and at more than twice the scale of the post-switch policy, and the problem is two-region ($X^* > X_H^*$).
+
+The precommitted scale is a restriction, and removing it changes the answer at baseline. When the firm chooses its scale on arrival of the switch, waiting is worth more at high demand, and whether a finite pre-switch trigger exists is decided by the *waiting margin*
+$$
+\frac{\lambda}{|Q_L(\theta)|} \left(\frac{A_H}{g(\phi^*)}\right)^{\theta}, \qquad \theta = \frac{\gamma}{\gamma - \alpha},
+$$ {#eq-waiting-margin}
+the limiting ratio, as demand grows, of the value of waiting to the payoff from investing at the best scale. If the margin is at least one the firm never invests before the switch. This criterion is derived from the growth rates of the two functions and confirmed by solving the linear complementarity problem; it is not proved. At baseline the margin is $1.08$: the single firm waits for the switch and then follows the post-switch policy of part (ii). A finite pre-switch trigger exists only for arrival rates below about $0.073$ at baseline, and, across the admissible ranges of the other parameters, only at the top of the $\gamma$ range (Internet Appendix B). The amounts at stake are modest. At a demand of half the trigger of @eq-trigger-phi below, waiting is worth $1.741 \times 10^{-3}$ against $1.703 \times 10^{-3}$ for following the policy of part (iii), a difference of about $2\%$. The reason for waiting is the one that @eq-l-insufficiency describes: once scale can be chosen at the switch, investing earlier buys only the L-regime inference revenue on $(1-\phi)K$, while the H-regime prize is obtained at least as cheaply by waiting. The result rests on the single irreversible lump of the technology: a firm that could expand after entry would not face the same choice.
+
+**Remark 2** (Allocation versus two separate investments). *Because $\phi$ is fixed at installation, choosing $(K, \phi)$ is a change of variables from choosing training capacity $K_T = \phi K$ and inference capacity $K_I = (1-\phi)K$ directly, and revenue is additive across the two uses (@eq-a-eff has no cross term). The joint problem nevertheless does not reduce to two independent investment problems, for two reasons. First, the investment cost $c(K_T + K_I)^\gamma$ is convex in total compute, so each unit of training capacity raises the marginal cost of inference capacity: the convexity prices the total fleet (power, sites, GPU supply), not each workload separately. Second, both capacities are installed at a single trigger; if each could be timed on its own, inference capacity, which earns revenue immediately in regime $L$, and training capacity, which pays off only through the regime switch, would generically be installed at different thresholds. With separable costs, separate timing, and exogenous $\lambda$, the model would decompose into independent training and inference investments. The $(K, \phi)$ parameterization is instead the coordinate system in which the allocation separates from scale: by Proposition 1(i) the optimal split does not depend on $K$, whereas the first-order conditions for $(K_T, K_I)$ are coupled through the convex cost.*
+
+#### A closed-form approximation
+
+Replacing the forcing term in @eq-hjb-L by $\lambda B_H X^{\beta_H}$ at every demand level and dropping the homogeneous term gives the pure power $F_L(X) \propto X^{\beta_H}$ on the whole continuation region, with its coefficient fixed by value matching. The trigger and capacity are then explicit:
+$$
+X^{\text{pp}} = \frac{\beta_H}{\beta_H - 1} \cdot \frac{\delta K_H^*/r + c(K_H^*)^\gamma}{A_{\text{eff}}(\phi^*, K_H^*)}, \qquad K^{\text{pp}} = K_H^*,
 $$ {#eq-trigger-phi}
-which generalizes @eq-trigger-H by replacing the H-regime revenue coefficient with the effective one. Because $K^*$ and $\phi^*$ are in closed form, @eq-trigger-phi is explicit once they are substituted.
+which is @eq-trigger-H with the H-regime revenue coefficient replaced by the effective one. I call this the *pure-power approximation*. It is a decision rule, not a solution of @eq-hjb-L: it pairs a continuation value that solves the H-regime equation with an exercise payoff from the L-regime, its value-matching coefficient is $16.5$ at baseline against the $\Gamma \approx 21.1$ that @eq-particular-C requires, and no stopping problem has it as a value function. It is nested in the exact problem in three respects: its allocation is the exact $\phi^*$, its capacity is the post-switch capacity $K_H^*$, and both policies converge to the post-switch policy as $\lambda$ grows without bound. Its measured error at baseline is large in levels and small in value. The trigger $X^{\text{pp}} \approx 0.0047$ is $49\%$ below $X^*$ and the capacity $0.0067$ is $57\%$ below $K^*$, while following the rule delivers $97.4\%$ of the value of the policy of Proposition 1(iii) and $93.1\%$ of the value of waiting (@tbl-domains, Internet Appendix B). Two properties of the approximation do not carry over. Its capacity does not depend on beliefs, whereas $K^*$ does; and its trigger falls with the arrival rate over most of the range, whereas the exact trigger does not (Remark 3).
 
-**Remark 3** (Role of $\lambda$). *The arrival rate $\lambda$ has three effects on investment timing, allocation, and value. First, higher $\lambda$ increases the weight on the H-regime term in $A_{\text{eff}}$ (@eq-a-eff), raising the effective revenue coefficient and lowering the investment trigger, so the firm invests sooner. Second, higher $\lambda$ shifts the optimal training fraction $\phi^*$ upward, because the marginal value of training compute (which determines H-regime revenue) increases relative to the marginal value of inference compute (which determines L-regime revenue). Third, higher $\lambda$ raises the option value whenever the optimal allocation trains enough for the switch to be good news, $\phi^*(\lambda) > \underline{\phi}$ (@eq-phi-underbar; $\lambda \gtrsim 0.025$ at baseline): by the envelope theorem the derivative of the value in $\lambda$ has the sign of $\partial A_{\text{eff}}/\partial \lambda$ at the optimum, which is positive above that threshold and negative below it, where a faster switch mainly truncates the inference revenue of a firm that has allocated little to training. Capacity $K^*$ is independent of $\lambda$ by Proposition 1, although duopoly capacity can differ through the contest function. Read through the belief interpretation of $\lambda$, the model therefore predicts that a firm holding a shorter AGI timeline invests earlier and allocates more compute to training.*
+**Remark 3** (Role of $\lambda$). *The arrival rate $\lambda$ affects allocation, timing, scale, and value, and only the first effect is unambiguous. First, higher $\lambda$ raises the optimal training fraction $\phi^*$, because the marginal value of training compute, which determines H-regime revenue, rises relative to that of inference compute (Proposition 1(i)). Second, the effect on timing depends on the range and on the treatment of the post-switch scale. With that scale precommitted, the trigger $X^*$ rises with $\lambda$ up to $\lambda \approx 0.13$ and falls beyond, and capacity $K^*$ is hump-shaped with its peak near $\lambda \approx 0.19$. With scale chosen at the switch, the trigger rises with $\lambda$ wherever it exists and ceases to exist at $\lambda \approx 0.073$, so a single firm expecting the switch sooner invests later or not at all before it. The pure-power approximation behaves differently: since $K^{\text{pp}}$ does not depend on $\lambda$, $X^{\text{pp}} \propto 1/g(\phi^*)$, which falls with $\lambda$ when $\phi^*(\lambda) > \underline{\phi}$ (@eq-phi-underbar; $\lambda \gtrsim 0.024$ at baseline) and rises below that threshold. Third, for a firm that has invested, higher $\lambda$ raises value when the allocation trains enough for the switch to be good news, $\phi > \underline{\phi}$, and lowers it otherwise, where a faster switch mainly truncates inference revenue: installed value moves with $\partial A_{\text{eff}}/\partial \lambda$. These timing and scale responses are numerical findings at the baseline values of the other parameters (@tbl-beliefs in Internet Appendix B); the prediction that a firm holding a shorter AGI timeline allocates more compute to training is the one that holds in every version of the problem.*
 
-@fig-lambda-option-value re-optimizes $(X^*, K^*, \phi^*)$ at each arrival rate. The option value falls in $\lambda$ up to $\lambda \approx 0.025$, where $\phi^*(\lambda)$ crosses $\underline{\phi}$, then rises, convexly at first and, for $\lambda \gtrsim 0.085$, *concavely*; over the policy-relevant range $\lambda \in [0.1, 0.5]$ it is increasing and concave. That concavity is the basis of testable prediction 3 in @sec-discussion, which is stated for the concave range only.
+@fig-lambda-option-value plots the value of a firm that has not invested against the arrival rate, re-solving its problem at each $\lambda$ with scale chosen whenever it invests. The value falls in $\lambda$ up to $\lambda \approx 0.025$, where $\phi^*(\lambda)$ crosses $\underline{\phi}$, then rises, convexly up to $\lambda \approx 0.05$ and *concavely* beyond; over the policy-relevant range $\lambda \in [0.1, 0.5]$ it is increasing and concave. That concavity is the basis of testable prediction 3 in @sec-discussion, which is stated for the concave range only.
 
-![Pre-investment option value and training allocation as a function of the arrival rate $\lambda$ in the full model. (a) Option value $F(X)$ at $X = 0.002$, with $(X^*, K^*, \phi^*)$ re-optimized at each $\lambda$. (b) Optimal training fraction $\phi^*(\lambda)$ (solid) and the faith-based survival threshold $\underline{\phi}$ of @eq-phi-underbar (dashed). The dotted vertical line in both panels marks the arrival rate at which $\phi^*$ crosses $\underline{\phi}$, the minimum of the value in $\lambda$. Both panels sweep $\lambda$ over an 80-point grid on $[0.005, 0.80]$, holding all other parameters at the baseline calibration; $X = 0.002$ lies below every trigger on the grid.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
+![Value of a firm that has not invested and training allocation as a function of the arrival rate $\lambda$ in the full model. (a) Value $F(X)$ at $X = 0.002$ in the exact problem with scale chosen whenever the firm invests (solid), and under the pure-power approximation (dashed). At arrival rates below about $0.04$ this demand level lies above the pre-switch trigger and the solid curve is the value of investing at once; above $\lambda \approx 0.073$ it is the value of waiting for the switch. (b) Optimal training fraction $\phi^*(\lambda)$ (solid) and the faith-based survival threshold $\underline{\phi}$ of @eq-phi-underbar (dashed). The dotted vertical line in both panels marks the arrival rate at which $\phi^*$ crosses $\underline{\phi}$, the minimum of the value in $\lambda$. Both panels sweep $\lambda$ over an 80-point grid on $[0.005, 0.80]$, holding all other parameters at the baseline calibration.](figures/fig_lambda_option_value.pdf){#fig-lambda-option-value}
 
 ### Solution conventions and approximations {#sec-conventions}
 
-The closed forms of @sec-single-firm and of the duopoly below rest on four solution conventions. @tbl-domains collects them with the model's operating assumptions and with the approximations whose size I have measured, so that a reader can see which objects are exact, over what domain each result is stated, and how large each departure is. The conventions are stated below; their magnitudes are in the table.
+The duopoly and credit results below rest on four solution conventions, the first of which is the pure-power approximation of @sec-single-firm. @tbl-domains collects them with the model's operating assumptions and with the approximations whose size I have measured, so that a reader can see which objects are exact, over what domain each result is stated, and how large each departure is. The conventions are stated below; their magnitudes are in the table.
 
 | Group | Item | Statement or measured size |
 |:------|:-----|:---------------------------|
 | Assumption | Regime-exclusive revenue | Training earns no L-regime revenue; post-switch revenue needs no inference capacity |
 | Assumption | Training as a flow | A flow proxy for capability, with no accumulated stock |
 | Assumption | Single lump | One irreversible installation, with $\phi$ fixed at installation |
-| Domain | Proposition 1 | Requires $\delta > 0$ and (A2) |
+| Domain | Proposition 1 | Requires $\delta > 0$ and (A2); (i)--(ii) closed form, (iii) solved numerically with the post-switch scale precommitted |
+| Domain | Single firm, scale chosen at the switch | Waits for the switch at baseline; a finite pre-switch trigger only for $\lambda < 0.073$ |
 | Domain | Proposition 2(ii) | Fixed policy; closed form under symmetric shares |
 | Domain | Proposition 2(iii) | Common allocation, or monopoly |
 | Domain | Proposition 3(i) | Existence conditional on a computed endpoint sign; uniqueness analytical at $\ell = 0$, computational otherwise |
 | Domain | Leader's scale | Held at the monopoly-phase optimum |
 | Domain | Leader's boundary | Pre-entry claim, $\beta_H$ dilution convention |
-| Approximation | Pure power ($A_1 = 0$) | Value loss 2.6\% within the precommitted-scale class, 6.9\% against the unrestricted optimum; no pre-switch trigger in the unrestricted problem |
+| Approximation | Pure power, against the exact single-firm problem | Trigger 49\% and capacity 57\% below the precommitted-scale policy; value loss 2.6\% against that policy and 6.9\% against waiting; $\phi^*$ exact |
+| Approximation | Pure power: belief-invariant capacity, trigger falling in $\lambda$ | Properties of the approximation; in the exact problem $K^*$ varies with $\lambda$ and $X^*$ rises with $\lambda$ up to $0.13$ |
 | Approximation | Single-boundary default | Overstates $X_D$ by about 3\%, against faith-based survival |
 | Approximation | Omitted follower default option | At most 1.5\% of the default claim; zero at $\ell = 0$ |
 | Approximation | Par debt at $r_c < r$ | Subsidy about 23\% of $I$ at $\ell = 0.40$ |
@@ -174,15 +190,15 @@ The closed forms of @sec-single-firm and of the duopoly below rest on four solut
 
 : Operating assumptions, result domains, and measured approximation sizes at the baseline calibration. Internet Appendix B reports the underlying experiments. {#tbl-domains}
 
-**Unconditional-$A_{\text{eff}}$ discounting.** All option-like L-regime payoffs are valued with the H-regime exponent $\beta_H$ and the unconditional coefficient $A_{\text{eff}}$ (@eq-a-eff) rather than with regime-contingent value functions: the pre-investment option takes the pure power form of @sec-single-firm, the exercise payoff is @eq-installed-value-L whatever regime prevails at exercise, the follower's option value is proportional to $X^{\beta_H}$, and the leader's monopoly-phase value discounts follower entry by $(X/X_F^*)^{\beta_H}$. The convention delivers @eq-trigger-phi and @eq-default-boundary and governs every trigger in the paper. It restricts what the model prices rather than approximating it with a small signed error: the exact object is a piecewise free-boundary problem in which a switch above the H-regime trigger is followed by immediate exercise. Internet Appendix B solves that problem in a precommitted-scale version, in which the post-switch scale is fixed at $K_H^*$ and a closed form exists, and in an unrestricted version, in which the firm chooses scale on arrival, so the post-switch payoff is the exercise envelope over $K$ and no finite pre-switch trigger exists at baseline. Triggers and capacities are therefore objects of the model these conventions define, while $\phi^*$ carries over exactly, because it maximizes $A_{\text{eff}}$ at every scale.
+**Unconditional-$A_{\text{eff}}$ discounting.** The duopoly and credit blocks apply the pure-power approximation of @sec-single-firm to every option-like L-regime payoff, valuing it with the H-regime exponent $\beta_H$ and the unconditional coefficient $A_{\text{eff}}$ (@eq-a-eff) in place of regime-contingent value functions: the pre-investment option takes the pure power form, the exercise payoff is @eq-installed-value-L whatever regime prevails at exercise, the follower's option value is proportional to $X^{\beta_H}$, and the leader's monopoly-phase value discounts follower entry by $(X/X_F^*)^{\beta_H}$. The convention delivers @eq-trigger-phi and @eq-default-boundary and governs every trigger in those blocks. Accordingly, in @sec-duopoly, @sec-calibration and @sec-valuation the symbols $X^*$ and $K^*$ denote the pure-power policy $(X^{\text{pp}}, K^{\text{pp}})$ of @eq-trigger-phi, not the exact policy of Proposition 1(iii). The convention restricts what those blocks price and does not approximate the exact problem with a small signed error: its triggers and capacities are objects of the model the conventions define, while $\phi^*$ carries over exactly, because it maximizes $A_{\text{eff}}$ at every scale.
 
-**Leader's scale in the duopoly.** The leader's capacity and training fraction solve the *monopoly-phase* problem, so $(K_L, \phi_L)$ coincides with the single-firm optimum of Proposition 1. This does not affect the rent-equalization *logic* that pins down $X_P$, but it does affect the level: re-optimizing for entry at the preemption point implies a much smaller leader and a preemption discount of $86\%$ rather than $43\%$ (Internet Appendix B). The convention is conservative for the qualitative claim, while the reported discount should not be read as an estimate of the effect's size.
+**Leader's scale in the duopoly.** The leader's capacity and training fraction solve the *monopoly-phase* problem, so $(K_L, \phi_L)$ coincides with the single-firm pure-power policy $(K^{\text{pp}}, \phi^*)$ of @sec-single-firm. This does not affect the rent-equalization *logic* that pins down $X_P$, but it does affect the level: re-optimizing for entry at the preemption point implies a much smaller leader and a preemption discount of $86\%$ rather than $43\%$ (Internet Appendix B). The convention is conservative for the qualitative claim, while the reported discount should not be read as an estimate of the effect's size.
 
 **Single-boundary default.** The default boundary @eq-default-boundary replaces the H-regime equity value by its perpetuity component, collapsing the coupled pair $(X_D^L, X_D^H)$ into one boundary. Unlike the first convention, this is an approximation whose bias is signed and quantified in @tbl-domains: it overstates $X_D$ and so errs against faith-based survival. A smaller approximation omits the default-option term from the follower's entry payoff.
 
 **Par debt issuance at an exogenous coupon.** Leverage $\ell$ and the coupon rate $r_c$ are exogenous, and debt is issued at par: the firm receives $\ell I(K)$ against a perpetual coupon $r_c \ell I(K)$. Because $r_c < r$, the convention embeds an implicit financing subsidy of $\ell(1 - r_c/r) I(K)$ (@tbl-domains). It is a stress-test device that varies the debt burden without solving a capital-structure problem, and it is why the leverage comparative statics are not endogenous capital-structure results. Fairly priced debt would require $r_c \geq r$ at the entry trigger.
 
-Propositions 1--3 are exact statements about the model these conventions define.
+Proposition 1 is a statement about the exact single-firm problem; Propositions 2 and 3 are exact statements about the model these conventions define.
 
 ### Duopoly with Default Risk {#sec-duopoly}
 

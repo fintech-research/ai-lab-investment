@@ -287,7 +287,7 @@ class TestDarioDilemmaLeveraged:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         model = SingleFirmModel(p_true)
-        X, K, phi = model.optimal_trigger_capacity_phi()
+        X, K, phi = model.pure_power_trigger_capacity_phi()
         dp_standalone = va_true.default_probability(
             X_current=X,
             K=K,
@@ -331,7 +331,7 @@ class TestDarioDilemmaLeveraged:
         }
         for lam, (X_exp, phi_exp, dd_exp) in expected.items():
             model = SingleFirmModel(va.params.with_param(lam=lam))
-            X, K, phi = model.optimal_trigger_capacity_phi()
+            X, K, phi = model.pure_power_trigger_capacity_phi()
             assert pytest.approx(X_exp, abs=5e-6) == X
             assert phi == pytest.approx(phi_exp, abs=5e-4)
             X_D = duo.default_boundary(phi, K, 0.0, 0.0)
@@ -621,7 +621,7 @@ class TestAppendixERobustness:
         eq-a-eff, so the static benchmark behind the tbl-dynamic-phi value
         gains is literally the static model's revenue coefficient."""
         model = SingleFirmModel(va.params)
-        _, K_s, phi_s = model.optimal_trigger_capacity_phi()
+        _, K_s, phi_s = model.pure_power_trigger_capacity_phi()
         a_eff = model._effective_revenue_coeff_single(phi_s, K_s)
         for dt in [0.25, 1.0, 5.0]:
             r = va.two_period_dynamic_phi(dt=dt, adjustment_cost=1.0)
@@ -646,7 +646,7 @@ class TestOptionValueCurvatureInLambda:
         vals = []
         for lam in lams:
             m = SingleFirmModel(va.params.with_param(lam=lam))
-            vals.append(m.option_value_with_phi(0.001))
+            vals.append(m.pure_power_option_value(0.001))
         vals = np.array(vals)
         assert np.all(np.diff(vals) > 0)  # increasing in lambda
         assert np.all(np.diff(vals, 2) < 0)  # concave in lambda
@@ -675,7 +675,9 @@ class TestDilemmaMatchedErrorsAndCurvature:
     def test_local_expansion_matches_small_errors(self, va):
         """Delta V(-h) - Delta V(+h) ~ W''' h^3 / 3 for small h, in units of W."""
         h = 0.02
-        X_true, _, _ = SingleFirmModel(ModelParameters()).optimal_trigger_capacity_phi()
+        X_true, _, _ = SingleFirmModel(
+            ModelParameters()
+        ).pure_power_trigger_capacity_phi()
         X_0 = 0.5 * X_true
         W0 = va.dilemma_policy_value(0.10, 0.10, X_0)
         gap = (

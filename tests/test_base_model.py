@@ -1,10 +1,28 @@
-"""Tests for the single-firm base model."""
+"""Tests for the single-firm base model.
+
+The full-model entry points (`solve`, `optimal_trigger_capacity_phi`,
+`option_value_with_phi`) return the model of record, the exact piecewise
+problem. Everything that pins the pure-power approximation, including the
+numbers the sections not yet revised still quote, lives in
+`TestPurePowerApproximation`.
+"""
+
+from itertools import pairwise
 
 import numpy as np
 import pytest
 
 from ai_lab_investment.models.base_model import SingleFirmModel
 from ai_lab_investment.models.parameters import ModelParameters
+from ai_lab_investment.models.piecewise_option import (
+    BELIEF_GRID,
+    PiecewiseOptionModel,
+    belief_comparative_statics,
+    belief_trigger_ranges,
+    piecewise_bias,
+    reduced_form_reference,
+    smooth_fit_trigger,
+)
 
 
 @pytest.fixture
@@ -15,6 +33,32 @@ def default_params():
 @pytest.fixture
 def model(default_params):
     return SingleFirmModel(default_params)
+
+
+@pytest.fixture(scope="module")
+def solution():
+    """Baseline model-of-record solution."""
+    return SingleFirmModel(ModelParameters()).solve()
+
+
+@pytest.fixture(scope="module")
+def belief_table():
+    return belief_comparative_statics(ModelParameters())
+
+
+@pytest.fixture(scope="module")
+def belief_ranges():
+    return belief_trigger_ranges(ModelParameters())
+
+
+@pytest.fixture(scope="module")
+def reduced():
+    return reduced_form_reference(ModelParameters())
+
+
+@pytest.fixture(scope="module")
+def baseline_bias():
+    return piecewise_bias(ModelParameters())
 
 
 class TestInstalledValue:
@@ -275,75 +319,300 @@ class TestInstalledValueWithPhi:
 
 
 class TestOptimalTriggerCapacityPhi:
-    def test_solution_exists(self, model):
-        """Joint (K, phi) optimization should find a solution."""
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
-        assert X_star > 0
-        assert K_star > 0
-        assert 0.01 <= phi_star <= 0.99
+    """`optimal_trigger_capacity_phi` returns the precommitted-scale policy
+    of the model of record (Proposition 1)."""
 
-    def test_trigger_positive(self, model):
-        X_star, _, _ = model.optimal_trigger_capacity_phi()
-        assert X_star > 0
+    def test_baseline_policy(self, model):
+        """Pins the (X*, K*, phi*) quoted in Proposition 1, tbl-baseline-results
+        and the AGENTS.md fact lists."""
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        assert X_star == pytest.approx(0.009258, abs=1e-6)
+        assert K_star == pytest.approx(0.015784, abs=1e-6)
+        assert phi_star == pytest.approx(0.700856, abs=1e-6)
+
+    def test_is_the_precommitted_solution(self, model, solution):
+        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        assert X_star == solution.precommitted.X_star
+        assert K_star == solution.precommitted.K
+        assert phi_star == solution.phi_star
+
+    def test_trigger_lies_above_the_post_switch_trigger(self, solution):
+        """The baseline problem is two-region: X* > X_H*."""
+        assert solution.precommitted.two_region
+        assert pytest.approx(0.002783, abs=1e-6) == solution.X_H
 
     def test_phi_interior(self, model):
-        """Optimal phi should be interior (not at boundary)."""
         _, _, phi_star = model.optimal_trigger_capacity_phi()
         assert 0.05 < phi_star < 0.95
 
     def test_phi_depends_on_lambda(self):
-        """Higher lambda should shift phi toward training."""
-        p_low = ModelParameters(lam=0.05)
-        p_high = ModelParameters(lam=0.50)
-        m_low = SingleFirmModel(p_low)
-        m_high = SingleFirmModel(p_high)
-        _, _, phi_low = m_low.optimal_trigger_capacity_phi()
-        _, _, phi_high = m_high.optimal_trigger_capacity_phi()
-        # Higher switching rate → more valuable to have training capacity
+        """Higher lambda shifts phi toward training."""
+        _, _, phi_low = SingleFirmModel(
+            ModelParameters(lam=0.05)
+        ).optimal_trigger_capacity_phi()
+        _, _, phi_high = SingleFirmModel(
+            ModelParameters(lam=0.50)
+        ).optimal_trigger_capacity_phi()
         assert phi_high > phi_low
 
     def test_npv_positive_at_trigger(self, model):
-        """NPV at the optimal trigger should be positive."""
         X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
         V = model.installed_value_with_phi(X_star, phi_star, K_star, "L")
-        cost = model.investment_cost(K_star)
-        assert V - cost > 0
+        assert V - model.investment_cost(K_star) > 0
 
-    def test_reports_multistart_convergence(self, model):
-        """The multistart records how many starts actually converged."""
-        model.optimal_trigger_capacity_phi()
-        diag = model.solver_diagnostics["trigger_capacity_phi"]
-        assert diag["n_starts"] == 16
-        assert diag["n_converged"] >= 1
-        assert diag["best_objective"] < 1e19
+    def test_solution_is_cached(self, model):
+        assert model.solve() is model.solve()
 
-    def test_rejects_unconverged_multistart(self, model, monkeypatch):
-        """A run where no start converges must raise, not return the best
-        non-converged value."""
-        from ai_lab_investment.models import base_model as bm
 
-        def fake_multistart(objective, starts, **kwargs):
-            starts = list(starts)
-            return (
-                np.array([-2.0, 0.5]),
-                -1.0,
-                {
-                    "n_starts": len(starts),
-                    "n_evaluated": len(starts),
-                    "n_converged": 0,
-                    "best_objective": -1.0,
-                },
-            )
+class TestSingleFirmSolution:
+    """What the monopolist does in the exact problem (issue #176)."""
 
-        monkeypatch.setattr(bm, "multistart_minimize", fake_multistart)
-        model._cache.clear()
-        with pytest.raises(RuntimeError, match="did not converge"):
-            model.optimal_trigger_capacity_phi()
+    def test_monopolist_waits_at_baseline(self, solution):
+        """With scale chosen whenever the firm invests, no finite pre-switch
+        trigger exists at baseline."""
+        assert not solution.invests_before_switch
+        assert np.isinf(solution.X_star)
+        assert np.isnan(solution.K_star)
+        assert solution.waiting_margin == pytest.approx(1.0773, abs=1e-3)
 
-    def test_objective_rejects_out_of_bounds_log_K(self, model):
-        """The bound guard fires before exp(log_K) is ever formed."""
-        assert model._objective_K_phi(np.array([1e4, 0.5])) == 1e20
-        assert model._objective_K_phi(np.array([-1e4, 0.5])) == 1e20
+    def test_waiting_confirmed_by_the_complementarity_problem(self, solution):
+        """Policy iteration on the exercise envelope returns an empty
+        stopping region (no assumption on its shape)."""
+        assert solution._unrestricted.joint_lcp()["kind"] == "never"
+
+    def test_value_ranking_at_baseline(self, solution):
+        """At X_0 = half the pure-power trigger: waiting with scale chosen at
+        the switch (1.741e-3) beats the precommitted-scale optimum
+        (1.659e-3), which beats waiting with precommitted scale (1.619e-3),
+        which beats the pure-power policy (1.615e-3). The last comparison is
+        the one Internet Appendix B reports; it concerns the pure-power
+        policy, not the precommitted-scale optimum."""
+        X_pp, K_pp, phi_pp = solution.pure_power
+        X_0 = 0.5 * X_pp
+        wait = solution.waiting_value(X_0)
+        pre = solution.precommitted_value(X_0)
+        wait_pre = solution.precommitted_waiting_value(X_0)
+        pp = solution._piecewise.threshold_value(K_pp, phi_pp, X_pp, X_0)
+        assert wait == pytest.approx(1.7414e-3, rel=1e-4)
+        assert pre == pytest.approx(1.6589e-3, rel=1e-4)
+        assert wait_pre == pytest.approx(1.6192e-3, rel=1e-4)
+        assert pp == pytest.approx(1.6151e-3, rel=1e-4)
+        assert wait > pre > wait_pre > pp
+        # following the precommitted-scale policy when scale is in fact
+        # chosen at the switch: 1.703e-3, about 2% below waiting
+        followed = solution.policy_value(
+            solution.precommitted.K,
+            solution.precommitted.phi,
+            solution.precommitted.X_star,
+            X_0,
+        )
+        assert followed == pytest.approx(1.7031e-3, rel=1e-4)
+        assert followed / wait == pytest.approx(0.978, abs=1e-3)
+        assert solution.policy_value(K_pp, phi_pp, X_pp, X_0) == pytest.approx(
+            1.6214e-3, rel=1e-4
+        )
+        assert solution.value(X_0) == wait
+
+    def test_precommitted_trigger_against_brennan_schwartz(self, solution):
+        """Independent LCP solve at the optimal (K*, phi*) reproduces the
+        free boundary of the two-region system."""
+        pre = solution.precommitted
+        _, _, boundary = solution._piecewise.finite_difference_value(
+            pre.K, pre.phi, n_grid=20001
+        )
+        assert boundary == pytest.approx(pre.X_star, rel=1e-3)
+
+    def test_post_switch_policy_is_the_H_regime_problem(self, model, solution):
+        X_H, K_H = model.optimal_trigger_and_capacity("H")
+        assert solution.X_H == X_H
+        assert solution.K_H == K_H
+
+    def test_finite_trigger_at_a_low_arrival_rate(self):
+        """Internet Appendix B: at lambda = 0.05 the unrestricted problem
+        invests before the switch, at X* = 0.0173 with K* = 0.029."""
+        sol = SingleFirmModel(ModelParameters(lam=0.05)).solve()
+        assert sol.invests_before_switch
+        assert sol.waiting_margin < 1.0
+        assert sol.X_star == pytest.approx(0.01729, rel=1e-3)
+        assert sol.K_star == pytest.approx(0.02890, rel=1e-3)
+        X_0 = 0.002
+        assert sol.value(X_0) > sol.waiting_value(X_0)
+
+    def test_versions_coincide_below_the_post_switch_trigger(self):
+        """When the trigger lies below X_H* the post-switch scale assumption
+        is immaterial: the precommitted and unrestricted policies agree."""
+        sol = SingleFirmModel(ModelParameters(lam=0.03)).solve()
+        assert sol.precommitted.X_star < sol.X_H
+        assert not sol.precommitted.two_region
+        assert sol.X_star == pytest.approx(sol.precommitted.X_star, rel=1e-6)
+        assert sol.K_star == pytest.approx(sol.precommitted.K, rel=1e-6)
+
+    def test_waiting_result_across_the_admissible_ranges(self):
+        """Internet Appendix B: over the (A2)-admissible ranges the firm
+        invests before the switch only at the top of the gamma range."""
+        base = ModelParameters()
+        for name, value in [
+            ("sigma", 0.20),
+            ("sigma", 0.38),
+            ("alpha", 0.37),
+            ("alpha", 0.53),
+            ("r", 0.10),
+            ("r", 0.13),
+            ("gamma", 1.15),
+        ]:
+            sol = SingleFirmModel(base.with_param(**{name: value})).solve()
+            assert not sol.invests_before_switch, (name, value)
+        for gamma in (1.9, 2.0):
+            sol = SingleFirmModel(base.with_param(gamma=gamma)).solve()
+            assert sol.invests_before_switch
+        assert SingleFirmModel(base.with_param(gamma=1.9)).solve().waiting_margin == (
+            pytest.approx(0.993, abs=2e-3)
+        )
+
+    def test_pure_power_error(self, solution):
+        """Measured error of the nested approximation at baseline."""
+        err = solution.pure_power_error()
+        assert err["trigger_pct"] == pytest.approx(-49.0, abs=0.1)
+        assert err["capacity_pct"] == pytest.approx(-57.4, abs=0.1)
+        assert abs(err["phi_gap"]) < 1e-6
+        assert err["value_loss_precommitted_pct"] == pytest.approx(2.64, abs=0.02)
+        assert err["value_loss_unrestricted_pct"] == pytest.approx(6.89, abs=0.02)
+
+
+class TestBeliefComparativeStatics:
+    """K*(lambda), X*(lambda), phi*(lambda) in the model of record
+    (review comments C5 and C20)."""
+
+    def test_belief_table(self, belief_table):
+        """Pins the belief table quoted after Remark 3."""
+        t = belief_table
+        assert (
+            tuple(t["lam"])
+            == BELIEF_GRID
+            == (0.03, 0.05, 0.075, 0.10, 0.15, 0.20, 0.50)
+        )
+        np.testing.assert_allclose(
+            t["phi_star"],
+            [0.2395, 0.4246, 0.5919, 0.7009, 0.8216, 0.8815, 0.9716],
+            atol=5e-5,
+        )
+        np.testing.assert_allclose(
+            t["X_precommitted"],
+            [0.0004393, 0.005516, 0.008262, 0.009258, 0.009404, 0.008905, 0.006552],
+            rtol=1e-3,
+        )
+        np.testing.assert_allclose(
+            t["K_precommitted"],
+            [0.0001707, 0.007040, 0.012736, 0.015784, 0.018100, 0.018433, 0.015810],
+            rtol=1e-3,
+        )
+
+    def test_finite_unrestricted_trigger_only_at_low_arrival_rates(self, belief_table):
+        """On the grid a finite pre-switch trigger exists at 0.03 and 0.05
+        and at no higher rate."""
+        t = belief_table
+        np.testing.assert_array_equal(
+            t["invests_before_switch"], [1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        )
+        np.testing.assert_allclose(
+            t["X_unrestricted"][:2], [0.0004393, 0.017292], rtol=1e-3
+        )
+        np.testing.assert_allclose(
+            t["K_unrestricted"][:2], [0.0001707, 0.028899], rtol=1e-3
+        )
+        assert np.all(np.isinf(t["X_unrestricted"][2:]))
+
+    def test_existence_bound(self, belief_ranges):
+        """The unrestricted trigger exists for lambda < 0.0729."""
+        lam_bar = belief_ranges["lam_bar"]
+        assert lam_bar == pytest.approx(0.0729, abs=1e-4)
+        below = SingleFirmModel(ModelParameters(lam=lam_bar - 1e-3)).solve()
+        above = SingleFirmModel(ModelParameters(lam=lam_bar + 1e-3)).solve()
+        assert below.invests_before_switch
+        assert not above.invests_before_switch
+
+    def test_no_trigger_reappears_at_high_arrival_rates(self):
+        """The waiting margin peaks near lambda = 0.2 and declines toward
+        one from above; it stays above one up to lambda = 20."""
+        for lam in (0.5, 1.0, 3.0, 20.0):
+            sol = SingleFirmModel(ModelParameters(lam=lam)).solve()
+            assert sol.waiting_margin > 1.0
+            assert not sol.invests_before_switch
+
+    def test_unrestricted_trigger_rises_in_lambda_where_it_exists(self):
+        """A monopolist expecting the switch sooner invests later."""
+        lams = np.linspace(0.01, 0.072, 32)
+        triggers = [
+            SingleFirmModel(ModelParameters(lam=v)).solve().X_star for v in lams
+        ]
+        capacities = [
+            SingleFirmModel(ModelParameters(lam=v)).solve().K_star for v in lams
+        ]
+        assert np.all(np.diff(triggers) > 0)
+        assert np.all(np.diff(capacities) > 0)
+
+    def test_precommitted_trigger_is_hump_shaped(self, belief_ranges):
+        """C20: the precommitted-scale trigger rises in lambda up to about
+        0.127 and falls beyond; capacity peaks near 0.192."""
+        assert belief_ranges["precommitted_trigger_peak"] == pytest.approx(
+            0.1273, abs=1e-3
+        )
+        assert belief_ranges["precommitted_capacity_peak"] == pytest.approx(
+            0.1924, abs=1e-3
+        )
+        lams = np.linspace(0.02, 0.50, 49)
+        X = np.array([
+            PiecewiseOptionModel(ModelParameters(lam=v)).precommitted_optimum().X_star
+            for v in lams
+        ])
+        rising = lams[1:] <= 0.127
+        assert np.all(np.diff(X)[rising] > 0)
+        assert np.all(np.diff(X)[lams[:-1] >= 0.128] < 0)
+
+    def test_C20_table(self, belief_table, baseline_bias):
+        """Reviewer's table: K* = 0.0158, 0.0184, 0.0158 at lambda = 0.10,
+        0.20, 0.50 reproduce; the trigger peaks on the grid at 0.15."""
+        t = belief_table
+        K = dict(zip(t["lam"], t["K_precommitted"], strict=True))
+        X = dict(zip(t["lam"], t["X_precommitted"], strict=True))
+        assert K[0.10] == pytest.approx(0.0158, abs=5e-5)
+        assert K[0.20] == pytest.approx(0.0184, abs=5e-5)
+        assert K[0.50] == pytest.approx(0.0158, abs=5e-5)
+        assert X[0.10] == pytest.approx(0.0093, abs=5e-5)
+        assert X[0.15] == pytest.approx(0.0094, abs=5e-5)
+        assert max(X, key=lambda lam: X[lam]) == 0.15
+        # the reviewer's own route at baseline, through optimal_policy(X_0)
+        assert baseline_bias["K_piecewise_opt"] == pytest.approx(K[0.10], rel=1e-4)
+
+    def test_C20_entry_at_lambda_003_is_an_evaluation_demand_artifact(
+        self, belief_table, reduced
+    ):
+        """The reviewer's K* = 0.0021 at lambda = 0.03 reproduces only as the
+        best *immediate* investment at X_0 = X*(0.10)/2: the trigger of that
+        belief (0.00044) lies below X_0. The demand-free optimum is
+        K* = 0.00017."""
+        X_0 = 0.5 * reduced["X_star"]
+        pw = PiecewiseOptionModel(ModelParameters(lam=0.03))
+        at_demand = pw.optimal_policy(X_0)
+        assert at_demand is not None
+        assert pytest.approx(0.0021, abs=5e-5) == at_demand.K
+        assert at_demand.X_star == pytest.approx(0.0021, abs=5e-5)
+        assert at_demand.X_star < X_0
+        free = pw.precommitted_optimum()
+        assert free.X_star < X_0
+        assert pytest.approx(belief_table["K_precommitted"][0], rel=1e-9) == free.K
+        assert pytest.approx(0.000171, rel=1e-2) == free.K
+        assert pw.exercise_premium(free.K, free.phi) > pw.exercise_premium(
+            at_demand.K, at_demand.phi
+        )
+
+    def test_capacity_responds_to_beliefs(self, belief_table):
+        """Capacity is not belief-invariant in the model of record: it varies
+        by a factor of about 90 over the grid (2.6 over [0.05, 0.50])."""
+        K = belief_table["K_precommitted"]
+        assert K.max() / K.min() == pytest.approx(108.0, rel=0.02)
+        assert K[1:].max() / K[1:].min() == pytest.approx(2.62, abs=0.02)
+        assert np.ptp(belief_table["K_pure_power"]) < 1e-8
 
 
 class TestZeroLambda:
@@ -390,18 +659,19 @@ class TestLargeLambda:
     def test_phi_approaches_all_training(self):
         """When the switch is imminent, essentially everything is training."""
         m = SingleFirmModel(ModelParameters(lam=50.0))
-        _, _, phi_star = m.optimal_trigger_capacity_phi()
-        assert phi_star > 0.95
+        assert m.closed_form_phi_star() > 0.95
 
-    def test_trigger_approaches_H_regime_trigger(self):
-        """With lambda huge, the (K, phi) solution collapses onto the
-        H-regime problem of Proposition 1."""
-        p = ModelParameters(lam=1e4)
-        m = SingleFirmModel(p)
-        X_phi, K_phi, _ = m.optimal_trigger_capacity_phi()
-        X_H, K_H = m.optimal_trigger_and_capacity("H")
-        assert abs(K_phi - K_H) / K_H < 0.05
-        assert abs(X_phi - X_H) / X_H < 0.05
+    def test_policy_approaches_the_H_regime_policy(self):
+        """Nesting: as lambda grows the exact precommitted-scale policy
+        approaches the H-regime policy (X_H*, K_H*), monotonically."""
+        gaps = []
+        for lam in (0.5, 2.0, 20.0, 100.0):
+            sol = PiecewiseOptionModel(ModelParameters(lam=lam))
+            opt = sol.precommitted_optimum()
+            gaps.append((opt.X_star / sol.X_H - 1.0, opt.K / sol.K_H - 1.0))
+        assert all(a[0] > b[0] > 0 and a[1] > b[1] > 0 for a, b in pairwise(gaps))
+        assert gaps[-1][0] < 0.07
+        assert gaps[-1][1] < 0.09
 
     def test_simulation_switches_immediately(self):
         m = SingleFirmModel(ModelParameters(lam=500.0))
@@ -413,54 +683,114 @@ class TestLargeLambda:
 
 
 class TestOptionValueWithPhi:
-    def test_positive(self, model):
-        """Option value should be positive."""
-        assert model.option_value_with_phi(0.5) > 0
+    """Exact value of the firm that has not invested."""
 
-    def test_increasing_in_X(self, model):
-        """Option value should increase with demand."""
-        V1 = model.option_value_with_phi(0.3)
-        V2 = model.option_value_with_phi(0.8)
-        assert V2 > V1
+    def test_positive_and_increasing(self, model):
+        values = [model.option_value_with_phi(x) for x in (0.001, 0.003, 0.3, 0.8)]
+        assert values[0] > 0
+        assert np.all(np.diff(values) > 0)
 
-    def test_exceeds_npv_before_trigger(self, model):
-        """Option value should exceed immediate NPV before the trigger."""
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
-        X = X_star * 0.5
-        option = model.option_value_with_phi(X)
-        npv = model.installed_value_with_phi(
-            X, phi_star, K_star, "L"
-        ) - model.investment_cost(K_star)
-        assert option >= npv - 1e-10
+    def test_is_the_waiting_value_at_baseline(self, model, solution):
+        for X in (0.001, 0.01, 0.5):
+            assert model.option_value_with_phi(X) == solution.waiting_value(X)
+
+    def test_dominates_every_pre_switch_investment(self, model, solution):
+        """Waiting beats installing the precommitted-scale (K*, phi*) and
+        the pure-power (K*, phi*) at once, at every demand level."""
+        pre = solution.precommitted
+        _, K_pp, phi_pp = solution.pure_power
+        for X in np.geomspace(1e-3, 10.0, 25):
+            wait = model.option_value_with_phi(X)
+            for K, phi in ((pre.K, pre.phi), (K_pp, phi_pp)):
+                npv = model.installed_value_with_phi(
+                    X, phi, K, "L"
+                ) - model.investment_cost(K)
+                assert wait > npv
+
+    def test_exceeds_the_pure_power_value(self, model):
+        """The approximation understates the option value at baseline."""
+        X = 0.002
+        assert model.option_value_with_phi(X) > model.pure_power_option_value(X)
 
 
 class TestProposition1ClosedForm:
-    def test_closed_form_K_star_matches_optimizer(self, model):
-        """Proposition 1's closed-form K* must match the numerical optimum.
+    """Proposition 1 in the model of record: phi* in closed form, K_H* in
+    closed form, (X*, K*) from the two-region system."""
 
-        K* = [delta*(alpha*beta_H - beta_H + 1)
-              / (r*c*(gamma*(beta_H - 1) - alpha*beta_H))]^(1/(gamma-1))
-        """
-        p = model.params
+    @staticmethod
+    def _closed_form_K_H(p: ModelParameters) -> float:
         b = p.beta_H
-        K_closed = (
+        return (
             p.delta
             * (p.alpha * b - b + 1.0)
             / (p.r * p.c * (p.gamma * (b - 1.0) - p.alpha * b))
         ) ** (1.0 / (p.gamma - 1.0))
-        _, K_num, _ = model.optimal_trigger_capacity_phi()
-        assert abs(K_num - K_closed) / K_closed < 1e-4
+
+    def test_closed_form_phi_star(self, model, solution):
+        assert model.closed_form_phi_star() == pytest.approx(0.700856, abs=1e-5)
+        assert solution.phi_star == model.closed_form_phi_star()
+
+    def test_phi_star_maximizes_the_exercise_premium_at_every_scale(self, solution):
+        """The allocation enters only through A_eff, so phi* is optimal at
+        any capacity, not only at K*."""
+        pw = solution._piecewise
+        for K in (0.2 * solution.precommitted.K, solution.precommitted.K, 0.05):
+            for phi in (solution.phi_star - 0.05, solution.phi_star + 0.05):
+                a_star, _ = pw.exercise_payoff_coeffs(K, solution.phi_star)
+                a_off, _ = pw.exercise_payoff_coeffs(K, phi)
+                assert a_star > a_off
+
+    def test_closed_form_post_switch_capacity(self, model, solution):
+        """K_H* = [delta (alpha beta_H - beta_H + 1)
+        / (r c (gamma (beta_H - 1) - alpha beta_H))]^(1/(gamma-1))."""
+        K_closed = self._closed_form_K_H(model.params)
+        assert pytest.approx(K_closed, rel=1e-6) == solution.K_H
+        assert K_closed == pytest.approx(0.006727, abs=1e-6)
+
+    def test_two_region_system_holds_at_the_optimum(self, solution):
+        """Value matching and smooth pasting at X*, value and slope matching
+        at X_H*, and the capacity first-order condition."""
+        sol = solution.precommitted
+        eps = sol.X_star * 1e-7
+        assert sol.value(sol.X_star) == pytest.approx(sol.npv_at_trigger(), rel=1e-12)
+        slope = (sol.value(sol.X_star) - sol.value(sol.X_star - eps)) / eps
+        assert slope == pytest.approx(sol.a_L, rel=1e-5)
+
+        X_H, p_pos, n, h = sol.X_H, sol.beta_L_pos, sol.beta_L_neg, sol.beta_H
+        lower = sol.A_1 * X_H**p_pos + sol.C * X_H**h
+        upper = sol.D_1 * X_H**p_pos + sol.D_2 * X_H**n + sol.g * X_H + sol.k
+        assert lower == pytest.approx(upper, rel=1e-9)
+        slope_lo = p_pos * sol.A_1 * X_H ** (p_pos - 1) + h * sol.C * X_H ** (h - 1)
+        slope_hi = (
+            p_pos * sol.D_1 * X_H ** (p_pos - 1) + n * sol.D_2 * X_H ** (n - 1) + sol.g
+        )
+        assert slope_lo == pytest.approx(slope_hi, rel=1e-6)
+
+        p = solution._piecewise.params
+        marginal_cost = p.delta / p.r + p.c * p.gamma * sol.K ** (p.gamma - 1.0)
+        assert p.alpha * sol.a_L * sol.X_star / sol.K == pytest.approx(
+            marginal_cost, rel=1e-7
+        )
+        assert pytest.approx(-8528.5, rel=1e-4) == sol.A_1
+
+    def test_fixed_capacity_free_boundary_agrees(self, solution):
+        """At K* the fixed-(K, phi) free-boundary solver returns the same
+        trigger: the envelope optimum is the fixed-scale optimum."""
+        pre = solution.precommitted
+        fixed = solution._piecewise.solve(pre.K, pre.phi)
+        assert fixed.X_star == pytest.approx(pre.X_star, rel=1e-8)
 
     def test_raises_outside_A2_admissible_region(self):
-        """When (A2)'s upper bound fails (alpha*beta_H <= beta_H - 1), the
-        option-value factor diverges as K -> 0 and there is no interior
-        optimum; the solver must refuse rather than return a boundary
-        artifact (regression: it previously returned K* ~ 1e-322)."""
+        """When (A2)'s upper bound fails the post-switch scale problem has
+        no interior optimum; every full-model entry point must refuse."""
         for kwargs in [{"r": 0.15}, {"sigma": 0.18}]:
-            p = ModelParameters(**kwargs)
-            m = SingleFirmModel(p)
+            m = SingleFirmModel(ModelParameters(**kwargs))
             with pytest.raises(RuntimeError, match="A2"):
                 m.optimal_trigger_capacity_phi()
+            with pytest.raises(RuntimeError, match="A2"):
+                m.solve()
+            with pytest.raises(RuntimeError, match="A2"):
+                m.pure_power_trigger_capacity_phi()
 
     def test_duopoly_leader_raises_outside_A2(self):
         """The duopoly leader-monopolist problem inherits the same
@@ -470,22 +800,6 @@ class TestProposition1ClosedForm:
         duo = DuopolyModel(ModelParameters(r=0.15), leverage=0.0)
         with pytest.raises(RuntimeError, match="A2"):
             duo.solve_leader_monopolist()
-
-    def test_K_star_independent_of_phi(self, model):
-        """The optimal capacity is the same at any fixed training fraction
-        (separability: A_eff = g(phi) * K^alpha cancels in the K FOC)."""
-        from scipy import optimize
-
-        capacities = []
-        for phi in [0.30, 0.50, 0.70]:
-            result = optimize.minimize_scalar(
-                lambda log_K, phi=phi: model._objective_K_phi(np.array([log_K, phi])),
-                bounds=(-15, 15),
-                method="bounded",
-            )
-            capacities.append(np.exp(result.x))
-        assert abs(capacities[0] - capacities[1]) / capacities[1] < 1e-5
-        assert abs(capacities[2] - capacities[1]) / capacities[1] < 1e-5
 
 
 class TestCalibrationSectionClaims:
@@ -502,6 +816,7 @@ class TestCalibrationSectionClaims:
         lab (0.15), and compute racer (0.18) violate its upper bound."""
         for r in [0.10, 0.12]:
             SingleFirmModel(ModelParameters(r=r)).optimal_trigger_capacity_phi()
+            SingleFirmModel(ModelParameters(r=r)).pure_power_trigger_capacity_phi()
         for r in [0.14, 0.15, 0.18]:
             m = SingleFirmModel(ModelParameters(r=r))
             with pytest.raises(RuntimeError, match="A2"):
@@ -523,7 +838,9 @@ class TestCalibrationSectionClaims:
 
     def test_lower_alpha_lowers_trigger_and_capacity(self):
         """Section 4's sensitivity discussion: lower alpha reduces capacity
-        *and* lowers the trigger (both elasticities are positive)."""
+        *and* lowers the trigger. The direction holds in the model of
+        record; the levels Section 4 still quotes are the pure-power ones,
+        pinned in TestPurePowerApproximation until issue #183."""
         triggers, capacities = [], []
         for alpha in [0.38, 0.40, 0.45]:
             X, K, _ = SingleFirmModel(
@@ -533,32 +850,57 @@ class TestCalibrationSectionClaims:
             capacities.append(K)
         assert triggers[0] < triggers[1] < triggers[2]
         assert capacities[0] < capacities[1] < capacities[2]
-        assert triggers[0] == pytest.approx(0.0015, abs=1e-4)
-        assert triggers[2] == pytest.approx(0.038, abs=1e-3)
+        assert triggers[0] == pytest.approx(0.00276, abs=1e-5)
+        assert triggers[2] == pytest.approx(0.0827, abs=1e-4)
 
     def test_delta_is_a_capacity_normalization(self):
         """Section 4's delta = 0.10 check: delta enters only through
         b(K) = delta*K/r + c*K^gamma, so raising it is exactly a rescaling
-        of the capacity unit. Levels move by the closed-form exponents;
-        phi* and every ratio are unchanged."""
+        of the capacity unit. That is a property of the primitives, so it
+        holds in the model of record: levels move by the closed-form
+        exponents, phi* and the waiting decision are unchanged."""
         base = ModelParameters()
-        X0, K0, phi0 = SingleFirmModel(base).optimal_trigger_capacity_phi()
         high = base.with_param(delta=0.10)
-        X1, K1, phi1 = SingleFirmModel(high).optimal_trigger_capacity_phi()
+        s0 = SingleFirmModel(base).solve()
+        s1 = SingleFirmModel(high).solve()
+        X0, K0 = s0.precommitted.X_star, s0.precommitted.K
+        X1, K1 = s1.precommitted.X_star, s1.precommitted.K
 
-        assert abs(phi1 - phi0) < 1e-6
+        assert s1.phi_star == s0.phi_star
+        assert s1.invests_before_switch == s0.invests_before_switch
+        assert s1.waiting_margin == pytest.approx(s0.waiting_margin, rel=1e-9)
         scale = high.delta / base.delta
         K_ratio = scale ** (1.0 / (base.gamma - 1.0))
         X_ratio = scale ** ((base.gamma - base.alpha) / (base.gamma - 1.0))
-        assert abs(K1 / K0 - K_ratio) / K_ratio < 1e-4
-        assert abs(X1 / X0 - X_ratio) / X_ratio < 1e-4
-        assert abs(X1 - 0.0667) < 5e-4
-        assert abs(K1 - 0.0747) < 5e-4
+        assert pytest.approx(K_ratio, rel=1e-5) == K1 / K0
+        assert pytest.approx(X_ratio, rel=1e-5) == X1 / X0
+        assert pytest.approx(K_ratio, rel=1e-6) == s1.K_H / s0.K_H
+        assert pytest.approx(0.1309, abs=1e-4) == X1
+        assert pytest.approx(0.1754, abs=1e-4) == K1
 
 
 class TestCapacityGlobalOptimum:
-    """Proposition 1, Step 4: the FOC root is the global maximum of the
-    reduced capacity objective, which vanishes at both ends for delta > 0."""
+    """Proposition 1: the closed-form K_H* is the global maximum of the
+    post-switch capacity objective, which vanishes at both ends for
+    delta > 0, and the pre-switch capacity is the single peak of the
+    exercise premium."""
+
+    def test_exercise_premium_is_single_peaked_in_capacity(self, solution):
+        pw = solution._piecewise
+        grid = np.linspace(-40.0, 10.0, 1001)
+        vals = np.array([
+            pw.exercise_premium(float(np.exp(t)), solution.phi_star) for t in grid
+        ])
+        finite = np.isfinite(vals)
+        peaks = [
+            i
+            for i in range(1, len(grid) - 1)
+            if finite[i] and vals[i] > vals[i - 1] and vals[i] > vals[i + 1]
+        ]
+        assert len(peaks) == 1
+        assert np.exp(grid[peaks[0]]) == pytest.approx(
+            solution.precommitted.K, rel=0.06
+        )
 
     def test_objective_vanishes_at_both_ends(self):
         model = SingleFirmModel(ModelParameters())
@@ -581,10 +923,11 @@ class TestCapacityGlobalOptimum:
 
 
 class TestOptionValueInLambda:
-    """Remark 3: the full-model option value is non-monotone in lambda, with
-    its minimum where phi*(lambda) crosses the faith threshold phi_underbar."""
+    """Remark 3 and fig-lambda-option-value: the exact value of the firm
+    that has not invested is non-monotone in lambda, with its minimum where
+    phi*(lambda) crosses the faith threshold phi_underbar."""
 
-    def test_turning_point_at_faith_threshold(self):
+    def test_turning_point_at_faith_threshold(self, belief_ranges):
         from ai_lab_investment.figures.paper import lambda_option_value_curve
 
         lams = np.linspace(0.005, 0.10, 39)
@@ -594,11 +937,33 @@ class TestOptionValueInLambda:
         assert lams[i_min] == pytest.approx(0.025, abs=0.005)
         lam_cross = float(np.interp(phi_underbar, phis, lams))
         assert lam_cross == pytest.approx(lams[i_min], abs=0.005)
+        assert lam_cross == pytest.approx(
+            belief_ranges["pure_power_trigger_peak"], abs=5e-4
+        )
         # increasing and concave over the policy range
         hi = np.linspace(0.10, 0.50, 17)
         v, _, _ = lambda_option_value_curve(hi, X_ref=0.002)
         assert np.all(np.diff(v) > 0)
         assert np.all(np.diff(v, 2) < 0)
+
+    def test_curvature_range(self):
+        """Convex between about 0.01 and 0.05, concave from 0.05 on."""
+        from ai_lab_investment.figures.paper import lambda_option_value_curve
+
+        lams = np.linspace(0.005, 0.80, 80)
+        v, _, _ = lambda_option_value_curve(lams, X_ref=0.002)
+        convex = lams[1:-1][np.diff(v, 2) > 0]
+        assert convex.min() == pytest.approx(0.015, abs=0.006)
+        assert convex.max() == pytest.approx(0.045, abs=0.006)
+
+    def test_reference_demand_is_above_the_trigger_at_low_rates(self):
+        """At X = 0.002 the firm has already invested for lambda up to about
+        0.037, and waits for the switch above the existence bound."""
+        low = SingleFirmModel(ModelParameters(lam=0.03)).solve()
+        mid = SingleFirmModel(ModelParameters(lam=0.045)).solve()
+        assert low.X_star < 0.002 < mid.X_star
+        high = SingleFirmModel(ModelParameters(lam=0.10)).solve()
+        assert high.value(0.002) == high.waiting_value(0.002)
 
 
 class TestGammaComparativeStatic:
@@ -636,7 +1001,245 @@ class TestMultistartSelection:
         assert best_val == 1.0
         assert best_x is not None and best_x[0] == 1.0
 
+
+class TestPurePowerApproximation:
+    """The pure-power form, kept as a nested approximation of the model of
+    record (`pure_power_*`). Pins its numbers, including those the sections
+    not yet revised still quote, its nesting, and its measured error.
+    Merges the former pure-power tests of this file with
+    TestReducedFormConsistency and TestBaselineBias of
+    tests/test_piecewise_option.py."""
+
+    # -- the approximate policy and the numbers of the earlier draft --
+
+    def test_baseline_policy(self, model):
+        """X* = 0.0047, K* = 0.0067, phi* = 0.70 of the earlier draft."""
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        assert X_star == pytest.approx(0.004722, abs=1e-6)
+        assert K_star == pytest.approx(0.006727, abs=1e-6)
+        assert phi_star == pytest.approx(0.700856, abs=1e-5)
+        assert 0.01 <= phi_star <= 0.99
+
+    def test_trigger_formula(self, model):
+        """eq-trigger-pure-power: beta_H/(beta_H-1) * b(K*) / A_eff."""
+        p = model.params
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        a_eff = model._effective_revenue_coeff_single(phi_star, K_star)
+        b = p.delta * K_star / p.r + model.investment_cost(K_star)
+        assert X_star == pytest.approx(p.beta_H / (p.beta_H - 1.0) * b / a_eff)
+
+    def test_closed_form_K_star_matches_optimizer(self, model):
+        K_closed = TestProposition1ClosedForm._closed_form_K_H(model.params)
+        _, K_num, _ = model.pure_power_trigger_capacity_phi()
+        assert abs(K_num - K_closed) / K_closed < 1e-4
+
+    def test_K_star_independent_of_phi(self, model):
+        """In the approximation the optimal capacity is the same at any
+        fixed training fraction (A_eff = g(phi) K^alpha cancels in the K
+        first-order condition). The exact problem has no such separation."""
+        from scipy import optimize
+
+        capacities = []
+        for phi in [0.30, 0.50, 0.70]:
+            result = optimize.minimize_scalar(
+                lambda log_K, phi=phi: model._objective_K_phi(np.array([log_K, phi])),
+                bounds=(-15, 15),
+                method="bounded",
+            )
+            capacities.append(np.exp(result.x))
+        assert abs(capacities[0] - capacities[1]) / capacities[1] < 1e-5
+        assert abs(capacities[2] - capacities[1]) / capacities[1] < 1e-5
+
     def test_closed_form_phi_star_matches_solver(self, model):
-        _, _, phi_star = model.optimal_trigger_capacity_phi()
+        _, _, phi_star = model.pure_power_trigger_capacity_phi()
         assert model.closed_form_phi_star() == pytest.approx(phi_star, abs=1e-6)
-        assert model.closed_form_phi_star() == pytest.approx(0.700856, abs=1e-5)
+
+    def test_npv_positive_at_trigger(self, model):
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        V = model.installed_value_with_phi(X_star, phi_star, K_star, "L")
+        assert V - model.investment_cost(K_star) > 0
+
+    def test_option_value(self, model):
+        """Positive, increasing, and above the NPV of immediate investment
+        below the trigger."""
+        assert model.pure_power_option_value(0.5) > 0
+        assert model.pure_power_option_value(0.8) > model.pure_power_option_value(0.3)
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        X = X_star * 0.5
+        npv = model.installed_value_with_phi(
+            X, phi_star, K_star, "L"
+        ) - model.investment_cost(K_star)
+        assert model.pure_power_option_value(X) >= npv - 1e-10
+
+    def test_option_value_in_lambda(self):
+        """The approximate value curve of the earlier draft: minimum where
+        phi* crosses phi_underbar, concave from about 0.085."""
+        from ai_lab_investment.figures.paper import lambda_option_value_curve
+
+        lams = np.linspace(0.005, 0.10, 39)
+        values, phis, phi_underbar = lambda_option_value_curve(
+            lams, X_ref=0.002, pure_power=True
+        )
+        i_min = int(np.argmin(values))
+        assert lams[i_min] == pytest.approx(0.025, abs=0.005)
+        assert float(np.interp(phi_underbar, phis, lams)) == pytest.approx(
+            lams[i_min], abs=0.005
+        )
+        hi = np.linspace(0.10, 0.50, 17)
+        v, _, _ = lambda_option_value_curve(hi, X_ref=0.002, pure_power=True)
+        assert np.all(np.diff(v) > 0)
+        assert np.all(np.diff(v, 2) < 0)
+
+    def test_calibration_section_levels(self):
+        """Levels still quoted in @sec-calibration (issue #183 re-solves
+        them): triggers 0.0015 and 0.038 at alpha = 0.38 and 0.45, and
+        (X*, K*) = (0.0667, 0.0747) at delta = 0.10."""
+        triggers = {
+            alpha: SingleFirmModel(
+                ModelParameters(alpha=alpha)
+            ).pure_power_trigger_capacity_phi()[0]
+            for alpha in (0.38, 0.45)
+        }
+        assert triggers[0.38] == pytest.approx(0.0015, abs=1e-4)
+        assert triggers[0.45] == pytest.approx(0.038, abs=1e-3)
+        X1, K1, _ = SingleFirmModel(
+            ModelParameters(delta=0.10)
+        ).pure_power_trigger_capacity_phi()
+        assert abs(X1 - 0.0667) < 5e-4
+        assert abs(K1 - 0.0747) < 5e-4
+
+    # -- timing in lambda (review comment C5) --
+
+    def test_C5_trigger_rises_in_lambda_below_the_faith_threshold(self, belief_ranges):
+        """X* = 0.00528, 0.00540, 0.00552 at lambda = 0.005, 0.01, 0.02: the
+        approximate trigger rises in lambda while phi* < phi_underbar
+        (lambda < 0.0242) and falls above."""
+        triggers = [
+            SingleFirmModel(ModelParameters(lam=lam)).pure_power_trigger_capacity_phi()[
+                0
+            ]
+            for lam in (0.005, 0.01, 0.02)
+        ]
+        np.testing.assert_allclose(triggers, [0.00528, 0.00540, 0.00552], atol=5e-6)
+        peak = belief_ranges["pure_power_trigger_peak"]
+        assert peak == pytest.approx(0.02417, abs=1e-5)
+        lams = np.linspace(0.005, 0.50, 100)
+        X = np.array([
+            SingleFirmModel(ModelParameters(lam=v)).pure_power_trigger_capacity_phi()[0]
+            for v in lams
+        ])
+        assert np.all(np.diff(X)[lams[1:] < peak] > 0)
+        assert np.all(np.diff(X)[lams[:-1] > peak] < 0)
+
+    # -- nesting in the model of record --
+
+    def test_allocation_is_exact(self, solution):
+        assert solution.pure_power[2] == pytest.approx(solution.phi_star, abs=1e-6)
+
+    def test_capacity_is_the_post_switch_capacity(self, solution):
+        """K* of the approximation is K_H* at every arrival rate."""
+        assert solution.pure_power[1] == pytest.approx(solution.K_H, rel=1e-5)
+        for lam in (0.03, 0.50):
+            sol = SingleFirmModel(ModelParameters(lam=lam)).solve()
+            assert sol.pure_power[1] == pytest.approx(sol.K_H, rel=1e-5)
+
+    def test_trigger_is_the_post_switch_trigger_rescaled(self, model, solution):
+        """X* = X_H* A_H / g(phi*): the H-regime policy with the revenue
+        coefficient A_H replaced by the effective one."""
+        p = model.params
+        g = model._effective_revenue_coeff_single(solution.phi_star, 1.0)
+        assert solution.pure_power[0] == pytest.approx(
+            solution.X_H * p.A_H / g, rel=1e-5
+        )
+
+    def test_both_collapse_onto_the_H_regime_policy(self):
+        """The documented special case: as lambda grows both the exact and
+        the approximate policy reduce to (X_H*, K_H*, phi = 1)."""
+        m = SingleFirmModel(ModelParameters(lam=1e4))
+        X_pp, K_pp, _ = m.pure_power_trigger_capacity_phi()
+        X_H, K_H = m.optimal_trigger_and_capacity("H")
+        assert abs(K_pp - K_H) / K_H < 0.05
+        assert abs(X_pp - X_H) / X_H < 0.05
+        sol = SingleFirmModel(ModelParameters(lam=100.0)).solve()
+        assert sol.precommitted.X_star == pytest.approx(sol.pure_power[0], rel=0.07)
+        assert pytest.approx(sol.pure_power[1], rel=0.09) == sol.precommitted.K
+        assert sol.phi_star > 0.9999
+
+    # -- consistency of the pure-power boundary conditions
+    #    (formerly TestReducedFormConsistency) --
+
+    def test_pure_power_boundary_conditions_reproduce_the_trigger(
+        self, default_params, reduced
+    ):
+        """With the pure-power continuation value and A_1 = 0, value matching
+        and smooth pasting return the closed-form trigger."""
+        X = smooth_fit_trigger(default_params, reduced["K_star"], reduced["phi_star"])
+        assert pytest.approx(reduced["X_star"], rel=1e-12) == X
+
+    def test_smooth_fit_level_prices_the_approximate_policy(
+        self, reduced, default_params
+    ):
+        npv = reduced["a_L"] * reduced["X_star"] - reduced["b_L"]
+        level = npv / reduced["X_star"] ** default_params.beta_H
+        assert level == pytest.approx(reduced["smooth_fit_coeff"], rel=1e-12)
+
+    # -- measured error at baseline (formerly TestBaselineBias); if a model
+    #    change moves these numbers, Internet Appendix B must move too --
+
+    def test_trigger_and_value_error_at_the_approximate_policy(self, baseline_bias):
+        b = baseline_bias
+        assert b["X_star_piecewise_fixed"] == pytest.approx(0.007220, abs=1e-5)
+        assert b["trigger_bias_fixed_pct"] == pytest.approx(52.9, abs=0.5)
+        assert b["value_bias_fixed_pct"] == pytest.approx(19.1, abs=0.5)
+        assert b["reported_value_bias_pct"] == pytest.approx(-14.8, abs=0.5)
+
+    def test_error_against_the_exact_policy(self, baseline_bias, solution):
+        b = baseline_bias
+        assert b["trigger_bias_opt_pct"] == pytest.approx(96.1, abs=1.0)
+        assert b["K_bias_opt_pct"] == pytest.approx(134.6, abs=2.0)
+        # The training fraction is untouched: phi* maximizes A_eff at fixed K
+        # in both the approximation and the exact problem.
+        assert b["phi_piecewise_opt"] == pytest.approx(b["phi_reduced"], rel=1e-5)
+        assert b["policy_loss_pct"] == pytest.approx(2.64, abs=0.15)
+        # the demand-stated and the demand-free optimum agree at baseline
+        assert b["X_star_piecewise_opt"] == pytest.approx(
+            solution.precommitted.X_star, rel=1e-4
+        )
+
+    # -- the multistart behind the approximate policy --
+
+    def test_reports_multistart_convergence(self, model):
+        """The multistart records how many starts actually converged."""
+        model.pure_power_trigger_capacity_phi()
+        diag = model.solver_diagnostics["trigger_capacity_phi"]
+        assert diag["n_starts"] == 16
+        assert diag["n_converged"] >= 1
+        assert diag["best_objective"] < 1e19
+
+    def test_rejects_unconverged_multistart(self, model, monkeypatch):
+        """A run where no start converges must raise, not return the best
+        non-converged value."""
+        from ai_lab_investment.models import base_model as bm
+
+        def fake_multistart(objective, starts, **kwargs):
+            starts = list(starts)
+            return (
+                np.array([-2.0, 0.5]),
+                -1.0,
+                {
+                    "n_starts": len(starts),
+                    "n_evaluated": len(starts),
+                    "n_converged": 0,
+                    "best_objective": -1.0,
+                },
+            )
+
+        monkeypatch.setattr(bm, "multistart_minimize", fake_multistart)
+        model._cache.clear()
+        with pytest.raises(RuntimeError, match="did not converge"):
+            model.pure_power_trigger_capacity_phi()
+
+    def test_objective_rejects_out_of_bounds_log_K(self, model):
+        """The bound guard fires before exp(log_K) is ever formed."""
+        assert model._objective_K_phi(np.array([1e4, 0.5])) == 1e20
+        assert model._objective_K_phi(np.array([-1e4, 0.5])) == 1e20

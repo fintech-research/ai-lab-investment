@@ -1243,8 +1243,10 @@ class DuopolyModel:
         """Solve leader's problem ignoring preemption (monopolist trigger).
 
         The leader's (K, phi) maximizes the monopoly-phase option value;
-        with leverage = 0 this coincides with the single-firm optimum of
-        SingleFirmModel.optimal_trigger_capacity_phi (identical objectives).
+        with leverage = 0 this coincides with the pure-power approximation
+        SingleFirmModel.pure_power_trigger_capacity_phi (identical objectives).
+        Interim (issue #176): the duopoly is still solved under that
+        approximation; issue #178 re-solves it under the model of record.
 
         Returns:
             (X_L_mono*, K_L*, phi_L*, lev_L): Leader's monopolist solution;

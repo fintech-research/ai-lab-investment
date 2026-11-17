@@ -18,6 +18,11 @@ from .base_model import SingleFirmModel
 from .duopoly import DuopolyModel
 from .parameters import ModelParameters
 
+# Interim pin (issue #176): every single-firm policy and option value used in
+# this module is the pure-power approximation (`pure_power_*`), so the credit
+# and dilemma numbers of the present draft stay reproducible. Issues #177,
+# #179 and #180 re-solve them under the model of record (`SingleFirmModel.solve`).
+
 CREDIT_COUPON_RATE = 0.05
 """Coupon rate on debt used throughout the credit-risk analysis."""
 
@@ -330,7 +335,7 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
             V_optimal = model_true.installed_value_with_phi(
                 X_true, phi_true, K_true, "L"
             )
@@ -343,7 +348,9 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
+            X_invest, K_invest, phi_invest = (
+                model_invest.pure_power_trigger_capacity_phi()
+            )
             # Evaluate this investment under the TRUE demand process
             # (true A_eff) but with the mismatched (K, phi) policy.
             V_mismatch = model_true.installed_value_with_phi(
@@ -405,7 +412,7 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         model_invest = SingleFirmModel(self.params.with_param(lam=lambda_invest))
-        X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+        X_inv, K_inv, phi_inv = model_invest.pure_power_trigger_capacity_phi()
         if X_inv <= X_0:
             msg = f"X_0 = {X_0:.4g} must lie below the policy trigger {X_inv:.4g}"
             raise ValueError(msg)
@@ -431,7 +438,7 @@ class ValuationAnalysis:
         if X_0 is None:
             X_true, _, _ = SingleFirmModel(
                 self.params.with_param(lam=lambda_true)
-            ).optimal_trigger_capacity_phi()
+            ).pure_power_trigger_capacity_phi()
             X_0 = 0.5 * X_true
         W = [
             self.dilemma_policy_value(lambda_true, lambda_true + k * step, X_0)
@@ -485,7 +492,7 @@ class ValuationAnalysis:
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
         )
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
             eq_opt = duo_true.equity_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
             debt_opt = duo_true.debt_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
             I_opt = duo_true.investment_cost(K_true)
@@ -498,7 +505,9 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
+            X_invest, K_invest, phi_invest = (
+                model_invest.pure_power_trigger_capacity_phi()
+            )
             eq_mis = duo_true.equity_value(
                 X_invest, phi_invest, K_invest, 0.0, 0.0, leverage
             )
@@ -645,10 +654,10 @@ class ValuationAnalysis:
             assets = 0.0
 
         # Option value with phi optimization
-        option_val = model.option_value_with_phi(X)
+        option_val = model.pure_power_option_value(X)
 
         # Decompose: option includes optimal (K*, phi*)
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
 
         expansion_option = option_val - assets if option_val > assets else 0.0
         total = assets + expansion_option
@@ -698,7 +707,7 @@ class ValuationAnalysis:
             'phi_star', 'npv_optimal'.
         """
         model = SingleFirmModel(self.params)
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
         X_eval = demand_multiple * X_star
 
         npv_optimal = model.installed_value_with_phi(
@@ -747,8 +756,8 @@ class ValuationAnalysis:
             try:
                 p = self.params.with_param(lam=lam)
                 model = SingleFirmModel(p)
-                option_values[i] = model.option_value_with_phi(X)
-                X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+                option_values[i] = model.pure_power_option_value(X)
+                X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
                 triggers[i] = X_star
                 capacities[i] = K_star
                 phis[i] = phi_star
@@ -799,7 +808,7 @@ class ValuationAnalysis:
         )
 
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
         except (ValueError, RuntimeError):
             return {"error": "No solution at true lambda"}
 
@@ -807,7 +816,7 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+            X_inv, K_inv, phi_inv = model_invest.pure_power_trigger_capacity_phi()
         except (ValueError, RuntimeError):
             return {"error": "No solution at invest lambda"}
 
@@ -953,7 +962,7 @@ class ValuationAnalysis:
         # Static benchmark
         p_lam = p.with_param(lam=lam)
         model_static = SingleFirmModel(p_lam)
-        _, K_s, phi_s = model_static.optimal_trigger_capacity_phi()
+        _, K_s, phi_s = model_static.pure_power_trigger_capacity_phi()
 
         kappa = adjustment_cost
 

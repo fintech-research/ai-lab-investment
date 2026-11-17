@@ -626,34 +626,37 @@ def verify_option_value_structure(params):
 
 
 def verify_baseline_simplification():
-    """Check whether the paper's simplified form is valid at baseline params.
+    """Status of the pure-power form F_L = C*X^{beta_H} at baseline params.
 
-    At the default baseline (sigma=0.25, mu_L=0.01, r=0.12, lam=0.10),
-    check if the L-regime has no interior trigger, validating F_L = C*X^{beta_H}.
+    The pure-power form is an approximation of the exact piecewise problem
+    (the model of record), not a consequence of the L-regime description
+    formerly labelled (A3). This check reports the two facts separately:
+    the standalone L-regime scale problem has no interior optimum
+    (option premium ratio >= 1), and the exact precommitted-scale solution
+    carries a non-zero coefficient A_1 on X^{beta_L_plus}, so the single
+    power is not exact.
     """
     from .parameters import ModelParameters
+    from .piecewise_option import PiecewiseOptionModel
 
     p = ModelParameters()
 
     # Compute the option premium ratio in L
     phi_L = (1.0 - 1.0 / p.beta_L) / p.alpha
+    A_1 = float(PiecewiseOptionModel(p).precommitted_optimum().A_1)
 
     return {
         "beta_L_plus": p.beta_L,
         "option_premium_ratio_L": phi_L,
         "has_interior_L_trigger": 1.0 / p.gamma < phi_L < 1.0,
-        "simplified_form_valid": phi_L >= 1.0,
+        "A_1_exact": A_1,
+        "pure_power_form_exact": A_1 == 0.0,
         "conclusion": (
-            f"phi_L = {phi_L:.4f}. "
-            + (
-                "phi_L >= 1, so no interior trigger in L. "
-                "The simplified F_L = C * X^{beta_H} IS valid for "
-                "the baseline parameters (Assumption A3 satisfied)."
-                if phi_L >= 1.0
-                else "phi_L < 1, so an interior trigger exists in L. "
-                "The full two-term solution F_L = A1*X^{beta_L_plus} + C*X^{beta_H} "
-                "must be used (Assumption A3 violated at these parameters)."
-            )
+            f"phi_L = {phi_L:.4f}: the standalone L-regime scale problem has "
+            + ("no interior optimum. " if phi_L >= 1.0 else "an interior optimum. ")
+            + f"The exact precommitted-scale solution has A_1 = {A_1:.4g}, so "
+            "F_L = C * X^{beta_H} is an approximation, with its error "
+            "reported by piecewise_option.py."
         ),
     }
 

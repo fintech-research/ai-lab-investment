@@ -203,7 +203,8 @@ def _headline_objects(params: ModelParameters) -> Headline:
     gap = valuation.capacity_gap_decomposition(np.array(GAP_K_FRACS))
     gap_low, gap_high = (float(x) for x in gap["gap_fraction"])
 
-    _, _, phi_star = model.optimal_trigger_capacity_phi()
+    # Interim pin (issue #176): pure-power policy; issue #182 re-solves the sweep.
+    _, _, phi_star = model.pure_power_trigger_capacity_phi()
     equilibrium = duopoly.solve_preemption_equilibrium()
     discount = equilibrium["X_leader"] / equilibrium["X_leader_monopolist"]
 

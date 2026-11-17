@@ -10,12 +10,23 @@ Key economic results:
 - In regime H (post-adoption): well-defined interior trigger and capacity.
   The firm invests when demand reaches X_H* with capacity K_H*.
 - In regime L (pre-adoption): the *standalone* L-regime scale problem
-  has no interior optimum when Phi_L = (1-1/beta_L)/alpha >= 1
-  (Assumption A3). That does not mean the firm never invests in L: the
-  paper's full model invests in L at a trigger set by the combined
-  coefficient A_eff, and the pure-power option value used for it is a
-  solution convention (A_1 = 0), not a consequence of A3. See
-  `_solve_regime_L` and the paper's Section 3 conventions.
+  has no interior optimum when Phi_L = (1-1/beta_L)/alpha >= 1 (the
+  description formerly labelled A3, which has no role in the solution).
+  Whether the firm invests before the switch is decided by the exact
+  piecewise stopping problem, the model of record, not by that condition.
+
+Model of record and the pure-power approximation (full model):
+  `SingleFirmModel.solve()` returns the exact single-firm solution
+  (`piecewise_option.SingleFirmSolution`): whether a finite pre-switch
+  trigger exists, the precommitted-scale (X*, K*, phi*) of the two-region
+  system, the value of waiting for the switch, and the post-switch policy.
+  `optimal_trigger_capacity_phi()` returns the precommitted-scale triple.
+  The former full-model solution, which prices the pre-investment option
+  with the single power X^{beta_H}, is kept as a nested approximation
+  under explicit names (`pure_power_trigger_capacity_phi`,
+  `pure_power_option_value`) so its error can be reported and the numbers
+  of the earlier draft reproduced. The two share phi* exactly, and the
+  pure-power capacity equals the post-switch capacity K_H*.
 
 Training-inference allocation:
   The firm allocates fraction phi to training and (1-phi) to inference.
@@ -264,7 +275,7 @@ class SingleFirmModel:
         prices the option as F_L(X) = C * X^beta_H (the forced-ODE
         particular solution). This is a convention for the simple mode,
         not an economic result that the firm never invests in L; the
-        full model (`optimal_trigger_capacity_phi`) does invest in L.
+        full model (`solve`) decides that in the exact problem.
 
         IMPORTANT -- the interior branch is a pure-power approximation.
         Under the paper's calibration and (A3), Phi_L >= 1 and the branch
@@ -620,14 +631,89 @@ class SingleFirmModel:
             return 1e20
         return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
 
-    def optimal_trigger_capacity_phi(self) -> tuple[float, float, float]:
-        """Solve for optimal (X*, K*, phi*) with training-inference allocation.
+    def _require_interior_capacity(self) -> None:
+        """Raise when (A2) fails, so no solver returns a boundary artifact."""
+        p = self.params
+        if not self.has_interior_trigger("H"):
+            ratio = self._option_premium_ratio("H")
+            msg = (
+                f"No interior (K, phi) optimum: condition (A2) fails "
+                f"((beta_H - 1)/(alpha*beta_H) = {ratio:.3f}, need "
+                f"{1 / p.gamma:.3f} < ratio < 1). The option-value factor "
+                f"diverges as K -> 0 when the upper bound fails."
+            )
+            raise RuntimeError(msg)
 
-        The firm jointly optimizes capacity K and training fraction phi.
-        The investment trigger uses beta_H and the combined A_eff coefficient.
+    def solve(self):
+        """Exact single-firm solution, the model of record.
+
+        Returns the `piecewise_option.SingleFirmSolution` of the exact
+        piecewise primitives: the firm may invest before or after the
+        regime switch, and nothing is priced with the pure-power form.
+        The object reports whether a finite pre-switch trigger exists when
+        the firm chooses its scale whenever it invests (at baseline it does
+        not: the monopolist waits for the switch), the precommitted-scale
+        (X*, K*, phi*) of the two-region system, the value of waiting, the
+        post-switch policy, and the pure-power approximation.
+
+        Raises:
+            RuntimeError: If (A2) fails, in which case the post-switch
+                problem itself has no interior scale.
+        """
+        cache_key = "exact"
+        if cache_key not in self._cache:
+            self._require_interior_capacity()
+            # Imported here: piecewise_option builds on this module.
+            from .piecewise_option import solve_single_firm
+
+            self._cache[cache_key] = solve_single_firm(self.params)
+        return self._cache[cache_key]
+
+    def optimal_trigger_capacity_phi(self) -> tuple[float, float, float]:
+        """(X*, K*, phi*) of the exact problem with precommitted post-switch scale.
+
+        The trigger and capacity solve the two-region system of
+        `piecewise_option.PiecewiseOptionModel.precommitted_optimum`, in
+        which a firm that has not invested when the switch arrives installs
+        K_H*; phi* is the closed form of Proposition 1. This is the
+        finite-trigger policy of the model of record. It is *not* a
+        statement that the monopolist invests before the switch: when the
+        firm may also choose its scale at the switch, the baseline optimum
+        is to wait (`solve().invests_before_switch` is False). Use `solve()`
+        for the full characterization and
+        `pure_power_trigger_capacity_phi()` for the nested approximation.
 
         Returns:
-            (X*, K*, phi*): Optimal trigger, capacity, and training fraction.
+            (X*, K*, phi*): Trigger, capacity, and training fraction.
+        """
+        sol = self.solve().precommitted
+        return sol.X_star, sol.K, sol.phi
+
+    def option_value_with_phi(self, X: float) -> float:
+        """Exact value at demand X of a firm that has not yet invested.
+
+        The unrestricted optimum of the model of record: the larger of
+        waiting for the switch and the best pre-switch investment, with the
+        scale chosen whenever the firm invests.
+        """
+        return self.solve().value(X)
+
+    def pure_power_trigger_capacity_phi(self) -> tuple[float, float, float]:
+        """Pure-power approximation of (X*, K*, phi*).
+
+        Prices the pre-investment option as B X^{beta_H} with the exercise
+        payoff A_eff X - delta K / r - I(K), so the trigger carries the
+        H-regime markup beta_H / (beta_H - 1) on the combined coefficient
+        A_eff, and the firm jointly optimizes capacity K and training
+        fraction phi. No consistently specified stopping problem has this
+        candidate as its value function; it is retained as an approximation
+        of the exact problem (`solve`), nested as follows: phi* is the
+        exact closed form, K* equals the post-switch capacity K_H*, the
+        trigger is X_H* A_H / g(phi*), and both policies converge to the
+        H-regime policy (X_H*, K_H*, 1) as lambda grows without bound.
+
+        Returns:
+            (X*, K*, phi*): Trigger, capacity, and training fraction.
         """
         cache_key = "phi_opt"
         if cache_key in self._cache:
@@ -640,15 +726,7 @@ class SingleFirmModel:
         # (alpha*beta_H <= beta_H - 1), the objective increases without
         # bound as K -> 0 and any reported optimum would be a boundary
         # artifact, so refuse to solve rather than return garbage.
-        if not self.has_interior_trigger("H"):
-            ratio = self._option_premium_ratio("H")
-            msg = (
-                f"No interior (K, phi) optimum: condition (A2) fails "
-                f"((beta_H - 1)/(alpha*beta_H) = {ratio:.3f}, need "
-                f"{1 / p.gamma:.3f} < ratio < 1). The option-value factor "
-                f"diverges as K -> 0 when the upper bound fails."
-            )
-            raise RuntimeError(msg)
+        self._require_interior_capacity()
 
         beta = p.beta_H
         starts = [
@@ -698,13 +776,16 @@ class SingleFirmModel:
         rho = (p.lam / (p.r - p.mu_H)) ** (1.0 / (1.0 - p.alpha))
         return float(rho / (1.0 + rho))
 
-    def option_value_with_phi(self, X: float) -> float:
-        """Option value when the firm optimizes over (K, phi).
+    def pure_power_option_value(self, X: float) -> float:
+        """Pre-investment option value under the pure-power approximation.
 
         F(X) = B * X^beta_H      for X < X*
         F(X) = V(X, phi*, K*) - I(K*)  for X >= X*
+
+        with (X*, K*, phi*) from `pure_power_trigger_capacity_phi`. The exact
+        value is `option_value_with_phi`.
         """
-        X_star, K_star, phi_star = self.optimal_trigger_capacity_phi()
+        X_star, K_star, phi_star = self.pure_power_trigger_capacity_phi()
         p = self.params
         beta = p.beta_H
 
