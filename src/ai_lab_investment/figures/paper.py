@@ -280,7 +280,7 @@ def create_lambda_option_value() -> plt.Figure:
     ax1.axvline(lam_turn, color="0.5", linestyle=":", linewidth=1.0)
     ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
     ax1.set_ylabel(f"Value $F(X)$ at $X={X_ref}$")
-    ax1.legend(loc="lower right")
+    ax1.legend(loc="lower right", fontsize="x-small", frameon=False)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     ax2.plot(

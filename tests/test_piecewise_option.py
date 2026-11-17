@@ -186,6 +186,7 @@ class TestPrecommittedOptimum:
         policy, and the same value."""
         X_0 = 0.5 * reduced["X_star"]
         stated = model.optimal_policy(X_0)
+        assert stated is not None
         free = model.precommitted_optimum()
         assert free.X_star == pytest.approx(stated.X_star, rel=1e-5)
         assert pytest.approx(stated.K, rel=1e-4) == free.K

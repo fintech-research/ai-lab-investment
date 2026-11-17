@@ -423,7 +423,7 @@ class PiecewiseOptionModel:
             return float("-inf")
         return float(np.log(premium) - self.beta_L_pos * np.log(X))
 
-    def precommitted_optimum(self) -> PiecewiseSolution | None:
+    def precommitted_optimum(self) -> PiecewiseSolution:
         """Optimal (X*, K*, phi*) when the post-switch scale is precommitted.
 
         The firm chooses the trigger, the capacity and the allocation; a firm
@@ -440,14 +440,20 @@ class PiecewiseOptionModel:
         best immediate investment at that demand.
 
         Returns:
-            The two-region (or one-region) solution at the optimum, or None
-            when no pre-switch policy beats waiting.
+            The two-region (or one-region) solution at the optimum.
+
+        Raises:
+            RuntimeError: If no pre-switch policy beats waiting on the
+                capacity grid. With the scale precommitted the exercise
+                payoff outgrows the affine waiting value at high demand, so
+                this does not occur under (A2).
         """
         phi = self.base.closed_form_phi_star()
         grid = np.linspace(*_LOG_K_GRID[:2], int(_LOG_K_GRID[2]))
         vals = np.array([self.exercise_premium(float(np.exp(t)), phi) for t in grid])
         if not np.isfinite(vals).any():
-            return None
+            msg = "No finite trigger in the precommitted-scale problem"
+            raise RuntimeError(msg)
         i = int(np.argmax(vals))
         lo, hi = grid[max(i - 1, 0)], grid[min(i + 1, len(grid) - 1)]
         res = optimize.minimize_scalar(
@@ -891,9 +897,6 @@ def solve_single_firm(params: ModelParameters) -> SingleFirmSolution:
     unrestricted = CapabilityStockModel(params)
     policy = unrestricted.policy
     precommitted = pw.precommitted_optimum()
-    if precommitted is None:
-        msg = "No finite trigger in the precommitted-scale problem"
-        raise RuntimeError(msg)
     invests = policy.status == "interior"
     exponent = params.gamma / (params.gamma - params.alpha)
     return SingleFirmSolution(
@@ -983,11 +986,7 @@ def belief_trigger_ranges(
         lam_bar = float(optimize.brentq(margin, lo, hi, xtol=1e-10))
 
     def precommitted(lam: float) -> PiecewiseSolution:
-        sol = PiecewiseOptionModel(params.with_param(lam=lam)).precommitted_optimum()
-        if sol is None:
-            msg = f"No precommitted-scale trigger at lambda = {lam}"
-            raise RuntimeError(msg)
-        return sol
+        return PiecewiseOptionModel(params.with_param(lam=lam)).precommitted_optimum()
 
     def peak(attr: str) -> float:
         grid = np.linspace(lo, hi, 100)

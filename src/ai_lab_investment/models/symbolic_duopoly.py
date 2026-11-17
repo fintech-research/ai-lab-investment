@@ -643,8 +643,7 @@ def verify_baseline_simplification():
 
     # Compute the option premium ratio in L
     phi_L = (1.0 - 1.0 / p.beta_L) / p.alpha
-    exact = PiecewiseOptionModel(p).precommitted_optimum()
-    A_1 = float(exact.A_1) if exact is not None else float("nan")
+    A_1 = float(PiecewiseOptionModel(p).precommitted_optimum().A_1)
 
     return {
         "beta_L_plus": p.beta_L,

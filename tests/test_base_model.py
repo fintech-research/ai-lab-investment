@@ -398,6 +398,19 @@ class TestSingleFirmSolution:
         assert wait_pre == pytest.approx(1.6192e-3, rel=1e-4)
         assert pp == pytest.approx(1.6151e-3, rel=1e-4)
         assert wait > pre > wait_pre > pp
+        # following the precommitted-scale policy when scale is in fact
+        # chosen at the switch: 1.703e-3, about 2% below waiting
+        followed = solution.policy_value(
+            solution.precommitted.K,
+            solution.precommitted.phi,
+            solution.precommitted.X_star,
+            X_0,
+        )
+        assert followed == pytest.approx(1.7031e-3, rel=1e-4)
+        assert followed / wait == pytest.approx(0.978, abs=1e-3)
+        assert solution.policy_value(K_pp, phi_pp, X_pp, X_0) == pytest.approx(
+            1.6214e-3, rel=1e-4
+        )
         assert solution.value(X_0) == wait
 
     def test_precommitted_trigger_against_brennan_schwartz(self, solution):
@@ -567,7 +580,7 @@ class TestBeliefComparativeStatics:
         assert K[0.50] == pytest.approx(0.0158, abs=5e-5)
         assert X[0.10] == pytest.approx(0.0093, abs=5e-5)
         assert X[0.15] == pytest.approx(0.0094, abs=5e-5)
-        assert max(X, key=X.get) == 0.15
+        assert max(X, key=lambda lam: X[lam]) == 0.15
         # the reviewer's own route at baseline, through optimal_policy(X_0)
         assert baseline_bias["K_piecewise_opt"] == pytest.approx(K[0.10], rel=1e-4)
 
@@ -581,6 +594,7 @@ class TestBeliefComparativeStatics:
         X_0 = 0.5 * reduced["X_star"]
         pw = PiecewiseOptionModel(ModelParameters(lam=0.03))
         at_demand = pw.optimal_policy(X_0)
+        assert at_demand is not None
         assert pytest.approx(0.0021, abs=5e-5) == at_demand.K
         assert at_demand.X_star == pytest.approx(0.0021, abs=5e-5)
         assert at_demand.X_star < X_0
