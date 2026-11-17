@@ -28,7 +28,7 @@ Use the Context7 MCP tool to look up library documentation before writing code.
 
 **Two model modes** — important distinction:
 - *Simple mode* (no training fraction): `SingleFirmModel.installed_value()`, `optimal_trigger_and_capacity()` — uses combined `A_L`/`A_H` from `parameters.py`. Used for basic H-regime analysis and comparative statics.
-- *Full model* (training-inference allocation): `optimal_trigger_capacity_phi()`, `installed_value_with_phi()` — uses `_effective_revenue_coeff_single()`, matching paper eq-a-eff. Used for all paper figures and the duopoly.
+- *Full model* (training-inference allocation): `installed_value_with_phi()` uses `_effective_revenue_coeff_single()`, matching paper eq-a-eff. The single-firm entry points `solve()`, `optimal_trigger_capacity_phi()` and `option_value_with_phi()` return the model of record (the exact piecewise problem, `piecewise_option.py`); the former solution is the nested approximation `pure_power_trigger_capacity_phi()` / `pure_power_option_value()`, which the duopoly, valuation and most paper figures still use until issues #177 to #184 re-solve them (see `src/AGENTS.md`).
 
 Paper figures use the full model, except the H-regime illustrations (option value, comparative statics, sample paths), which use the simple H-regime mode.
 
