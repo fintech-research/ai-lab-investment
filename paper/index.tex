@@ -973,8 +973,15 @@ at baseline; a finite pre-switch trigger only for \(\lambda < 0.073\) \\
 Domain & Proposition 2(ii) & Fixed policy; closed form under symmetric
 shares \\
 Domain & Proposition 2(iii) & Common allocation, or monopoly \\
+Assumption & Recovery in default & \((1-b)\) times the inference
+business net of the operating cost of its capacity, floored at zero, at
+most the unlevered asset value and the default-free claim \\
+Domain & Unlevered firm & Shutdown boundary:
+Equation~\ref{eq-default-boundary} at \(C_D = 0\); \(X_D\), equity and
+the default probability continuous at \(\ell = 0\) \\
 Domain & Proposition 3(i) & Existence conditional on a computed endpoint
-sign; uniqueness analytical at \(\ell = 0\), computational otherwise \\
+sign; uniqueness computational (analytical at \(\ell = 0\) only if the
+shutdown option is ignored) \\
 Domain & Leader's scale & Held at the monopoly-phase optimum \\
 Domain & Leader's boundary & Pre-entry claim, \(\beta_H\) dilution
 convention \\
@@ -987,11 +994,11 @@ in \(\lambda\) & Properties of the approximation; in the exact problem
 \(K^*\) varies with \(\lambda\) and \(X^*\) rises with \(\lambda\) up to
 \(0.13\) \\
 Approximation & Single-boundary default & Overstates \(X_D\) by about
-3\%, against faith-based survival \\
+3\%, against faith-based survival, with or without debt \\
 Approximation & Omitted follower default option & At most 1.5\% of the
-default claim; zero at \(\ell = 0\) \\
+default claim; 0.3\% at \(\ell = 0\) \\
 Approximation & Par debt at \(r_c < r\) & Subsidy about 23\% of \(I\) at
-\(\ell = 0.40\) \\
+\(\ell = 0.40\); a fairly priced coupon is 2.5 times the par coupon \\
 Approximation & \(\beta_H\) dilution & Leader's boundary \(+7\%\) versus
 monopoly; \(X_P\) moves less than 1\% \\
 \end{longtable}
@@ -1035,7 +1042,9 @@ Equation~\ref{eq-default-boundary} replaces the H-regime equity value by
 its perpetuity component, collapsing the coupled pair \((X_D^L, X_D^H)\)
 into one boundary. Unlike the first convention, this is an approximation
 whose bias is signed and quantified in Table~\ref{tbl-domains}: it
-overstates \(X_D\) and so errs against faith-based survival. A smaller
+overstates \(X_D\) and so errs against faith-based survival. The same
+reduction gives the unlevered firm's shutdown boundary, which is
+Equation~\ref{eq-default-boundary} at a zero coupon. A smaller
 approximation omits the default-option term from the follower's entry
 payoff.
 
@@ -1047,8 +1056,12 @@ implicit financing subsidy of \(\ell(1 - r_c/r) I(K)\)
 (Table~\ref{tbl-domains}). It is a stress-test device that varies the
 debt burden without solving a capital-structure problem, and it is why
 the leverage comparative statics are not endogenous capital-structure
-results. Fairly priced debt would require \(r_c \geq r\) at the entry
-trigger.
+results. The fairly priced alternative sets the coupon so that the debt
+is worth its proceeds \(\ell I(K)\) at issuance; it requires a coupon
+rate above \(r\) on those proceeds, \(12.3\%\) at \(\ell = 0.40\) for
+debt issued at the single-firm trigger, about two and a half times the
+par coupon (Internet Appendix A). The equilibrium below is solved under
+the par convention.
 
 Proposition 1 is a statement about the exact single-firm problem;
 Propositions 2 and 3 are exact statements about the model these
@@ -1140,14 +1153,15 @@ common to both firms; debt is issued at par and pays a continuous coupon
 \(C_D = r_c \cdot \ell \cdot I(K)\). Leverage is a \emph{stress-test
 parameter}, not an equilibrium financing choice, and par issuance embeds
 an implicit financing subsidy (Table~\ref{tbl-domains}), so no leverage
-result below is an endogenous capital-structure result.
+result below is an endogenous capital-structure result. At \(\ell = 0\)
+the coupon is zero and the formulas below describe the unlevered firm.
 
 \subsubsection{Default boundary}\label{default-boundary}
 
 Following \citet{leland1994corporate} and \citet{leland1996optimal},
-equity holders default endogenously when equity value reaches zero, and
-the optimal default boundary follows from smooth pasting. For a levered
-firm with \((K_i, \phi_i)\) facing a rival with \((K_j, \phi_j)\):
+equity holders stop funding the firm when equity value reaches zero, and
+the optimal boundary follows from smooth pasting. For a firm with
+\((K_i, \phi_i)\) facing a rival with \((K_j, \phi_j)\):
 \begin{equation}\protect\phantomsection\label{eq-default-boundary}{
 X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D / r + \delta K_i / r}{A_{\text{eff},i}},
 }\end{equation} where \(\beta_L^-\) is the negative root of the L-regime
@@ -1158,6 +1172,17 @@ before defaulting.\footnote{Replacing the H-regime equity value by its
   perpetuity component yields Equation~\ref{eq-default-boundary}
   exactly; Table~\ref{tbl-domains} reports the size and sign of the
   bias.}
+
+The boundary has two fixed claims in its numerator, the coupon and the
+operating cost, and the second does not depend on debt. With debt,
+\(X_D\) is a \emph{default boundary}. Without debt (\(C_D = 0\)) the
+same expression is the \emph{shutdown boundary} at which an all-equity
+owner stops operating, so \(X_D\) is continuous in leverage at
+\(\ell = 0\) and leverage shifts a boundary that exists without it. The
+shift is small at baseline: the operating-cost claim \(\delta K/r\) is
+about eighteen times the coupon claim \(C_D/r\) at \(\ell = 0.40\) and
+the pure-power capacity, so that leverage raises the boundary by
+\(5.5\%\) above the shutdown boundary.
 
 \(A_{\text{eff},i}\) includes the H-regime continuation value through
 the \(\lambda\) term. This is the \emph{training-survival channel}, the
@@ -1182,12 +1207,14 @@ just described.\footnote{The \(A_{\text{eff}}\)-channel threshold
   through the discount root, depends on it.}
 
 \textbf{Proposition 2} (Endogenous default with faith-based survival;
-levered duopoly). \emph{For a levered firm in the duopoly with fixed
-capacity \((K_i, \phi_i)\) and rival \((K_j, \phi_j)\), the default
-boundary \(X_D\) has the following properties:}
+duopoly). \emph{For a firm in the duopoly with leverage \(\ell \geq 0\),
+fixed capacity \((K_i, \phi_i)\) and rival \((K_j, \phi_j)\), the
+boundary \(X_D\) of Equation~\ref{eq-default-boundary}, a default
+boundary when \(\ell > 0\) and a shutdown boundary when \(\ell = 0\),
+has the following properties:}
 
-\emph{(i) \(X_D\) is increasing in leverage \(\ell\) and the coupon rate
-\(r_c\).}
+\emph{(i) \(X_D\) is increasing in leverage \(\ell\) and, when
+\(\ell > 0\), in the coupon rate \(r_c\).}
 
 \emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
 training allocation is sufficiently high, and the characterization is
@@ -1326,23 +1353,54 @@ option and the bracket the flow deficit at the boundary; value-matching
 and smooth-pasting on \(E\) pin down \(X_D\) in
 Equation~\ref{eq-default-boundary}. At \(X = X_D\), \(E(X_D) = 0\) and
 the entry NPV equals \(-(1-\ell)I(K) < 0\), as below \(X_D\). Without
-debt, \(E(X)\) is the unlevered perpetuity, with no abandonment
-option.\footnote{Omitting that option is conservative and negligible,
-  because the firm invests at \(X^*\) well above any abandonment
-  threshold.}
+debt, Equation~\ref{eq-equity} at \(C_D = 0\) is the \emph{unlevered
+asset value} \(U(X)\), the installed value plus the option to shut down
+at the shutdown boundary, so equity is continuous in leverage at
+\(\ell = 0\).\footnote{The shutdown option is \(0.25\%\) of the entry
+  NPV at the pure-power trigger, where demand is 5.3 times the shutdown
+  boundary, and \(0.14\%\) at the precommitted-scale policy of
+  Proposition 1(iii). It matters more at the preemption trigger, which
+  is 2.8 times the leader's boundary: including it lowers the unlevered
+  \(X_P\) by \(3\%\).}
 
 Debt value is: \[
 D(X) = \frac{C_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_L^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_L^-},
-\] where the recovery in default is \[
-R(X_D) = \min\left\{(1 - b)\,\Lambda(X_D),\; \frac{C_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D,
-\] \(b \in [0,1]\) is the fraction of liquidation value lost in
-bankruptcy and \(\Lambda(X_D)\) the liquidation value of productive
-assets. Only the \emph{inference} business survives liquidation, while
-the H-regime continuation value is destroyed, because the post-AGI
-payoff requires the going concern. The asymmetry is central to
+\] where the recovery in default is
+\begin{equation}\protect\phantomsection\label{eq-recovery}{
+R(X_D) = \min\left\{(1 - b)\,\min\left\{\Lambda(X_D)^+,\; U(X_D)\right\},\; \frac{C_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D - \frac{\delta (1-\phi_i) K_i}{r},
+}\end{equation} \(b \in [0,1]\) is the fraction of liquidation value
+lost in bankruptcy, \(\Lambda(X_D)\) the liquidation value of productive
+assets and \(\Lambda^+ = \max\{\Lambda, 0\}\). Only the \emph{inference}
+business survives liquidation, while the H-regime continuation value is
+destroyed, because the post-AGI payoff requires the going concern. The
+liquidation value is net of the operating cost of the inference
+capacity, which is the cost that brings the firm to \(X_D\) in the first
+place: as in \citet{leland1994corporate}, what creditors take over is an
+asset value, here that of the inference business, whose buyer carries
+the same perpetual cost \(\delta\) per unit of capacity as the firm.
+With this definition the installed value
+Equation~\ref{eq-installed-value-L} is exactly \(\Lambda\) plus the
+training business. Recovery is floored at zero, and it is capped twice:
+by the unlevered asset value \(U(X_D)\) of the assets seized, because a
+small inference capacity can be worth more than a whole firm that cannot
+shed its training capacity, and by the default-free value of the claim.
+
+The asymmetry between the two businesses matters for
 Section~\ref{sec-valuation}: faith-based survival lowers the
 \emph{probability} of default, but faith is worthless to creditors
-\emph{in} default, so training raises the loss given default.
+\emph{in} default, so a higher training fraction leaves them a smaller
+inference business. Where the model's firm operates, however, that
+business is worth less than its operating cost at the boundary. At the
+optimal allocation the inference business earns the fraction
+\(1 - \phi^*\) of revenue and bears the same fraction of operating cost,
+and at \(X_D\) total revenue covers only
+\(\beta_L^-/(\beta_L^- - 1) \approx 0.70\) of the fixed claims, so
+\(\Lambda(X_D) < 0\) unless the coupon exceeds about \(0.43\) times the
+operating cost; at the single-firm policies it is at most \(0.15\) times
+that cost for \(\ell \leq 0.70\). Recovery is therefore zero at those
+policies at every leverage, debt is risky from the first unit, and the
+allocation changes the loss given default only away from them (Internet
+Appendix A).
 
 \subsubsection{Preemption equilibrium}\label{preemption-equilibrium}
 
@@ -1407,23 +1465,23 @@ Section~\ref{sec-conventions}:}
 
 \emph{(i) (Existence: conditional analytical, by the intermediate value
 theorem with the upper endpoint sign verified computationally;
-Uniqueness: analytical for \(\ell = 0\), computational for \(\ell > 0\))
-A preemption trigger \(X_P \in (0, X_L^{\text{mono}})\) exists such that
-\(L(X_P) = F(X_P)\), where \(L(X) = E_L(X) - (1-\ell)I(K_L)\) is the
-leader's NPV of entering at state \(X\) with \(E_L\) the going-concern
-equity value, \(F(X)\) is the follower's option value, and
-\(X_L^{\text{mono}}\) is the leader's monopoly-only trigger, the trigger
-it would choose with no rival. Existence follows from continuity and the
-boundary conditions \(L(0) < F(0)\) and
-\(L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})\) (Internet Appendix A).
-The lower-endpoint inequality is analytical, since the sunk equity
-contribution makes \(L(0) < 0 = F(0)\), while the upper-endpoint
-inequality is verified computationally at every parameterization tested,
-so existence is analytical conditional on that sign. At zero leverage
-the gap \(L(X) - F(X)\) is strictly concave on \((0, X_F^*)\) and
-negative at the origin, so the up-crossing is unique analytically
-(Internet Appendix A); under leverage the default-option term breaks
-global concavity near \(X_D\), and uniqueness is verified
+Uniqueness: computational; analytical at \(\ell = 0\) only without the
+shutdown option) A preemption trigger \(X_P \in (0, X_L^{\text{mono}})\)
+exists such that \(L(X_P) = F(X_P)\), where
+\(L(X) = E_L(X) - (1-\ell)I(K_L)\) is the leader's NPV of entering at
+state \(X\) with \(E_L\) the going-concern equity value, \(F(X)\) is the
+follower's option value, and \(X_L^{\text{mono}}\) is the leader's
+monopoly-only trigger, the trigger it would choose with no rival.
+Existence follows from continuity and the boundary conditions
+\(L(0) < F(0)\) and \(L(X_L^{\text{mono}}) > F(X_L^{\text{mono}})\)
+(Internet Appendix A). The lower-endpoint inequality is analytical,
+since the sunk equity contribution makes \(L(0) < 0 = F(0)\), while the
+upper-endpoint inequality is verified computationally at every
+parameterization tested, so existence is analytical conditional on that
+sign. At zero leverage the gap \(L(X) - F(X)\) is strictly concave on
+\((0, X_F^*)\) and negative at the origin, so the up-crossing is unique
+analytically (Internet Appendix A); under leverage the default-option
+term breaks global concavity near \(X_D\), and uniqueness is verified
 computationally across all parameterizations, with no case of multiple
 up-crossings found (Internet Appendix B).}
 
@@ -1514,8 +1572,8 @@ scale. What the model rules out is a leader that stays large, so the
 paper's claims about leadership concern the \emph{timing} margin only.
 
 Propositions 1 and 2 are fully analytical; Proposition 3 combines
-conditional-analytical existence, zero-leverage uniqueness, and an exact
-allocation fixed point with computational verification of the rest
+conditional-analytical existence and an exact allocation fixed point
+with computational verification of the rest, uniqueness included
 (Table~\ref{tbl-result-taxonomy}).
 
 \section{Quantitative Calibration}\label{sec-calibration}
@@ -2439,10 +2497,11 @@ reduction of the follower's revenue coefficient, the contest-derivative
 factorization, and the generic intermediate-value existence and
 strict-concavity single-crossing lemmas underlying the preemption
 trigger \(X_P\), conditional on the continuity, endpoint-sign, and
-(zero-leverage) concavity hypotheses the paper supplies. Each theorem is
-proved in full, depends only on the proof assistant's standard logical
-axioms, and is stated for arbitrary admissible parameters rather than
-the baseline calibration alone.
+concavity hypotheses; the paper supplies the concavity hypothesis only
+at zero leverage and without the shutdown option of the unlevered firm.
+Each theorem is proved in full, depends only on the proof assistant's
+standard logical axioms, and is stated for arbitrary admissible
+parameters rather than the baseline calibration alone.
 
 The scope is the algebra and calculus \emph{downstream} of the
 optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE
@@ -2836,7 +2895,12 @@ X_D = \frac{\beta_L^-}{\beta_L^- - 1} \cdot \frac{C_D/r + \delta K_i/r}{A_{\text
 \] where \(\beta_L^-\) is the negative characteristic root,
 \(C_D = r_c \cdot \ell \cdot I(K)\) is the coupon, and all comparative
 statics below hold \emph{with \((K_i, \phi_i)\) and \((K_j, \phi_j)\)
-held fixed}.
+held fixed}. Nothing in the derivation requires \(C_D > 0\): at
+\(\ell = 0\) the same value-matching and smooth-pasting conditions,
+applied to the unlevered claim, give the shutdown boundary
+\([\beta_L^-/(\beta_L^- - 1)]\,(\delta K_i/r)/A_{\text{eff},i}\), which
+is positive under (A1). Parts (ii) to (iv) therefore hold for
+\(\ell \geq 0\), and so does part (i) in \(\ell\).
 
 \emph{(i) Default boundary increasing in leverage.} \(X_D\) depends on
 \(\ell\) only through the numerator via
@@ -3051,16 +3115,16 @@ so \(L(X) = -(1 - \ell)I(K_L) < 0\). The follower option value
 \(\beta_H > 1\).
 
 \emph{Boundary conditions.} At \(X = 0\): \(L(0) < 0 = F(0)\), so
-\(F > L\). This inequality is analytical. For \(\ell > 0\) the origin
-lies below the default boundary and \(L(0) = -(1 - \ell)I(K_L)\); at
-\(\ell = 0\) there is no default boundary and
-\(L(0) = -[\delta K_L / r + I(K_L)]\), the operating-cost perpetuity
-plus the full investment outlay. Either way the sunk equity contribution
-makes the leader's entry NPV strictly negative at the origin, which is
-why the going-concern claim and not \(L\) carries the limited-liability
-floor. At \(X = X_L^{\text{mono}}\), the leader's monopoly-only trigger:
-investing as leader at one's own optimal trigger earns the full
-monopoly-phase rent (the follower's entry at
+\(F > L\). This inequality is analytical. The origin lies below the
+leader's boundary, a default boundary for \(\ell > 0\) and a shutdown
+boundary at \(\ell = 0\), so \(L(0) = -(1 - \ell)I(K_L)\), which is
+\(-I(K_L)\) without debt: the firm that has stopped operating has lost
+its outlay but no longer carries the operating cost. Either way the sunk
+equity contribution makes the leader's entry NPV strictly negative at
+the origin, which is why the going-concern claim and not \(L\) carries
+the limited-liability floor. At \(X = X_L^{\text{mono}}\), the leader's
+monopoly-only trigger: investing as leader at one's own optimal trigger
+earns the full monopoly-phase rent (the follower's entry at
 \(X_F^* \gg X_L^{\text{mono}}\) is far away, so the dilution factor
 \((X_L^{\text{mono}}/X_F^*)^{\beta_H}\) is small), whereas
 \(F(X_L^{\text{mono}})\) reflects only the follower's diluted duopoly
@@ -3077,18 +3141,19 @@ Table~\ref{tbl-result-taxonomy} and how the corresponding Lean lemma is
 stated (the endpoint signs are hypotheses of the formalized
 intermediate-value argument).
 
-\emph{Uniqueness of \(X_P\) (Analytical for \(\ell = 0\); computational
-for \(\ell > 0\)).} In the standard \citet{huisman2015strategic}
-framework, uniqueness follows from single crossing: the leader value
-\(L(X)\) crosses the follower value \(F(X)\) exactly once from below. In
-their model, \(L(X)\) is approximately affine in \(X\) (installed
-revenue minus costs) while \(F(X) \propto X^{\beta}\) (where
-\(\beta > 1\) is the positive characteristic root of the standard GBM
-problem) is strictly convex with \(F(0) = 0 > L(0)\), yielding at most
-one up-crossing.
+\emph{Uniqueness of \(X_P\) (computational; analytical at \(\ell = 0\)
+only without the shutdown option).} In the standard
+\citet{huisman2015strategic} framework, uniqueness follows from single
+crossing: the leader value \(L(X)\) crosses the follower value \(F(X)\)
+exactly once from below. In their model, \(L(X)\) is approximately
+affine in \(X\) (installed revenue minus costs) while
+\(F(X) \propto X^{\beta}\) (where \(\beta > 1\) is the positive
+characteristic root of the standard GBM problem) is strictly convex with
+\(F(0) = 0 > L(0)\), yielding at most one up-crossing.
 
-At zero leverage the same logic delivers an exact proof in the present
-model. On \((0, X_F^*)\) the gap admits the closed form \[
+At zero leverage the same logic delivers an exact proof when the
+unlevered leader's claim is the perpetuity, without the option to shut
+down. On \((0, X_F^*)\) the gap then admits the closed form \[
 L(X) - F(X) = A_{\text{eff}}^{\text{mono}}\,X - \left[\frac{\delta K_L}{r} + I(K_L)\right] - \mathcal{E}\,X^{\beta_H}, \qquad \mathcal{E} = \frac{V^{\text{mono}}(X_F^*) - V^{\text{duo}}(X_F^*)}{(X_F^*)^{\beta_H}} + B_F > 0,
 \] where the first two terms are the leader's unlevered NPV of entering,
 the \(\mathcal{E} X^{\beta_H}\) term collects the (positive)
@@ -3103,29 +3168,32 @@ from below at most once, so there is at most one up-crossing on
 which rests on the computationally verified upper-endpoint sign, the
 up-crossing is unique.
 
-With leverage, the default-option term (proportional to
-\(X^{\beta_L^-}\) with \(\beta_L^- < 0\)) enters \(L(X)\) with a
-positive coefficient and is strictly convex, breaking global concavity
-in a neighborhood of \(X_D\); the default kink at \(X_D\) also
-introduces a non-smooth point. Providing analytical sufficient
-conditions for single crossing in the levered case would require
-bounding the convex default-option curvature against the concave
-dilution term over the verification domain.
+The unlevered claim of Section~\ref{sec-model} does carry that option,
+and with it the argument no longer applies as stated: the
+shutdown-option term (proportional to \(X^{\beta_L^-}\) with
+\(\beta_L^- < 0\)) enters \(L(X)\) with a positive coefficient and is
+strictly convex, exactly as the default-option term does with leverage,
+breaking global concavity in a neighborhood of \(X_D\); the kink at
+\(X_D\) also introduces a non-smooth point. Providing analytical
+sufficient conditions for single crossing would require bounding the
+convex default-option curvature against the concave dilution term over
+the verification domain.
 
-For \(\ell > 0\), uniqueness is therefore verified computationally: at
-each parameterization, \(L(X) - F(X)\) is evaluated on a grid of 500
-points over \((X_D, X_L^{\text{mono}})\) and exactly one up-crossing is
-checked on that grid, and the solver raises rather than reports when the
-check fails (see Internet Appendix B for details); the grid check is
-evidence at the resolution used, not a uniqueness proof. As in the
-standard preemption literature, the gap \(L - F\) eventually turns
-negative again at demand levels far above the equilibrium path, because
-\((K_L, \phi_L)\) is held at the monopoly-phase optimum, which is too
-small a scale for entry at very high demand. That second (down-)crossing
-lies well above \(X_L^{\text{mono}}\), on the region where rent
-equalization no longer binds: for any \(X > X_P\), each firm strictly
-prefers leading, so investment occurs at \(X_P\) and the high-demand
-region is never reached without entry having occurred.
+For every \(\ell \geq 0\), uniqueness is therefore verified
+computationally: at each parameterization, \(L(X) - F(X)\) is evaluated
+on a grid of 500 points over \((X_D, X_L^{\text{mono}})\) and exactly
+one up-crossing is checked on that grid, and the solver raises rather
+than reports when the check fails (see Internet Appendix B for details);
+the grid check is evidence at the resolution used, not a uniqueness
+proof. As in the standard preemption literature, the gap \(L - F\)
+eventually turns negative again at demand levels far above the
+equilibrium path, because \((K_L, \phi_L)\) is held at the
+monopoly-phase optimum, which is too small a scale for entry at very
+high demand. That second (down-)crossing lies well above
+\(X_L^{\text{mono}}\), on the region where rent equalization no longer
+binds: for any \(X > X_P\), each firm strictly prefers leading, so
+investment occurs at \(X_P\) and the high-demand region is never reached
+without entry having occurred.
 
 \emph{Part (ii): Role-invariance of the training fraction (Analytical
 critical point; global optimality computational).}
@@ -3445,8 +3513,9 @@ Proposition 3(i) & Existence of \(X_P\) & Conditional analytical (IVT;
 upper-endpoint sign verified computationally) & Assumption 1; all
 parameterizations tested \\
 Proposition 3(i) & Uniqueness of \(X_P\) (single up-crossing) &
-Analytical (\(\ell = 0\), strict concavity); computational
-(\(\ell > 0\)) & Assumption 1; all parameterizations tested \\
+Computational; analytical (strict concavity) at \(\ell = 0\) only
+without the shutdown option & Assumption 1; all parameterizations
+tested \\
 Proposition 3(ii) & Role-invariance: \(\phi_L^* = \phi_F^* = \phi^*\) &
 Analytical critical point (exact factorization); global optimality
 computational & Assumption 1; all calibration parameterizations \\
@@ -3594,8 +3663,9 @@ firm receives \(\ell I(K)\) in proceeds while incurring a claim worth
 only \(0.417\, \ell I(K)\), an implicit transfer of
 \(\ell(1 - r_c/r) I(K) \approx 0.583\, \ell\, I(K)\) from whoever holds
 the other side of the debt contract. At \(\ell = 0.40\), this is
-\(\approx 0.233\, I(K)\), the \(23\%\) figure in
-Table~\ref{tbl-domains}. The subsidy lowers the firm's effective cost of
+\(\approx 0.233\, I(K)\), the \(23\%\) figure in Table~\ref{tbl-domains}
+(\(0.237\, I(K)\) once the default risk of the debt is priced, at the
+pure-power policy). The subsidy lowers the firm's effective cost of
 capacity: financing a fraction \(\ell\) of \(I(K)\) at this rate is
 equivalent to financing the whole investment at the scaled-down cost
 \([1 - \ell(1 - r_c/r)]\, I(K)\), which is the factor that appears in
@@ -3607,6 +3677,69 @@ on these terms; it is meant to stand in for the below-market financing
 (vendor credit, cloud-compute commitments, and strategic-partner debt)
 that several archetypes calibrated in Section~\ref{sec-calibration}
 appear to receive, without taking a position on its exact pricing.
+
+\emph{Recovery, the shutdown boundary, and fairly priced debt.} Three
+primitives of the credit block are stated here in full. First, recovery.
+Equation~\ref{eq-recovery} nets the operating cost of the inference
+capacity out of the liquidation value. In \citet{leland1994corporate}
+the bankruptcy payoff is a fraction of the unlevered value of the firm's
+assets, and with an operating cost that value is net of the cost;
+capitalizing inference revenue gross of the cost that triggers default
+instead makes debt default-free wherever the model's firm operates,
+since \((1-b)\) times the gross value is \(2.8\) times the coupon claim
+at \(\ell = 0.40\) and still \(1.3\) times at \(\ell = 0.95\) at the
+pure-power policy, and exceeds the claim up to \(\ell = 0.70\) at the
+precommitted-scale policy of Proposition 1(iii). The cost is capitalized
+at \(r\), the perpetual commitment the firm itself carries in
+Equation~\ref{eq-installed-value-L}, so that the installed value splits
+exactly into the inference business \(\Lambda\) and the training
+business. A buyer who could stop paying at the regime switch would
+capitalize the cost at \(r + \lambda\) instead; the inference business
+would then be worth more than the whole firm at \(X_D\), the cap at the
+unlevered asset value \(U(X_D)\) would bind, and recovery would be
+second order in the coupon (\(6\%\) of the claim at \(\ell = 0.40\) at
+the precommitted-scale policy, against zero under
+Equation~\ref{eq-recovery}). The cap exists for that reason: revenue is
+concave in capacity and the cost is linear, so a small inference
+capacity can have a positive net value where the whole firm, which
+cannot shed training capacity, has none. Under either netting, recovery
+at the single-firm policies is zero or at most a fifth of the claim for
+\(\ell \leq 0.70\), and the debt carries a spread at every leverage: at
+the precommitted-scale policy and under par debt, \(17\) basis points on
+an infinitesimal issue, \(20\) at \(\ell = 0.40\) and \(23\) at
+\(\ell = 0.70\), with five-year default probabilities of \(0.19\%\),
+\(0.30\%\) and \(0.42\%\).
+
+Second, the unlevered firm. Its claim is Equation~\ref{eq-equity} at
+\(C_D = 0\), the unlevered asset value
+\(U(X) = A_{\text{eff}}X - \delta K/r + [\delta K/r - A_{\text{eff}}X_D](X/X_D)^{\beta_L^-}\)
+with \(X_D\) the shutdown boundary, and zero at or below it. The
+boundary, equity, and the first-passage probability are therefore
+continuous in leverage at zero, where they were previously set to zero,
+the perpetuity and zero. The shutdown probability of the unlevered firm
+is the default probability of the levered one in the limit: at the
+pure-power policy the five-year probability is \(0.48\%\) at
+\(\ell = 0\) and \(0.64\%\) at \(\ell = 0.40\), so most of the levered
+firm's default risk is the risk of reaching a boundary that operating
+costs alone create.
+
+Third, fairly priced debt. Under the par convention the coupon is
+\(r_c \ell I(K)\) whatever the debt is worth. The alternative solves
+\(D(X; C_D) = \ell I(K)\) for the coupon at the issuance demand \(X\),
+with the boundary and the recovery re-determined at each candidate
+coupon; because a higher coupon raises the boundary, debt value is not
+monotone in the coupon, the smallest root is taken, and no root exists
+when the proceeds exceed the debt capacity at \(X\). For debt issued at
+the precommitted-scale trigger the fair coupon rate on proceeds is \(r\)
+plus the spread, \(12.17\%\) to \(12.35\%\) as leverage rises from
+\(0.01\) to \(0.70\) (\(12.26\%\) at \(\ell = 0.40\)), about two and a
+half times the par coupon; the higher coupon raises the boundary
+(\(0.00178\) against \(0.00160\) at \(\ell = 0.40\)) and the five-year
+default probability (\(0.55\%\) against \(0.30\%\)). The fair coupon
+depends on the issuance demand, so the leverage-adjusted cost
+\(\Theta_\ell(K)\) of the follower's problem is no longer a function of
+capacity alone, and the equilibrium of Proposition 3 is solved under the
+par convention.
 
 \emph{Tullock contest properties beyond revenue expansion.} Three
 properties of the regime-specific contests, in addition to the
@@ -3736,7 +3869,7 @@ leverage-adjusted total cost defined below, omitting the (small)
 default-option term in the levered entry payoff; the omitted term is at
 most about 1.5\% of the default claim at the highest leverage considered
 (\((X_F^*/X_D)^{\beta_L^-} \approx 0.015\) at \(\ell = 0.65\)) and
-vanishes at zero leverage.
+\(0.3\%\) of the shutdown claim at zero leverage.
 
 \textbf{Leader-scale convention: re-optimization sensitivity.} The paper
 holds the leader's \((K_L, \phi_L)\) at the monopoly-phase pure-power
@@ -5637,21 +5770,19 @@ evaluated at a fixed demand level \(X = 0.10\) for a firm with capacity
 interior allocation. Using the optimal \(\phi^* \approx 0.70\) instead
 shifts the level of the curves modestly, through the two opposing
 \(\phi\)-channels discussed in Section~\ref{sec-valuation}, without
-changing their shape. At low leverage the spread is zero: the small
-coupon claim is over-collateralized by the liquidation value of the
-inference business, so debt is effectively riskless even though the
-equity holders' default boundary is positive. Once the coupon claim
-outgrows the inference collateral (around \(\ell \approx 0.13\) at the
-evaluation point), the spread turns positive and rises with leverage,
-reaching approximately 12 bps at \(\ell = 0.20\), 41 bps at
-\(\ell = 0.40\), and 97 bps at \(\ell = 0.70\). Panel (b) shows the
-model-implied risk-adjusted five-year default probability (first passage
-under the risk-adjusted L-regime drift), which rises from 0.63\% at
-\(\ell = 0.05\) to 1.80\%, 4.85\%, and 12.98\% at the same three
-leverage levels. The steep increase in default probability at high
-leverage reflects the shrinking distance to default: as leverage
-increases, the default boundary \(X_D\) rises while the firm's demand
-level is fixed, compressing the distance to default.
+changing their shape. The spread is positive at every leverage, because
+recovery is net of operating costs (Equation~\ref{eq-recovery}) and is
+zero at this evaluation point up to \(\ell \approx 0.54\): it is 28 bps
+at \(\ell = 0.05\) and rises with leverage, reaching approximately 46
+bps at \(\ell = 0.20\), 79 bps at \(\ell = 0.40\), and 147 bps at
+\(\ell = 0.70\). Panel (b) shows the model-implied risk-adjusted
+five-year default probability (first passage under the risk-adjusted
+L-regime drift), which rises from 0.63\% at \(\ell = 0.05\) to 1.80\%,
+4.85\%, and 12.98\% at the same three leverage levels. The steep
+increase in default probability at high leverage reflects the shrinking
+distance to default: as leverage increases, the default boundary \(X_D\)
+rises while the firm's demand level is fixed, compressing the distance
+to default.
 
 \begin{figure}[!htb]
 
