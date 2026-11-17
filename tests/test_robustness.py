@@ -151,8 +151,10 @@ class TestPaperNumbers:
         # sign is a headline object; the ranges' lower ends are positive.
         assert summary.ranges["w3_fine"][0] > 0.0
         assert summary.ranges["w3_coarse"][0] > 0.0
+        # (0.53, 0.63) before the unlevered claims carried the shutdown
+        # option (issue #177); baseline 0.555, was 0.573.
         assert summary.ranges["preemption_discount"] == pytest.approx(
-            (0.53, 0.63), abs=0.01
+            (0.524, 0.628), abs=0.005
         )
         assert summary.ranges["gap_fraction_low"] == pytest.approx(
             (47.9, 59.1), abs=0.5
