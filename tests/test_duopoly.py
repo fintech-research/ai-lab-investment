@@ -251,7 +251,7 @@ class TestCrossModelConsistency:
         K by a factor of ~5.
         """
         sf = SingleFirmModel(model.params)
-        X_s, K_s, phi_s = sf.optimal_trigger_capacity_phi()
+        X_s, K_s, phi_s = sf.pure_power_trigger_capacity_phi()
         X_L, K_L, phi_L, lev_L = model.solve_leader_monopolist("H")
         assert lev_L == 0.0
         assert abs(X_L - X_s) / X_s < 1e-4
@@ -280,7 +280,7 @@ class TestCrossModelConsistency:
         half-revenue problem has the same scale-invariant FOC for K)."""
         duo_fp = DuopolyModel(default_params, contest="fixed_pie")
         sf = SingleFirmModel(default_params)
-        _, K_s, _ = sf.optimal_trigger_capacity_phi()
+        _, K_s, _ = sf.pure_power_trigger_capacity_phi()
         _, K_F, _, _ = duo_fp.solve_follower(K_L=K_s, phi_L=0.70)
         assert abs(K_F - K_s) / K_s < 1e-3
 
@@ -663,7 +663,7 @@ class TestDefaultRisk:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         p = ModelParameters()
-        _, K_star, phi_star = SingleFirmModel(p).optimal_trigger_capacity_phi()
+        _, K_star, phi_star = SingleFirmModel(p).pure_power_trigger_capacity_phi()
         h = 1e-4
 
         def x_d(lam):
@@ -722,7 +722,7 @@ class TestDefaultRisk:
         # dXD_sign > 0 (boundary rising in lambda) iff phi* < phi_tilde
         for lam, dXD_sign in [(0.02, 1), (0.05, -1)]:
             pl = p0.with_param(lam=lam)
-            _, K, phi = SingleFirmModel(pl).optimal_trigger_capacity_phi()
+            _, K, phi = SingleFirmModel(pl).pure_power_trigger_capacity_phi()
             d = DuopolyModel(pl, leverage=0.40)
             phi_tilde = d.faith_threshold_exact()
             assert np.sign(phi - phi_tilde) == -dXD_sign
@@ -966,7 +966,7 @@ class TestFollowerScalarReduction:
 
         _, K_L, phi_star = SingleFirmModel(
             default_params
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         m = DuopolyModel(default_params, leverage=0.0)
         K_F = 40.0 * K_L  # strongly asymmetric capacities
         h = 1e-7
@@ -1226,7 +1226,7 @@ class TestDefaultBoundaryInPhi:
         )
         _, _, phi_star = SingleFirmModel(
             ModelParameters()
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         grid = np.linspace(0.05, 0.95, 181)
         X_D = np.array([
             model.default_boundary(phi, 1.0, 0.0, 0.0, 0.40) for phi in grid
@@ -1251,7 +1251,7 @@ class TestDefaultBoundaryInPhi:
         assert argmax(0.95) == pytest.approx(0.605, abs=0.005)
         _, _, phi_star = SingleFirmModel(
             ModelParameters()
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         assert argmax(phi_star) == pytest.approx(phi_star, abs=0.002)
 
 

@@ -1,9 +1,16 @@
-"""Exact piecewise free-boundary solution of the L-regime stopping problem.
+"""Exact piecewise solution of the single firm's L-regime stopping problem.
 
-Verification counterpart to the reduced-form option value used in the paper.
-The paper prices the pre-investment L-regime option with the pure power form
-F_L(X) = B * X^{beta_H} on the whole continuation region (the
-"unconditional-A_eff / smooth-fit" convention, A_1 = 0). That convention is
+Core solver of the model of record (issue #176). The single firm may invest
+before or after the regime switch; `solve_single_firm` assembles what it does
+into a `SingleFirmSolution`, which `SingleFirmModel.solve()` returns, and
+`belief_comparative_statics` / `belief_trigger_ranges` report how the policy
+moves with the arrival rate. The second half of the module (from
+`reduced_form_reference` on) measures the error of the pure-power
+approximation against this solution; it is the verification part and feeds
+Internet Appendix B.
+
+The pure-power approximation prices the pre-investment L-regime option with
+F_L(X) = B * X^{beta_H} on the whole continuation region (A_1 = 0). That is
 exact only if the forcing term in the L-regime HJB equals lambda * B_H
 X^{beta_H} everywhere. It does not: the H-regime option is exercised above the
 H-regime trigger X_H*, so the true forcing is
@@ -11,9 +18,10 @@ H-regime trigger X_H*, so the true forcing is
     lambda * F_H(X) = lambda * B_H * X^{beta_H}                  X < X_H*
                     = lambda * [V_H(X, K_H*) - I(K_H*)]          X > X_H*
 
-and the second branch is affine in X. At the baseline calibration the firm's
-own trigger X* ~ 0.0047 lies above X_H* ~ 0.0028, so the exact continuation
-problem is genuinely piecewise:
+and the second branch is affine in X. At the baseline calibration the
+precommitted-scale trigger X* ~ 0.0093 (and the pure-power trigger ~ 0.0047)
+lies above X_H* ~ 0.0028, so the exact continuation problem is genuinely
+piecewise:
 
     region 1, 0 < X < X_H*:
         F(X) = A_1 X^{beta_L^+} + C X^{beta_H},  C = -lambda B_H / Q_L(beta_H)
@@ -47,10 +55,22 @@ the class of policies that precommit the post-switch scale to K_H**, not for
 the unrestricted stopping problem. The `envelope_*` functions solve the
 unrestricted problem numerically (the envelope forcing is not affine, so the
 two-region closed form no longer applies) and `envelope_bias` reports how the
-paper's policy fares against it.
+paper's policy fares against it. `capability_stock.CapabilityStockModel`
+solves the same unrestricted problem with one scalar root (its default
+specification), and `solve_single_firm` uses it for the unrestricted policy.
+
+Which problem is which. The *unrestricted* problem is the model of record's
+single-firm problem: scale is chosen whenever the firm invests. At baseline
+its optimum is to wait for the switch; a finite pre-switch trigger exists
+only for arrival rates below `belief_trigger_ranges()["lam_bar"]` (about
+0.073). The *precommitted-scale* problem always has a finite trigger and
+supplies the (X*, K*) of Proposition 1; `precommitted_optimum` solves it
+without reference to an evaluation demand.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from functools import cached_property
+from typing import Any
 
 import numpy as np
 from scipy import optimize
@@ -59,6 +79,12 @@ from .base_model import SingleFirmModel
 from .parameters import ModelParameters
 
 _BRACKET_EPS = 1e-9
+
+#: Arrival rates of the belief table (Fable's grid in review comment C20).
+BELIEF_GRID: tuple[float, ...] = (0.03, 0.05, 0.075, 0.10, 0.15, 0.20, 0.50)
+
+#: Log-capacity grid searched by `precommitted_optimum`.
+_LOG_K_GRID = (-70.0, 15.0, 3401)
 
 
 @dataclass(frozen=True)
@@ -342,11 +368,15 @@ class PiecewiseOptionModel:
         strictly *below* C X^{beta_H}, because the exercised H-regime payoff
         is below the extrapolated option power B_H X^{beta_H} above X_H*.
         """
-        A_w, D_w = self.pure_switching_coeffs()
+        A_w, D_w = self._switching_coeffs
         p_pos, n, h = self.beta_L_pos, self.beta_L_neg, self.beta_H
         if X < self.X_H:
             return A_w * X**p_pos + self.C * X**h
         return D_w * X**n + self.g * X + self.k
+
+    @cached_property
+    def _switching_coeffs(self) -> tuple[float, float]:
+        return self.pure_switching_coeffs()
 
     def pure_switching_coeffs(self) -> tuple[float, float]:
         """Coefficients (A_w, D_w) of the pure-switching value function."""
@@ -363,16 +393,99 @@ class PiecewiseOptionModel:
         return float(A_w), float(D_w)
 
     # ------------------------------------------------------------------
-    # Re-optimization of (K, phi) inside the exact model
+    # Optimal policy with precommitted post-switch scale
+    # ------------------------------------------------------------------
+
+    def static_trigger(self, K: float, phi: float) -> float:
+        """Demand at which K is the statically optimal scale at allocation phi.
+
+        Solves alpha A_eff(phi, K) X / K = delta / r + c gamma K^{gamma-1},
+        the first-order condition of max_K [A_eff X - delta K / r - I(K)].
+        """
+        p = self.params
+        a_L, _ = self.exercise_payoff_coeffs(K, phi)
+        marginal_cost = p.delta / p.r + p.c * p.gamma * K ** (p.gamma - 1.0)
+        return float(marginal_cost * K / (p.alpha * a_L))
+
+    def exercise_premium(self, K: float, phi: float) -> float:
+        """Log of [payoff - waiting value] X^{-beta_L^+} at the static trigger.
+
+        Below its trigger X* a policy "install (K, phi) at X*" is worth
+        S(X) + [a_L X* - b_L - S(X*)] (X / X*)^{beta_L^+}, with S the
+        pure-switching value, so policies are ranked by the coefficient on
+        X^{beta_L^+}, at every demand level below their triggers. Returns
+        -inf where the policy is worth less than waiting.
+        """
+        X = self.static_trigger(K, phi)
+        a_L, b_L = self.exercise_payoff_coeffs(K, phi)
+        premium = a_L * X - b_L - self.pure_switching_value(X)
+        if premium <= 0.0:
+            return float("-inf")
+        return float(np.log(premium) - self.beta_L_pos * np.log(X))
+
+    def precommitted_optimum(self) -> PiecewiseSolution | None:
+        """Optimal (X*, K*, phi*) when the post-switch scale is precommitted.
+
+        The firm chooses the trigger, the capacity and the allocation; a firm
+        that has not invested when the switch arrives installs K_H*. The
+        allocation enters the payoff only through A_eff, so phi* is the
+        closed form of Proposition 1 at every scale. Capacity then maximizes
+        the exercise premium of `exercise_premium`, a one-dimensional
+        problem, and the trigger is the demand at which that capacity is the
+        static optimum (the first-order conditions in K and in the trigger
+        together are value matching and smooth pasting on the exercise
+        envelope). The maximizer does not depend on an evaluation demand:
+        it is optimal from every demand level below the trigger, unlike
+        `optimal_policy`, whose answer at a demand above the trigger is the
+        best immediate investment at that demand.
+
+        Returns:
+            The two-region (or one-region) solution at the optimum, or None
+            when no pre-switch policy beats waiting.
+        """
+        phi = self.base.closed_form_phi_star()
+        grid = np.linspace(*_LOG_K_GRID[:2], int(_LOG_K_GRID[2]))
+        vals = np.array([self.exercise_premium(float(np.exp(t)), phi) for t in grid])
+        if not np.isfinite(vals).any():
+            return None
+        i = int(np.argmax(vals))
+        lo, hi = grid[max(i - 1, 0)], grid[min(i + 1, len(grid) - 1)]
+        res = optimize.minimize_scalar(
+            lambda t: -self.exercise_premium(float(np.exp(t)), phi),
+            bounds=(lo, hi),
+            method="bounded",
+            options={"xatol": 1e-13},
+        )
+        K = float(np.exp(res.x))
+        X_star = self.static_trigger(K, phi)
+        # The premium is flat at its maximum, so the trigger is polished
+        # with the fixed-capacity free-boundary root, which is the same
+        # point (the envelope optimum is the fixed-scale optimum at K*).
+        polished = self.solve(K, phi)
+        if polished is not None and abs(polished.X_star / X_star - 1.0) < 1e-4:
+            return polished
+        a_L, b_L = self.exercise_payoff_coeffs(K, phi)
+        if X_star < self.X_H:
+            p_pos, h = self.beta_L_pos, self.beta_H
+            A_1 = (a_L * X_star - h * self.C * X_star**h) / (p_pos * X_star**p_pos)
+            return self._make_solution(K, phi, X_star, A_1, 0.0, 0.0, a_L, b_L)
+        A_1, D_1, D_2 = self._upper_coeffs(X_star, a_L, b_L)
+        return self._make_solution(K, phi, X_star, A_1, D_1, D_2, a_L, b_L)
+
+    # ------------------------------------------------------------------
+    # Re-optimization of (K, phi) at a given demand level
     # ------------------------------------------------------------------
 
     def optimal_policy(self, X_0: float) -> PiecewiseSolution | None:
         """Re-optimize (K, phi) for the exact problem at demand X_0.
 
         Maximizes the exact option value at X_0 with the same multi-start
-        Nelder-Mead pattern as `SingleFirmModel.optimal_trigger_capacity_phi`.
-        Unlike the reduced form, the exact problem is not scale-free — X_H*
-        fixes a scale — so the optimal policy is stated at a demand level.
+        Nelder-Mead pattern as `SingleFirmModel.pure_power_trigger_capacity_phi`.
+        Kept for the bias reports of Internet Appendix B, which state the
+        policy at an evaluation demand. `precommitted_optimum` is the
+        demand-free solution and agrees with this one whenever X_0 lies
+        below the trigger; at a demand above the trigger (low arrival rates)
+        this routine returns the best immediate investment at X_0 instead.
         Within the region below X_H* the exact value is
         A_1 X^{beta_L^+} + C X^{beta_H} with C independent of (K, phi), so
         the ranking of policies whose triggers exceed X_0 is the ranking of
@@ -381,7 +494,7 @@ class PiecewiseOptionModel:
         sequences whose trigger collapses below X_0.
         """
         try:
-            _, K_ref, phi_ref = self.base.optimal_trigger_capacity_phi()
+            _, K_ref, phi_ref = self.base.pure_power_trigger_capacity_phi()
             log_K_ref = float(np.log(K_ref))
         except (ValueError, RuntimeError):
             log_K_ref, phi_ref = -5.0, 0.50
@@ -664,19 +777,315 @@ def _negative_root(sigma: float, mu: float, discount: float) -> float:
 
 
 # ----------------------------------------------------------------------
-# Reduced-form reference and bias measurement
+# The single-firm solution of the model of record
+# ----------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class SingleFirmSolution:
+    """What the single firm (the monopoly case) does in the exact problem.
+
+    The unrestricted problem is the model of record: the firm chooses its
+    scale whenever it invests, before or after the switch. The
+    precommitted-scale problem restricts a firm that has not invested when
+    the switch arrives to K_H*; it always has a finite trigger and supplies
+    the (X*, K*) of Proposition 1.
+
+    Attributes:
+        lam: Arrival rate the solution is computed under.
+        phi_star: Closed-form training fraction, common to every version.
+        X_H, K_H: Post-switch policy: a firm without capacity when the switch
+            arrives invests at X_H* with K_H*, all of it training (above
+            X_H* it invests at once, at the scale that is optimal there).
+        invests_before_switch: True when the unrestricted problem has a
+            finite pre-switch trigger.
+        X_star, K_star: That trigger and capacity (inf and nan when the firm
+            waits for the switch).
+        waiting_margin: Ratio of the waiting value to the exercise envelope
+            as demand grows; the firm waits when it is at least one.
+        precommitted: Two-region solution with precommitted post-switch
+            scale; its X_star, K and phi are the precommitted-scale policy.
+        pure_power: (X*, K*, phi*) of the pure-power approximation.
+    """
+
+    lam: float
+    phi_star: float
+    X_H: float
+    K_H: float
+    invests_before_switch: bool
+    X_star: float
+    K_star: float
+    waiting_margin: float
+    precommitted: PiecewiseSolution
+    pure_power: tuple[float, float, float]
+    _unrestricted: Any = field(repr=False, compare=False)
+    _piecewise: PiecewiseOptionModel = field(repr=False, compare=False)
+
+    def value(self, X: float) -> float:
+        """Value of a firm that has not invested (unrestricted optimum)."""
+        return float(self._unrestricted.value(X))
+
+    def waiting_value(self, X: float) -> float:
+        """Value of never investing before the switch, scale chosen at it."""
+        return float(self._unrestricted.waiting_value(X))
+
+    def policy_value(self, K: float, phi: float, X_stop: float, X: float) -> float:
+        """Exact value at X of "install (K, phi) at X_stop" (inf: never)."""
+        return float(self._unrestricted.policy_value(K, phi, X_stop, X))
+
+    def precommitted_value(self, X: float) -> float:
+        """Value at X under the precommitted-scale optimum."""
+        sol = self.precommitted
+        if sol.X_star > X:
+            pw = self._piecewise
+            premium = sol.npv_at_trigger() - pw.pure_switching_value(sol.X_star)
+            return float(
+                pw.pure_switching_value(X)
+                + premium * (X / sol.X_star) ** sol.beta_L_pos
+            )
+        # At or above the trigger the firm installs at once, at the scale
+        # that is statically optimal at X (the exercise envelope).
+        return float(self._unrestricted.exercise_envelope(X)[0])
+
+    def precommitted_waiting_value(self, X: float) -> float:
+        """Value of never investing before the switch, then installing K_H*."""
+        return float(self._piecewise.pure_switching_value(X))
+
+    def pure_power_error(self, x0_ratio: float = 0.5) -> dict[str, float]:
+        """Error of the pure-power approximation against this solution.
+
+        Levels are compared with the precommitted-scale policy (the only
+        version with a finite trigger at every arrival rate). Value losses
+        price the pure-power policy exactly at X_0 = x0_ratio times its own
+        trigger, against the precommitted-scale optimum and against the
+        unrestricted optimum.
+        """
+        X_pp, K_pp, phi_pp = self.pure_power
+        X_0 = x0_ratio * X_pp
+        in_class = self._piecewise.threshold_value(K_pp, phi_pp, X_pp, X_0)
+        unrestricted = self.policy_value(K_pp, phi_pp, X_pp, X_0)
+        return {
+            "X_0": X_0,
+            "trigger_pct": 100.0 * (X_pp / self.precommitted.X_star - 1.0),
+            "capacity_pct": 100.0 * (K_pp / self.precommitted.K - 1.0),
+            "phi_gap": phi_pp - self.phi_star,
+            "value_loss_precommitted_pct": 100.0
+            * (1.0 - in_class / self.precommitted_value(X_0)),
+            "value_loss_unrestricted_pct": 100.0
+            * (1.0 - unrestricted / self.value(X_0)),
+        }
+
+
+def solve_single_firm(params: ModelParameters) -> SingleFirmSolution:
+    """Solve the single firm's exact problem (see `SingleFirmSolution`).
+
+    The unrestricted policy is the default specification of
+    `capability_stock.CapabilityStockModel` (one scalar root, with the
+    waiting value in closed form up to a quadrature); the precommitted-scale
+    policy is `PiecewiseOptionModel.precommitted_optimum`.
+    """
+    # Imported here: capability_stock builds on this module.
+    from .capability_stock import CapabilityStockModel
+
+    pw = PiecewiseOptionModel(params)
+    unrestricted = CapabilityStockModel(params)
+    policy = unrestricted.policy
+    precommitted = pw.precommitted_optimum()
+    if precommitted is None:
+        msg = "No finite trigger in the precommitted-scale problem"
+        raise RuntimeError(msg)
+    invests = policy.status == "interior"
+    exponent = params.gamma / (params.gamma - params.alpha)
+    return SingleFirmSolution(
+        lam=params.lam,
+        phi_star=pw.base.closed_form_phi_star(),
+        X_H=pw.X_H,
+        K_H=pw.K_H,
+        invests_before_switch=invests,
+        X_star=float(policy.X_star) if invests else float("inf"),
+        K_star=float(policy.K_star) if invests else float("nan"),
+        waiting_margin=float(unrestricted.asymptotic_ratio(exponent)),
+        precommitted=precommitted,
+        pure_power=pw.base.pure_power_trigger_capacity_phi(),
+        _unrestricted=unrestricted,
+        _piecewise=pw,
+    )
+
+
+def belief_comparative_statics(
+    params: ModelParameters | None = None,
+    lambdas: tuple[float, ...] = BELIEF_GRID,
+) -> dict[str, np.ndarray]:
+    """Single-firm policy across arrival rates (beliefs).
+
+    For each lambda: the closed-form phi*; the precommitted-scale trigger
+    and capacity; the unrestricted trigger and capacity (inf and nan where
+    the firm waits for the switch); and the pure-power approximation.
+    """
+    if params is None:
+        params = ModelParameters()
+    keys = (
+        "phi_star",
+        "X_precommitted",
+        "K_precommitted",
+        "X_unrestricted",
+        "K_unrestricted",
+        "invests_before_switch",
+        "X_pure_power",
+        "K_pure_power",
+    )
+    out: dict[str, np.ndarray] = {k: np.full(len(lambdas), np.nan) for k in keys}
+    out["lam"] = np.asarray(lambdas, dtype=float)
+    for i, lam in enumerate(lambdas):
+        sol = solve_single_firm(params.with_param(lam=float(lam)))
+        out["phi_star"][i] = sol.phi_star
+        out["X_precommitted"][i] = sol.precommitted.X_star
+        out["K_precommitted"][i] = sol.precommitted.K
+        out["X_unrestricted"][i] = sol.X_star
+        out["K_unrestricted"][i] = sol.K_star
+        out["invests_before_switch"][i] = float(sol.invests_before_switch)
+        out["X_pure_power"][i] = sol.pure_power[0]
+        out["K_pure_power"][i] = sol.pure_power[1]
+    return out
+
+
+def belief_trigger_ranges(
+    params: ModelParameters | None = None,
+    lam_range: tuple[float, float] = (0.005, 0.50),
+) -> dict[str, float]:
+    """Where the trigger exists and where it rises or falls in lambda.
+
+    Returns:
+        ``lam_bar``: the unrestricted problem has a finite pre-switch trigger
+        for lambda below it and none at or above it (nan if the waiting
+        margin does not cross one on ``lam_range``). On the range where it
+        exists the trigger rises in lambda (checked on a grid in the tests).
+        ``precommitted_trigger_peak``, ``precommitted_capacity_peak``: the
+        precommitted-scale trigger (capacity) rises in lambda below the peak
+        and falls above it.
+        ``pure_power_trigger_peak``: the pure-power trigger rises below
+        (r - mu_H) Omega^{1 - alpha}, the rate at which phi* crosses the
+        faith threshold phi_underbar, and falls above it.
+    """
+    if params is None:
+        params = ModelParameters()
+    from .capability_stock import CapabilityStockModel
+
+    exponent = params.gamma / (params.gamma - params.alpha)
+
+    def margin(lam: float) -> float:
+        model = CapabilityStockModel(params.with_param(lam=lam))
+        return model.asymptotic_ratio(exponent) - 1.0
+
+    lo, hi = lam_range
+    lam_bar = float("nan")
+    if margin(lo) < 0.0 < margin(hi):
+        lam_bar = float(optimize.brentq(margin, lo, hi, xtol=1e-10))
+
+    def precommitted(lam: float) -> PiecewiseSolution:
+        sol = PiecewiseOptionModel(params.with_param(lam=lam)).precommitted_optimum()
+        if sol is None:
+            msg = f"No precommitted-scale trigger at lambda = {lam}"
+            raise RuntimeError(msg)
+        return sol
+
+    def peak(attr: str) -> float:
+        grid = np.linspace(lo, hi, 100)
+        vals = np.array([getattr(precommitted(float(v)), attr) for v in grid])
+        i = int(np.argmax(vals))
+        res = optimize.minimize_scalar(
+            lambda v: -getattr(precommitted(float(v)), attr),
+            bounds=(grid[max(i - 1, 0)], grid[min(i + 1, len(grid) - 1)]),
+            method="bounded",
+            options={"xatol": 1e-8},
+        )
+        return float(res.x)
+
+    omega = ((params.r - params.mu_H) / (params.r - params.mu_L)) ** (
+        1.0 / params.alpha
+    )
+    return {
+        "lam_bar": lam_bar,
+        "precommitted_trigger_peak": peak("X_star"),
+        "precommitted_capacity_peak": peak("K"),
+        "pure_power_trigger_peak": float(
+            (params.r - params.mu_H) * omega ** (1.0 - params.alpha)
+        ),
+    }
+
+
+def format_single_firm_report(params: ModelParameters | None = None) -> str:
+    """Human-readable report of the model-of-record single-firm solution."""
+    if params is None:
+        params = ModelParameters()
+    sol = solve_single_firm(params)
+    err = sol.pure_power_error()
+    pre = sol.precommitted
+    X_0 = err["X_0"]
+    lines = [
+        "Single firm in the exact problem (model of record)",
+        "=" * 62,
+        f"phi* (closed form)                 {sol.phi_star:.6f}",
+        f"post-switch policy X_H*, K_H*      {sol.X_H:.6f}, {sol.K_H:.6f}",
+        f"invests before the switch          {sol.invests_before_switch}",
+        f"unrestricted trigger, capacity     {sol.X_star:.6f}, {sol.K_star:.6f}",
+        f"waiting margin (waits if >= 1)     {sol.waiting_margin:.4f}",
+        f"precommitted-scale X*, K*          {pre.X_star:.6f}, {pre.K:.6f}",
+        f"pure-power X*, K*                  {sol.pure_power[0]:.6f}, "
+        f"{sol.pure_power[1]:.6f}",
+        f"values at X_0 = {X_0:.6f}:",
+        f"  waiting, scale chosen at switch  {sol.waiting_value(X_0):.6e}",
+        f"  precommitted-scale optimum       {sol.precommitted_value(X_0):.6e}",
+        f"  waiting, precommitted scale      {sol.precommitted_waiting_value(X_0):.6e}",
+        f"pure-power error: trigger {err['trigger_pct']:+.1f}%, capacity "
+        f"{err['capacity_pct']:+.1f}%, value loss "
+        f"{err['value_loss_precommitted_pct']:.2f}% (precommitted class), "
+        f"{err['value_loss_unrestricted_pct']:.2f}% (unrestricted)",
+    ]
+    return "\n".join(lines)
+
+
+def format_belief_report(params: ModelParameters | None = None) -> str:
+    """Belief table and the ranges on which the trigger rises or falls."""
+    table = belief_comparative_statics(params)
+    ranges = belief_trigger_ranges(params)
+    lines = [
+        "Single-firm policy across arrival rates",
+        "=" * 62,
+        "lambda   phi*    X* pre   K* pre   X* unres  K* unres  X* pp    K* pp",
+    ]
+    for i, lam in enumerate(table["lam"]):
+        lines.append(
+            f"{lam:6.3f}  {table['phi_star'][i]:.4f}  "
+            f"{table['X_precommitted'][i]:.5f}  {table['K_precommitted'][i]:.5f}  "
+            f"{table['X_unrestricted'][i]:8.5f}  {table['K_unrestricted'][i]:8.5f}  "
+            f"{table['X_pure_power'][i]:.5f}  {table['K_pure_power'][i]:.5f}"
+        )
+    lines += [
+        f"finite unrestricted trigger for lambda < {ranges['lam_bar']:.4f}",
+        "precommitted trigger rises in lambda below "
+        f"{ranges['precommitted_trigger_peak']:.4f}, capacity below "
+        f"{ranges['precommitted_capacity_peak']:.4f}",
+        "pure-power trigger rises in lambda below "
+        f"{ranges['pure_power_trigger_peak']:.4f}",
+    ]
+    return "\n".join(lines)
+
+
+# ----------------------------------------------------------------------
+# Pure-power approximation: reference and error measurement (verification)
 # ----------------------------------------------------------------------
 
 
 def reduced_form_reference(params: ModelParameters) -> dict[str, float]:
-    """Reduced-form (paper) solution: trigger, policy, and smooth-fit level.
+    """Pure-power approximation: trigger, policy, and smooth-fit level.
 
     The smooth-fit coefficient is B = [V(X*, K*, phi*) - I(K*)] / (X*)^{beta_H},
     the level the paper prices the pre-investment option with. It differs from
     the forced-ODE particular coefficient C of eq-particular-C.
     """
     model = SingleFirmModel(params)
-    X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+    X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
     a_L = model._effective_revenue_coeff_single(phi_star, K_star)
     b_L = params.delta * K_star / params.r + model.investment_cost(K_star)
     npv = a_L * X_star - b_L
@@ -1127,6 +1536,10 @@ def format_sweep_report(
 if __name__ == "__main__":  # pragma: no cover
     import sys
 
+    print(format_single_firm_report())
+    print()
+    print(format_belief_report())
+    print()
     print(format_bias_report())
     print()
     print(format_envelope_report())

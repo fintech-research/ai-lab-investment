@@ -252,9 +252,11 @@ class RevealedBeliefs:
         try:
             params = self.calibration.to_model_params(lam=lam)
             model = SingleFirmModel(params)
-            _X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+            # Interim pin (issue #176): pure-power policy and option value;
+            # issue #183 re-solves the calibration under the model of record.
+            _X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
             I_K = model.investment_cost(K_star)
-            F = model.option_value_with_phi(X_ref)
+            F = model.pure_power_option_value(X_ref)
             if I_K <= 0:
                 return np.inf, phi_star
             return F / I_K, phi_star

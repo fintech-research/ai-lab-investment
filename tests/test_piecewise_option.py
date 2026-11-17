@@ -1,4 +1,10 @@
-"""Tests for the exact piecewise L-regime stopping problem."""
+"""Tests for the exact piecewise L-regime stopping problem.
+
+Solver-level tests of the core module. The single-firm solution object, the
+belief comparative statics and everything that pins the pure-power
+approximation (formerly TestReducedFormConsistency and TestBaselineBias
+here) are in tests/test_base_model.py.
+"""
 
 import numpy as np
 import pytest
@@ -11,7 +17,6 @@ from ai_lab_investment.models.piecewise_option import (
     envelope_dilemma,
     piecewise_bias,
     reduced_form_reference,
-    smooth_fit_trigger,
 )
 
 
@@ -33,11 +38,6 @@ def reduced(default_params):
 @pytest.fixture
 def fixed_policy_solution(model, reduced):
     return model.solve(reduced["K_star"], reduced["phi_star"])
-
-
-@pytest.fixture(scope="module")
-def baseline_bias():
-    return piecewise_bias(ModelParameters())
 
 
 @pytest.fixture(scope="module")
@@ -63,21 +63,6 @@ class TestSetup:
         exercised = model.a_H * model.X_H - model.b_H
         option = model.B_H * model.X_H**model.beta_H
         assert exercised == pytest.approx(option, rel=1e-12)
-
-
-class TestReducedFormConsistency:
-    def test_pure_power_boundary_conditions_reproduce_eq_trigger_phi(
-        self, default_params, reduced
-    ):
-        """With the pure-power continuation value and A_1 = 0, value matching
-        and smooth pasting return the paper's closed-form trigger."""
-        X = smooth_fit_trigger(default_params, reduced["K_star"], reduced["phi_star"])
-        assert pytest.approx(reduced["X_star"], rel=1e-12) == X
-
-    def test_smooth_fit_level_prices_the_paper_policy(self, reduced, default_params):
-        npv = reduced["a_L"] * reduced["X_star"] - reduced["b_L"]
-        level = npv / reduced["X_star"] ** default_params.beta_H
-        assert level == pytest.approx(reduced["smooth_fit_coeff"], rel=1e-12)
 
 
 class TestPiecewiseSolution:
@@ -193,28 +178,63 @@ class TestFiniteDifferenceVerification:
             assert F[i] == pytest.approx(sol.value(X[i]), rel=1e-6)
 
 
-class TestBaselineBias:
-    """Pins the headline bias numbers of the piecewise-vs-reduced comparison.
+class TestPrecommittedOptimum:
+    """The demand-free optimum of the precommitted-scale problem."""
 
-    Mirrors TestCoupledDefaultBoundary in test_duopoly.py: if a model change
-    moves these numbers, the appendix text quoting them must move too.
-    """
+    def test_agrees_with_the_demand_stated_optimum(self, model, reduced):
+        """Below the trigger the Nelder-Mead optimum at X_0 is the same
+        policy, and the same value."""
+        X_0 = 0.5 * reduced["X_star"]
+        stated = model.optimal_policy(X_0)
+        free = model.precommitted_optimum()
+        assert free.X_star == pytest.approx(stated.X_star, rel=1e-5)
+        assert pytest.approx(stated.K, rel=1e-4) == free.K
+        assert free.phi == pytest.approx(stated.phi, abs=1e-6)
+        assert free.value(X_0) == pytest.approx(stated.value(X_0), rel=1e-9)
 
-    def test_trigger_and_value_bias(self, baseline_bias):
-        b = baseline_bias
-        assert b["X_star_piecewise_fixed"] == pytest.approx(0.007220, abs=1e-5)
-        assert b["trigger_bias_fixed_pct"] == pytest.approx(52.9, abs=0.5)
-        assert b["value_bias_fixed_pct"] == pytest.approx(19.1, abs=0.5)
-        assert b["reported_value_bias_pct"] == pytest.approx(-14.8, abs=0.5)
+    def test_agrees_with_the_preemption_module(self, default_params):
+        """`ExactPreemptionGame.single_firm` solves the same problem with
+        Green's-function tables (issue #173)."""
+        from ai_lab_investment.models.preemption_exact import ExactPreemptionGame
 
-    def test_reoptimized_policy(self, baseline_bias):
-        b = baseline_bias
-        assert b["trigger_bias_opt_pct"] == pytest.approx(96.1, abs=1.0)
-        assert b["K_bias_opt_pct"] == pytest.approx(134.6, abs=2.0)
-        # The training fraction is untouched by the convention: phi* maximizes
-        # A_eff at fixed K in both the reduced and the exact problem.
-        assert b["phi_piecewise_opt"] == pytest.approx(b["phi_reduced"], rel=1e-5)
-        assert b["policy_loss_pct"] == pytest.approx(2.64, abs=0.15)
+        for lam in (0.05, 0.10, 0.20):
+            params = default_params.with_param(lam=lam)
+            entry = ExactPreemptionGame(params, "precommitted").single_firm()
+            free = PiecewiseOptionModel(params).precommitted_optimum()
+            assert entry.enters
+            assert free.X_star == pytest.approx(entry.X_entry, rel=1e-4)
+            assert pytest.approx(entry.K, rel=1e-4) == free.K
+
+    def test_beats_waiting_with_precommitted_scale(self, model):
+        free = model.precommitted_optimum()
+        assert np.isfinite(model.exercise_premium(free.K, free.phi))
+        assert free.npv_at_trigger() > model.pure_switching_value(free.X_star)
+
+    def test_dominates_neighbouring_policies(self, model, reduced):
+        free = model.precommitted_optimum()
+        X_0 = 0.5 * reduced["X_star"]
+        best = model.threshold_value(free.K, free.phi, free.X_star, X_0)
+        assert best == pytest.approx(free.value(X_0), rel=1e-10)
+        for dK, dX, dphi in [
+            (1.1, 1.0, 0.0),
+            (0.9, 1.0, 0.0),
+            (1.0, 1.1, 0.0),
+            (1.0, 0.9, 0.0),
+            (1.0, 1.0, 0.03),
+            (1.0, 1.0, -0.03),
+        ]:
+            other = model.threshold_value(
+                free.K * dK, free.phi + dphi, free.X_star * dX, X_0
+            )
+            assert other < best
+
+    def test_static_trigger_is_the_scale_first_order_condition(self, model):
+        p = model.params
+        K, phi = 0.01, 0.6
+        X = model.static_trigger(K, phi)
+        a_L, _ = model.exercise_payoff_coeffs(K, phi)
+        marginal = p.delta / p.r + p.c * p.gamma * K ** (p.gamma - 1.0)
+        assert p.alpha * a_L * X / K == pytest.approx(marginal, rel=1e-12)
 
 
 class TestLowLambdaBranch:

@@ -211,15 +211,22 @@ def create_comparative_statics() -> plt.Figure:
 
 
 def lambda_option_value_curve(
-    lam_vals: np.ndarray, X_ref: float = 0.002
+    lam_vals: np.ndarray, X_ref: float = 0.002, pure_power: bool = False
 ) -> tuple[np.ndarray, np.ndarray, float]:
-    """Full-model option value and allocation across arrival rates.
+    """Full-model value of the uninvested firm and allocation across lambda.
 
-    For each lambda the firm re-optimizes (X*, K*, phi*) and the option
-    value is read at the common demand level X_ref (below every trigger
-    on the grid). Also returns the faith-based survival threshold
-    phi_underbar, which is lambda-independent: by the envelope theorem
-    dF/dlambda has the sign of dA_eff/dlambda at (K*, phi*), positive iff
+    For each lambda the single firm's problem is re-solved and its value is
+    read at the common demand level X_ref. By default this is the exact
+    value of the model of record (`SingleFirmModel.option_value_with_phi`):
+    at low arrival rates X_ref lies above the pre-switch trigger and the
+    value is that of investing at once, and above the rate at which the
+    trigger ceases to exist it is the value of waiting for the switch.
+    ``pure_power=True`` returns the pure-power approximation instead, for
+    which X_ref lies below every trigger on the grid.
+
+    Also returns the faith-based survival threshold phi_underbar, which is
+    lambda-independent: for a firm that invests, the envelope theorem gives
+    dF/dlambda the sign of dA_eff/dlambda at phi*, positive iff
     phi* > phi_underbar, so the value falls in lambda where the optimal
     allocation is too inference-heavy and rises beyond.
     """
@@ -232,9 +239,11 @@ def lambda_option_value_curve(
     for i, lam in enumerate(lam_vals):
         try:
             model = SingleFirmModel(ModelParameters(lam=lam))
-            _, _, phi_star = model.optimal_trigger_capacity_phi()
-            values[i] = model.option_value_with_phi(X_ref)
-            phis[i] = phi_star
+            if pure_power:
+                values[i] = model.pure_power_option_value(X_ref)
+            else:
+                values[i] = model.option_value_with_phi(X_ref)
+            phis[i] = model.closed_form_phi_star()
         except (ValueError, RuntimeError):
             continue
     phi_underbar = float(DuopolyModel(ModelParameters()).faith_threshold())
@@ -242,26 +251,36 @@ def lambda_option_value_curve(
 
 
 def create_lambda_option_value() -> plt.Figure:
-    """Two-panel: full-model option value and phi* against lambda.
+    """Two-panel: full-model value of the uninvested firm and phi* against lambda.
 
-    Unlike the H-regime illustrations, this figure uses the full model
-    with the joint (K, phi) optimization: it is the object whose
-    curvature the text discusses. The vertical line marks the arrival
+    Unlike the H-regime illustrations, this figure uses the full model: the
+    solid curve is the exact value of the model of record and the dashed
+    curve the pure-power approximation. The vertical line marks the arrival
     rate at which phi*(lambda) crosses phi_underbar, the minimum of the
     value in lambda.
     """
     lam_vals = np.linspace(0.005, 0.80, 80)
     X_ref = 0.002
     values, phis, phi_underbar = lambda_option_value_curve(lam_vals, X_ref)
+    approx, _, _ = lambda_option_value_curve(lam_vals, X_ref, pure_power=True)
     valid = ~np.isnan(values)
     lam_turn = float(np.interp(phi_underbar, phis[valid], lam_vals[valid]))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
-    ax1.plot(lam_vals[valid], values[valid], "k-", linewidth=1.5)
+    ax1.plot(lam_vals[valid], values[valid], "k-", linewidth=1.5, label="Exact")
+    ax1.plot(
+        lam_vals[valid],
+        approx[valid],
+        color="0.4",
+        linestyle="--",
+        linewidth=1.0,
+        label="Pure-power approximation",
+    )
     ax1.axvline(lam_turn, color="0.5", linestyle=":", linewidth=1.0)
     ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
-    ax1.set_ylabel(f"Option value $F(X)$ at $X={X_ref}$")
+    ax1.set_ylabel(f"Value $F(X)$ at $X={X_ref}$")
+    ax1.legend(loc="lower right")
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     ax2.plot(
@@ -607,7 +626,7 @@ def create_growth_decomposition() -> plt.Figure:
     vs. net of sunk cost), so their sum is not firm value.
 
     Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
-    uses the phi-aware model (optimal_trigger_capacity_phi,
+    uses the phi-aware model (pure_power_trigger_capacity_phi,
     installed_value_with_phi).
     """
     from ..models import ModelParameters, ValuationAnalysis

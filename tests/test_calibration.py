@@ -75,7 +75,7 @@ class TestRevealedBeliefs:
 
         def trigger(lam):
             params = rb.calibration.to_model_params(lam=lam)
-            X_star, _, _ = SingleFirmModel(params).optimal_trigger_capacity_phi()
+            X_star, _, _ = SingleFirmModel(params).pure_power_trigger_capacity_phi()
             return X_star
 
         X_lo_lam = trigger(0.05)
@@ -220,7 +220,7 @@ class TestPhiInversion:
         lam_true = 0.10
         params = revealed_beliefs.calibration.to_model_params(lam=lam_true)
         model = SingleFirmModel(params)
-        _, _, phi_star = model.optimal_trigger_capacity_phi()
+        _, _, phi_star = model.pure_power_trigger_capacity_phi()
 
         lam_recovered = revealed_beliefs.infer_lambda_from_phi(phi_star)
         assert lam_recovered is not None
