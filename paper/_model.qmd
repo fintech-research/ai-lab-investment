@@ -38,7 +38,7 @@ A firm with total installed capacity $K$ allocates fraction $\phi \in [0, 1]$ to
 
 In regime $L$ only inference capacity earns revenue, and in regime $H$ only training compute does. The knife-edge form is a modelling device that gives the idle side of the split no revenue at all; @tbl-domains records it with the model's other operating assumptions. The training fraction is fixed at installation, and @sec-discussion bounds the resulting bias.
 
-Installed capacity incurs a continuous operating cost at rate $\delta > 0$ per unit: power, cooling, maintenance, and personnel.^[This is distinct from *economic depreciation*: $K$ is constant once installed, and $\delta K$ is a perpetual flow cost, not a decay rate. @sec-calibration discusses the relation to accounting depreciation and to hardware obsolescence [@deepseek2025r1].]
+Installed capacity incurs a continuous operating cost at rate $\delta > 0$ per unit: power, cooling, maintenance, and personnel.^[This is distinct from *economic depreciation*: $K$ is constant once installed, and $\delta K$ is a perpetual flow cost, not a decay rate. @sec-calibration and Internet Appendix C discuss the relation to accounting depreciation of GPU hardware.]
 
 @tbl-parameters and @tbl-notation, in the Parameters and Notation section of the Internet Appendix, summarize all model parameters and key notation; the calibration rationale for each value is discussed in @sec-calibration.
 
