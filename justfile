@@ -117,10 +117,18 @@ run-pipeline:
     @echo "🚀 Running analysis pipeline"
     uv run python -m ai_lab_investment
 
-# Run the +/-25% parameter-perturbation robustness sweep (Internet Appendix E)
+# Run the robustness sweeps of Internet Appendix E: one at a time and joint (a few minutes; duopoly objects from the cache)
 run-sweep:
-    @echo "🚀 Running robustness sweep"
+    @echo "🚀 Running robustness sweeps"
     uv run python -m ai_lab_investment.robustness
+
+# Recompute the cached joint single-firm sweep (`models/robustness_joint.csv`, a few minutes on 8 workers)
+sweep-joint-grid:
+    uv run python -m ai_lab_investment.robustness joint-grid
+
+# Solve the duopoly cells of the sweeps missing from `models/robustness_duopoly.json` (resumable; about two hours on 8 workers from scratch)
+sweep-duopoly-grid *ARGS:
+    uv run python -m ai_lab_investment.robustness duopoly-grid {{ARGS}}
 
 # Install video dependencies (manim + kokoro-onnx) and download TTS model files
 video-setup:

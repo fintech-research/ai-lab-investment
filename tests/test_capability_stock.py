@@ -225,9 +225,18 @@ class TestLateEntryDiscount:
         assert boundary == pytest.approx(pol.X_star, rel=1e-2)
         assert value == pytest.approx(model.value(0.5 * pol.X_star), rel=1e-4)
 
-    def test_trigger_outside_the_search_range_is_reported(self, params):
-        with pytest.raises(RuntimeError, match="outside the capacity range"):
-            _ = _solve(params, StockSpec.late_entry_discount(0.005)).policy
+    def test_trigger_below_the_search_range_means_immediate_investment(self, params):
+        """A trigger below the smallest capacity searched is reported as
+        immediate investment (issue #182), not as an error: the firm is in
+        its investment region at every demand level of interest."""
+        model = _solve(params, StockSpec.late_entry_discount(0.005))
+        assert model.regime() == "interior"
+        policy = model.policy
+        assert policy.status == "immediate"
+        assert policy.X_star == 0.0
+        assert np.isnan(policy.K_star)
+        X = 0.01
+        assert model.value(X) == pytest.approx(float(model.exercise_envelope(X)[0]))
 
     def test_trigger_and_capacity_are_hump_shaped_in_beliefs(self, params):
         rows = specification_table(THETA_80, params)
