@@ -119,7 +119,8 @@ MISMATCH_SIZE = 0.8
 
 GAP_K_FRACS: tuple[float, float] = (0.1, 0.3)
 """Installed-capacity fractions at which the scale-gap index of Internet
-Appendix G is evaluated (an object of the pure-power policy)."""
+Appendix G is evaluated, as fractions of the precommitted-scale K* (issue
+#184; the earlier draft used the pure-power K^pp)."""
 
 ALPHA_GAME_BOUND = 0.5
 """The entry game needs alpha below this (unique envelope capacity)."""
@@ -349,9 +350,12 @@ def single_firm_objects(params: ModelParameters) -> dict[str, float]:
         "pure_power_trigger_pct": float(error["trigger_pct"]),
         "pure_power_capacity_pct": float(error["capacity_pct"]),
     }
-    # Scale-gap index of Internet Appendix G, still defined at the pure-power
-    # policy (in percent, at K / K^pp = GAP_K_FRACS).
-    gap = ValuationAnalysis(params).capacity_gap_decomposition(np.array(GAP_K_FRACS))
+    # Scale-gap index of Internet Appendix G at the precommitted-scale policy
+    # (in percent, at K / K* = GAP_K_FRACS).
+    pre = solution.precommitted
+    gap = ValuationAnalysis(params).capacity_gap_decomposition(
+        np.array(GAP_K_FRACS), policy=(pre.X_star, pre.K, pre.phi)
+    )
     out["gap_fraction_low"], out["gap_fraction_high"] = (
         float(x) for x in gap["gap_fraction"]
     )

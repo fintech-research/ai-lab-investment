@@ -24,18 +24,20 @@ from .belief_mismatch import (
 from .duopoly import DEFAULT_RECOVERY_RULE, DuopolyModel, cached_equilibrium
 from .parameters import ModelParameters
 
-# Interim pins (issue #176). At the model of record: the credit exhibits
-# since issue #179 (`on_policy_credit`), Dario's dilemma since issue #180
-# (`dario_dilemma`, `dario_dilemma_leveraged`, `dario_dilemma_duopoly`, exact
-# values in `belief_mismatch`), and since issue #182 `two_period_dynamic_phi`
-# (capacity of the precommitted-scale policy) and the exact-primitives half
-# of `fixed_pie_robustness`. Still at the pure-power approximation
-# (`pure_power_*`): the nested-game half of `fixed_pie_robustness`, labelled
-# as such, and the growth-option and capacity-gap decompositions behind
-# Internet Appendix G (issue #184; #183 re-solved the calibration only). The
-# `pure_power_dilemma*` methods are kept as the nested approximation, so that
-# the earlier draft's dilemma numbers reproduce and their error can be
-# stated; they feed no main-text number.
+# Model of record and approximation (issues #176 to #184). At the model of
+# record: the credit exhibits since issue #179 (`on_policy_credit`), Dario's
+# dilemma since issue #180 (`dario_dilemma`, `dario_dilemma_leveraged`,
+# `dario_dilemma_duopoly`, exact values in `belief_mismatch`), since issue
+# #182 `two_period_dynamic_phi` (capacity of the precommitted-scale policy)
+# and the exact-primitives half of `fixed_pie_robustness`, and since issue
+# #184 the decompositions behind Internet Appendix G
+# (`capacity_gap_decomposition`, `growth_option_decomposition_with_phi`, at
+# the precommitted-scale policy; `pure_power=True` gives the earlier
+# draft's). At the pure-power approximation (`pure_power_*`), labelled as
+# such: the nested-game half of `fixed_pie_robustness`, and the
+# `pure_power_dilemma*` methods, kept so that the earlier draft's dilemma
+# numbers reproduce and their error can be stated; they feed no main-text
+# number.
 
 ON_POLICY_LEVERAGES: tuple[float, ...] = (0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.40, 0.70)
 """Leverage grid of the on-policy credit table (issue #179)."""
@@ -1197,16 +1199,22 @@ class ValuationAnalysis:
         X: float,
         K_installed: float = 0.0,
         phi: float = 0.5,
+        pure_power: bool = False,
     ) -> dict[str, Any]:
         """Decompose firm value using the phi-aware model.
 
         Uses the combined L+H revenue structure where phi determines
-        the split between inference revenue and training value.
+        the split between inference revenue and training value. The option
+        value is the exact value of the model of record
+        (`SingleFirmModel.option_value_with_phi`) and the reported policy
+        the precommitted-scale (X*, K*, phi*); ``pure_power=True`` uses the
+        pure-power approximation for both.
 
         Args:
             X: Current demand level.
             K_installed: Currently installed capacity (0 if pre-investment).
             phi: Training fraction.
+            pure_power: Use the pure-power approximation (earlier draft).
 
         Returns:
             Dict with value components.
@@ -1219,11 +1227,12 @@ class ValuationAnalysis:
         else:
             assets = 0.0
 
-        # Option value with phi optimization
-        option_val = model.pure_power_option_value(X)
-
-        # Decompose: option includes optimal (K*, phi*)
-        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        if pure_power:
+            option_val = model.pure_power_option_value(X)
+            X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        else:
+            option_val = model.option_value_with_phi(X)
+            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
 
         expansion_option = option_val - assets if option_val > assets else 0.0
         total = assets + expansion_option
@@ -1244,6 +1253,8 @@ class ValuationAnalysis:
         self,
         K_fracs: np.ndarray,
         demand_multiple: float = 1.5,
+        pure_power: bool = False,
+        policy: tuple[float, float, float] | None = None,
     ) -> dict[str, Any]:
         """Capacity-gap decomposition across installed-capacity levels.
 
@@ -1262,10 +1273,19 @@ class ValuationAnalysis:
         'gap_fraction' is a unit-free index in [0, 100], not a share of
         firm value.
 
+        The policy (X*, K*, phi*) is the precommitted-scale policy of the
+        model of record (Proposition 1(iii), `optimal_trigger_capacity_phi`);
+        ``pure_power=True`` uses the pure-power approximation instead, the
+        earlier draft's version of the diagnostic. The installed values are
+        the same closed form (eq-installed-value-L) in both.
+
         Args:
             K_fracs: Installed capacity as fractions of optimal K*.
             demand_multiple: Demand evaluation point as a multiple of the
                 optimal trigger X*.
+            pure_power: Use the pure-power policy (earlier draft).
+            policy: (X*, K*, phi*) already solved by the caller, used
+                instead of solving again (ignores ``pure_power``).
 
         Returns:
             Dict with 'K_fracs', 'assets_in_place', 'capacity_gap',
@@ -1273,7 +1293,12 @@ class ValuationAnalysis:
             'phi_star', 'npv_optimal'.
         """
         model = SingleFirmModel(self.params)
-        X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        if policy is not None:
+            X_star, K_star, phi_star = policy
+        elif pure_power:
+            X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        else:
+            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
         X_eval = demand_multiple * X_star
 
         npv_optimal = model.installed_value_with_phi(

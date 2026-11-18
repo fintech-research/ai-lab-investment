@@ -709,9 +709,9 @@ def create_growth_decomposition() -> plt.Figure:
     decomposition: the two components use different benchmarks (gross
     vs. net of sunk cost), so their sum is not firm value.
 
-    Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
-    uses the phi-aware model (pure_power_trigger_capacity_phi,
-    installed_value_with_phi).
+    Delegates to ValuationAnalysis.capacity_gap_decomposition() at the
+    precommitted-scale policy (X*, K*, phi*) of the model of record, with
+    the installed values of eq-installed-value-L, at demand 1.5 X*.
     """
     from ..models import ModelParameters, ValuationAnalysis
 

@@ -1651,6 +1651,24 @@ class TestPhiAwareValuation:
         assert 0.0 <= result["assets_fraction"] <= 1.0
         assert 0.0 <= result["growth_fraction"] <= 1.0
 
+    def test_decomposition_with_phi_is_at_the_model_of_record(self, va):
+        """Issue #184: the policy and option value are the model of record's
+        (precommitted-scale policy, exact value); pure_power=True gives the
+        approximation."""
+        X = 0.0046
+        model = SingleFirmModel(va.params)
+        exact = va.growth_option_decomposition_with_phi(X=X)
+        assert exact["K_optimal"] == pytest.approx(0.015784, rel=1e-4)
+        assert exact["X_trigger"] == pytest.approx(0.009258, rel=1e-4)
+        assert exact["expansion_option"] == pytest.approx(
+            model.option_value_with_phi(X), rel=1e-12
+        )
+        approx = va.growth_option_decomposition_with_phi(X=X, pure_power=True)
+        assert approx["K_optimal"] == pytest.approx(0.006727, rel=1e-3)
+        assert approx["expansion_option"] == pytest.approx(
+            model.pure_power_option_value(X), rel=1e-12
+        )
+
     def test_equity_vs_lambda_with_phi_shape(self, va):
         """Should return arrays with correct length."""
         lam_vals = np.array([0.05, 0.10, 0.20, 0.50])
@@ -1673,6 +1691,16 @@ class TestPhiAwareValuation:
 
 
 class TestCapacityGapDecomposition:
+    """Internet Appendix G at the precommitted-scale policy of the model of
+    record (issue #184); `TestCapacityGapPurePower` keeps the earlier
+    draft's version."""
+
+    def test_uses_the_precommitted_scale_policy(self, va):
+        d = va.capacity_gap_decomposition(np.array([0.5]))
+        assert d["K_star"] == pytest.approx(0.015784, rel=1e-4)
+        assert d["X_eval"] == pytest.approx(1.5 * 0.009258, rel=1e-4)
+        assert d["phi_star"] == pytest.approx(0.700856, abs=1e-6)
+
     def test_gap_declines_and_vanishes(self, va):
         """Gap fraction declines in installed capacity and reaches zero
         before K/K* = 1 (the benchmark nets out the full investment cost
@@ -1687,19 +1715,43 @@ class TestCapacityGapDecomposition:
         below_one = K_fracs < 1.0
         assert np.any(gf[below_one] == 0.0)
 
-    def test_paper_range_25_to_50_pct(self, va):
-        """Paper claim (_valuation.qmd): the scale-gap index runs at roughly
-        25-50% for K/K* in [0.1, 0.3], equalling ~50% at 0.1 and ~26% at 0.3."""
-        d = va.capacity_gap_decomposition(np.array([0.1, 0.3]))
-        assert d["gap_fraction"][0] == pytest.approx(50.1, abs=0.5)
-        assert d["gap_fraction"][1] == pytest.approx(26.0, abs=0.5)
-        # Band quoted in the paper brackets both endpoints.
-        assert 25.0 <= d["gap_fraction"][1] < d["gap_fraction"][0] <= 50.5
+    def test_paper_values(self, va):
+        """Internet Appendix G: about 80% at K/K* = 0.01, 50% at 0.1 and 26%
+        at 0.3, so roughly 25-50% over [0.1, 0.3]."""
+        d = va.capacity_gap_decomposition(np.array([0.01, 0.1, 0.3]))
+        assert d["gap_fraction"][0] == pytest.approx(79.7, abs=0.5)
+        assert d["gap_fraction"][1] == pytest.approx(50.4, abs=0.5)
+        assert d["gap_fraction"][2] == pytest.approx(25.8, abs=0.5)
+        assert 25.0 <= d["gap_fraction"][2] < d["gap_fraction"][1] <= 51.0
 
-    def test_zero_crossover_near_077(self, va):
-        """Paper claim: the index reaches zero at K/K* ~ 0.77."""
+    def test_zero_crossover_near_073(self, va):
+        """Internet Appendix G: the index reaches zero at K/K* ~ 0.73."""
         K_fracs = np.linspace(0.5, 1.0, 501)
         gf = va.capacity_gap_decomposition(K_fracs)["gap_fraction"]
+        crossover = K_fracs[np.argmax(gf <= 0.0)]
+        assert crossover == pytest.approx(0.73, abs=0.01)
+
+    def test_policy_argument_reproduces_the_solve(self, va):
+        model = SingleFirmModel(va.params)
+        policy = model.optimal_trigger_capacity_phi()
+        fracs = np.array([0.1, 0.3])
+        solved = va.capacity_gap_decomposition(fracs)["gap_fraction"]
+        given = va.capacity_gap_decomposition(fracs, policy=policy)["gap_fraction"]
+        np.testing.assert_allclose(given, solved, rtol=1e-12)
+
+
+class TestCapacityGapPurePower:
+    """The earlier draft's diagnostic, at the pure-power policy."""
+
+    def test_earlier_draft_values(self, va):
+        d = va.capacity_gap_decomposition(np.array([0.1, 0.3]), pure_power=True)
+        assert d["K_star"] == pytest.approx(0.006727, rel=1e-3)
+        assert d["gap_fraction"][0] == pytest.approx(50.1, abs=0.5)
+        assert d["gap_fraction"][1] == pytest.approx(26.0, abs=0.5)
+
+    def test_zero_crossover_near_077(self, va):
+        K_fracs = np.linspace(0.5, 1.0, 501)
+        gf = va.capacity_gap_decomposition(K_fracs, pure_power=True)["gap_fraction"]
         crossover = K_fracs[np.argmax(gf <= 0.0)]
         assert crossover == pytest.approx(0.77, abs=0.02)
 

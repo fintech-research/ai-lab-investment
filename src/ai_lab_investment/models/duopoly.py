@@ -24,8 +24,11 @@ dilution of the leader's claim are valued with the H-regime exponent
 beta_H and the unconditional coefficient A_eff, and the leader is held at
 the monopoly-phase scale. They are kept so that every number of the
 earlier draft stays reproducible and its distance from the model of record
-can be reported. `valuation.py`, `robustness.py`, `calibration/` and most
-paper figures still call them (issues #179 to #184).
+can be reported. Since issue #184 no paper exhibit is computed with them
+except where the nested game is reported as such (Internet Appendix B, the
+nested layer of `ValuationAnalysis.fixed_pie_robustness`, the diagnostic in
+`preemption_exact`); the exploratory pipeline (`figures/phase2.py`,
+`comparative_statics`, `summary`) still uses them.
 
 Primitives shared by both layers:
 - Regime-specific contest functions:
