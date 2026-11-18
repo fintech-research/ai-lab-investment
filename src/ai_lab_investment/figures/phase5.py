@@ -157,13 +157,13 @@ def plot_dario_dilemma(
     # Unleveraged curve
     losses_unlev = []
     for li in lam_range:
-        r = va.dario_dilemma(fixed_true, li)
+        r = va.pure_power_dilemma(fixed_true, li)
         losses_unlev.append(r.get("value_loss_pct", np.nan) * 100)
 
     # Leveraged curve (ell = 0.40)
     losses_lev = []
     for li in lam_range:
-        r = va.dario_dilemma_leveraged(fixed_true, li, leverage=0.40)
+        r = va.pure_power_dilemma_leveraged(fixed_true, li, leverage=0.40)
         losses_lev.append(r.get("value_loss_pct", np.nan) * 100)
 
     fig, ax = plt.subplots(figsize=(7, 5))

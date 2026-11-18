@@ -10,6 +10,7 @@ All commands use `just` (task runner) and `uv` (Python package manager). `just h
 
 - `just check` — lint, format, typecheck (pre-commit + ty)
 - `just test` — pytest with coverage (deselects tests marked `slow`); `just test-slow` runs those too (they re-solve equilibria of the exact preemption game, minutes each)
+- `just dilemma-grid` — recompute the cached duopoly Dario's dilemma (`models/duopoly_dilemma.json`, about ten minutes on 8 workers)
 - `just duopoly-grid` — recompute the cached duopoly equilibria behind the paper, reusing the cached rent-equalization triggers (about an hour on 8 workers); `just duopoly-grid-fresh` re-solves those too (several hours)
 - `just run-pipeline` — full analysis pipeline (`uv run python -m ai_lab_investment`)
 - `just run-sweep` — ±25% parameter-perturbation robustness sweep (Internet Appendix E)
@@ -31,7 +32,7 @@ The duopoly model of record is the entry game in the exact primitives: `DuopolyM
 
 **Two model modes** — important distinction:
 - *Simple mode* (no training fraction): `SingleFirmModel.installed_value()`, `optimal_trigger_and_capacity()` — uses combined `A_L`/`A_H` from `parameters.py`. Used for basic H-regime analysis and comparative statics.
-- *Full model* (training-inference allocation): `installed_value_with_phi()` uses `_effective_revenue_coeff_single()`, matching paper eq-a-eff. The single-firm entry points `solve()`, `optimal_trigger_capacity_phi()` and `option_value_with_phi()` return the model of record (the exact piecewise problem, `piecewise_option.py`); the former solution is the nested approximation `pure_power_trigger_capacity_phi()` / `pure_power_option_value()` (and `DuopolyModel.pure_power_*` for the reduced-form game), which Dario's dilemma, robustness, calibration and most paper figures still use until issues #180 to #184 re-solve them (see `src/AGENTS.md`). The credit exhibits are at the model of record since #179 (`ValuationAnalysis.on_policy_credit`).
+- *Full model* (training-inference allocation): `installed_value_with_phi()` uses `_effective_revenue_coeff_single()`, matching paper eq-a-eff. The single-firm entry points `solve()`, `optimal_trigger_capacity_phi()` and `option_value_with_phi()` return the model of record (the exact piecewise problem, `piecewise_option.py`); the former solution is the nested approximation `pure_power_trigger_capacity_phi()` / `pure_power_option_value()` (and `DuopolyModel.pure_power_*` for the reduced-form game), which robustness, calibration and most paper figures still use until issues #181 to #184 re-solve them (see `src/AGENTS.md`). The credit exhibits are at the model of record since #179 (`ValuationAnalysis.on_policy_credit`) and Dario's dilemma since #180 (`models/belief_mismatch.py`, `ValuationAnalysis.dario_dilemma*`; the earlier version is `pure_power_dilemma*`).
 
 Paper figures use the full model, except the H-regime illustrations (option value, comparative statics, sample paths), which use the simple H-regime mode.
 

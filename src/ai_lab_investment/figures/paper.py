@@ -739,91 +739,132 @@ def create_growth_decomposition() -> plt.Figure:
 
 
 def create_investment_dilemma() -> plt.Figure:
-    """Value loss from belief mismatch (unleveraged and leveraged).
+    """Value loss from a belief mismatch in the model of record.
 
-    Delegates to ValuationAnalysis.dario_dilemma() and
-    dario_dilemma_leveraged(), matching Phase 1 corrections.
+    Panel (a): the single firm, with precommitted post-switch scale (solid)
+    and with scale chosen at the switch (dashed), and the pure-power
+    approximation of the earlier draft (dotted). Panel (b): the duopoly,
+    with the mistaken firm as the leader and as the follower of the
+    equilibrium in which one firm leads and the other follows. The belief
+    axis is logarithmic, so equal proportional errors are equidistant from
+    the truth. Delegates to ValuationAnalysis.dario_dilemma() and to the
+    cached duopoly dilemma (`belief_mismatch.load_dilemma_grid`).
     """
     from ..models import ModelParameters, ValuationAnalysis
+    from ..models.belief_mismatch import load_dilemma_grid, matched_pairs
 
-    p = ModelParameters()
-    va = ValuationAnalysis(p)
+    va = ValuationAnalysis(ModelParameters())
+    truth = 0.10
+    beliefs = np.geomspace(0.015, 0.50, 121)
 
-    fixed_true = 0.10
-    lam_range = np.linspace(0.005, 0.50, 40)
+    def losses(version: str) -> np.ndarray:
+        return np.array([
+            100.0 * va.dario_dilemma(truth, float(b), version)["value_loss_pct"]
+            for b in beliefs
+        ])
 
-    losses_unlev = []
-    for li in lam_range:
-        r = va.dario_dilemma(fixed_true, li)
-        losses_unlev.append(r.get("value_loss_pct", np.nan) * 100)
-
-    losses_lev = []
-    for li in lam_range:
-        r = va.dario_dilemma_leveraged(fixed_true, li, leverage=0.40)
-        losses_lev.append(r.get("value_loss_pct", np.nan) * 100)
-
-    fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
-
-    losses_unlev_arr = np.array(losses_unlev)
-    losses_lev_arr = np.array(losses_lev)
-
-    ax.plot(lam_range, losses_unlev_arr, "k-", linewidth=1.5, label=r"$\ell = 0$")
-    ax.plot(lam_range, losses_lev_arr, "k--", linewidth=1.5, label=r"$\ell = 0.40$")
-
-    ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
-
-    # Equal additive belief errors (-0.08 / +0.08 around lambda_true)
-    matched = [fixed_true - 0.08, fixed_true + 0.08]
-    matched_losses = [
-        va.dario_dilemma(fixed_true, li)["value_loss_pct"] * 100 for li in matched
-    ]
-    ax.plot(
-        matched,
-        matched_losses,
-        linestyle="none",
-        marker="o",
-        markerfacecolor="white",
-        markeredgecolor="k",
-        markeredgewidth=1.3,
-        markersize=7,
-        zorder=5,
-        label=r"Equal errors $\pm 0.08$ ($\ell = 0$)",
+    pure_power = np.array([
+        100.0 * va.pure_power_dilemma(truth, float(b))["value_loss_pct"]
+        for b in beliefs
+    ])
+    pairs = matched_pairs(truth)
+    marks = (
+        ("additive", "o", 10, r"Equal in $\lambda$: $0.02$, $0.18$"),
+        ("proportional_low", "s", 5, r"Equal in $\log\lambda$: $0.02$, $0.50$"),
+        ("horizon", "^", 5, r"Equal in $1/\lambda$: $0.069$, $0.18$"),
     )
 
-    high_loss = losses_unlev_arr > 10
-    if high_loss.any():
-        ax.fill_between(
-            lam_range,
-            0,
-            losses_unlev_arr,
-            where=high_loss.tolist(),
-            alpha=0.10,
-            color="red",
-            label=r"Loss > 10% ($\ell = 0$ curve)",
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.6), sharey=True)
+
+    ax1.plot(beliefs, losses("precommitted"), "k-", lw=1.5, label="Precommitted scale")
+    ax1.plot(
+        beliefs,
+        losses("unrestricted"),
+        color="#1f77b4",
+        ls="--",
+        lw=1.5,
+        label="Scale chosen at the switch",
+    )
+    ax1.plot(beliefs, pure_power, color="0.55", ls=":", lw=1.2, label="Pure power")
+
+    def mark(ax, loss_at) -> None:
+        for name, marker, size, label in marks:
+            pair = pairs[name]
+            ax.plot(
+                pair,
+                [loss_at(b) for b in pair],
+                linestyle="none",
+                marker=marker,
+                markerfacecolor="white",
+                markeredgecolor="k",
+                markeredgewidth=1.1,
+                markersize=size,
+                zorder=5,
+                label=label,
+            )
+
+    mark(
+        ax1,
+        lambda b: 100.0 * va.dario_dilemma(truth, b, "precommitted")["value_loss_pct"],
+    )
+
+    cells = [c for c in load_dilemma_grid()["cells"] if c["leverage"] == 0.0]
+
+    def curve(role: str) -> tuple[np.ndarray, np.ndarray]:
+        rows = sorted(
+            [
+                (c["lambda_invest"], 100.0 * c["value_loss_pct"])
+                for c in cells
+                if c["role"] == role
+            ]
+            + [(truth, 0.0)]
         )
+        return np.array([r[0] for r in rows]), np.array([r[1] for r in rows])
 
-    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
-    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
-    ax.legend(loc="upper center", framealpha=0.9)
-    ax.set_xlim(0, 0.5)
-    # Dynamic upper limit so the steep underinvestment branch is not clipped
-    y_max = np.nanmax([np.nanmax(losses_unlev_arr), np.nanmax(losses_lev_arr)])
-    ax.set_ylim(0, 1.1 * y_max)
-
-    ax.annotate(
-        "Underinvestment (conservative):\nlater entry, less training",
-        xy=(0.045, 16),
-        fontsize="small",
-        ha="left",
-        color="navy",
+    lam_lead, loss_lead = curve("leader")
+    lam_follow, loss_follow = curve("follower")
+    ax2.plot(
+        lam_lead, loss_lead, "k-", lw=1.5, marker=".", ms=4, label="Mistaken leader"
     )
-    ax.annotate(
-        "Overinvestment (aggressive):\nearlier entry, more training",
-        xy=(0.35, 8),
-        fontsize="small",
-        ha="center",
-        color="darkred",
+    ax2.plot(
+        lam_follow,
+        loss_follow,
+        color="#d62728",
+        ls="--",
+        lw=1.3,
+        marker="x",
+        ms=4,
+        label="Mistaken follower",
     )
+    mark(ax2, lambda b: float(np.interp(b, lam_lead, loss_lead)))
 
-    fig.tight_layout()
+    for ax, title in ((ax1, "(a) Single firm"), (ax2, "(b) Duopoly")):
+        ax.set_xscale("log")
+        ax.set_xticks([0.02, 0.05, 0.10, 0.20, 0.50])
+        ax.set_xticklabels(["0.02", "0.05", "0.10", "0.20", "0.50"])
+        ax.minorticks_off()
+        ax.set_xlim(0.015, 0.55)
+        ax.axvline(truth, color="0.6", linestyle=":", linewidth=0.8)
+        ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$ (log scale)")
+        ax.set_title(title, loc="left", fontweight="bold")
+    ax1.set_ylabel("Value loss (%)")
+    ax1.set_ylim(0, 54)
+
+    handles, labels = ax1.get_legend_handles_labels()
+    ax1.legend(handles[:3], labels[:3], loc="upper center", fontsize="x-small")
+    lead_handles, lead_labels = ax2.get_legend_handles_labels()
+    ax2.legend(
+        lead_handles[:2], lead_labels[:2], loc="upper center", fontsize="x-small"
+    )
+    fig.legend(
+        handles[3:],
+        labels[3:],
+        loc="lower center",
+        ncol=3,
+        fontsize="x-small",
+        frameon=False,
+        title="Matched pairs of beliefs around the truth, 0.10",
+        title_fontsize="x-small",
+    )
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
     return fig

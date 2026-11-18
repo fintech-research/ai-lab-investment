@@ -189,16 +189,22 @@ def _headline_objects(params: ModelParameters) -> Headline:
     duopoly = DuopolyModel(params, leverage=0.0)
 
     lam_true = params.lam
-    conservative = valuation.dario_dilemma(lam_true, DILEMMA_MISMATCH[0] * lam_true)
-    aggressive = valuation.dario_dilemma(lam_true, DILEMMA_MISMATCH[1] * lam_true)
+    conservative = valuation.pure_power_dilemma(
+        lam_true, DILEMMA_MISMATCH[0] * lam_true
+    )
+    aggressive = valuation.pure_power_dilemma(lam_true, DILEMMA_MISMATCH[1] * lam_true)
     loss_conservative = float(conservative["value_loss_pct"])
     loss_aggressive = float(aggressive["value_loss_pct"])
-    matched_cons = valuation.dario_dilemma(lam_true, DILEMMA_MATCHED[0] * lam_true)
-    matched_aggr = valuation.dario_dilemma(lam_true, DILEMMA_MATCHED[1] * lam_true)
+    matched_cons = valuation.pure_power_dilemma(lam_true, DILEMMA_MATCHED[0] * lam_true)
+    matched_aggr = valuation.pure_power_dilemma(lam_true, DILEMMA_MATCHED[1] * lam_true)
     loss_cons_matched = float(matched_cons["value_loss_pct"])
     loss_aggr_matched = float(matched_aggr["value_loss_pct"])
-    w3_coarse = valuation.dilemma_third_derivative(lam_true, W3_STEPS[1] * lam_true)
-    w3_fine = valuation.dilemma_third_derivative(lam_true, W3_STEPS[0] * lam_true)
+    w3_coarse = valuation.pure_power_dilemma_third_derivative(
+        lam_true, W3_STEPS[1] * lam_true
+    )
+    w3_fine = valuation.pure_power_dilemma_third_derivative(
+        lam_true, W3_STEPS[0] * lam_true
+    )
 
     gap = valuation.capacity_gap_decomposition(np.array(GAP_K_FRACS))
     gap_low, gap_high = (float(x) for x in gap["gap_fraction"])
