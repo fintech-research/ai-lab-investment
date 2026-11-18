@@ -15,13 +15,22 @@ from typing import Any
 import numpy as np
 
 from .base_model import SingleFirmModel
-from .duopoly import DuopolyModel
+from .duopoly import DEFAULT_RECOVERY_RULE, DuopolyModel, cached_equilibrium
 from .parameters import ModelParameters
 
-# Interim pin (issue #176): every single-firm policy and option value used in
-# this module is the pure-power approximation (`pure_power_*`), so the credit
-# and dilemma numbers of the present draft stay reproducible. Issues #177,
-# #179 and #180 re-solve them under the model of record (`SingleFirmModel.solve`).
+# Interim pins (issue #176). The credit exhibits are at the model of record
+# since issue #179: `on_policy_credit` evaluates them at the single firm's
+# precommitted-scale policy and at the duopoly's first investment, and the
+# credit primitives (`credit_metrics`, `credit_table`, `credit_spread`,
+# `default_probability`) take an explicit policy. Still at the pure-power
+# approximation (`pure_power_*`), so the present draft's numbers stay
+# reproducible: Dario's dilemma and its levered and duopoly variants (#180),
+# `two_period_dynamic_phi` and `fixed_pie_robustness` (#182), and the
+# growth-option and capacity-gap decompositions behind Internet Appendix G
+# (named by no sub-issue; #183 or #184).
+
+ON_POLICY_LEVERAGES: tuple[float, ...] = (0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.40, 0.70)
+"""Leverage grid of the on-policy credit table (issue #179)."""
 
 CREDIT_COUPON_RATE = 0.05
 """Coupon rate on debt used throughout the credit-risk analysis."""
@@ -63,14 +72,18 @@ class ValuationAnalysis:
     risk metrics, and scenario analyses.
     """
 
-    def __init__(self, params: ModelParameters, recovery_rule: str = "net"):
+    def __init__(
+        self, params: ModelParameters, recovery_rule: str = DEFAULT_RECOVERY_RULE
+    ):
         """Initialize the analysis.
 
         Args:
             params: Model parameters.
             recovery_rule: Recovery rule of the credit block (see
-                `DuopolyModel.recovery_value`); "gross" reproduces the
-                credit numbers of the draft that preceded issue #177.
+                `DuopolyModel.recovery_value`); "net" is the rule of issue
+                #177, without the liquidator's option to shut the inference
+                business down, and "gross" reproduces the credit numbers of
+                the draft that preceded #177.
         """
         self.params = params
         self.recovery_rule = recovery_rule
@@ -430,6 +443,254 @@ class ValuationAnalysis:
             "credit_spread": spreads,
             "default_probability": default_probs,
         }
+
+    # ------------------------------------------------------------------
+    # Credit at the model's own policies (issue #179)
+    # ------------------------------------------------------------------
+
+    def single_firm_policy(self) -> tuple[float, float, float]:
+        """(X*, K*, phi*) of the single firm, precommitted post-switch scale.
+
+        The model of record (`SingleFirmModel.optimal_trigger_capacity_phi`).
+        With scale chosen at the switch the single firm waits at baseline,
+        so this is the only pre-switch policy of the single firm at which
+        debt can be issued there.
+        """
+        return SingleFirmModel(self.params).optimal_trigger_capacity_phi()
+
+    def on_policy_credit(
+        self,
+        leverages: tuple[float, ...] = ON_POLICY_LEVERAGES,
+        horizon: float = 5.0,
+        conventions: tuple[str, ...] = ("par", "fair"),
+        roles: tuple[str, ...] = ("single_firm", "leader", "follower"),
+    ) -> list[dict[str, Any]]:
+        """Credit objects at the model's own policies, across leverage.
+
+        One row per (role, debt convention, leverage), with debt issued at
+        the role's entry demand and priced with the exact claims of the
+        model of record (`LeveredPreemptionGame`: coupled regime-switching
+        boundary, default possible after the switch, the recovery rule of
+        this analysis):
+
+        - ``"single_firm"``: the precommitted-scale policy (X*, K*, phi*)
+          of `single_firm_policy`, an installed monopolist
+          (`LeveredPreemptionGame.installed_credit`).
+        - ``"leader"``: the duopoly's first investment, the leader's
+          (X_L, K_L, phi_L) of the cached unlevered equilibrium
+          (`duopoly.cached_equilibrium`) held fixed across leverage; the
+          follower best-responds at each leverage.
+        - ``"follower"``: the follower's post-switch entry (X_F, K_F, all
+          capacity in training) against that leader, re-optimized at each
+          leverage, with the absorbing-regime claims (zero recovery after
+          the switch).
+        - ``"single_firm_closed_form"`` (not in the default roles): the
+          single firm priced with the single-boundary closed forms of
+          `DuopolyModel` (`credit_metrics`), the objects of Proposition 2.
+
+        At zero leverage the boundary is the shutdown boundary and the
+        spread, recovery rate and coupon rate are the limits as leverage
+        goes to zero (evaluated at ZERO_LEVERAGE_LIMIT). The default
+        probability is the first passage to the boundary within ``horizon``
+        years under the drift of the regime in which the firm enters (mu_L
+        for the single firm and the leader, mu_H for the follower), with
+        the regime switch omitted: an upper bound on the pre-switch
+        probability for the first two.
+
+        Returns:
+            Rows with keys ``role``, ``debt``, ``leverage``, ``X`` (entry
+            demand), ``K``, ``phi``, ``X_D``, ``distance`` (X / X_D),
+            ``recovery_rate`` (recovery over the default-free claim
+            c_D / r), ``spread`` (c_D / D - r), ``coupon_rate`` (c_D over the
+            proceeds) and ``default_probability``.
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        p = self.params
+        rows: list[dict[str, Any]] = []
+        X_s, K_s, phi_s = self.single_firm_policy()
+        if any(role in roles for role in ("leader", "follower")):
+            record = cached_equilibrium(lam=p.lam)
+            X_L, K_L, phi_L = record["X_L"], record["K_L"], record["phi_L"]
+
+        def row(role, debt, lev, X, K, phi, X_D, recovery_rate, spread, rate, regime):
+            return {
+                "role": role,
+                "debt": debt,
+                "leverage": lev,
+                "X": X,
+                "K": K,
+                "phi": phi,
+                "X_D": X_D,
+                "distance": X / X_D,
+                "recovery_rate": recovery_rate,
+                "spread": spread,
+                "coupon_rate": rate,
+                "default_probability": self._first_passage_probability(
+                    X, X_D, regime, horizon
+                ),
+            }
+
+        for debt in conventions:
+            for lev in leverages:
+                if "single_firm_closed_form" in roles:
+                    m = self.credit_metrics(lev, X_s, K_s, phi_s, debt, horizon)
+                    rows.append(
+                        row(
+                            "single_firm_closed_form",
+                            debt,
+                            lev,
+                            X_s,
+                            K_s,
+                            phi_s,
+                            m["X_D"],
+                            m["recovery_rate"],
+                            m["spread"],
+                            m["coupon_rate"],
+                            "L",
+                        )
+                    )
+                priced = max(lev, self.ZERO_LEVERAGE_LIMIT)
+                game = LeveredPreemptionGame(
+                    p,
+                    "envelope",
+                    priced,
+                    CREDIT_COUPON_RATE,
+                    CREDIT_BANKRUPTCY_COST,
+                    debt,
+                    recovery_rule=self.recovery_rule,
+                )
+                # At zero leverage the boundary is the shutdown boundary of
+                # the unlevered claims.
+                bare = (
+                    game
+                    if lev > 0
+                    else LeveredPreemptionGame(
+                        p,
+                        "envelope",
+                        0.0,
+                        CREDIT_COUPON_RATE,
+                        CREDIT_BANKRUPTCY_COST,
+                        debt,
+                        recovery_rule=self.recovery_rule,
+                    )
+                )
+                if "single_firm" in roles:
+                    c = game.installed_credit(K_s, phi_s, X_s)
+                    rows.append(
+                        row(
+                            "single_firm",
+                            debt,
+                            lev,
+                            X_s,
+                            K_s,
+                            phi_s,
+                            bare.installed_credit(K_s, phi_s, X_s)["X_default"],
+                            c["recovery"] / (c["coupon"] / p.r),
+                            c["spread"],
+                            c["coupon_rate"],
+                            "L",
+                        )
+                    )
+                if "leader" not in roles and "follower" not in roles:
+                    continue
+                sub, bare_sub = game.subgame(K_L, phi_L), bare.subgame(K_L, phi_L)
+                if "leader" in roles:
+                    c = sub.leader_credit(X_L)
+                    rows.append(
+                        row(
+                            "leader",
+                            debt,
+                            lev,
+                            X_L,
+                            K_L,
+                            phi_L,
+                            bare_sub.leader_credit(X_L)["X_default"],
+                            c["recovery"] / (c["coupon"] / p.r),
+                            c["spread"],
+                            c["coupon_rate"],
+                            "L",
+                        )
+                    )
+                if "follower" in roles:
+                    entry = bare_sub.post_switch
+                    f = game.follower_entry_credit(sub.post_switch)
+                    spread = f["follower_spread"]
+                    rows.append(
+                        row(
+                            "follower",
+                            debt,
+                            lev,
+                            entry.X_F,
+                            entry.K_F,
+                            1.0,
+                            bare.follower_entry_credit(entry)["X_D_follower"],
+                            0.0,
+                            spread,
+                            CREDIT_COUPON_RATE if debt == "par" else p.r + spread,
+                            "H",
+                        )
+                    )
+        return rows
+
+    def credit_phi_profile(
+        self,
+        phis: np.ndarray,
+        leverage: float = 0.40,
+        debt: str = "par",
+        roles: tuple[str, ...] = ("single_firm", "leader"),
+    ) -> dict[str, dict[str, np.ndarray]]:
+        """Recovery rate, spread and boundary against the training fraction.
+
+        Each role keeps its entry demand and capacity from `on_policy_credit`
+        (the single firm's (X*, K*), the leader's (X_L, K_L)) and only phi
+        varies, so the profile is a comparative static at a fixed scale and
+        not a sequence of optimal policies. Exact claims, debt issued at the
+        entry demand.
+
+        Returns:
+            For each role, arrays ``phi``, ``recovery_rate`` (fraction of the
+            default-free claim), ``spread`` and ``X_D``, plus the scalar
+            ``phi_policy`` (phi* or phi_L) under that key.
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        p = self.params
+        game = LeveredPreemptionGame(
+            p,
+            "envelope",
+            leverage,
+            CREDIT_COUPON_RATE,
+            CREDIT_BANKRUPTCY_COST,
+            debt,
+            recovery_rule=self.recovery_rule,
+        )
+        X_s, K_s, phi_s = self.single_firm_policy()
+        record = cached_equilibrium(lam=p.lam)
+        policies = {
+            "single_firm": (X_s, K_s, phi_s),
+            "leader": (record["X_L"], record["K_L"], record["phi_L"]),
+        }
+        out: dict[str, dict[str, np.ndarray]] = {}
+        for role in roles:
+            X, K, phi_policy = policies[role]
+            rec, spread, X_D = (np.full(len(phis), np.nan) for _ in range(3))
+            for i, phi in enumerate(phis):
+                if role == "single_firm":
+                    c = game.installed_credit(K, float(phi), X)
+                else:
+                    c = game.subgame(K, float(phi)).leader_credit(X)
+                rec[i] = c["recovery"] / (c["coupon"] / p.r)
+                spread[i] = c["spread"]
+                X_D[i] = c["X_default"]
+            out[role] = {
+                "phi": np.asarray(phis, dtype=float),
+                "recovery_rate": rec,
+                "spread": spread,
+                "X_D": X_D,
+                "phi_policy": np.asarray(phi_policy),
+            }
+        return out
 
     # ------------------------------------------------------------------
     # Dario dilemma

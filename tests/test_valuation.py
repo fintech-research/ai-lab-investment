@@ -178,26 +178,240 @@ class TestCreditRisk:
         assert abs(p_mc - p_formula) < 0.006
 
 
+# (role, debt, leverage) -> (X_D, spread bps, 5-year default probability %,
+# recovery % of the claim): the on-policy credit table of issue #179.
+ON_POLICY_CREDIT = {
+    ("single_firm", "par", 0.00): (0.0014323, 22.17, 0.1565, 0.000),
+    ("leader", "par", 0.00): (0.0007002, 43.61, 0.8375, 0.000),
+    ("follower", "par", 0.00): (0.0043010, 3.77, 0.0010, 0.000),
+    ("single_firm", "par", 0.01): (0.0014353, 22.27, 0.1585, 0.000),
+    ("leader", "par", 0.01): (0.0007009, 43.69, 0.8424, 0.082),
+    ("follower", "par", 0.01): (0.0043431, 3.85, 0.0011, 0.000),
+    ("single_firm", "par", 0.05): (0.0014473, 22.69, 0.1667, 0.000),
+    ("leader", "par", 0.05): (0.0007040, 44.02, 0.8619, 0.407),
+    ("follower", "par", 0.05): (0.0045163, 4.19, 0.0014, 0.000),
+    ("single_firm", "par", 0.10): (0.0014623, 23.22, 0.1774, 0.000),
+    ("leader", "par", 0.10): (0.0007079, 44.43, 0.8868, 0.808),
+    ("follower", "par", 0.10): (0.0047445, 4.67, 0.0020, 0.000),
+    ("single_firm", "par", 0.15): (0.0014773, 23.76, 0.1887, 0.000),
+    ("leader", "par", 0.15): (0.0007117, 44.87, 0.9120, 1.127),
+    ("follower", "par", 0.15): (0.0049869, 5.20, 0.0029, 0.000),
+    ("single_firm", "par", 0.20): (0.0014923, 24.29, 0.2004, 0.051),
+    ("leader", "par", 0.20): (0.0007156, 45.39, 0.9377, 1.221),
+    ("follower", "par", 0.20): (0.0052449, 5.79, 0.0040, 0.000),
+    ("single_firm", "par", 0.40): (0.0015523, 26.41, 0.2531, 0.679),
+    ("leader", "par", 0.40): (0.0007308, 47.43, 1.0443, 1.667),
+    ("follower", "par", 0.40): (0.0064723, 9.00, 0.0153, 0.000),
+    ("single_firm", "par", 0.70): (0.0016423, 29.73, 0.3504, 1.763),
+    ("leader", "par", 0.70): (0.0007529, 50.50, 1.2142, 2.304),
+    ("follower", "par", 0.70): (0.0092545, 18.45, 0.1087, 0.000),
+    ("single_firm", "fair", 0.00): (0.0014323, 22.17, 0.1565, 0.000),
+    ("leader", "fair", 0.00): (0.0007002, 43.61, 0.8375, 0.000),
+    ("follower", "fair", 0.00): (0.0043010, 3.77, 0.0010, 0.000),
+    ("single_firm", "fair", 0.01): (0.0014397, 22.42, 0.1614, 0.000),
+    ("leader", "fair", 0.01): (0.0007021, 43.82, 0.8499, 0.203),
+    ("follower", "fair", 0.01): (0.0043706, 3.92, 0.0011, 0.000),
+    ("single_firm", "fair", 0.05): (0.0014690, 23.46, 0.1824, 0.000),
+    ("leader", "fair", 0.05): (0.0007100, 44.67, 0.9006, 1.003),
+    ("follower", "fair", 0.05): (0.0046492, 4.57, 0.0019, 0.000),
+    ("single_firm", "fair", 0.10): (0.0015058, 24.77, 0.2115, 0.159),
+    ("leader", "fair", 0.10): (0.0007199, 45.95, 0.9672, 1.381),
+    ("follower", "fair", 0.10): (0.0049978, 5.47, 0.0034, 0.000),
+    ("single_firm", "fair", 0.15): (0.0015427, 26.07, 0.2440, 0.563),
+    ("leader", "fair", 0.15): (0.0007298, 47.28, 1.0373, 1.694),
+    ("follower", "fair", 0.15): (0.0053470, 6.47, 0.0057, 0.000),
+    ("single_firm", "fair", 0.20): (0.0015796, 27.40, 0.2802, 1.012),
+    ("leader", "fair", 0.20): (0.0007398, 48.63, 1.1110, 2.012),
+    ("follower", "fair", 0.20): (0.0056967, 7.57, 0.0092, 0.000),
+    ("single_firm", "fair", 0.40): (0.0017282, 33.10, 0.4666, 2.706),
+    ("leader", "fair", 0.40): (0.0007799, 54.30, 1.4449, 3.216),
+    ("follower", "fair", 0.40): (0.0070992, 13.06, 0.0437, 0.000),
+    ("single_firm", "fair", 0.70): (0.0019543, 42.98, 0.9015, 4.700),
+    ("leader", "fair", 0.70): (0.0008410, 63.67, 2.0745, 4.774),
+    ("follower", "fair", 0.70): (0.0091914, 24.81, 0.2256, 0.000),
+}
+
+
+@pytest.fixture(scope="module")
+def on_policy_rows():
+    return ValuationAnalysis(ModelParameters()).on_policy_credit(
+        roles=("single_firm", "single_firm_closed_form", "leader", "follower")
+    )
+
+
+def _select(rows, role, debt):
+    return [r for r in rows if r["role"] == role and r["debt"] == debt]
+
+
 class TestPublishedCreditLevels:
-    """Pin the credit levels of fig-credit-risk at its evaluation point.
+    """The on-policy credit table and fig-credit-risk (issue #179).
 
-    The formula itself is Monte-Carlo verified above; these pins guard the
-    levels against silent drift. Everything here is a deterministic
-    closed-form evaluation at the figure's own conventions
-    (X = CREDIT_RISK_DEMAND_LEVEL, K = 1, phi = 0.5, par debt at r_c).
-
-    Re-pinned in issue #177 for mechanics: with recovery net of operating
-    costs the spread is 28/46/79/147 bps at ell = 0.05/0.20/0.40/0.70
-    (0/12/41/97 under the gross rule of the earlier draft, which
-    `recovery_rule="gross"` still reproduces). The evaluation point and
-    the levels the paper publishes are settled in issue #179.
+    Debt issued at each role's own entry: the single firm's
+    precommitted-scale policy, the duopoly's first investment X_L (leader's
+    policy held at the unlevered equilibrium) and the follower's
+    post-switch entry; exact claims; default recovery rule
+    ("net_with_shutdown"); leverage grid ON_POLICY_LEVERAGES; both debt
+    conventions. `_valuation.qmd`, Credit Risk Analysis, and Internet
+    Appendix H quote these numbers.
     """
 
-    def test_spread_levels_at_quoted_leverages(self, va):
-        assert va.credit_spread(leverage=0.05) * 1e4 == pytest.approx(27.66, abs=0.2)
-        assert va.credit_spread(leverage=0.20) * 1e4 == pytest.approx(45.57, abs=0.2)
-        assert va.credit_spread(leverage=0.40) * 1e4 == pytest.approx(78.78, abs=0.2)
-        assert va.credit_spread(leverage=0.70) * 1e4 == pytest.approx(146.78, abs=0.5)
+    def test_grid(self, on_policy_rows):
+        from ai_lab_investment.models.valuation import ON_POLICY_LEVERAGES
+
+        assert ON_POLICY_LEVERAGES == (0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.40, 0.70)
+        for role in ("single_firm", "single_firm_closed_form", "leader", "follower"):
+            for debt in ("par", "fair"):
+                rows = _select(on_policy_rows, role, debt)
+                assert [r["leverage"] for r in rows] == list(ON_POLICY_LEVERAGES)
+
+    @pytest.mark.parametrize("key", sorted(ON_POLICY_CREDIT))
+    def test_levels(self, on_policy_rows, key):
+        role, debt, lev = key
+        (row,) = [
+            r for r in _select(on_policy_rows, role, debt) if r["leverage"] == lev
+        ]
+        X_D, spread, pd, recovery = ON_POLICY_CREDIT[key]
+        assert row["X_D"] == pytest.approx(X_D, rel=2e-4)
+        assert 1e4 * row["spread"] == pytest.approx(spread, abs=0.02)
+        assert 100 * row["default_probability"] == pytest.approx(pd, abs=2e-4)
+        assert 100 * row["recovery_rate"] == pytest.approx(recovery, abs=2e-3)
+
+    def test_entry_policies(self, on_policy_rows):
+        (sf,) = [
+            r
+            for r in _select(on_policy_rows, "single_firm", "par")
+            if r["leverage"] == 0
+        ]
+        assert (sf["X"], sf["K"], sf["phi"]) == pytest.approx(
+            (0.009258, 0.015784, 0.7009), rel=1e-3
+        )
+        (lead,) = [
+            r for r in _select(on_policy_rows, "leader", "par") if r["leverage"] == 0
+        ]
+        assert (lead["X"], lead["K"], lead["phi"]) == pytest.approx(
+            (0.003364, 0.004163, 0.6791), rel=1e-3
+        )
+        assert lead["distance"] == pytest.approx(4.805, abs=1e-3)
+        (fol,) = [
+            r for r in _select(on_policy_rows, "follower", "par") if r["leverage"] == 0
+        ]
+        assert fol["X"] == pytest.approx(0.04429, rel=1e-3)
+        assert fol["distance"] == pytest.approx(10.30, abs=0.01)
+
+    def test_spread_is_positive_without_debt_and_rises_with_leverage(
+        self, on_policy_rows
+    ):
+        """Shutdown risk alone prices the debt: the spread on an
+        infinitesimal issue is positive for every role, and leverage up to
+        0.40 adds at most a quarter to it for the single firm and the leader."""
+        for role in ("single_firm", "leader", "follower"):
+            for debt in ("par", "fair"):
+                rows = _select(on_policy_rows, role, debt)
+                spreads = np.array([r["spread"] for r in rows])
+                pds = np.array([r["default_probability"] for r in rows])
+                assert spreads[0] > 0
+                assert np.all(np.diff(spreads) > 0)
+                assert np.all(np.diff(pds) > 0)
+                if role != "follower":
+                    at_040 = rows[6]["spread"]
+                    assert at_040 / spreads[0] < 1.5
+
+    def test_fair_debt_is_riskier_than_par_debt(self, on_policy_rows):
+        for role in ("single_firm", "leader", "follower"):
+            par = _select(on_policy_rows, role, "par")
+            fair = _select(on_policy_rows, role, "fair")
+            for a, b in zip(par[1:], fair[1:], strict=True):
+                assert b["spread"] > a["spread"]
+                # The follower re-optimizes, and the par subsidy raises its
+                # capacity, so only the fixed policies compare boundaries.
+                if role != "follower":
+                    assert b["X_D"] > a["X_D"]
+            assert fair[6]["coupon_rate"] == pytest.approx(0.12 + fair[6]["spread"])
+
+    def test_closed_form_understates_the_single_firm_spread(self, on_policy_rows):
+        """The single-boundary closed forms (Proposition 2) put X_D about 3%
+        higher than the coupled boundary and omit default after the switch,
+        so they understate the spread (17 against 22 bps without debt)."""
+        exact = _select(on_policy_rows, "single_firm", "par")
+        closed = _select(on_policy_rows, "single_firm_closed_form", "par")
+        assert 1e4 * closed[0]["spread"] == pytest.approx(16.78, abs=0.02)
+        assert 1e4 * closed[6]["spread"] == pytest.approx(19.93, abs=0.02)
+        assert 1e4 * closed[7]["spread"] == pytest.approx(22.52, abs=0.02)
+        for e, c in zip(exact, closed, strict=True):
+            assert 1.02 < c["X_D"] / e["X_D"] < 1.04
+            assert c["spread"] < e["spread"]
+
+    def test_leader_policy_held_fixed_matches_the_cached_equilibria(
+        self, on_policy_rows
+    ):
+        """Under fairly priced debt the re-solved equilibria at leverage 0.20
+        and 0.40 change the leader's policy by less than 1%, so the table's
+        fixed-policy rows are within a few tenths of a basis point of the
+        equilibrium spread; under par debt the subsidy moves the policy."""
+        from ai_lab_investment.models.duopoly import cached_equilibrium
+
+        fair = {r["leverage"]: r for r in _select(on_policy_rows, "leader", "fair")}
+        for lev in (0.20, 0.40):
+            rec = cached_equilibrium(leverage=lev, debt="fair")
+            assert rec["spread"] == pytest.approx(fair[lev]["spread"], abs=1e-4)
+            assert rec["X_D_leader"] == pytest.approx(fair[lev]["X_D"], rel=0.01)
+        par = cached_equilibrium(leverage=0.40, debt="par")
+        assert par["X_L"] > 1.3 * fair[0.40]["X"]
+
+
+class TestCreditPhiProfile:
+    """fig-credit-risk panels (c) and (d): phi varied at a fixed scale."""
+
+    @pytest.fixture(scope="class")
+    def profiles(self):
+        va = ValuationAnalysis(ModelParameters())
+        phis = np.linspace(0.30, 0.95, 27)
+        return {
+            debt: va.credit_phi_profile(phis, 0.40, debt) for debt in ("par", "fair")
+        }
+
+    def test_recovery_weakly_increasing_in_phi_up_to_the_cap(self, profiles):
+        for debt in ("par", "fair"):
+            for role in ("single_firm", "leader"):
+                prof = profiles[debt][role]
+                rec = prof["recovery_rate"]
+                assert np.all(np.diff(rec) >= -1e-9)
+                assert np.all(rec[prof["phi"] <= 0.60] == 0.0)
+                assert rec[-1] > 0.03
+
+    def test_spread_falls_in_phi_through_the_policy(self, profiles):
+        """Around the policies more training lowers the spread at a fixed
+        scale: default risk and loss given default fall together."""
+        for debt in ("par", "fair"):
+            for role in ("single_firm", "leader"):
+                prof = profiles[debt][role]
+                phi, spread = prof["phi"], prof["spread"]
+                band = (phi >= 0.30) & (phi <= 0.75)
+                assert np.all(np.diff(spread[band]) < 0)
+
+    def test_net_rule_has_zero_recovery_at_the_policies(self):
+        va = ValuationAnalysis(ModelParameters(), recovery_rule="net")
+        prof = va.credit_phi_profile(np.array([0.6791, 0.7009]), 0.40, "par")
+        assert np.all(prof["single_firm"]["recovery_rate"] == 0.0)
+        assert np.all(prof["leader"]["recovery_rate"] == 0.0)
+
+
+class TestOffPolicyStressPoint:
+    """The evaluation point of the earlier drafts' fig-credit-risk,
+    (X, K, phi) = (0.10, 1, 0.5), kept so its numbers stay reproducible:
+    no firm of the model is there (X is 11 times X*, K 63 times K*). The
+    paper no longer quotes it (issue #179)."""
+
+    def test_levels_under_the_177_rule(self, params):
+        net = ValuationAnalysis(params, recovery_rule="net")
+        assert net.credit_spread(leverage=0.05) * 1e4 == pytest.approx(27.66, abs=0.2)
+        assert net.credit_spread(leverage=0.20) * 1e4 == pytest.approx(45.57, abs=0.2)
+        assert net.credit_spread(leverage=0.40) * 1e4 == pytest.approx(78.78, abs=0.2)
+        assert net.credit_spread(leverage=0.70) * 1e4 == pytest.approx(146.78, abs=0.5)
+
+    def test_levels_under_the_default_rule(self, va):
+        assert va.credit_spread(leverage=0.40) * 1e4 == pytest.approx(76.4, abs=0.2)
+        assert va.credit_spread(leverage=0.70) * 1e4 == pytest.approx(141.8, abs=0.5)
 
     def test_earlier_draft_levels_under_gross_recovery(self, params):
         """The draft's 'approximately 40 bps at ell = 0.40 and 100 bps
@@ -211,50 +425,36 @@ class TestPublishedCreditLevels:
         assert gross.credit_spread(leverage=0.15) * 1e4 == pytest.approx(3.07, abs=0.1)
 
     def test_default_probability_levels(self, va):
-        """The 5-year default probability rises from approximately 0.6%
-        at low leverage to approximately 13% at ell = 0.70 (unchanged by
-        issue #177: the levered boundary did not move). The figure's
-        leverage grid starts at 0.05."""
+        """Unchanged by the recovery rule: the boundary does not depend on it."""
         pd = va.default_probability
         X = va.CREDIT_RISK_DEMAND_LEVEL
         assert pd(X, 1.0, 0.05) * 100 == pytest.approx(0.627, abs=0.01)
         assert pd(X, 1.0, 0.40) * 100 == pytest.approx(4.847, abs=0.02)
         assert pd(X, 1.0, 0.70) * 100 == pytest.approx(12.979, abs=0.05)
 
-    def test_figure_grid_endpoints(self, va):
-        """fig-credit-risk plots credit_spread_curve() on
-        linspace(0.05, 0.70, 30); pin both endpoints of both panels."""
-        result = va.credit_spread_curve(np.linspace(0.05, 0.70, 30))
-        spreads_bps = result["credit_spread"] * 1e4
-        pds_pct = result["default_probability"] * 100
-        assert spreads_bps[0] == pytest.approx(27.66, abs=0.2)
-        assert spreads_bps[-1] == pytest.approx(146.78, abs=0.5)
-        assert pds_pct[0] == pytest.approx(0.627, abs=0.01)
-        assert pds_pct[-1] == pytest.approx(12.979, abs=0.05)
-        # Panel shapes: both strictly increasing.
-        assert np.all(np.diff(spreads_bps) > 0)
-        assert np.all(np.diff(pds_pct) > 0)
-
 
 CREDIT_TABLE_LEVERAGES = (0.0, 0.01, 0.05, 0.20, 0.40, 0.70)
 
-# leverage -> (X_D par, spread par bps, X_D fair, spread fair bps)
+# leverage -> (X_D par, spread par bps, X_D fair, spread fair bps,
+# recovery rate par, recovery rate fair); closed forms, default rule.
 CREDIT_TABLE_RECORD = {
-    0.0: (0.001478, 16.78, 0.001478, 16.78),
-    0.01: (0.001482, 16.87, 0.001486, 16.99),
-    0.05: (0.001494, 17.20, 0.001516, 17.81),
-    0.20: (0.001540, 18.50, 0.001630, 21.14),
-    0.40: (0.001602, 20.31, 0.001782, 26.16),
-    0.70: (0.001695, 23.22, 0.002014, 35.05),
+    0.0: (0.001478, 16.78, 0.001478, 16.78, 0.0000, 0.0000),
+    0.01: (0.001482, 16.86, 0.001486, 16.96, 0.0005, 0.0012),
+    0.05: (0.001494, 17.16, 0.001516, 17.71, 0.0025, 0.0060),
+    0.20: (0.001540, 18.31, 0.001630, 20.67, 0.0097, 0.0217),
+    0.40: (0.001602, 19.93, 0.001782, 25.12, 0.0182, 0.0385),
+    0.70: (0.001695, 22.52, 0.002013, 32.94, 0.0295, 0.0574),
 }
 CREDIT_TABLE_PURE_POWER = {
-    0.0: (0.000886, 24.63, 0.000886, 24.63),
-    0.01: (0.000887, 24.71, 0.000889, 24.83),
-    0.05: (0.000892, 25.04, 0.000901, 25.63),
-    0.20: (0.000910, 26.27, 0.000946, 28.77),
-    0.40: (0.000935, 27.97, 0.001006, 33.33),
-    0.70: (0.000971, 30.64, 0.001097, 41.06),
+    0.0: (0.000886, 24.63, 0.000886, 24.63, 0.0000, 0.0000),
+    0.01: (0.000887, 24.71, 0.000889, 24.81, 0.0003, 0.0008),
+    0.05: (0.000892, 24.99, 0.000901, 25.52, 0.0017, 0.0040),
+    0.20: (0.000910, 26.10, 0.000946, 28.33, 0.0064, 0.0150),
+    0.40: (0.000935, 27.62, 0.001006, 32.39, 0.0124, 0.0275),
+    0.70: (0.000971, 30.00, 0.001096, 39.21, 0.0205, 0.0429),
 }
+# Same, par spread (bps) under the #177 rule ("net"), which has zero recovery.
+CREDIT_TABLE_RECORD_NET = {0.0: 16.78, 0.20: 18.50, 0.40: 20.31, 0.70: 23.22}
 
 
 class TestCreditPrimitivesTable:
@@ -274,17 +474,30 @@ class TestCreditPrimitivesTable:
         rows = va.credit_table(X, K, phi, CREDIT_TABLE_LEVERAGES)
         assert [row["leverage"] for row in rows] == list(CREDIT_TABLE_LEVERAGES)
         for row in rows:
-            xd_par, s_par, xd_fair, s_fair = expected[row["leverage"]]
+            xd_par, s_par, xd_fair, s_fair, rec_par, rec_fair = expected[
+                row["leverage"]
+            ]
             assert row["par_X_D"] == pytest.approx(xd_par, abs=1e-6)
             assert row["fair_X_D"] == pytest.approx(xd_fair, abs=1e-6)
             assert row["par_spread"] * 1e4 == pytest.approx(s_par, abs=0.02)
             assert row["fair_spread"] * 1e4 == pytest.approx(s_fair, abs=0.02)
-            # Recovery is zero at the firm's own policy at every leverage.
-            assert row["par_recovery_rate"] == 0.0
-            assert row["fair_recovery_rate"] == 0.0
+            # Recovery is a few percent of the claim at most, rising from
+            # zero as leverage goes to zero.
+            assert row["par_recovery_rate"] == pytest.approx(rec_par, abs=1e-4)
+            assert row["fair_recovery_rate"] == pytest.approx(rec_fair, abs=1e-4)
             # Fairly priced debt pays r plus the spread on its proceeds.
             assert row["fair_coupon_rate"] == pytest.approx(
                 params.r + row["fair_spread"], rel=1e-9
+            )
+
+    def test_net_rule_has_zero_recovery(self, params):
+        X, K, phi = SingleFirmModel(params).optimal_trigger_capacity_phi()
+        net = ValuationAnalysis(params, recovery_rule="net")
+        rows = net.credit_table(X, K, phi, tuple(CREDIT_TABLE_RECORD_NET))
+        for row in rows:
+            assert row["par_recovery_rate"] == 0.0 or row["leverage"] == 0.0
+            assert row["par_spread"] * 1e4 == pytest.approx(
+                CREDIT_TABLE_RECORD_NET[row["leverage"]], abs=0.02
             )
 
     def test_table_columns_increase_in_leverage(self, va, params):
@@ -301,8 +514,8 @@ class TestCreditPrimitivesTable:
         """At the figure's off-policy point no coupon raises 70% of I(K)."""
         (row,) = va.credit_table(0.10, 1.0, 0.5, (0.70,))
         assert np.isnan(row["fair_spread"])
-        assert row["par_spread"] * 1e4 == pytest.approx(146.78, abs=0.5)
-        assert row["par_recovery_rate"] == pytest.approx(0.0413, abs=5e-4)
+        assert row["par_spread"] * 1e4 == pytest.approx(141.82, abs=0.5)
+        assert row["par_recovery_rate"] == pytest.approx(0.0703, abs=5e-4)
 
     def test_fair_default_probability_matches_metrics(self, va, params):
         X, K, phi = SingleFirmModel(params).optimal_trigger_capacity_phi()
