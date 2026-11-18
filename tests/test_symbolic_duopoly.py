@@ -26,6 +26,7 @@ from ai_lab_investment.models.symbolic_duopoly import (
     follower_capacity_condition,
     green_function_residual,
     h_regime_option_value,
+    installed_value_in_lambda,
     l_regime_ode,
     l_regime_upper_particular,
     markup_channel,
@@ -427,6 +428,17 @@ class TestModelOfRecordIdentities:
                 ),
             ),
             (effective_revenue_coefficient, ("dA_dlam_residual",)),
+            (
+                installed_value_in_lambda,
+                (
+                    "d1_residual",
+                    "d2_residual",
+                    "asymmetry_residual",
+                    "dG_dphi_residual",
+                    "semi_elasticity_residual",
+                    "semi_elasticity_rho_residual",
+                ),
+            ),
             (
                 phi_star_closed_form,
                 (
