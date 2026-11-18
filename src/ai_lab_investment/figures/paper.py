@@ -434,9 +434,10 @@ def create_competition_effect() -> plt.Figure:
     """Single firm's and duopoly leader's pre-switch triggers over lambda.
 
     Model of record. The single firm's triggers are solved on the grid; the
-    leader's preemption trigger is read from the cached equilibria of the
-    exact game (`duopoly.load_equilibrium_grid`), which take one to two
-    minutes each to solve.
+    duopoly's first investment X_L (the equilibrium with assigned roles)
+    and the rent-equalization trigger X_P above it are read from the cached
+    equilibria of the exact game (`duopoly.load_equilibrium_grid`), which
+    take a few minutes each to solve.
     """
     from ..models.base_model import SingleFirmModel
     from ..models.duopoly import load_equilibrium_grid
@@ -462,7 +463,7 @@ def create_competition_effect() -> plt.Figure:
     )
     lam_duo = np.array([r["lam"] for r in records])
     X_P = np.array([r["X_P"] for r in records])
-    X_L = np.array([r["assigned_X_L"] for r in records])
+    X_L = np.array([r["X_L"] for r in records])
 
     fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
     top = 0.05
@@ -476,24 +477,24 @@ def create_competition_effect() -> plt.Figure:
         linewidth=1.3,
         label="Single firm, precommitted scale",
     )
-    ax.fill_between(lam_duo, X_L, X_P, color="steelblue", alpha=0.18, linewidth=0)
+    ax.fill_between(lam_duo, X_L, X_P, color="steelblue", alpha=0.12, linewidth=0)
+    ax.plot(
+        lam_duo,
+        X_L,
+        "-s",
+        color="steelblue",
+        linewidth=1.5,
+        markersize=3.5,
+        label=r"Duopoly, first investment $X_L$",
+    )
     ax.plot(
         lam_duo,
         X_P,
         "--o",
-        color="0.2",
-        linewidth=1.3,
-        markersize=3.5,
-        label=r"Duopoly, rent equalization $X_P$",
-    )
-    ax.plot(
-        lam_duo,
-        X_L,
-        "-.s",
-        color="steelblue",
-        linewidth=1.2,
-        markersize=3.0,
-        label=r"Duopoly, assigned leader $X_L$",
+        color="0.35",
+        linewidth=1.0,
+        markersize=2.5,
+        label=r"Duopoly, rent equalization $X_P$ (upper bound)",
     )
     ax.axvspan(0.0729, lams[-1], color="0.92", zorder=0)
     ax.text(

@@ -1,6 +1,6 @@
 """Preemption game in the exact primitives with shutdown, default and debt.
 
-Model of record for the duopoly (issue #178). `preemption_exact` solves the
+Model of record for the duopoly (issues #178 and #200). `preemption_exact` solves the
 L-regime preemption game in the exact primitives for firms that operate
 forever. This module adds the credit primitives of issue #177 to the same
 game: every installed firm may stop operating (the unlevered firm at a
@@ -63,6 +63,19 @@ Conventions
 5. The post-switch exercise region of the follower is taken to be an upper
    set, as in `preemption_exact`.
 
+First investment (issue #200)
+-----------------------------
+Rent equalization gives X_P, the lowest demand at which leading is as good
+as following. The benchmark date of first investment is X_L, the trigger of
+the leader in the equilibrium with assigned roles: one firm invests at X_L,
+the other follows. `assigned_leader_equilibrium` states the strategies and
+checks the no-deviation conditions numerically; the leader's and follower's
+credit objects, the hitting statistics and every other object of
+`equilibrium_record` without the ``rent_eq_`` prefix are evaluated at X_L.
+The value of mutual waiting that enters X_L (`mutual_waiting_claim`) prices
+the post-switch game on the claims of this module, with the option to stop
+and with debt.
+
 None of these uses the beta_H discount factor or the unconditional A_eff
 coefficient in regime L. `ExactPreemptionGame` is the nested game in which
 firms operate forever and carry no debt.
@@ -75,7 +88,7 @@ from math import inf, isfinite
 from typing import cast
 
 import numpy as np
-from scipy import interpolate, optimize
+from scipy import interpolate, linalg, optimize
 
 from .parameters import ModelParameters
 from .preemption_exact import (
@@ -486,6 +499,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         )
         self._boundary_grid = np.geomspace(1e-7 * self.X_ref, 1e5 * self.X_ref, 480)
         self._fair_rate: float | None = None
+        self._response: interpolate.CubicSpline | None = None
 
     def _root(self, mu: float, discount: float, sign: float) -> float:
         s2 = self.params.sigma**2
@@ -502,9 +516,130 @@ class LeveredPreemptionGame(ExactPreemptionGame):
     def investment_cost(self, K: np.ndarray | float) -> np.ndarray | float:
         return self.params.c * K**self.params.gamma
 
-    def mutual_waiting_claim(self, leader: str = "paper") -> ForcedClaim:
-        """Mutual-waiting value of the game without credit (supplementary)."""
-        return self.proxy.mutual_waiting_claim(leader)
+    def mutual_waiting_claim(self, leader: str = "reoptimized") -> ForcedClaim:
+        """Value to each firm when neither invests before the switch.
+
+        ``"reoptimized"`` prices the post-switch game on the claims of this
+        module: the firm that enters first after the switch chooses its
+        scale at its entry demand, both firms may stop operating, debt is
+        par or fair as in the rest of the game, and each firm is worth the
+        follower's value (rent equalization, see
+        `ExactPreemptionGame._post_switch_game_claim`). ``"no_stop"`` is the
+        same game without the option to stop and with debt reduced to its
+        par subsidy (the value used before issue #200, kept to report the
+        difference), and ``"paper"`` holds the post-switch leader at the
+        single-firm scale K_H*, also without the option.
+        """
+        if leader == "paper":
+            return self.proxy.mutual_waiting_claim("paper")
+        if leader == "no_stop":
+            return self.proxy.mutual_waiting_claim("reoptimized")
+        return super().mutual_waiting_claim(leader)
+
+    # ------------------------------------------------------------------
+    # Post-switch game between two firms that have not installed
+    # ------------------------------------------------------------------
+
+    def _follower_response(self, T: float) -> tuple[float, float, float]:
+        """Follower's (X_F^H, K_F^H, B_F) against H-regime leader capacity T.
+
+        `follower_post_switch_entry` tabulated on a log grid of T and
+        interpolated by cubic splines, because the post-switch game needs it
+        at every candidate capacity of the leader. The interpolation error
+        is below 1e-6 in relative terms (`tests/test_duopoly_exact.py`).
+        """
+        if self._response is None:
+            log_T = np.log(self.K_ref) + np.linspace(-15.0, 23.0, 153)
+            entries = [self.follower_post_switch_entry(float(t)) for t in np.exp(log_T)]
+            table = np.log([[e.X_F, e.K_F, e.B_F] for e in entries])
+            self._response = interpolate.CubicSpline(log_T, table)
+        X_F, K_F, B_F = np.exp(self._response(np.log(T)))
+        return float(X_F), float(K_F), float(B_F)
+
+    def _envelope_capacity(self, X: np.ndarray, T: float) -> np.ndarray:
+        """Capacity maximizing the follower's levered H-regime entry NPV at X.
+
+        Golden-section search in log K, one decade either side of the
+        optimum without the default option.
+        """
+        log_K = np.log(self.proxy.post_switch_capacity(X, T))
+        lo, hi = log_K - 1.0, log_K + 1.0
+        ratio = 0.5 * (np.sqrt(5.0) - 1.0)
+        x1, x2 = hi - ratio * (hi - lo), lo + ratio * (hi - lo)
+        f1 = self.follower_h_payoff(X, np.exp(x1), T)
+        f2 = self.follower_h_payoff(X, np.exp(x2), T)
+        for _ in range(60):
+            left = f1 > f2
+            hi = np.where(left, x2, hi)
+            lo = np.where(left, lo, x1)
+            x1_new = hi - ratio * (hi - lo)
+            x2_new = lo + ratio * (hi - lo)
+            f1_new = self.follower_h_payoff(X, np.exp(x1_new), T)
+            f2_new = self.follower_h_payoff(X, np.exp(x2_new), T)
+            x1, x2, f1, f2 = x1_new, x2_new, f1_new, f2_new
+        return np.exp(0.5 * (lo + hi))
+
+    def _post_switch_follow_value(self, X: np.ndarray, K: float) -> np.ndarray:
+        """Levered value after the switch of the firm facing an installed K."""
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        X_F, K_F, B_F = self._follower_response(K)
+        out = B_F * X_arr**self.params.beta_H
+        hi = X_arr >= X_F
+        if hi.any():
+            x = X_arr[hi]
+            if self.scale == "precommitted":
+                capacity = np.full_like(x, K_F)
+            else:
+                capacity = self._envelope_capacity(x, K)
+            out[hi] = self.follower_h_payoff(x, capacity, K)
+        return out
+
+    def _post_switch_leader_npv(self, X: float, K: float) -> float:
+        """Levered NPV of entering first at X after the switch with K.
+
+        All capacity is in training. Below the follower's trigger the claim
+        is that of `_h_leader_waiting`; at or above it the follower enters
+        at once and the claim is Leland's duopoly form. The coupon is the
+        par coupon or the fair coupon for issuance at X; -inf when the claim
+        does not exist or the debt cannot be placed.
+        """
+        p = self.params
+        outlay = float(self.investment_cost(K))
+        proceeds = self.leverage * outlay
+        R = p.A_H * K**p.alpha
+        X_F, K_F, _ = self._follower_response(K)
+        if X >= X_F and self.scale != "precommitted":
+            K_F = float(self._envelope_capacity(np.array([X]), K)[0])
+        a_duo = p.A_H * float(contest_revenue(K, K_F, p.alpha))
+
+        def claims(coupon: float) -> tuple[float, PiecewisePowers, PiecewisePowers]:
+            q = p.delta * K + coupon
+            duopoly = self._h_installed(a_duo, q, coupon)
+            if X >= X_F:
+                return duopoly
+            return self._h_leader_waiting(R, q, coupon, X_F, duopoly[1:], duopoly[1:])
+
+        try:
+            if proceeds <= 0.0:
+                coupon = 0.0
+            elif self.debt == "par":
+                coupon = self.coupon_rate * proceeds
+            else:
+                coupon = p.r * proceeds
+                for _ in range(200):
+                    X_D, _, debt = claims(coupon)
+                    value = float(debt(X)[0]) if X_D < X else 0.0
+                    if value <= 0.0:
+                        return -inf
+                    if abs(value - proceeds) <= 1e-12 * proceeds:
+                        break
+                    coupon *= proceeds / value
+                else:
+                    return -inf
+            equity = float(claims(coupon)[1](X)[0])
+        except ValueError:
+            return -inf
+        return equity - (1.0 - self.leverage) * outlay
 
     # ------------------------------------------------------------------
     # Absorbing regime H
@@ -1003,22 +1138,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         else:
             n = max(int(14 * np.log10(y[-1] / y[0])), 24)
             coarse = np.geomspace(y[0], y[-1], n)
-            log_K = np.log(self.proxy.post_switch_capacity(coarse, entry.T_L))
-            lo, hi = log_K - 1.0, log_K + 1.0
-            ratio = 0.5 * (np.sqrt(5.0) - 1.0)
-            x1, x2 = hi - ratio * (hi - lo), lo + ratio * (hi - lo)
-            f1 = self.follower_h_payoff(coarse, np.exp(x1), entry.T_L)
-            f2 = self.follower_h_payoff(coarse, np.exp(x2), entry.T_L)
-            for _ in range(60):
-                left = f1 > f2
-                hi = np.where(left, x2, hi)
-                lo = np.where(left, lo, x1)
-                x1_new = hi - ratio * (hi - lo)
-                x2_new = lo + ratio * (hi - lo)
-                f1_new = self.follower_h_payoff(coarse, np.exp(x1_new), entry.T_L)
-                f2_new = self.follower_h_payoff(coarse, np.exp(x2_new), entry.T_L)
-                x1, x2, f1, f2 = x1_new, x2_new, f1_new, f2_new
-            best = 0.5 * (lo + hi)
+            best = np.log(self._envelope_capacity(coarse, entry.T_L))
             # The jointly optimal capacity is the envelope capacity at X_F^H.
             best[0] = np.log(entry.K_F)
             K = np.exp(interpolate.CubicSpline(np.log(coarse), best)(np.log(y)))
@@ -1205,88 +1325,407 @@ def expected_entry_time(params: ModelParameters, X_from: float, X_to: float) -> 
 
 
 # ----------------------------------------------------------------------
-# The leader's own optimal entry (roles assigned)
+# First investment: the equilibrium with assigned roles
 # ----------------------------------------------------------------------
 
+#: Tolerance of the no-deviation checks, relative to the value compared.
+#: A Nelder-Mead solve of the leader's policy is reproducible to about 1e-6
+#: in its value.
+DEVIATION_TOLERANCE = 1e-5
 
-def leader_assigned_entry(
+
+def _scan_leader(
+    game: ExactPreemptionGame,
+    grid: np.ndarray,
+    X_P: float,
+    start: tuple[float, float],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Leader's best policy and both roles' values along a demand grid.
+
+    The optimizer is warm-started from X_P outward in both directions. The
+    grid is truncated where no leader policy keeps the follower out.
+
+    Returns:
+        (grid, table) with rows (K_L, phi_L, L*, F) of the table.
+    """
+    pivot = int(np.argmin(np.abs(np.log(grid / X_P))))
+    rows: dict[int, tuple[float, float, float, float]] = {}
+    for indices in (range(pivot, -1, -1), range(pivot + 1, len(grid))):
+        policy = start
+        for i in indices:
+            X = float(grid[i])
+            try:
+                K, phi, lead = game.leader_best_policy(X, policy)
+            except RuntimeError:
+                break
+            policy = (K, phi)
+            follow = float(game.subgame(K, phi).follower_value(X)[0])
+            rows[i] = (K, phi, lead, follow)
+    kept = sorted(rows)
+    if len(kept) < 5 or kept != list(range(kept[0], kept[-1] + 1)):
+        msg = "Leader re-optimization failed on the entry scan"
+        raise RuntimeError(msg)
+    return grid[kept], np.array([rows[i] for i in kept])
+
+
+def _stopping_check(
+    game: ExactPreemptionGame, X: np.ndarray, h: np.ndarray, n_grid: int = 4001
+) -> tuple[float, float, np.ndarray]:
+    """The leader's stopping problem without an assumption on its shape.
+
+    Given that the rival never invests first, the leader's value less the
+    mutual-waiting value, u = V - W, solves the homogeneous L-regime ODE
+    where the leader waits and equals g(X) = L*(X) - W(X) where it invests.
+    The linear complementarity problem min{-A u, u - g} = 0, with A the
+    L-regime operator, is solved on a log grid over the scanned range by
+    policy iteration (Howard's algorithm, which converges monotonically
+    for the M-matrix that central differences give here), with g
+    interpolated from the scan (a cubic spline of g X^{-beta_L^+} in log
+    demand). At the bottom of the grid u is proportional to X^{beta_L^+};
+    at the top the leader invests if g is positive there and u decays with
+    the negative root otherwise.
+
+    Returns:
+        (lowest demand of the exercise set, inf when it is empty; 1.0 when
+        the exercise set is an upper set of the scanned range; the
+        coefficient u X^{-beta_L^+} on the grid points below the exercise
+        set).
+    """
+    p = game.params
+    fine = np.geomspace(X[0], X[-1], n_grid)
+    y = np.log(fine)
+    dy = y[1] - y[0]
+    obstacle = interpolate.CubicSpline(np.log(X), h)(y) * fine**game.bp
+    half_var = 0.5 * p.sigma**2
+    drift = p.mu_L - half_var
+    sub = -(half_var / dy**2 - drift / (2.0 * dy))
+    diag = 2.0 * half_var / dy**2 + p.r + p.lam
+    sup = -(half_var / dy**2 + drift / (2.0 * dy))
+    if sub > 0.0 or sup > 0.0:
+        msg = "Grid too coarse for a monotone scheme"
+        raise ValueError(msg)
+    w_lo = float(np.exp(-game.bp * dy))
+    w_hi = float(np.exp(game.bn * dy))
+    top_stops = obstacle[-1] > 0.0
+
+    def solve(active: np.ndarray) -> np.ndarray:
+        ab = np.zeros((3, n_grid))
+        ab[0, 1:] = np.where(active[:-1], 0.0, sup)
+        ab[1] = np.where(active, 1.0, diag)
+        ab[2, :-1] = np.where(active[1:], 0.0, sub)
+        rhs = np.where(active, obstacle, 0.0)
+        ab[1, 0], ab[0, 1], rhs[0] = 1.0, -w_lo, 0.0
+        if not active[-1]:
+            ab[1, -1], ab[2, -2], rhs[-1] = 1.0, -w_hi, 0.0
+        return linalg.solve_banded((1, 1), ab, rhs)
+
+    active = np.zeros(n_grid, dtype=bool)
+    active[-1] = top_stops
+    # The boundary can move by one grid point per step, so allow n_grid steps.
+    for _ in range(2 * n_grid):
+        value = solve(active)
+        residual = np.zeros(n_grid)
+        residual[1:-1] = sub * value[:-2] + diag * value[1:-1] + sup * value[2:]
+        updated = value - obstacle < residual
+        updated[0], updated[-1] = False, top_stops
+        if np.array_equal(updated, active):
+            break
+        active = updated
+    else:
+        msg = "Policy iteration did not converge"
+        raise RuntimeError(msg)
+    if not active.any():
+        return inf, 1.0, value * fine ** (-game.bp)
+    first = int(np.argmax(active))
+    return (
+        float(fine[first]),
+        float(np.all(active[first:])),
+        value[:first] * fine[:first] ** (-game.bp),
+    )
+
+
+def _spline_peak(X: np.ndarray, h: np.ndarray) -> tuple[float, float]:
+    """Maximizer and maximum of a cubic spline of h in log demand."""
+    fine = np.geomspace(X[0], X[-1], 20001)
+    values = interpolate.CubicSpline(np.log(X), h)(np.log(fine))
+    i = int(np.argmax(values))
+    return float(fine[i]), float(values[i])
+
+
+def assigned_leader_equilibrium(
     game: ExactPreemptionGame,
     X_P: float,
     start: tuple[float, float],
-    n_scan: int = 13,
+    n_scan: int = 26,
+    span: tuple[float, float] = (0.03, 10.0),
+    xatol: float = 1e-4,
 ) -> dict[str, float]:
-    """Entry trigger of a firm that knows it will lead (roles assigned).
+    """First investment when one firm leads and the other follows.
 
-    Rent equalization says where both firms want to lead; it does not say
-    where a firm that expects its rival to follow would choose to invest.
-    If the rival never invests first, the leader's value before entry at a
-    trigger X_bar is
+    The equilibrium
+    ---------------
+    Two symmetric firms, neither installed, demand X in regime L. One firm
+    is the designated leader, the other the designated follower.
 
-        W(X) + [L*(X_bar) - W(X_bar)] (X / X_bar)^{beta_L^+},
+    - Leader: invest the first time demand is at or above X_L before the
+      switch, with the capacity and training fraction that maximize its
+      entry value at that demand, L*(X) = max_{K, phi} L(X; K, phi).
+    - Follower: do not invest before the leader has; once the leader is
+      installed, play the best response of `LeveredSubgame` (enter before
+      the switch at X_F^L if that pays, otherwise wait for the switch and
+      enter at X_F^H, or at once if demand is already above it).
+    - If the switch arrives while neither firm is installed, the firms play
+      the post-switch game, in which each is worth the follower's value
+      (`mutual_waiting_claim`): the claim on that outcome is W(X).
+    - If the designated follower deviates and invests first, the other firm
+      plays the follower's best response against it.
 
-    with W the mutual-waiting value (neither firm invests before the
-    switch; `mutual_waiting_claim("reoptimized")`), so its best trigger
-    maximizes the coefficient h(X) = [L*(X) - W(X)] X^{-beta_L^+}. When that
-    trigger lies below X_P, the follower is the better-off role there, and
-    for every demand level between the two a firm prefers investing to
-    waiting for X_P (h is decreasing) while preferring that its rival
-    invest: a second-mover advantage, not a race to be first. X_P is then
-    the upper end of that region rather than the date of first investment.
+    Before the leader invests, with b = beta_L^+ and X below X_L,
 
-    The mutual-waiting value prices the post-switch game by rent
-    equalization and ignores the option to stop, so this is a diagnostic of
-    the equilibrium concept and not a solved game.
+        V_lead(X)   = W(X) + [L*(X_L) - W(X_L)] (X / X_L)^b,
+        V_follow(X) = W(X) + [F(X_L)  - W(X_L)] (X / X_L)^b,
+
+    with F(X_L) the follower's value against the policy the leader installs
+    at X_L. Note that the follower's value before the leader invests is
+    V_follow, the value of waiting for the leader's entry or for the switch,
+    and not F(X).
+
+    No-deviation conditions, all checked numerically on the scan
+    ------------------------------------------------------------
+    1. Leader, among triggers. X_L maximizes h(X) = [L*(X) - W(X)] X^{-b},
+       the coefficient of a leader that invests at X given that its rival
+       never invests first: ``leader_best_other_trigger`` is the largest
+       h(X) / h(X_L) over the other scan points, and
+       ``coefficient_single_peaked`` says that h rises up to X_L and falls
+       above it on the scan.
+    2. Leader, among all stopping rules. The linear complementarity problem
+       of `_stopping_check` makes no assumption on the shape of the
+       investment region: ``lcp_trigger`` is the lowest demand at which it
+       invests and ``lcp_upper_set`` says that it invests at every scanned
+       demand above it.
+    3. Follower, before the leader's entry. Investing first at X pays at
+       most L*(X) (the rival then follows), so the condition is V_follow(X)
+       >= L*(X) for X <= X_L: ``follower_margin`` is the smallest
+       [V_follow(X) - L*(X)] / V_follow(X) on the scan. Because V_follow -
+       V_lead = [F(X_L) - L*(X_L)] (X / X_L)^b and V_lead >= L* by condition
+       1, it holds whenever the follower is the better-off role at X_L
+       (``follower_over_leader`` >= 1), that is, whenever X_L <= X_P.
+    4. Follower, off the path. If the leader has failed to invest at a
+       demand between X_L and X_P, the follower still prefers that the
+       leader invest: ``follower_margin_to_X_P`` is the smallest [F(X) -
+       L*(X)] / F(X) over the scan points in that range. Above X_P both
+       firms want to lead and the profile is not an equilibrium of those
+       subgames; they are reached only if the game starts there.
+    5. Follower, after the leader's entry: its policy is the best response
+       by construction (checked against a linear complementarity solve in
+       the tests).
+    6. After a switch with neither firm installed, the post-switch game is
+       a race (``post_switch_race``): the trigger an H-regime leader would
+       choose if its rival never led lies above the post-switch
+       rent-equalization trigger, so valuing each firm at the follower's
+       value there is the symmetric outcome of a preemption game.
+
+    ``equilibrium`` is 1.0 when all of them hold on the scan and X_L is
+    interior to it. When X_L would lie above X_P the follower prefers to
+    preempt and the first investment is at X_P instead.
+
+    What this does not establish: that the conditions hold between scan
+    points or outside the scanned range; uniqueness among asymmetric
+    equilibria; the symmetric mixed-strategy equilibrium, in which both
+    firms would delay between X_L and X_P; how the firms coordinate on
+    roles; and the continuation after the switch, which is a selection
+    (``X_L_roles_kept`` is the trigger if the leader also led after the
+    switch, inf when it would then wait for the switch). Simultaneous
+    investment is not priced.
 
     Args:
-        game: The game (zero leverage).
+        game: The game.
         X_P: Rent-equalization trigger.
-        start: Leader's policy (K_L, phi_L) at X_P, to warm-start the search.
-        n_scan: Points of the log scan over [0.05 X_P, 1.5 X_P].
+        start: Leader's policy (K_L, phi_L) at X_P, to warm-start the scan.
+        n_scan: Points of the log scan.
+        span: Range of the scan, in units of X_P.
+        xatol: Tolerance on log X_L in the refinement.
 
     Returns:
-        Dict with ``X_L`` (the assigned leader's trigger), its policy
-        ``K_L`` and ``phi_L``, ``follower_over_leader`` (F / L* at X_L),
-        ``coefficient_ratio`` (h(X_L) / h(X_P), above one when X_L differs
-        from X_P) and ``below_rent_equalization`` (1.0 when X_L < X_P).
+        Dict with ``X_L``, the leader's policy ``K_L`` and ``phi_L`` there,
+        ``leader_value``, ``follower_value`` and ``waiting_value`` at X_L,
+        ``lead_over_wait`` and ``follower_over_leader``, ``X_L_over_X_P``,
+        ``coefficient_ratio`` (h(X_L) over h at the scan point nearest
+        X_P), the checks listed above, ``X_L_no_stop`` and
+        ``X_L_roles_kept`` (the trigger under the mutual-waiting value
+        without the option to stop, and with the leader's role kept through
+        the switch; both located on a spline of the scan),
+        ``wait_no_stop_ratio`` (that waiting value over W at X_L, less
+        one), ``follower_margin_if_leading_after_switch`` (condition 3 for
+        a follower that would be the firm to lead after the switch, whose
+        waiting value is `post_switch_leading_claim`) and the scan
+        (``entry_scan_points``,
+        ``entry_scan_low``, ``entry_scan_high`` in units of X_P, the last
+        being where the scan stopped).
     """
-    wait = game.mutual_waiting_claim("reoptimized")
     bp = game.bp
-    policy = {"start": start}
+    wait = game.mutual_waiting_claim("reoptimized")
+    grid, table = _scan_leader(game, X_P * np.geomspace(*span, n_scan), X_P, start)
+    h = (table[:, 2] - wait(grid)) * grid ** (-bp)
+    i = int(np.argmax(h))
+    interior = 0 < i < len(grid) - 1
+    policy = {"start": (float(table[i, 0]), float(table[i, 1]))}
 
-    def coefficient(X: float) -> tuple[float, float, float, float]:
+    def coefficient(X: float) -> tuple[float, tuple[float, float, float, float]]:
         K, phi, lead = game.leader_best_policy(X, policy["start"])
         policy["start"] = (K, phi)
-        return (lead - float(wait(X)[0])) * X ** (-bp), K, phi, lead
+        follow = float(game.subgame(K, phi).follower_value(X)[0])
+        return (lead - float(wait(X)[0])) * X ** (-bp), (K, phi, lead, follow)
 
-    grid = X_P * np.geomspace(1.5, 0.05, n_scan)
-    values = np.array([coefficient(float(x))[0] for x in grid])
-    i = int(np.argmax(values))
-    lo, hi = grid[min(i + 1, n_scan - 1)], grid[max(i - 1, 0)]
-    policy["start"] = start
-    res = optimize.minimize_scalar(
-        lambda z: -coefficient(float(np.exp(z)))[0] / values[i],
-        bounds=(np.log(lo), np.log(hi)),
-        method="bounded",
-        options={"xatol": 1e-4},
+    if interior and h[i] > 0.0:
+        res = optimize.minimize_scalar(
+            lambda z: -coefficient(float(np.exp(z)))[0] / h[i],
+            bounds=(np.log(grid[i - 1]), np.log(grid[i + 1])),
+            method="bounded",
+            options={"xatol": xatol},
+        )
+        X_new = float(np.exp(res.x))
+        h_new, row = coefficient(X_new)
+        if h_new > h[i] and not np.any(np.isclose(grid, X_new, rtol=1e-9)):
+            j = int(np.searchsorted(grid, X_new))
+            grid = np.insert(grid, j, X_new)
+            table = np.insert(table, j, row, axis=0)
+            h = np.insert(h, j, h_new)
+            i = j
+    X_L = float(grid[i])
+    K_L, phi_L, lead_L, follow_L = (float(v) for v in table[i])
+    wait_all = wait(grid)
+    wait_L = float(wait_all[i])
+    h_L = float(h[i])
+    lead = table[:, 2]
+
+    # 1. The leader among triggers.
+    others = np.delete(h, i)
+    single_peaked = bool(np.all(np.diff(h[: i + 1]) > 0) and np.all(np.diff(h[i:]) < 0))
+    # 2. The leader among all stopping rules.
+    lcp_trigger, lcp_upper_set, lcp_coefficient = _stopping_check(game, grid, h)
+    lcp_error = (
+        float(np.max(np.abs(lcp_coefficient / h_L - 1.0)))
+        if lcp_coefficient.size and h_L > 0.0
+        else float("nan")
     )
-    X_L = float(np.exp(res.x))
-    h_L, K, phi, lead = coefficient(X_L)
-    follow = float(game.subgame(K, phi).follower_value(X_L)[0])
-    policy["start"] = start
-    h_P = coefficient(X_P)[0]
-    return {
+    # 3. The follower before the leader's entry.
+    below = grid <= X_L
+    v_follow = wait_all[below] + (follow_L - wait_L) * (grid[below] / X_L) ** bp
+    follower_margin = float(np.min((v_follow - lead[below]) / v_follow))
+    # 4. The follower between X_L and X_P, off the path.
+    between = (grid > X_L) & (grid < X_P * (1.0 - 1e-6))
+    margin_to_X_P = (
+        float(np.min(1.0 - lead[between] / table[between, 3]))
+        if between.any()
+        else float("nan")
+    )
+    # 3b. The same if the follower were the firm that leads after the switch.
+    leading = game.post_switch_leading_claim()(grid)
+    v_alt = leading[below] + (follow_L - leading[i]) * (grid[below] / X_L) ** bp
+    follower_margin_alt = float(np.min((v_alt - lead[below]) / v_alt))
+    # 6. The post-switch game.
+    race = (
+        game.post_switch_assigned_trigger > game.post_switch_trigger
+        and game.post_switch_single_crossing
+    )
+    tol = DEVIATION_TOLERANCE
+    holds = (
+        interior
+        and h_L > 0.0
+        and float(np.max(others)) <= h_L * (1.0 + tol)
+        and lcp_upper_set == 1.0
+        and abs(lcp_trigger / X_L - 1.0) < 0.02
+        and follower_margin >= -tol
+        and not margin_to_X_P < -tol
+        and follow_L >= lead_L * (1.0 - tol)
+        and race
+    )
+
+    # Sensitivity of the trigger to the mutual-waiting value.
+    def other_trigger(claim: ForcedClaim) -> float:
+        X_alt, h_alt = _spline_peak(grid, (lead - claim(grid)) * grid ** (-bp))
+        return X_alt if h_alt > 0.0 else inf
+
+    out = {
         "X_L": X_L,
-        "K_L": K,
-        "phi_L": phi,
-        "follower_over_leader": follow / lead,
-        "coefficient_ratio": h_L / h_P,
-        "below_rent_equalization": float(X_L < X_P * (1.0 - 1e-3)),
+        "K_L": K_L,
+        "phi_L": phi_L,
+        "leader_value": lead_L,
+        "follower_value": follow_L,
+        "waiting_value": wait_L,
+        "lead_over_wait": lead_L / wait_L,
+        "follower_over_leader": follow_L / lead_L,
+        "X_L_over_X_P": X_L / X_P,
+        "coefficient_ratio": h_L / float(h[int(np.argmin(np.abs(np.log(grid / X_P))))]),
+        "equilibrium": float(holds),
+        "leader_best_other_trigger": float(np.max(others)) / h_L,
+        "coefficient_single_peaked": float(single_peaked),
+        "lcp_trigger": lcp_trigger,
+        "lcp_upper_set": lcp_upper_set,
+        "lcp_coefficient_error": lcp_error,
+        "follower_margin": follower_margin,
+        "follower_margin_to_X_P": margin_to_X_P,
+        "follower_margin_if_leading_after_switch": follower_margin_alt,
+        "post_switch_race": float(race),
+        "post_switch_trigger": game.post_switch_trigger,
+        "post_switch_assigned_trigger": game.post_switch_assigned_trigger,
+        "entry_scan_points": float(n_scan),
+        "entry_scan_low": float(grid[0] / X_P),
+        "entry_scan_high": float(grid[-1] / X_P),
     }
+    if isinstance(game, LeveredPreemptionGame):
+        no_stop = game.mutual_waiting_claim("no_stop")
+        out["X_L_no_stop"] = other_trigger(no_stop)
+        out["wait_no_stop_ratio"] = float(no_stop(X_L)[0]) / wait_L - 1.0
+    out["X_L_roles_kept"] = other_trigger(game.post_switch_leading_claim())
+    return out
 
 
 # ----------------------------------------------------------------------
 # Equilibrium records
 # ----------------------------------------------------------------------
+
+#: Prefix of the record keys evaluated at the rent-equalization trigger.
+RENT_EQUALIZATION_PREFIX = "rent_eq_"
+
+
+def _entry_objects(
+    game: LeveredPreemptionGame, sub: LeveredSubgame, X: float
+) -> dict[str, float]:
+    """Policies, values, credit objects and hitting statistics for entry at X."""
+    params = game.params
+    credit = sub.leader_credit(X)
+    X_F = sub.post_switch.X_F
+    out = {
+        "K_L": sub.K_L,
+        "phi_L": sub.phi_L,
+        "X_F": X_F,
+        "K_F": sub.post_switch.K_F,
+        "X_F_pre_switch": sub.pre_switch.X_entry,
+        "leader_value": float(sub.leader_value(X)[0]),
+        "follower_value": float(sub.follower_value(X)[0]),
+        "leader_investment": float(game.investment_cost(sub.K_L)),
+        "X_D_leader": credit["X_default"],
+        "distance_to_default": credit["distance_to_default"],
+        "coupon_rate": credit["coupon_rate"],
+        "debt_value": credit["debt"],
+        "debt_proceeds": credit["proceeds"],
+        "recovery": credit["recovery"],
+        "spread": credit["spread"],
+    }
+    out.update(game.follower_entry_credit(sub.post_switch))
+    follower = hitting_statistics(params, X, X_F)
+    leader = hitting_statistics(params, X, credit["X_default"])
+    out.update({
+        "follower_before_switch": follower["before_switch"],
+        "follower_no_switch": follower["no_switch"],
+        "follower_time_after_switch": follower["expected_time_after_switch"],
+        "follower_expected_entry_time": expected_entry_time(params, X, X_F),
+        "leader_default_before_switch": leader["before_switch"],
+        "leader_default_no_switch": leader["no_switch"],
+    })
+    return out
 
 
 def equilibrium_record(
@@ -1298,26 +1737,56 @@ def equilibrium_record(
     bankruptcy_cost: float = 0.30,
     n_scan: int = 25,
     x_range: tuple[float, float] = (0.03, 300.0),
-    assigned: bool = True,
+    entry_scan: tuple[int, tuple[float, float], float] | None = None,
+    rent_equalization: dict | None = None,
 ) -> dict[str, float | str]:
-    """Preemption equilibrium with a re-optimizing leader, as a flat record.
+    """Duopoly equilibrium with a re-optimizing leader, as a flat record.
 
-    Solves L*(X_P) = F(X_P) with the leader's (K_L, phi_L) chosen at the
-    entry demand, on the scan grid ``x_range`` (units of X_H*), and reports
-    the equilibrium policies, the values, the leader's credit objects at
-    entry, the follower's boundary at its post-switch entry, and the
+    The benchmark is the equilibrium with assigned roles
+    (`assigned_leader_equilibrium`): one firm invests first at X_L, the
+    trigger it prefers given that its rival follows, and the keys without
+    a prefix are evaluated there: ``X_L``, the leader's policy ``K_L`` and
+    ``phi_L``, the follower's post-switch trigger and capacity ``X_F`` and
+    ``K_F`` against that policy, the values, the leader's credit objects at
+    entry, the follower's boundary at its post-switch entry, the
     first-passage statistics of the follower's trigger and of the leader's
-    boundary. At zero leverage and with ``assigned`` it adds the entry
-    trigger of a firm that knows it will lead (`leader_assigned_entry`,
-    keys prefixed ``assigned_``). The record carries the scan it was solved
-    on (``scan_points``, ``scan_low``, ``scan_high``). Missing objects are
-    nan.
+    boundary from X_L, and the no-deviation checks.
+
+    The rent-equalization trigger ``X_P``, the lowest demand at which
+    leading is as good as following (L*(X_P) = F(X_P), first up-crossing on
+    the scan ``x_range``, in units of X_H*), is an upper bound on the date
+    of first investment. The same objects evaluated there carry the prefix
+    ``rent_eq_``; ``exists``, ``n_sign_changes`` and the scan
+    (``scan_points``, ``scan_low``, ``scan_high``) describe that solve.
+
+    Args:
+        entry_scan: (points, range in units of X_P, tolerance on log X_L)
+            of the scan behind X_L.
+        rent_equalization: A record of an earlier solve of the same cell.
+            Its ``X_P``, the leader's policy there and the description of
+            its scan are then reused instead of re-solved (the X_P solve
+            does not depend on the mutual-waiting value); everything else
+            is recomputed.
+
+    Missing objects are nan.
     """
     game = LeveredPreemptionGame(
         params, scale, leverage, coupon_rate, bankruptcy_cost, debt
     )
-    sol = game.rent_equalization_reoptimized(n_scan, x_range)
-    nan = float("nan")
+    prefix = RENT_EQUALIZATION_PREFIX
+    if rent_equalization is None:
+        sol = game.rent_equalization_reoptimized(n_scan, x_range)
+        scan = (float(n_scan), float(x_range[0]), float(x_range[1]))
+    else:
+        old = rent_equalization
+        sol = {
+            "exists": old["exists"],
+            "n_sign_changes": old["n_sign_changes"],
+            "X_P": old["X_P"],
+            "K_L": old.get(prefix + "K_L", old.get("K_L")),
+            "phi_L": old.get(prefix + "phi_L", old.get("phi_L")),
+        }
+        scan = (old["scan_points"], old["scan_low"], old["scan_high"])
     out: dict[str, float | str] = {
         "lam": params.lam,
         "scale": scale,
@@ -1325,51 +1794,28 @@ def equilibrium_record(
         "debt": debt,
         "X_H": game.X_ref,
         "phi_star": game.phi_star,
-        "scan_points": float(n_scan),
-        "scan_low": float(x_range[0]),
-        "scan_high": float(x_range[1]),
+        "scan_points": scan[0],
+        "scan_low": scan[1],
+        "scan_high": scan[2],
         "exists": sol["exists"],
         "n_sign_changes": sol["n_sign_changes"],
         "X_P": sol["X_P"],
-        "K_L": sol["K_L"],
-        "phi_L": sol["phi_L"],
-        "X_F": sol["X_F_post_switch"],
-        "K_F": sol["K_F_post_switch"],
-        "X_F_pre_switch": sol["X_F_pre_switch"],
-        "lead_over_wait": sol["lead_over_wait_at_X_P"] if leverage == 0.0 else nan,
     }
     if not sol["exists"]:
         return out
     X_P = float(sol["X_P"])
-    sub = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
-    credit = sub.leader_credit(X_P)
-    out.update({
-        "leader_value": float(sub.leader_value(X_P)[0]),
-        "follower_value": float(sub.follower_value(X_P)[0]),
-        "leader_investment": float(game.investment_cost(sub.K_L)),
-        "X_D_leader": credit["X_default"],
-        "distance_to_default": credit["distance_to_default"],
-        "coupon_rate": credit["coupon_rate"],
-        "debt_value": credit["debt"],
-        "debt_proceeds": credit["proceeds"],
-        "recovery": credit["recovery"],
-        "spread": credit["spread"],
-    })
-    out.update(game.follower_entry_credit(sub.post_switch))
-    if assigned and leverage == 0.0:
-        entry = leader_assigned_entry(game, X_P, (sub.K_L, sub.phi_L))
-        out.update({f"assigned_{key}": value for key, value in entry.items()})
-    X_F = sub.post_switch.X_F
-    follower = hitting_statistics(params, X_P, X_F)
-    leader = hitting_statistics(params, X_P, credit["X_default"])
-    out.update({
-        "follower_before_switch": follower["before_switch"],
-        "follower_no_switch": follower["no_switch"],
-        "follower_time_after_switch": follower["expected_time_after_switch"],
-        "follower_expected_entry_time": expected_entry_time(params, X_P, X_F),
-        "leader_default_before_switch": leader["before_switch"],
-        "leader_default_no_switch": leader["no_switch"],
-    })
+    at_X_P = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
+    wait = game.mutual_waiting_claim("reoptimized")
+    rent = _entry_objects(game, at_X_P, X_P)
+    rent["lead_over_wait"] = rent["leader_value"] / float(wait(X_P)[0])
+    points, span, xatol = ENTRY_SCAN if entry_scan is None else entry_scan
+    entry = assigned_leader_equilibrium(
+        game, X_P, (at_X_P.K_L, at_X_P.phi_L), points, span, xatol
+    )
+    out.update(entry)
+    at_X_L = game.subgame(entry["K_L"], entry["phi_L"])
+    out.update(_entry_objects(game, at_X_L, entry["X_L"]))
+    out.update({prefix + key: value for key, value in rent.items()})
     return out
 
 
@@ -1417,7 +1863,25 @@ SCAN_OVERRIDES: dict[tuple[float, str, float, str], tuple[int, tuple[float, floa
 }
 
 
-def _solve_cell(cell: tuple[float, str, float, str]) -> dict[str, float | str]:
+#: Default scan behind X_L: points, range in units of X_P, and the tolerance
+#: on log X_L of the refinement.
+ENTRY_SCAN: tuple[int, tuple[float, float], float] = (26, (0.03, 10.0), 1e-4)
+
+#: Cells whose X_L is located on a narrower scan, for the reason given at
+#: `SCAN_OVERRIDES` (one evaluation of the leader's best policy takes several
+#: minutes there). The range brackets X_L / X_P found at zero leverage
+#: (0.52); the no-deviation checks then cover that range only.
+ENTRY_SCAN_OVERRIDES: dict[
+    tuple[float, str, float, str], tuple[int, tuple[float, float], float]
+] = {
+    (0.05, "envelope", leverage, "fair"): (7, (0.2, 1.6), 1e-3)
+    for leverage in GRID_LEVERAGES
+}
+
+
+def _solve_cell(
+    cell: tuple[float, str, float, str], previous: dict | None = None
+) -> dict[str, float | str]:
     lam, scale, leverage, debt = cell
     n_scan, x_range = SCAN_OVERRIDES.get(cell, (25, (0.03, 300.0)))
     return equilibrium_record(
@@ -1427,16 +1891,44 @@ def _solve_cell(cell: tuple[float, str, float, str]) -> dict[str, float | str]:
         debt,
         n_scan=n_scan,
         x_range=x_range,
+        entry_scan=ENTRY_SCAN_OVERRIDES.get(cell, ENTRY_SCAN),
+        rent_equalization=previous,
     )
 
 
-def write_equilibrium_grid(path: str, workers: int = 8) -> list[dict]:
-    """Solve every cell of `grid_cells` at baseline and write the cache."""
+def _cell_of(record: dict) -> tuple[float, str, float, str]:
+    return (record["lam"], record["scale"], record["leverage"], record["debt"])
+
+
+def write_equilibrium_grid(
+    path: str,
+    workers: int = 8,
+    fresh: bool = False,
+    cells: list[tuple[float, str, float, str]] | None = None,
+) -> list[dict]:
+    """Solve every cell of `grid_cells` at baseline and write the cache.
+
+    Unless ``fresh``, a cell already in the file at ``path`` keeps its
+    rent-equalization trigger and the leader's policy there (the expensive
+    demand scan, which does not depend on anything computed afterwards) and
+    everything else in the record is recomputed. With ``fresh`` every cell
+    is solved from scratch. ``cells`` restricts the solve to some cells (the
+    file then holds those only).
+    """
     import json
+    import os
     from concurrent.futures import ProcessPoolExecutor
 
+    previous: dict[tuple[float, str, float, str], dict] = {}
+    if not fresh and os.path.exists(path):
+        with open(path) as handle:
+            previous = {_cell_of(r): r for r in map(decode_record, json.load(handle))}
+    if cells is None:
+        cells = grid_cells()
     with ProcessPoolExecutor(max_workers=workers) as pool:
-        records = list(pool.map(_solve_cell, grid_cells()))
+        records = list(
+            pool.map(_solve_cell, cells, [previous.get(cell) for cell in cells])
+        )
     with open(path, "w") as handle:
         json.dump([encode_record(r) for r in records], handle, indent=2)
         handle.write("\n")
@@ -1463,30 +1955,34 @@ def decode_record(record: dict) -> dict:
 
 
 def format_spread_table(records: list[dict]) -> str:
-    """Markdown table of the leader's credit objects at entry (C23)."""
+    """Markdown table of the leader's credit objects at its entry X_L (C23)."""
     header = (
-        "| leverage | debt | lambda | X_P | K_L | X_P / X_D | spread (bps) "
-        "| coupon rate | debt / proceeds | K_F | X_F |"
+        "| leverage | debt | lambda | X_L | X_L / X_P | K_L | X_L / X_D "
+        "| spread (bps) | coupon rate | K_F | X_F | equilibrium |"
     )
-    lines = [header, "|" + "---|" * 11]
+    lines = [header, "|" + "---|" * 12]
     for rec in sorted(
         records, key=lambda r: (r["scale"], r["leverage"], r["debt"], r["lam"])
     ):
         if rec["scale"] != "envelope":
             continue
         spread = rec.get("spread", float("nan"))
-        value = rec.get("debt_value", 0.0) / max(rec.get("debt_proceeds", 0.0), 1e-300)
         lines.append(
             f"| {rec['leverage']:.2f} | {rec['debt']} | {rec['lam']:.3f} "
-            f"| {rec['X_P']:.6f} | {rec['K_L']:.6f} "
+            f"| {rec['X_L']:.6f} | {rec['X_L_over_X_P']:.3f} | {rec['K_L']:.6f} "
             f"| {rec['distance_to_default']:.3f} | {1e4 * spread:.1f} "
-            f"| {rec.get('coupon_rate', float('nan')):.4f} | {value:.3f} "
-            f"| {rec['K_F']:.4f} | {rec['X_F']:.5f} |"
+            f"| {rec.get('coupon_rate', float('nan')):.4f} "
+            f"| {rec['K_F']:.4f} | {rec['X_F']:.5f} | {rec['equilibrium']:.0f} |"
         )
     return "\n".join(lines)
 
 
 if __name__ == "__main__":  # pragma: no cover
+    import sys
+
     from .duopoly import EQUILIBRIUM_GRID_PATH
 
-    print(format_spread_table(write_equilibrium_grid(str(EQUILIBRIUM_GRID_PATH))))
+    grid = write_equilibrium_grid(
+        str(EQUILIBRIUM_GRID_PATH), fresh="fresh" in sys.argv[1:]
+    )
+    print(format_spread_table(grid))

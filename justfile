@@ -60,9 +60,13 @@ test-slow:
     @echo "🚀 Testing code: Running pytest, slow tests included"
     uv run python -m pytest -m "slow or not slow"
 
-# Re-solve the cached duopoly equilibria behind the paper (about an hour)
+# Recompute the cached duopoly equilibria behind the paper, reusing the cached X_P solves (about an hour)
 duopoly-grid:
     uv run python -m ai_lab_investment.models.preemption_levered
+
+# Same, re-solving the rent-equalization triggers too (several hours)
+duopoly-grid-fresh:
+    uv run python -m ai_lab_investment.models.preemption_levered fresh
 
 # Test if documentation can be built without warnings or errors
 docs-test:
