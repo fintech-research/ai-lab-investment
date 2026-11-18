@@ -16,7 +16,7 @@ two roots in closed form and verifies the sign facts the model relies on:
 
 * `charPoly_betaPlus` / `charPoly_betaMinus` : both expressions are genuine roots.
 * `betaPlus_gt_one` : the positive root exceeds `1` (used as `β_H > 1`, `β_L⁺ > 1`).
-* `betaMinus_neg` : the other root is negative (used as `β_s⁻ < 0`).
+* `betaMinus_neg` : the other root is negative (used as `β_L⁻ < 0`).
 
 `ρ > μ` is the discounting condition (`r > μ_H`, and `r + λ > μ_L`); it is what
 forces the positive root above `1`.
@@ -94,7 +94,7 @@ theorem betaPlus_gt_one (hσ : 0 < σ) (hρμ : μ < ρ) :
   rw [betaPlus, lt_div_iff₀ hσ2]
   linarith [hsbig]
 
-/-- **The other root is negative.**  This is `β_s⁻ < 0`. -/
+/-- **The other root is negative.**  This is `β_L⁻ < 0`. -/
 theorem betaMinus_neg (hσ : 0 < σ) (hρ : 0 < ρ) : betaMinus σ μ ρ < 0 := by
   have hσ2 : 0 < σ ^ 2 := pow_pos hσ 2
   have habs := abs_lt_sqrt_disc hσ hρ (μ := μ)
@@ -139,7 +139,7 @@ theorem betaH_lt_betaPlus_L {σ μL μH r lam : ℝ}
   have : (μL - μH) * betaPlus σ μH r < 0 := mul_neg_of_neg_of_pos (by linarith) hβHpos
   linarith
 
-/-- **The Leland markup factor lies in `(0,1)`.**  For the negative root `β_s⁻ < 0`,
+/-- **The Leland markup factor lies in `(0,1)`.**  For the negative root `β_L⁻ < 0`,
 the option-of-waiting factor `β/(β-1) ∈ (0,1)`, so the optimal default boundary lies
 strictly below the naive break-even boundary (`paper/_model.qmd`, eq-default-boundary). -/
 theorem markup_mem_Ioo {β : ℝ} (hβ : β < 0) : 0 < β / (β - 1) ∧ β / (β - 1) < 1 := by
@@ -148,7 +148,7 @@ theorem markup_mem_Ioo {β : ℝ} (hβ : β < 0) : 0 < β / (β - 1) ∧ β / (�
   rw [div_lt_iff_of_neg h1]; linarith
 
 /-- **The negative root decreases (becomes more negative) as the discount rate
-rises.**  Hence `β_s⁻` falls with `λ` through the effective discount `r + λ`. -/
+rises.**  Hence `β_L⁻` falls with `λ` through the effective discount `r + λ`. -/
 theorem betaMinus_strictAnti_rho (hσ : 0 < σ) {ρ₁ ρ₂ : ℝ} (hρ₁ : 0 < ρ₁) (hlt : ρ₁ < ρ₂) :
     betaMinus σ μ ρ₂ < betaMinus σ μ ρ₁ := by
   have hσ2 : 0 < σ ^ 2 := pow_pos hσ 2
@@ -172,8 +172,8 @@ theorem markup_strictAnti {β₁ β₂ : ℝ} (_h₁ : β₁ < 1) (h₂ : β₂ 
   linarith
 
 /-- **The markup channel: `β/(β-1)` evaluated at the negative root rises with `λ`.**
-Because `β_s⁻` falls with the effective discount `r+λ` and the markup is decreasing
-in `β`, the markup `M(β_s⁻)` is increasing in `λ` — the `β`-channel of
+Because `β_L⁻` falls with the effective discount `r+λ` and the markup is decreasing
+in `β`, the markup `M(β_L⁻)` is increasing in `λ` — the `β`-channel of
 Proposition 2(ii) that opposes faith-based survival. -/
 theorem markup_betaMinus_increasing_lam {σ μ r lam₁ lam₂ : ℝ}
     (hσ : 0 < σ) (hr : 0 < r) (hlam₁ : 0 < lam₁) (hlt : lam₁ < lam₂) :
