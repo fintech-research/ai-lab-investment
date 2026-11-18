@@ -925,16 +925,16 @@ approximations}\label{sec-conventions}
 Two blocks of the model are solved in its exact primitives: the single
 firm of Section~\ref{sec-single-firm} and the entry game of
 Section~\ref{sec-duopoly}. The closed-form default boundary of
-Proposition 2, the exhibits of Section~\ref{sec-calibration} and Dario's
-dilemma in Section~\ref{sec-valuation} still rest on approximations, the
-first of which is the pure-power approximation of
-Section~\ref{sec-single-firm}; the credit exhibits of
-Section~\ref{sec-valuation} are evaluated at the exact policies, with
-the claims of the entry game. Table~\ref{tbl-domains} collects the
-model's operating assumptions, the domain over which each result is
-stated, and the approximations whose size I have measured, so that a
-reader can see which objects are exact and how large each departure is.
-The conventions are stated below; their magnitudes are in the table.
+Proposition 2 and the exhibits of Section~\ref{sec-calibration} still
+rest on approximations, the first of which is the pure-power
+approximation of Section~\ref{sec-single-firm}; the credit exhibits and
+Dario's dilemma in Section~\ref{sec-valuation} are evaluated at the
+exact policies, with the claims of the entry game.
+Table~\ref{tbl-domains} collects the model's operating assumptions, the
+domain over which each result is stated, and the approximations whose
+size I have measured, so that a reader can see which objects are exact
+and how large each departure is. The conventions are stated below; their
+magnitudes are in the table.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1707}}
@@ -1020,6 +1020,14 @@ Approximation & Pure power: belief-invariant capacity, trigger falling
 in \(\lambda\) & Properties of the approximation; in the exact problem
 \(K^*\) varies with \(\lambda\) and \(X^*\) rises with \(\lambda\) up to
 \(0.13\) \\
+Approximation & Pure power, Dario's dilemma & Loss \(26\%\) against
+\(32\%\) at \(\lambda_{\text{invest}} = 0.02\) and \(23\%\) against
+\(13\%\) at \(0.50\), single firm with precommitted scale; ratio of the
+two losses \(1.2\) against \(2.4\) \\
+Domain & Numerical Finding 1 & Losses are measured at a reference
+demand, half the informed firm's trigger, and are not invariant to it;
+rankings in \(\lambda\) and at a factor of five in \(\log\lambda\) hold
+at the three reference demands and three true rates examined \\
 Approximation & Pure power, against the exact game & Its leader's
 trigger is 22\% below \(X_L\) and 69\% below \(X_P\), its leader's
 capacity 62\% above the capacity at \(X_L\) and 52\% below that at
@@ -2064,123 +2072,157 @@ documented in Section~\ref{sec-calibration} imply large differences in
 investment (the option value itself is not monotone in \(\lambda\) at
 the lowest rates; Remark 3). I now quantify the cost of belief
 mismatches, which I call \emph{Dario's dilemma}: the tension between
-building aggressively for an AI future and managing the financial risk
-of overinvestment.
+building for an AI future that may arrive soon and bearing the cost of
+having built for one that does not.
 
 \subsubsection{Setup}\label{setup}
 
-Consider a firm with true private belief \(\lambda_{\text{true}}\) that
-invests according to
-\(\lambda_{\text{invest}} \neq \lambda_{\text{true}}\), choosing
-trigger, capacity, and training fraction optimally for that possibly
-incorrect belief. Agency problems, strategic signaling, and bounded
-rationality could each produce such a mismatch, none of which the model
-contains: it takes \(\lambda_{\text{invest}}\) as given and prices the
-mismatch rather than deriving it.
+Consider a firm that invests on a belief \(\lambda_{\text{invest}}\)
+when the true arrival rate is \(\lambda_{\text{true}}\). Agency
+problems, strategic signaling, and bounded rationality could each
+produce such a mismatch, none of which the model contains: it takes
+\(\lambda_{\text{invest}}\) as given and prices the mismatch rather than
+deriving it. The mistaken firm follows the policy that its belief
+prescribes in the exact problem of Section~\ref{sec-single-firm}, that
+is, a trigger, a capacity and a training fraction, or waiting for the
+switch. After a switch without capacity every firm does the same thing,
+because the post-switch problem does not involve \(\lambda\). The two
+versions of the single firm's problem give two versions of the exercise.
+With the post-switch scale precommitted (Proposition 1(iii)) every
+belief has a finite pre-switch trigger, so an error in either direction
+is an investment error; I take this version as the main one, because it
+is the one in which the single firm invests before the switch at every
+belief and the one at which its debt is priced above. With scale chosen
+at the switch, a firm that believes \(\lambda \geq 0.073\) waits for the
+switch, as the correctly informed firm does at baseline. I report both,
+and then the same exercise inside the entry equilibrium of
+Section~\ref{sec-duopoly}, in which a firm does invest before the
+switch.
 
 \subsubsection{Value Loss}\label{value-loss}
 
 The value loss from mismatch is \[
-\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
-\] where \(\text{NPV}(\lambda_a, \lambda_b)\) is the expected present
-value, at a common initial demand level \(X_0\), of the policy
-\((X^*, K^*, \phi^*)\) optimal for belief \(\lambda_b\) when the true
-demand process is governed by \(\lambda_a\), with the timing discount
-\((X_0/X^*)^{\beta_H}\) adjusting for different waiting times.
-Percentage losses are reported as
-\(\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})\).
-The levered version keeps the same operating policy and changes only the
-claim being valued: \(\text{NPV}\) then denotes the total claims net of
-the investment outlay, \(E + D - I(K^*)\) with \(E\) the going-concern
-equity of Section~\ref{sec-duopoly}. Because that policy is not
-re-optimized against the levered objective, the levered value function
-is maximized very nearly, but not exactly, at
-\(\lambda_{\text{invest}} = \lambda_{\text{true}}\); the resulting
-shortfall is three orders of magnitude below the mismatch losses
-reported here (Internet Appendix A).
+\Delta V = V(\lambda_{\text{true}}, \lambda_{\text{true}}) - V(\lambda_{\text{true}}, \lambda_{\text{invest}}),
+\] where \(V(\lambda_a, \lambda_b)\) is the exact value under the
+arrival rate \(\lambda_a\), at a reference demand \(X_0\) at which the
+firm has not invested, of the policy that is optimal under
+\(\lambda_b\). Losses are reported as
+\(\Delta V / V(\lambda_{\text{true}}, \lambda_{\text{true}})\). A firm
+whose own trigger lies below \(X_0\) invests at \(X_0\), at the scale
+its belief prescribes there. Unlike in the pure-power approximation of
+Section~\ref{sec-conventions}, the percentage is not invariant to
+\(X_0\): the claim on the post-switch option is common to every policy,
+and it weighs less in firm value as \(X_0\) approaches the trigger. I
+set \(X_0 = X^*(\lambda_{\text{true}})/2\) and report \(X^*/4\) and
+\(3X^*/4\) in Internet Appendix A. Two errors can be called equal in
+three ways: equal differences in \(\lambda\), equal ratios (equal
+differences in \(\log \lambda\)), or equal differences in the expected
+time to the switch \(1/\lambda\). Around
+\(\lambda_{\text{true}} = 0.10\) the pairs I use are \(0.02\) and
+\(0.18\) (an error of \(0.08\) in \(\lambda\)), \(0.02\) and \(0.50\) (a
+factor of five) or \(0.056\) and \(0.18\) (a factor of \(1.8\)), and
+\(0.069\) and \(0.18\) (\(4.4\) years on either side of ten; no
+optimistic belief matches the forty-year error of
+\(\lambda_{\text{invest}} = 0.02\)).
 
-\textbf{Numerical Finding 1} (Dario's dilemma). \emph{Across all
-parameterizations tested, the value loss from conservative
-underinvestment (\(\lambda_{\text{invest}} < \lambda_{\text{true}}\))
-exceeds the value loss from aggressive overinvestment
-(\(\lambda_{\text{invest}} > \lambda_{\text{true}}\)) for the same
-magnitude of mismatch
-\(|\lambda_{\text{invest}} - \lambda_{\text{true}}|\). The asymmetry is
-driven by the training allocation channel: a conservative firm
-under-allocates to training
-(\(\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})\)),
-forgoing the H-regime option value that dominates \(A_{\text{eff}}\) at
-baseline (Internet Appendix A). At baseline parameters with
-\(\lambda_{\text{true}} = 0.10\), a conservative firm investing as if
-\(\lambda = 0.02\) (a belief error of \(-0.08\)) loses approximately
-26\% of value, while an aggressive firm making the equal and opposite
-error, investing as if \(\lambda = 0.18\), loses about 4\%; at
-\(\lambda = 0.20\), the aggressive belief used in the exhibits below,
-the loss is about 6\%. The comparison depends on the coordinate in which
-errors are deemed equal: in the log of the arrival rate, the aggressive
-firm must believe \(\lambda = 0.50\), five times the truth, to lose the
-23\% that the conservative firm loses at one fifth of it. At
-\(\ell = 0.40\), the expected-value asymmetry is essentially unchanged;
-leverage's distinctive contribution is to the tail risk of
-overinvestment, discussed below.}
+\textbf{Numerical Finding 1} (Dario's dilemma). \emph{At the baseline
+calibration with \(\lambda_{\text{true}} = 0.10\) and values measured at
+\(X_0 = X^*/2\), the single firm with precommitted post-switch scale
+loses \(32\%\) of its value by investing as if \(\lambda = 0.02\) and
+\(1.3\%\) by investing as if \(\lambda = 0.18\): for equal errors in the
+level of \(\lambda\) the pessimistic error costs about twenty-five times
+the optimistic one. For equal proportional errors the pessimistic error
+still costs more, by a much smaller factor: \(32\%\) against \(13\%\) at
+a factor of five (\(\lambda_{\text{invest}} = 0.02\) and \(0.50\)), and
+\(4.3\%\) against \(1.3\%\) at a factor of \(1.8\). For equal errors in
+the expected time to the switch the ranking reverses: \(1.0\%\) for the
+pessimist against \(1.3\%\) for the optimist at \(4.4\) years. With
+scale chosen at the switch the comparison is one-sided: every belief at
+or above \(0.073\) prescribes waiting for the switch, which is what the
+correctly informed firm does, and costs nothing, while
+\(\lambda_{\text{invest}} = 0.02\) costs \(41\%\). These are numerical
+results on a grid: the baseline parameters, eleven beliefs between
+\(0.02\) and \(0.50\), and reference demands \(X^*/4\), \(X^*/2\) and
+\(3X^*/4\) (Table~\ref{tbl-dilemma}, Table~\ref{tbl-dilemma-pairs}). At
+true rates of \(0.05\) and \(0.20\) the rankings in levels and at a
+factor of five hold, and those at a factor of \(1.8\) and in expected
+time do not hold at both (Internet Appendix A).}
 
-At the baseline \(\phi^* \approx 0.70\), a conservative firm that
-under-allocates (\(\phi \approx 0.14\) at
-\(\lambda_{\text{invest}} = 0.02\)) sacrifices most of the H-regime
-option value, the dominant component of \(A_{\text{eff}}\), whereas an
-aggressive firm that over-allocates (\(\phi \approx 0.97\) at
-\(\lambda_{\text{invest}} = 0.50\)) loses some L-regime inference
-revenue but retains the H-regime upside. The ranking does not depend on
-the pure-power discounting convention used to price the option
-(Section~\ref{sec-conventions}). Re-solving both belief types inside the
-piecewise stopping problem, with the post-switch scale precommitted to
-\(K_H^*\), preserves and sharpens it: the conservative loss rises from
-26\% to about 40\% and the aggressive loss falls from 6\% to about
-0.6\%. When the firm may instead choose its scale at the switch, the
-optimum under any belief \(\lambda_{\text{invest}} \geq 0.10\) is to
-wait for the switch, so optimistic mismatches cost nothing at baseline
-in the unrestricted problem while the conservative loss rises to about
-43\% (Internet Appendix B). The \(\phi^*(\lambda)\) that drive the
-asymmetry are identical across these problems; the headline percentages
-are those of the reduced model.
+The largest component of the loss is the training allocation, on both
+sides. Internet Appendix A splits each loss into timing (investing at
+the mistaken firm's date, but with the capacity and allocation that are
+best at that date), capacity and allocation. Of the pessimist's \(32\)
+points at \(\lambda_{\text{invest}} = 0.02\), allocation accounts for
+\(24\) and timing for \(8\); of the far optimist's \(13\) points at
+\(0.50\), allocation accounts for \(8\), capacity for \(4\) and timing
+for \(1.5\); the moderate optimist's \(1.3\) points at \(0.18\) are
+\(1.0\) of allocation and \(0.3\) of capacity. The reason allocation
+dominates on the pessimistic side is an identity: at \(\phi^*\) the
+post-switch term is a share \(\phi^*\) of \(A_{\text{eff}}\), \(70\%\)
+at baseline, so a firm that trains with \(14\%\) of its capacity gives
+up most of what an installed firm is worth, whereas a firm that trains
+with \(97\%\) gives up inference revenue and keeps the post-switch
+claim. Two features of the exact problem change what the errors look
+like. The pessimist does not invest late: the trigger rises with
+\(\lambda\) up to about \(0.13\) (Table~\ref{tbl-beliefs}), its own
+trigger lies far below \(X_0\), and it invests at once at a third of the
+informed firm's capacity, so its error is one of scale and allocation
+and of investing too early for the truth. And capacity now responds to
+beliefs: the optimist at \(0.18\) installs \(17\%\) more than the
+informed firm, at nearly the same trigger, and the optimist at \(0.50\)
+installs the same capacity at a trigger \(29\%\) lower.
 
-Figure~\ref{fig-investment-dilemma} plots the value loss against
-\(\lambda_{\text{invest}}\) for a fixed
-\(\lambda_{\text{true}} = 0.10\). The loss is zero at correct beliefs
-and rises in both directions, more steeply on the conservative branch: a
-firm investing as if \(\lambda = 0.02\) loses approximately 26\% of
-value, while a firm investing as if \(\lambda = 0.50\), a belief error
-five times larger, loses approximately 23\%. With leverage
-(\(\ell = 0.40\), dashed line) the curve is nearly identical on the
-conservative side and lies slightly \emph{below} the unlevered curve on
-the aggressive side (21\% versus 23\% at
-\(\lambda_{\text{invest}} = 0.50\)). The entire wedge between the two
-curves is the shareholders' default option, whose flow-deficit bracket
-is identical across belief types, so only the discount factor
-\((X^*/X_D)^{\beta_L^-}\) differs (Internet Appendix A). The aggressive
-firm enters closest to its default boundary, so that option is worth
-most to it: 1.8\% of its NPV against 0.3\% at correct beliefs (Internet
-Appendix A). Leverage therefore raises its measured value slightly even
-as it raises its default risk, so the expected-value metric understates
-leverage's role.
+The pure-power approximation, in which the earlier draft of this
+exercise was computed, gives \(26\%\), \(4.1\%\) and \(23\%\) at
+\(\lambda_{\text{invest}} = 0.02\), \(0.18\) and \(0.50\). Against the
+exact problem it understates the pessimist's loss by six points and
+overstates the optimists' by factors of \(3.1\) and \(1.7\), so its
+ratios are \(6.3\) in levels (against \(25\)) and \(1.16\) at a factor
+of five (against \(2.4\)); the last column of Table~\ref{tbl-dilemma}
+reports it at every belief.
 
-Expected value is not the only margin. The five-year default probability
-under the true demand process, evaluated at each firm's own optimal
-policy, reveals a complementary asymmetry (a first passage under the
-L-regime drift that omits the regime switch, and therefore an upper
-bound on the pre-switch probability; Internet Appendix H). At
-\(\ell = 0.40\) a conservative firm (\(\lambda_{\text{invest}} = 0.02\))
-faces 0.79\%, only slightly above the 0.64\% baseline, because its later
-entry (\(X^* = 0.0055\) against \(0.0047\)) nearly offsets its own
-allocation distortion. An aggressive firm
-(\(\lambda_{\text{invest}} = 0.50\)) faces 5.04\%, nearly eight times
-the baseline: it enters at a much lower trigger (\(X^* = 0.0033\)), and
-over-training (\(\phi^* = 0.97\) against \(0.70\)) depresses L-regime
-inference revenue and pushes the default boundary up. Together these cut
-its distance to default at entry from \(5.1\) to \(3.3\), against
-\(4.9\) for the conservative firm. Capacity plays no part: \(K^*\) is
-independent of \(\lambda\) (Proposition 1), so all three firms carry
-identical coupon obligations.
+Figure~\ref{fig-investment-dilemma} plots the loss against
+\(\lambda_{\text{invest}}\) on a logarithmic axis, on which equal
+proportional errors are equidistant from the truth. In panel (a) the
+loss under precommitted scale rises on both sides of
+\(\lambda_{\text{true}}\) and more steeply on the pessimistic side; with
+scale chosen at the switch it is zero to the right of \(0.073\).
+Leverage does not move these curves. With the policies held at the
+unlevered ones and the claims valued with the option to stop operating
+and fairly priced debt, the losses at \(0.02\), \(0.18\) and \(0.50\)
+are \(31.8\%\), \(1.3\%\) and \(12.7\%\) at every leverage from zero to
+\(0.40\) (Table~\ref{tbl-dilemma-tail}); the option to stop operating,
+which the unlevered firm also holds, accounts for the difference of at
+most \(0.7\) points from the numbers above. Under par debt at
+\(r_c < r\) the financing subsidy rewards scale, so the pessimist's loss
+rises to \(35\%\) at \(\ell = 0.40\) and the optimists' fall slightly.
+
+Expected value is not the only margin. Each mistaken firm enters closer
+than the informed firm to the boundary at which it stops operating, a
+boundary that operating costs create without any debt and that leverage
+shifts (Credit Risk Analysis above). The informed single firm enters at
+\(6.5\) times that boundary; the pessimist at \(0.02\) and the optimist
+at \(0.18\) enter at \(5.6\) and \(5.7\), and the optimist at \(0.50\)
+at \(4.1\), because it enters at a lower trigger while its allocation
+depresses the pre-switch revenue that covers operating costs. The
+five-year probability of reaching the boundary, under the convention of
+Table~\ref{tbl-credit-pd} (a first passage under the L-regime drift that
+omits the switch, and therefore an upper bound on the pre-switch
+probability), is \(0.16\%\) for the informed firm without debt,
+\(0.37\%\) and \(0.34\%\) at \(\lambda_{\text{invest}} = 0.02\) and
+\(0.18\), and \(1.8\%\) at \(0.50\). Under fairly priced debt these
+become \(0.18\%\), \(0.40\%\), \(0.40\%\) and \(2.0\%\) at
+\(\ell = 0.05\), \(0.24\%\), \(0.48\%\), \(0.54\%\) and \(2.6\%\) at
+\(\ell = 0.15\), the range of the archetypes in
+Section~\ref{sec-calibration}, and \(0.47\%\), \(0.71\%\), \(1.0\%\) and
+\(4.3\%\) at \(\ell = 0.40\) (Table~\ref{tbl-dilemma-tail}). The tail
+exposure is therefore set mainly by the belief and not by leverage: the
+far optimist's probability is about eleven times the informed firm's
+without any debt and nine times at \(\ell = 0.40\). It is also
+asymmetric in the opposite direction to the expected-value loss only for
+proportional errors: errors of \(0.08\) in either direction leave the
+two firms equally close to the boundary, and an error of a factor of
+five leaves the optimist with five times the pessimist's probability.
 
 \begin{figure}[!htb]
 
@@ -2192,51 +2234,72 @@ identical coupon obligations.
 
 \caption{\label{fig-investment-dilemma}Value loss as a function of the
 investment belief \(\lambda_{\text{invest}}\) (Numerical Finding 1). The
-loss \(\Delta V\), expressed as a percentage of the first-best value
-\(\text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})\), is plotted
-against the investment belief \(\lambda_{\text{invest}}\) over
-\([0.005, 0.50]\) for a fixed \(\lambda_{\text{true}} = 0.10\). Solid
-line: unlevered (\(\ell = 0\)); dashed line: levered (\(\ell = 0.40\)),
-for which \(\text{NPV}\) denotes the value of the total claims
-\(E + D - I(K^*)\) under the unlevered policy. The shaded region is
-bounded above by the unlevered curve and marks the belief range over
-which that curve exceeds a 10\% loss. The open circles mark the equal
-additive errors \(\lambda_{\text{invest}} = 0.02\) and \(0.18\) on the
-unlevered curve. Under- and overinvestment here mean later or earlier
-entry and less or more training: capacity \(K^*\) is invariant to the
-belief (Proposition 1), so no point on either curve involves over- or
-under-building. Parameters: baseline calibration.}
+loss \(\Delta V\), in percent of the value of the correctly informed
+firm, is plotted against \(\lambda_{\text{invest}}\) on a logarithmic
+axis for \(\lambda_{\text{true}} = 0.10\) (vertical dotted line). Panel
+(a): the single firm, valued exactly at \(X_0 = X^*/2\) on \(121\)
+beliefs between \(0.015\) and \(0.50\), with the post-switch scale
+precommitted (solid) and with scale chosen at the switch (dashed); the
+dotted line is the pure-power approximation. Panel (b): the entry
+equilibrium of Section~\ref{sec-duopoly}, valued at \(X_0 = X_L/2\) at
+thirteen beliefs, for a mistaken firm that is the leader (solid) and one
+that is the follower (dashed) against a correctly informed rival. Open
+markers are the matched pairs of beliefs, on the precommitted-scale
+curve in panel (a) and on the leader's curve in panel (b): circles for
+equal errors in \(\lambda\), squares for equal errors in
+\(\log\lambda\), triangles for equal errors in \(1/\lambda\). Zero
+leverage; fairly priced debt moves the losses by less than \(0.1\)
+percentage point (Table~\ref{tbl-dilemma-tail}). Parameters: baseline
+calibration.}
 
 \end{figure}%
 
 \subsubsection{Implications}\label{implications}
 
-Within the model, being too conservative (\(\Delta V \approx 26\%\) at
-\(\lambda_{\text{invest}} = 0.02\)) costs far more than being too
-aggressive (\(\Delta V \approx 6\%\) at
-\(\lambda_{\text{invest}} = 0.20\)), so the aggressive investment
-reported for frontier AI labs is consistent with value maximization
-rather than requiring extreme optimism about \(\lambda\). The exercise
-compares two point mismatches and averages over no prior, so it
-establishes only that a firm weighing the two errors equally would find
-the conservative one more costly; it illustrates rather than identifies
-beliefs. The asymmetry also makes \emph{underinvestment} more
-informative: a conservative firm allocating little to training either
-holds genuinely pessimistic beliefs about \(\lambda\) or is subject to
-one of the frictions described above, none of which the model contains.
-At the scale of trillion-dollar commitments, however, absolute rather
-than percentage losses can be existential, especially with leverage:
-``there's no hedge on Earth that could stop me from going bankrupt''
-\citep{amodei2026dwarkesh}.
+Within the model, and measured in the level of \(\lambda\), a
+pessimistic error costs more than an optimistic one of the same size:
+\(32\%\) against \(1.3\%\) at an error of \(0.08\). The statement does
+not survive a change of metric unchanged. In logs the two errors are
+closer, \(32\%\) against \(13\%\) at a factor of five; in expected years
+to the switch they are about equal; and the far optimist carries the
+larger tail exposure. Moderate optimism is cheap in this calibration,
+and a belief five times the truth is not: it costs \(13\%\) in expected
+value and multiplies the probability of reaching the shutdown boundary
+by eleven. The aggressive investment reported for frontier AI labs is
+therefore compatible with a moderately optimistic belief at small cost,
+which is a weaker statement than that it requires no optimism. The
+exercise compares point mismatches and averages over no prior, so it
+establishes only how the two errors compare for a firm that weighs them
+equally; it illustrates rather than identifies beliefs. At the scale of
+trillion-dollar commitments, absolute rather than percentage losses can
+be existential: ``there's no hedge on Earth that could stop me from
+going bankrupt'' \citep{amodei2026dwarkesh}.
 
-The dilemma is a single-firm exercise. In the duopoly extension
-(Internet Appendix E), a conservative firm faces an additional strategic
-penalty: by investing later and training less, it cedes the leader
-position to a well-calibrated rival and forfeits the monopoly-phase
-rents that drive the preemption equilibrium (Proposition 3). The
-underinvestment cost rises from 26\% to 38\% and the overinvestment cost
-from 6\% to 17\%: competition raises both losses but narrows the ratio
-from about 4.6 to about 2.2 (Table~\ref{tbl-duopoly-dilemma}).
+The single firm is the monopoly case. Inside the entry equilibrium of
+Section~\ref{sec-duopoly} the benchmark is the equilibrium in which one
+firm leads at \(X_L\) and the other follows, one firm holds the belief
+\(\lambda_{\text{invest}}\), and its rival holds the truth and
+best-responds (Internet Appendix E, Table~\ref{tbl-duopoly-dilemma}). A
+mistaken leader loses more than the single firm on both sides, and the
+optimistic side grows more: \(48\%\) at
+\(\lambda_{\text{invest}} = 0.02\), \(1.7\%\) at \(0.18\) and \(32\%\)
+at \(0.50\), measured at \(X_0 = X_L/2\), so the pessimistic error costs
+twenty-seven times the optimistic one in levels and \(1.5\) times at a
+factor of five. In expected years to the switch the pessimist loses more
+here, \(4.1\%\) against \(1.7\%\), where the single firm's ranking went
+the other way. A mistaken follower that remains a follower loses
+nothing, because the follower's post-switch policy does not involve
+\(\lambda\); on the grid that is the case for beliefs between \(0.075\)
+and \(0.30\). Outside that range the mistaken firm believes that leading
+at once is worth more than waiting for its rival's entry, takes the
+lead, and the informed rival follows: roles change, and the mistaken
+firm bears the leader's loss and gives up the follower's role, \(50\%\)
+at \(0.02\) and \(34\%\) at \(0.50\). The leader's tail exposure is
+larger than the single firm's at each of these beliefs: the five-year
+probability is \(0.84\%\) for the informed leader without debt,
+\(1.6\%\) at \(\lambda_{\text{invest}} = 0.02\) and \(0.18\), and
+\(8.7\%\) at \(0.50\), and \(1.0\%\), \(1.9\%\), \(2.1\%\) and \(9.9\%\)
+at \(\ell = 0.15\) under fairly priced debt.
 
 \section{Discussion}\label{sec-discussion}
 
@@ -2659,8 +2722,7 @@ training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
 \(X^*\) & Investment trigger: exact pre-switch trigger in
 Section~\ref{sec-single-firm}, pure-power trigger in the calibration
-block and Dario's dilemma (Section~\ref{sec-conventions}) & Derived
-(choices) \\
+block (Section~\ref{sec-conventions}) & Derived (choices) \\
 \(X_H^*\), \(K_H^*\) & Post-switch trigger and capacity (Proposition
 1(ii)) & Derived (primitives) \\
 \(X^{\text{pp}}\), \(K^{\text{pp}}\) & Trigger and capacity of the
@@ -3559,180 +3621,444 @@ dilemma)}\label{numerical-finding-1-darios-dilemma}
 \addcontentsline{toc}{subsubsection}{Numerical Finding 1 (Dario's
 dilemma)}
 
-Define the policy-evaluation function
-\(W(\lambda_{\text{invest}}) = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}})\):
-the present value when the firm invests at trigger
-\(X^*(\lambda_{\text{invest}})\) with capacity
-\(K^*(\lambda_{\text{invest}})\) and training fraction
-\(\phi^*(\lambda_{\text{invest}})\), but demand outcomes are realized
-under the true process governed by \(\lambda_{\text{true}}\). The
-operating policy \((X^*, K^*, \phi^*)\) is always the solution to the
-\emph{unlevered} problem at belief \(\lambda_{\text{invest}}\): the firm
-sizes and times its investment on NPV grounds, and exogenous leverage
-\(\ell\) is layered on afterwards. For \(\ell = 0\), \(W\) is the
-unlevered NPV of that policy; for \(\ell > 0\), \(W\) is the value of
-the levered claims net of the outlay, \(E + D - I(K^*)\) with \(E\) the
-going-concern equity, evaluated under the same
-belief-\(\lambda_{\text{invest}}\) operating policy.
+Numerical Finding 1 is a computation in the exact problem, not a
+derivation. This block states what is computed, reports it, and says on
+what grid.
 
-\emph{Optimality.} At \(\ell = 0\) the policy
-\((X^*, K^*, \phi^*)(\lambda_{\text{invest}})\) maximizes precisely the
-objective that \(W\) evaluates, so \(W\) is maximized at
-\(\lambda_{\text{invest}} = \lambda_{\text{true}}\) and
-\(W'(\lambda_{\text{true}}) = 0\) by construction. The second-order loss
-is therefore
-\(\Delta V \approx -\frac{1}{2} W''(\lambda_{\text{true}})(\lambda_{\text{invest}} - \lambda_{\text{true}})^2\),
-which is symmetric to second order.
+\emph{Definitions.} A firm with belief \(\lambda_{\text{invest}}\)
+follows the policy that solves the single-firm problem of Proposition 1
+at that belief: with precommitted post-switch scale, the trigger,
+capacity and training fraction of part (iii); with scale chosen at the
+switch, the trigger and capacity of that problem when the waiting margin
+Equation~\ref{eq-waiting-margin} is below one, and waiting for the
+switch otherwise. The policy is then valued under
+\(\lambda_{\text{true}}\). Below its trigger \(\bar{X}\) a policy
+``install \((K, \phi)\) at \(\bar{X}\)'' is worth, by Step 7 of the
+proof of Proposition 1, \[
+V(X_0) = S(X_0) + \left[A_{\text{eff}}(\phi, K)\bar{X} - \frac{\delta K}{r} - I(K) - S(\bar{X})\right]\left(\frac{X_0}{\bar{X}}\right)^{\beta_L^+},
+\] where \(S\) is the value of never investing before the switch (with
+the post-switch scale precommitted to \(K_H^*\) or chosen at the switch,
+according to the version) and \(A_{\text{eff}}\), \(S\) and
+\(\beta_L^+\) are all evaluated at \(\lambda_{\text{true}}\); a firm
+that waits for the switch is worth \(S(X_0)\). Nothing is priced with
+the exponent \(\beta_H\). A firm whose trigger lies at or below \(X_0\)
+is in its investment region and installs at \(X_0\) the capacity that is
+statically optimal there under its belief. The reference demand is
+\(X_0 = X^*(\lambda_{\text{true}})/2 = 0.0046\) in both versions, with
+\(X^* = 0.0093\) the precommitted-scale trigger of the correctly
+informed firm. Because the informed firm's policy maximizes the
+objective in which every policy is valued, the loss is zero at
+\(\lambda_{\text{invest}} = \lambda_{\text{true}}\) and non-negative
+elsewhere.
 
-For \(\ell > 0\) this step must be weakened, because the operating
-policy optimizes the unlevered NPV while \(W\) values the levered
-claims: the belief that maximizes the levered \(W\) is not exactly
-\(\lambda_{\text{true}}\), and \(W'(\lambda_{\text{true}}) = 0\) holds
-only as an approximation. The discrepancy is numerically negligible. At
-the baseline calibration with \(\ell = 0.40\), the levered \(W\) peaks
-at \(\lambda_{\text{invest}} \approx 0.101\) rather than at
-\(\lambda_{\text{true}} = 0.10\) (the levered objective tilts marginally
-toward optimism, because the shareholders' default option is worth more
-to a firm that enters closer to its default boundary), and
-\(W(\lambda_{\text{true}})\) falls short of that maximum by about
-\(1.3 \times 10^{-5}\) of its value, roughly one thousandth of one
-percent, against the 5--26\% belief-mismatch losses the exercise
-reports. The expansion below is therefore exact for \(\ell = 0\) and is
-applied to \(\ell > 0\) as an approximation whose error is more than
-three orders of magnitude smaller than the effects it describes.
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0700}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1200}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1200}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1200}}@{}}
+\caption{Dario's dilemma for the single firm. The true arrival rate is
+\(\lambda_{\text{true}} = 0.10\), at which the firm with precommitted
+post-switch scale invests at \(X^* = 0.0093\) with \(K^* = 0.0158\) and
+\(\phi^* = 0.70\), and the firm with scale chosen at the switch waits
+for the switch. Columns two to eight are the precommitted-scale problem:
+the demand \(X\), capacity \(K\) and training fraction \(\phi\) at which
+a firm with belief \(\lambda_{\text{invest}}\) invests, starting from
+\(X_0 = X^*/2 = 0.0046\) (\(\dagger\): its own trigger lies below
+\(X_0\) and it invests at once); the loss of value in percent of the
+informed firm's value at \(X_0\), all values exact under
+\(\lambda_{\text{true}}\); and the three components of that loss, which
+sum to it. Timing is the loss of a firm that invests at the entry demand
+shown with the capacity and training fraction that are best there under
+\(\lambda_{\text{true}}\); the remainder is split between capacity and
+allocation by averaging the two orders in which the two can be set to
+their mistaken values. Column nine is the loss in the problem with scale
+chosen at the switch, at the same \(X_0\) (\(\ddagger\): the belief
+prescribes waiting for the switch). Column ten is the loss under the
+pure-power approximation (Equation~\ref{eq-trigger-phi}), in which both
+policies are pure-power policies priced with the factor
+\((X_0/X^*)^{\beta_H}\). Other parameters: baseline
+calibration.}\label{tbl-dilemma}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Entry \(X\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Timing (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Capacity (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Allocation (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Scale at switch (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Pure power (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Entry \(X\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Timing (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Capacity (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Allocation (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Scale at switch (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Pure power (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.020 & 0.0046\(^\dagger\) & 0.0053 & 0.14 & 32.5 & 8.4 & \(-0.2\) &
+24.2 & 40.6 & 26.2 \\
+0.030 & 0.0046\(^\dagger\) & 0.0053 & 0.24 & 23.6 & 8.4 & 0.2 & 15.0 &
+32.8 & 16.5 \\
+0.050 & 0.0055 & 0.0070 & 0.42 & 8.3 & 4.0 & 0.3 & 4.0 & 2.7 & 6.1 \\
+0.056 & 0.0064 & 0.0086 & 0.47 & 4.3 & 1.8 & 0.2 & 2.3 & 0.5 & 4.4 \\
+0.069 & 0.0078 & 0.0117 & 0.56 & 1.0 & 0.3 & 0.1 & 0.7 & 0.0 & 1.8 \\
+0.075 & 0.0083 & 0.0127 & 0.59 & 0.5 & 0.1 & 0.0 & 0.4 & 0\(^\ddagger\)
+& 1.1 \\
+0.150 & 0.0094 & 0.0181 & 0.82 & 0.6 & 0.0 & 0.1 & 0.5 & 0\(^\ddagger\)
+& 2.0 \\
+0.180 & 0.0091 & 0.0184 & 0.86 & 1.3 & 0.0 & 0.3 & 1.0 & 0\(^\ddagger\)
+& 4.1 \\
+0.200 & 0.0089 & 0.0184 & 0.88 & 1.9 & 0.0 & 0.5 & 1.4 & 0\(^\ddagger\)
+& 5.6 \\
+0.300 & 0.0079 & 0.0177 & 0.94 & 5.3 & 0.3 & 1.4 & 3.5 & 0\(^\ddagger\)
+& 12.6 \\
+0.500 & 0.0066 & 0.0158 & 0.97 & 13.3 & 1.5 & 3.9 & 7.8 & 0\(^\ddagger\)
+& 22.6 \\
+\end{longtable}
 
-\emph{Source of asymmetry.} The asymmetry arises from odd-order terms in
-the Taylor expansion, principally
-\(W'''(\lambda_{\text{true}}) \neq 0\). The following heuristic argument
-identifies three contributing channels. The sign of \(W'''\) is verified
-computationally by central finite differences at a fixed reference
-demand \(X_0 = X^*(\lambda_{\text{true}})/2\), with two step sizes
-(\(0.1\lambda_{\text{true}}\) and \(0.2\lambda_{\text{true}}\)) that
-must agree; the loss ranking is verified at the matched pair
-\(\lambda_{\text{true}}(1 \pm 0.8)\) and at the exhibit pair
-\((0.2, 2.0)\lambda_{\text{true}}\). Both checks are run at the baseline
-calibration and at each admissible draw of the \(\pm 25\%\)
-one-at-a-time parameter sweep reported in Internet Appendix E; that
-sweep, and not a search over the joint parameter space, is what the
-robustness of these signs rests on. The expansion is local: a positive
-third derivative orders the losses for small equal errors,
-\(\Delta V(-h) - \Delta V(+h) = \tfrac{1}{3}W'''(\lambda_{\text{true}})h^3 + O(h^5)\),
-and at the baseline that term accounts for the whole gap at \(h = 0.02\)
-(\(0.65\%\) against \(0.43\%\)) but not at \(h = 0.08\), where the
-losses are \(26\%\) and \(4\%\); the finite-error ranking is what the
-matched-pair check establishes.
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.2100}}
+  >{\centering\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1500}}
+  >{\centering\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1400}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\centering\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1400}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\centering\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1400}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}@{}}
+\caption{Losses at pairs of beliefs matched in three metrics,
+\(\lambda_{\text{true}} = 0.10\). Each pair is a pessimistic and an
+optimistic belief at equal distance from the truth in the metric of the
+first column: the first pair is \(0.08\) below and above; the second and
+third are the pairs equal in logs that contain \(0.02\) and \(0.18\);
+the fourth is the pair equal in expected time to the switch that
+contains \(0.18\). Each loss column gives the pessimist's loss and then
+the optimist's, in percent of the informed firm's value, and each ratio
+column the first over the second. ``Single firm'' is the
+precommitted-scale problem of Table~\ref{tbl-dilemma}; ``Leader'' is a
+mistaken firm that leads in the entry equilibrium
+(Table~\ref{tbl-duopoly-dilemma}), valued at \(X_0 = X_L/2\); ``Pure
+power'' is the approximation. Zero
+leverage.}\label{tbl-dilemma-pairs}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Errors matched in
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Single firm (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Leader (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Pure power (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Errors matched in
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Single firm (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Leader (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Pure power (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ratio
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(\lambda\) (\(\pm 0.08\)) & 0.020, 0.180 & 32.5, 1.3 & 24.6 & 47.8, 1.8
+& 27.3 & 26.2, 4.1 & 6.3 \\
+\(\log\lambda\) (factor 5) & 0.020, 0.500 & 32.5, 13.3 & 2.4 & 47.8,
+31.7 & 1.5 & 26.2, 22.6 & 1.2 \\
+\(\log\lambda\) (factor 1.8) & 0.056, 0.180 & 4.3, 1.3 & 3.3 & 9.6, 1.8
+& 5.5 & 4.4, 4.1 & 1.1 \\
+\(1/\lambda\) (\(\pm 4.4\) years) & 0.069, 0.180 & 1.0, 1.3 & 0.8 & 4.1,
+1.8 & 2.3 & 1.8, 4.1 & 0.4 \\
+\end{longtable}
 
-\emph{Case \(\ell = 0\) (unlevered).} The loss decomposes into a timing
-channel and a \emph{training allocation channel}:
+\emph{What the tables show.} In the level of \(\lambda\) the pessimistic
+error is the costlier one by a wide margin in every column of
+Table~\ref{tbl-dilemma-pairs}. In logs it is the costlier one at both
+factors for the single firm with precommitted scale (\(2.4\) and
+\(3.3\)) and for the leader (\(1.5\) and \(5.5\)). In expected years to
+the switch the single firm's ranking reverses (\(0.8\)) and the leader's
+does not (\(2.3\)). With scale chosen at the switch the optimist's loss
+is exactly zero at every belief from \(0.073\) up, because waiting for
+the switch is both what that belief prescribes and what the truth
+prescribes, and the post-switch policy does not involve \(\lambda\); the
+pessimist's loss at \(0.02\) is larger than with precommitted scale
+(\(40.6\%\) against \(32.5\%\)) because the informed firm's alternative,
+waiting with the scale still to be chosen, is worth more. The finding is
+thus that pessimism is the costlier error in levels in every version,
+that the asymmetry is much smaller in logs, and that it is absent or
+reversed in expected time for the single firm.
 
-\begin{itemize}
-\item
-  \emph{Capacity channel.} Since \(K^*\) is independent of both \(\phi\)
-  and \(\lambda\) under the pure-power approximation
-  (Equation~\ref{eq-trigger-phi}), belief mismatches do not distort
-  capacity choice. The capacity channel contributes zero asymmetry.
-\item
-  \emph{Timing channel.} The timing factor \((X_0/X^*)^{\beta}\) is
-  approximately symmetric, contributing only weakly to the asymmetry.
-\item
-  \emph{Training allocation channel (dominant).} A pessimistic firm sets
-  \(\phi^*(\lambda_{\text{invest}}) \ll \phi^*(\lambda_{\text{true}})\),
-  drastically reducing the H-regime component of \(A_{\text{eff}}\). At
-  baseline, the H-regime term accounts for approximately 70\% of
-  \(A_{\text{eff}}\), so under-training destroys the dominant source of
-  firm value. By contrast, an optimistic firm sets
-  \(\phi^*(\lambda_{\text{invest}}) > \phi^*(\lambda_{\text{true}})\),
-  sacrificing L-regime inference revenue but retaining the H-regime
-  upside. The asymmetry in \(W(\lambda_{\text{invest}})\) arises from
-  the composition of two effects: (i) the dominance of the H-regime
-  component in \(A_{\text{eff}}\) at baseline, which means
-  under-training destroys more value than over-training sacrifices, and
-  (ii) the nonlinear mapping \(\lambda \mapsto \phi^*(\lambda)\), whose
-  elasticity \(\varepsilon_{\phi^*,\lambda} = (1-\phi^*)/(1-\alpha)\) is
-  decreasing in \(\lambda\) and is \emph{large} precisely on the
-  pessimistic side: at \(\lambda_{\text{invest}} = 0.02\), where
-  \(\phi^* = 0.14\), the elasticity is \(\varepsilon \approx 1.44\),
-  against \(\varepsilon \approx 0.50\) at the baseline
-  \(\lambda_{\text{true}} = 0.10\) and \(\varepsilon \approx 0.05\) at
-  \(\lambda_{\text{invest}} = 0.50\). A proportional belief error of a
-  given size therefore distorts the allocation far more below
-  \(\lambda_{\text{true}}\) than above it, amplifying policy distortions
-  on the pessimistic side.
-\end{itemize}
+\emph{Small errors.} Since the loss is zero and stationary at
+\(\lambda_{\text{invest}} = \lambda_{\text{true}}\), the ranking for
+small equal errors in \(\lambda\) is set by the third derivative of
+\(V(\lambda_{\text{true}}, \cdot)\), which I compute by central
+differences at the fixed \(X_0\). In the precommitted-scale problem it
+is positive at both step sizes (\(543\) and \(628\) in units of
+\(V/\lambda^3\) at steps of \(0.005\) and \(0.01\)), so the pessimistic
+side is the steeper one locally: the losses at \(0.09\) and \(0.11\) are
+\(0.057\%\) and \(0.039\%\), and at \(0.08\) and \(0.12\) they are
+\(0.30\%\) and \(0.13\%\). With scale chosen at the switch the value is
+flat in the belief on \([0.073, \infty)\) and the derivative is zero.
 
-The training allocation channel dominates, so the computed
-\(W'''(\lambda_{\text{true}})\) is positive at the baseline calibration
-(\(1.17\) and \(1.28\) per unit of \(X_0^{\beta_H}\) at the two step
-sizes) and at every admissible draw of the sweep, and underinvestment
-(\(\lambda_{\text{invest}} < \lambda_{\text{true}}\)) produces a larger
-expected-value loss than overinvestment of equal magnitude, at the
-matched pair in every draw.
+\emph{Decomposition.} Let \((X, K, \phi)\) be the demand, capacity and
+training fraction at which the mistaken firm invests, and
+\((K^\circ, \phi^*)\) the capacity and training fraction that are best
+at \(X\) under \(\lambda_{\text{true}}\). Timing is
+\(V^* - V(X, K^\circ, \phi^*)\), which is non-negative because the
+informed policy is optimal. The remainder
+\(V(X, K^\circ, \phi^*) - V(X, K, \phi)\) is split by averaging over the
+two orders of substitution: capacity is
+\(\tfrac{1}{2}[V(X, K^\circ, \phi^*) - V(X, K, \phi^*)] + \tfrac{1}{2}[V(X, K^\circ, \phi) - V(X, K, \phi)]\)
+and allocation is the same expression with the roles of \(K\) and
+\(\phi\) exchanged. Allocation is the largest component at every belief
+in Table~\ref{tbl-dilemma} except \(0.05\), where timing is as large. On
+the pessimistic side the reason is exact: at \(\phi^*\) the first-order
+condition
+\((1-\phi)^{\alpha-1}/(r - \mu_L + \lambda) = \lambda A_H \phi^{\alpha-1}/(r - \mu_L + \lambda)\)
+makes the post-switch term a share \(\phi^*\) of \(A_{\text{eff}}\),
+which is \(0.70\) at baseline and is an identity, not an approximation;
+a firm that trains with \(14\%\) of its capacity forgoes most of that
+term. Timing matters mainly for the pessimist, whose own trigger lies
+below \(X_0\) (the precommitted-scale trigger rises with \(\lambda\) up
+to about \(0.13\), Table~\ref{tbl-beliefs}), so that it invests at once.
+Capacity matters mainly for the far optimist: at
+\(\lambda_{\text{invest}} = 0.50\) the firm installs the informed firm's
+capacity at a demand \(29\%\) lower, which is too much for that demand.
+The capacity component is slightly negative at \(0.02\) because the two
+errors offset there: a firm with too little training is better off with
+less capacity. With scale chosen at the switch the informed firm waits,
+so the timing component is the loss from investing before the switch at
+all with the best policy for that date, \(19.4\) of the \(40.6\) points
+at \(\lambda_{\text{invest}} = 0.02\), and allocation is \(21.3\).
 
-\emph{Case \(\ell > 0\) (levered).} Leverage operates through the
-default channel. Because \(K^*\) is belief-independent, the coupon
-\(r_c \ell I(K^*)\) is identical across belief types, so the channel
-runs through the allocation and the trigger alone: over-training
-(\(\phi^*(\lambda_{\text{invest}}) \gg \phi^*(\lambda_{\text{true}})\))
-lowers L-regime inference revenue and pushes the default boundary
-\(X_D\) up, while the lower entry trigger
-\(X^*(\lambda_{\text{invest}})\) simultaneously moves entry down toward
-that boundary. The two effects compound and compress the distance to
-default at entry, whereas underinvestment moves the trigger \emph{away}
-from the boundary, largely offsetting the allocation distortion.
+\emph{Reference demand.} The percentage loss depends on \(X_0\). With
+precommitted scale the losses at \(\lambda_{\text{invest}} = 0.02\),
+\(0.18\) and \(0.50\) are \(40.0\%\), \(0.4\%\) and \(4.4\%\) at
+\(X_0 = X^*/4\) and \(27.4\%\), \(2.6\%\) and \(22.8\%\) at \(3X^*/4\),
+against \(32.5\%\), \(1.3\%\) and \(13.3\%\) at \(X^*/2\): as \(X_0\)
+rises the investment option weighs more in firm value, which raises the
+loss of a firm that still waits for its trigger, and a pessimist that
+invests at once does so at a demand nearer the informed trigger, which
+lowers its loss. The ranking in levels holds at all three reference
+demands (ratios \(92\), \(25\) and \(11\)) and so does the ranking at a
+factor of five (\(9.2\), \(2.4\) and \(1.2\)), which becomes close to
+even at \(3X^*/4\); the pair matched in expected time has a ratio of
+\(0.8\) at all three. With scale chosen at the switch the loss at
+\(0.02\) is \(42.7\%\), \(40.6\%\) and \(39.4\%\).
 
-In the total-claim metric \(E + D - I\) this compression registers as a
-small \emph{gain}, not a loss: it raises the value of the shareholders'
-default option, which is the only term separating the levered from the
-unlevered objective and which is worth \(1.8\%\) of NPV to the
-overinvesting firm against \(0.3\%\) at correct beliefs. Both levered
-loss curves therefore lie marginally below their unlevered counterparts
-(at baseline, \(26.1\%\) and \(21.4\%\) at
-\(\lambda_{\text{invest}} = 0.02\) and \(0.50\), against \(26.2\%\) and
-\(22.6\%\) at \(\ell = 0\)), and what leverage amplifies is the
-\emph{ratio} of the two losses (from \(1.16\) to \(1.22\)), not their
-levels. The economically substantive effect of leverage is on the tail
-rather than the mean, and it runs in the \emph{opposite direction} to
-the expected-value asymmetry: the five-year default probability under
-overinvestment (\(\lambda_{\text{invest}} = 0.50\), \(\ell = 0.40\)) is
-nearly eight times the baseline, while underinvestment barely raises
-default risk, because the conservative firm enters at a higher (safer)
-trigger.
+\emph{Other true rates.} At \(\lambda_{\text{true}} = 0.05\) and
+\(0.20\), with the pairs built in the same way and \(X_0\) half the
+corresponding trigger, the precommitted-scale ratios are \(8.9\) and
+\(31\) in levels and \(2.2\) and \(3.0\) at a factor of five. At a
+factor of \(1.8\) they are \(3.1\) and \(0.6\), and in expected time
+\(2.3\) and \(0.2\): for moderate errors in logs or in expected time the
+sign depends on the true rate. I have not run the exercise over the
+parameter sweep of Internet Appendix E.
 
-\textbf{Levered wedge and default-probability asymmetry.} The wedge
-between the levered and unlevered loss curves is exactly the
-shareholders' default option,
-\([R(X_D) + \delta K/r - A_{\text{eff}} X_D](X^*/X_D)^{\beta_L^-}\). At
-this calibration the recovery cap binds (\(R(X_D) = C_D/r\), so
-creditors are made whole in value terms), leaving the bracket equal to
-the flow deficit the firm escapes at default, which is overwhelmingly
-the perpetual operating-cost drain: \(\delta K/r\) is about eighteen
-times the coupon claim \(C_D/r\) at baseline. Because \(K^*\), and hence
-both the coupon and \(\delta K\), is belief-invariant, and the boundary
-condition pins \(A_{\text{eff}} X_D\) to the same constant for every
-belief type, the bracket itself is identical across the conservative,
-correctly calibrated, and aggressive firms; only the discount factor
-\((X^*/X_D)^{\beta_L^-}\) differs, and it is this factor alone that
-produces the differential option value reported above. The
-default-probability comparison, evaluated at each firm's own optimal
-policy rather than at the fixed \(X = 0.10\), \(K = 1\), \(\phi = 0.5\)
-used for the credit-spread grid of Internet Appendix H, makes the
-eight-times figure concrete. A conservative firm
-(\(\lambda_{\text{invest}} = 0.02\)) faces a five-year default
-probability of \(0.79\%\) at \(\ell = 0.40\), only slightly above the
-\(0.64\%\) baseline, because it enters at a higher trigger
-(\(X^* = 0.0055\) against \(0.0047\) at correct beliefs), and the later
-entry nearly offsets the adverse effect of its own allocation distortion
-on the default boundary. An aggressive firm
-(\(\lambda_{\text{invest}} = 0.50\)) faces \(5.04\%\), because it enters
-at a much lower trigger (\(X^* = 0.0033\)) while over-training
-(\(\phi^* = 0.97\) against \(0.70\)) depresses L-regime inference
-revenue and pushes the default boundary up; its distance to default at
-entry, \(X^*/X_D\), falls from \(5.1\) to \(3.3\), whereas the
-conservative firm's falls only to \(4.9\). Capacity plays no part in
-this asymmetry: \(K^*\) is independent of \(\lambda\) (Proposition 1),
-so all three firms install identical capacity and carry identical coupon
-obligations, and the entire effect runs through the entry trigger and
-the training allocation.
+\emph{Leverage and tail risk.} The levered exercise keeps each firm's
+unlevered operating policy, as the credit exhibits of Internet Appendix
+H do, and changes the claims: every installed firm may stop operating,
+the boundary is the coupled regime-switching boundary, debt is priced
+under Equation~\ref{eq-recovery}, and the value is the shareholders'
+entry value \(E - (1-\ell) I(K)\), which under fairly priced debt equals
+firm value less the outlay. Table~\ref{tbl-dilemma-tail} reports the
+losses and, for each policy, the five-year probability of reaching the
+boundary at which the firm stops operating.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0500}}
+  >{\centering\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.2100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\centering\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.2100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0700}}@{}}
+\caption{Dario's dilemma under leverage: value loss and five-year
+default probability, fairly priced debt,
+\(\lambda_{\text{true}} = 0.10\). The loss columns give the loss of
+value at \(\lambda_{\text{invest}} = 0.02\), \(0.18\) and \(0.50\), in
+that order, in percent of the informed firm's value, for the single firm
+with precommitted post-switch scale (at \(X_0 = X^*/2\)) and for a
+mistaken leader of the entry equilibrium (at \(X_0 = X_L/2\)). Policies
+are the unlevered ones at each belief and the claims are the exact
+claims with the option to stop operating and debt, issued at entry at
+the coupon at which it is worth its proceeds \(\ell I(K)\); at
+\(\ell = 0\) the boundary is the shutdown boundary. The remaining
+columns give, for the informed firm (``True'') and for each mistaken
+firm, the probability in percent that demand reaches the boundary within
+five years of entry, a first passage under the L-regime drift with the
+switch omitted, as in Table~\ref{tbl-credit-pd}, whose single-firm and
+leader columns are the ``True'' columns here. Other parameters: baseline
+calibration.}\label{tbl-dilemma-tail}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Single firm: loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+True (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.50\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Leader: loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+True (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.50\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Single firm: loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+True (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.50\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Leader: loss (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+True (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(0.50\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.00 & 31.8, 1.3, 12.7 & 0.16 & 0.37 & 0.34 & 1.80 & 47.8, 1.8, 31.7 &
+0.84 & 1.56 & 1.64 & 8.67 \\
+0.01 & 31.8, 1.3, 12.7 & 0.16 & 0.38 & 0.36 & 1.84 & 47.8, 1.8, 31.7 &
+0.85 & 1.59 & 1.67 & 8.75 \\
+0.05 & 31.8, 1.3, 12.7 & 0.18 & 0.40 & 0.40 & 2.03 & 47.8, 1.8, 31.7 &
+0.90 & 1.68 & 1.78 & 9.06 \\
+0.15 & 31.8, 1.3, 12.7 & 0.24 & 0.48 & 0.54 & 2.56 & 47.8, 1.8, 31.7 &
+1.04 & 1.91 & 2.06 & 9.88 \\
+0.40 & 31.7, 1.3, 12.7 & 0.47 & 0.71 & 1.03 & 4.29 & 47.8, 1.8, 31.7 &
+1.44 & 2.62 & 2.92 & 12.11 \\
+\end{longtable}
+
+Three things follow. First, the expected-value losses do not move with
+fairly priced leverage, for either firm, and they are continuous at
+\(\ell = 0\): the unlevered firm already holds the option to stop
+operating, which is why the first row differs slightly from
+Table~\ref{tbl-dilemma}, whose claims carry no such option (\(31.8\%\),
+\(1.3\%\) and \(12.7\%\) against \(32.5\%\), \(1.3\%\) and \(13.3\%\)).
+On these claims the informed firm's policy is not exactly the best one,
+since it was solved without the option, but the best belief on a grid
+around \(0.10\) improves on it by less than \(10^{-5}\) of value. Under
+par debt at \(r_c < r\) the subsidy rewards scale: at \(\ell = 0.40\)
+the single firm's losses are \(35.4\%\), \(0.9\%\) and \(12.3\%\) and
+the leader's \(48.7\%\), \(1.2\%\) and \(30.9\%\), and the belief that
+maximizes the levered objective is \(0.115\), worth \(0.11\%\) more than
+the informed policy. Second, tail risk is distance to a boundary that
+exists without debt. The informed single firm enters at \(6.5\) times
+its shutdown boundary, the firms with beliefs \(0.02\), \(0.18\) and
+\(0.50\) at \(5.6\), \(5.7\) and \(4.1\) times theirs, and at
+\(\ell = 0.40\) these distances are \(5.4\), \(5.0\), \(4.6\) and
+\(3.4\); for the leader they are \(4.8\), \(4.2\), \(4.2\) and \(2.8\)
+without debt and \(4.3\), \(3.8\), \(3.7\) and \(2.6\) at
+\(\ell = 0.40\). Third, both kinds of mistaken firm are more exposed
+than the informed one, the pessimist because it invests at a low demand
+and the optimist because it trains with nearly all of its capacity and,
+at \(0.50\), also invests earlier. For errors of \(0.08\) in either
+direction the two exposures are about equal; at a factor of five the
+optimist's probability is five times the pessimist's.
+
+\emph{The pure-power approximation.} The earlier draft computed this
+exercise with pure-power policies and the timing factor
+\((X_0/X^*)^{\beta_H}\), in which capacity does not respond to the
+belief, the pessimist invests late and the percentage is invariant to
+\(X_0\). Its losses are in the last column of Table~\ref{tbl-dilemma}
+and the last two of Table~\ref{tbl-dilemma-pairs}: \(26.2\%\),
+\(4.1\%\), \(5.6\%\) and \(22.6\%\) at
+\(\lambda_{\text{invest}} = 0.02\), \(0.18\), \(0.20\) and \(0.50\).
+Against the precommitted-scale problem its error is \(-6.3\) points at
+\(0.02\) and \(+2.8\), \(+3.8\) and \(+9.3\) points at the three
+optimistic beliefs, so it understates the asymmetry in levels (a ratio
+of \(6.3\) against \(24.6\)) and in logs (\(1.2\) against \(2.4\) at a
+factor of five).
 
 \newpage
 
@@ -3758,7 +4084,8 @@ indicates optimization-based computation with no closed-form expression.
 The Proposition 1 and Proposition 3 rows are statements about the exact
 problem; the Proposition 2 rows are statements about the single-boundary
 default reduction of Section~\ref{sec-conventions}; Numerical Finding 1
-is still computed under the pure-power
+is computed in the exact problem and in the exact game, with its
+pure-power counterpart reported as an
 approximation.}\label{tbl-result-taxonomy}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -3831,8 +4158,13 @@ Proposition 3(iv)--(v) & Shapes in \(\lambda\) of \(X_L\), \(K_L\),
 \(X_L/X_D\) and the spread at entry & Numerical & Same grid \\
 Remark 4 & Effects of leverage under par and fairly priced debt &
 Numerical & Baseline; leverage \(0.20\), \(0.40\), \(0.65\) \\
-Numerical Finding 1 & Dario's dilemma & Numerical & All
-parameterizations tested \\
+Numerical Finding 1 & Dario's dilemma: losses from a pessimistic and an
+optimistic belief, matched in \(\lambda\), in \(\log\lambda\) and in
+\(1/\lambda\) & Numerical (exact values of the mismatched policies) &
+Baseline; eleven beliefs for the single firm in both versions of its
+problem, three reference demands, true rates \(0.05\), \(0.10\) and
+\(0.20\); thirteen beliefs and five leverage levels in the entry
+equilibrium \\
 \end{longtable}
 
 \subsection*{B. Numerical Verification
@@ -5176,45 +5508,22 @@ units.}\label{tbl-beliefs}\tabularnewline
 0.50 & 0.972 & 0.00655 & 0.01581 & none & none & 0.00334 & 0.00673 \\
 \end{longtable}
 
-Dario's dilemma (Numerical Finding 1) is re-checked in the same way,
-first within the precommitted-scale class. Each belief's policy is
-re-solved inside that problem under that belief, and both the correct
-and the mismatched policy are then valued under
-\(\lambda_{\text{true}} = 0.10\) at one reference demand
-\(X_0 = X^*(\lambda_{\text{true}})/2\), held fixed across beliefs, which
-replaces the reduced form's \((X_0/X^*)^{\beta_H}\) timing factor
-entirely (unlike the reduced-form percentages, these are not invariant
-to \(X_0\), so the same demand level must be used for every point on the
-curve). The asymmetry survives and widens: at
-\(\lambda_{\text{invest}} = 0.02\) the loss rises from \(26.2\%\) to
-\(39.8\%\), at \(\lambda_{\text{invest}} = 0.20\) it falls from
-\(5.6\%\) to \(0.6\%\), and at \(\lambda_{\text{invest}} = 0.50\) from
-\(22.6\%\) to \(4.5\%\), so the conservative-to-aggressive loss ratio
-widens from \(4.6\) to about \(60\) for the first two beliefs, which sit
-\(0.08\) below and \(0.10\) above the true rate. Two cautions apply to
-the conservative point. At \(\lambda_{\text{invest}} = 0.02\) the
-belief's own optimum in this problem is a corner (a small-scale
-investment as soon as demand is positive, the counterpart of the failing
-(A2) noted above), so the \(39.8\%\) measures the distance between that
-corner policy and the true optimum rather than the cost of a delayed
-trigger; and the ratio is a function of the reference demand, since the
-conservative loss grows as \(X_0\) falls. The optimal training fractions
-coincide in the two problems at every belief considered, which is why
-the mechanism behind the finding is unaffected; the losses reported in
-Section~\ref{sec-valuation} are those of the reduced model, which
-understates the cost of pessimism and overstates the cost of optimism
-relative to this problem. In the unrestricted problem the comparison
-degenerates rather than reverses. Because the pure switching strategy
-does not depend on beliefs, every belief whose unrestricted optimum is
-to wait (\(\lambda_{\text{invest}} \geq 0.10\) at baseline) shares the
-true optimum and incurs no loss, whereas a conservative belief still
-invests early: the loss at \(\lambda_{\text{invest}} = 0.02\) is
-\(42.7\%\) and at \(0.05\) it is \(1.0\%\). The ranking of Numerical
-Finding 1, that pessimism costs more than optimism, therefore holds in
-every version of the problem, but its magnitude on the optimistic side
-is a property of the reduced model and of the precommitted-scale class,
-not of the unrestricted problem, in which the cost of optimism is zero
-at baseline.
+Dario's dilemma (Numerical Finding 1) is computed in the exact problem,
+in both versions, and its pure-power counterpart is reported beside it
+as the approximation (Internet Appendix A, Table~\ref{tbl-dilemma}). The
+exact losses are reproduced by two solvers that share no code with the
+one behind Table~\ref{tbl-dilemma}, at the reference demand of the
+earlier re-check, half the pure-power trigger (\(X_0 = 0.0024\)). A
+direct search over capacity and allocation on the exact value function
+gives precommitted-scale losses of \(39.8\%\), \(2.8\%\), \(0.6\%\) and
+\(4.5\%\) at \(\lambda_{\text{invest}} = 0.02\), \(0.05\), \(0.20\) and
+\(0.50\), and the solver of the problem with scale chosen at the switch
+gives \(42.7\%\), \(1.0\%\) and zero at \(0.02\), \(0.05\) and \(0.20\);
+both agree with the routine behind Table~\ref{tbl-dilemma}, evaluated at
+that \(X_0\), to five significant digits. These differ from the entries
+of Table~\ref{tbl-dilemma} only because the reference demand differs.
+The optimal training fractions coincide with the closed form at every
+belief.
 
 \textbf{The nested pure-power game: separable reduction of the follower
 problem.} Proposition 3(i) is the exact counterpart of this reduction,
@@ -6254,74 +6563,220 @@ through the \emph{level} of training investment, not its adjustability.
 A full dynamic treatment with continuous \(\phi_t\) control is left for
 future work.
 
-\textbf{Duopoly Dario's dilemma.} The single-firm formalization of
-Dario's dilemma (Numerical Finding 1) isolates the belief-mismatch
-channel, leaving open whether competitive preemption amplifies the
-asymmetry. To assess this, I compute a one-sided duopoly dilemma: a
-well-calibrated rival follows its single-firm optimal policy (trigger,
-capacity, and training fraction) under \(\lambda_{\text{true}} = 0.10\),
-while the focal firm invests according to its mistaken belief
-\(\lambda_{\text{invest}}\); the firm with the lower trigger leads, and
-the leader's monopoly-phase rent is eroded at the rival's entry. This is
-a tractable benchmark rather than the full preemption equilibrium, since
-the rival does not re-optimize against the focal firm's policy, and it
-isolates the strategic cost of ceding the leader position.
+\textbf{Duopoly Dario's dilemma.} The single-firm exercise (Numerical
+Finding 1) describes the monopoly case. Here the mismatch is computed
+inside the entry equilibrium of Section~\ref{sec-duopoly}. The benchmark
+is the equilibrium of Proposition 3(iii) at
+\(\lambda_{\text{true}} = 0.10\), in which one firm leads at
+\(X_L = 0.0034\) with \((K_L, \phi_L) = (0.0042, 0.68)\) and the other
+follows. One firm holds the belief \(\lambda_{\text{invest}}\); its
+rival holds the truth and knows the mistaken firm's policy. Values are
+exact under \(\lambda_{\text{true}}\) and measured at
+\(X_0 = X_L/2 = 0.0017\), where neither firm is installed; if the switch
+arrives first, each firm is worth the mutual-waiting value \(W\) of the
+proof of Proposition 3.
+
+\emph{Mistaken leader.} The mistaken firm best-responds, under its
+belief, to what its rival does. The rival follows, and once it follows
+it waits for the switch, which is the follower's best response at the
+true rate in every cell computed. The mistaken leader therefore invests
+at the demand, capacity and training fraction that maximize its believed
+value of leading over mutual waiting, the counterpart of
+Equation~\ref{eq-first-investment} at its belief, or at once at \(X_0\)
+when that demand lies below \(X_0\). For beliefs of \(0.075\) and above
+this is the leader's policy of the equilibrium at that belief
+(Table~\ref{tbl-duopoly-beliefs}), which the computation reproduces to
+within \(0.3\%\) in the trigger; for lower beliefs a rival sharing the
+belief would enter before the switch, which the informed rival does not
+do. The informed rival's value of waiting for the mistaken firm's entry
+exceeds its value of investing first at every demand scanned between
+\(X_0\) and that entry, by the margin in the column ``Rival's margin''
+of Table~\ref{tbl-duopoly-dilemma}, so the rival does follow.
+
+\emph{Mistaken follower.} Once the leader has entered, the follower's
+post-switch policy does not involve \(\lambda\), so a mistaken follower
+that waits for the switch behaves exactly as an informed one and loses
+nothing. Its belief can matter in two ways. It may enter before the
+switch, which on this grid it would do only at beliefs at which it does
+not stay a follower. And before the leader's entry it may take the lead:
+under its belief it compares leading at the demand it likes best below
+\(X_L\) with waiting for its rival's entry at \(X_L\), and it invests
+first when leading is worth more. Roles then change. The informed firm,
+which prefers following to leading at these demand levels, follows; the
+outcome is that of the mistaken leader; and the loss is measured against
+the benchmark follower's value, which is higher than the benchmark
+leader's.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4000}}
-  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
-  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}@{}}
-\caption{Dario's dilemma: value loss from belief mismatch, single-firm
-versus duopoly. \(\Delta V\) is the loss of value, in percent, from
-investing under the mistaken belief \(\lambda_{\text{invest}}\) when the
-true arrival rate is \(\lambda_{\text{true}} = 0.10\), relative to the
-value of the correctly-believed policy. In the duopoly column the rival
-follows its single-firm optimal policy under \(\lambda_{\text{true}}\)
-and does not re-optimize against the focal firm, and the firm with the
-lower trigger leads. Parameters: baseline
+  >{\raggedright\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1000}}@{}}
+\caption{Dario's dilemma inside the entry equilibrium,
+\(\lambda_{\text{true}} = 0.10\), zero leverage. Columns two to four
+give the demand \(X\), capacity \(K\) and training fraction \(\phi\) at
+which a mistaken firm that leads makes the first investment, starting
+from \(X_0 = X_L/2 = 0.0017\) (\(\dagger\): the demand it prefers lies
+below \(X_0\) and it invests at once); the training fraction at
+\(\lambda_{\text{invest}} = 0.02\) is the lower bound of the search.
+``Leader'' is the loss of value of the mistaken firm when it is the
+designated leader, in percent of the informed leader's value at \(X_0\),
+with values exact under \(\lambda_{\text{true}}\) and the rival
+best-responding as a follower; the next three columns are its
+components, defined as in Table~\ref{tbl-dilemma} with the capacity and
+training fraction that are best for a leader entering at the demand
+shown. ``Rival's gain'' is the change in the informed rival's value
+relative to the benchmark follower's. ``Rival's margin'' is the smallest
+excess, over a scan of demand levels between \(X_0\) and the entry
+demand (fifteen log-spaced points from \(X_0\) to \(2X_L\), those below
+the entry demand) and at the entry demand, of the rival's value of
+waiting for the mistaken firm's entry over its value of investing first,
+in percent of the former. ``Follower'' is the loss of a mistaken firm
+designated as the follower, in percent of the informed follower's value
+(\(\ddagger\): it takes the lead, at the entry of columns two to four;
+otherwise it stays the follower). Other parameters: baseline
 calibration.}\label{tbl-duopoly-dilemma}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-Scenario
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\Delta V\) (single-firm)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\Delta V\) (duopoly)
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Entry \(X\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Timing (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Capacity (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Allocation (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Rival's gain (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Rival's margin (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower (\%)
 \end{minipage} \\
 \midrule\noalign{}
 \endfirsthead
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
-Scenario
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\Delta V\) (single-firm)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
-\(\Delta V\) (duopoly)
+\(\lambda_{\text{invest}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Entry \(X\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Timing (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Capacity (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Allocation (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Rival's gain (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Rival's margin (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower (\%)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Conservative (\(\lambda_{\text{invest}} = 0.02\)) & 26\% & 38\% \\
-Aggressive (\(\lambda_{\text{invest}} = 0.20\)) & 6\% & 17\% \\
+0.020 & 0.0017\(^\dagger\) & 0.0014 & 0.01 & 47.8 & 4.1 & \(-0.3\) &
+44.0 & 41.9 & 34.7 & 49.6\(^\ddagger\) \\
+0.030 & 0.0017\(^\dagger\) & 0.0013 & 0.19 & 24.8 & 4.1 & \(-0.2\) &
+20.9 & 24.2 & 25.4 & 27.4\(^\ddagger\) \\
+0.050 & 0.0017\(^\dagger\) & 0.0014 & 0.38 & 11.7 & 4.1 & 0.2 & 7.4 &
+18.0 & 21.5 & 14.7\(^\ddagger\) \\
+0.056 & 0.0017\(^\dagger\) & 0.0014 & 0.42 & 9.6 & 4.1 & 0.2 & 5.3 &
+16.9 & 20.8 & 12.8\(^\ddagger\) \\
+0.069 & 0.0019 & 0.0017 & 0.52 & 4.1 & 2.3 & 0.1 & 1.7 & 10.9 & 16.5 &
+7.4\(^\ddagger\) \\
+0.075 & 0.0023 & 0.0022 & 0.56 & 1.9 & 1.0 & 0.1 & 0.8 & 6.9 & 13.3 &
+0.0 \\
+0.150 & 0.0038 & 0.0056 & 0.81 & 0.8 & 0.1 & 0.2 & 0.6 & \(-2.1\) & 3.4
+& 0.0 \\
+0.180 & 0.0035 & 0.0054 & 0.85 & 1.8 & 0.0 & 0.4 & 1.4 & \(-2.0\) & 3.6
+& 0.0 \\
+0.200 & 0.0033 & 0.0051 & 0.87 & 2.6 & 0.0 & 0.6 & 2.0 & \(-1.7\) & 4.1
+& 0.0 \\
+0.250 & 0.0027 & 0.0042 & 0.91 & 5.8 & 0.2 & 1.5 & 4.2 & \(-0.8\) & 5.7
+& 0.0 \\
+0.300 & 0.0023 & 0.0035 & 0.93 & 10.7 & 0.8 & 2.8 & 7.1 & 0.4 & 7.3 &
+0.0 \\
+0.400 & 0.0017 & 0.0026 & 0.96 & 25.0 & 3.6 & 6.6 & 14.8 & 2.9 & 10.0 &
+27.6\(^\ddagger\) \\
+0.500 & 0.0017\(^\dagger\) & 0.0026 & 0.97 & 31.7 & 4.1 & 8.9 & 18.8 &
+2.7 & 9.8 & 34.1\(^\ddagger\) \\
 \end{longtable}
 
-Competition amplifies the cost of belief mismatches in both directions,
-but the asymmetry is preserved. A conservative firm
-(\(\lambda_{\text{invest}} = 0.02\)) loses 38\% of value in duopoly
-versus 26\% in the single-firm benchmark: it invests later
-(\(X^* = 0.0055\) vs.~the rival's 0.0047), ceding the leader position
-and forfeiting monopoly-phase rents, while also under-allocating to
-training (\(\phi = 0.14\) vs.~\(\phi^* = 0.70\)). An aggressive firm
-(\(\lambda_{\text{invest}} = 0.20\)) loses 17\% in duopoly versus 6\% in
-the single-firm case: it leads (\(X^* = 0.0040\)) but over-allocates to
-training (\(\phi = 0.88\)), sacrificing L-regime revenue in both the
-monopoly and duopoly phases. The competitive environment amplifies both
-sides because the mismatched firm faces a well-calibrated rival, and the
-underinvestment cost remains roughly twice the overinvestment cost. The
-asymmetry therefore survives competition but narrows: the ratio falls
-from about \(4\times\) in the single-firm benchmark to about \(2\times\)
-in the duopoly.
+The leader loses on both sides, and more than the single firm of
+Table~\ref{tbl-dilemma} at every belief the two tables share. Allocation
+is again the largest component. On the pessimistic side the leader's
+allocation error is larger than the single firm's because a pessimistic
+leader expects little from a post-switch contest against a follower many
+times its size: at \(\lambda_{\text{invest}} = 0.02\) it trains with at
+most \(1\%\) of its capacity and loses \(48\%\). On the optimistic side
+the loss grows faster than for the single firm, \(32\%\) at \(0.50\)
+against \(13\%\), because the optimistic leader both trains with nearly
+all of its capacity and installs a capacity that is too large for the
+early demand at which it enters. The ratios of the pessimistic to the
+optimistic loss are in Table~\ref{tbl-dilemma-pairs}: \(27\) in levels,
+\(1.5\) and \(5.5\) at factors of five and \(1.8\), and \(2.3\) in
+expected time. The informed rival gains when a pessimist leads, by
+\(42\%\) at \(0.02\), because a small leader that trains little leaves
+it most of the post-switch contest, and it loses about \(2\%\) when a
+moderate optimist leads.
+
+The follower's column has a simple structure. For beliefs between
+\(0.075\) and \(0.30\) the mistaken follower stays a follower and its
+loss is exactly zero. For beliefs of \(0.069\) and below and of \(0.40\)
+and above it believes that leading at once, or at its own trigger, is
+worth more than waiting for its rival's entry, and it takes the lead:
+the believed value of leading exceeds the believed value of waiting by
+between \(2\%\) (at \(0.069\)) and \(124\%\) (at \(0.02\)). Its loss is
+then the leader's loss plus what it gives up by not following, between
+\(1.8\) and \(3.3\) points. So a mistaken belief can change who invests
+first, and when it does the case is that of the mistaken leader.
+Leverage leaves these numbers where they are under fairly priced debt
+(Table~\ref{tbl-dilemma-tail}).
+
+Four limits apply. The mistaken firm's investment region is taken to be
+the set of demand levels above the demand that maximizes its believed
+coefficient of leading, as the linear complementarity solve of the proof
+of Proposition 3 finds for the equilibrium leader; that solve was not
+repeated at each belief. The rival's preference for following is checked
+on the demand scan and not between its points. The caveats of
+Proposition 3(iii) carry over: the benchmark is one asymmetric
+equilibrium, the symmetric mixed equilibrium is not solved, and the
+assignment of roles is a selection. And under leverage the policies are
+the unlevered ones, as in Internet Appendix H.
+
+\emph{Non-equilibrium comparison of the earlier draft.} The earlier
+draft compared a mistaken firm with a rival that followed its
+single-firm pure-power policy without best-responding, and measured the
+loss against symmetric simultaneous entry at that policy, which is not
+an equilibrium of the entry game. That comparison gives losses of
+\(38\%\) at \(\lambda_{\text{invest}} = 0.02\) and \(17\%\) at \(0.20\),
+against \(26\%\) and \(6\%\) for the pure-power single firm. It is
+reported here only so that those numbers can be traced; the
+corresponding numbers in the equilibrium are the \(48\%\) and \(2.6\%\)
+of Table~\ref{tbl-duopoly-dilemma}.
 
 \textbf{Alternative regime structure.} The binary regime process is a
 modeling choice, and the concern is that it drives the results. I do not
