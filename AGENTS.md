@@ -2,7 +2,7 @@
 
 A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry).
 
-**Status:** manuscript and submission materials are drafted; the closed-form results are machine-checked in Lean. The target-journal ladder (Management Science first, then JFQA, Review of Finance, …) and the remaining pre-submission checklist live in `submission/README.md` — consult it before making claims about journal fit.
+**Status:** manuscript and submission materials are drafted; parts of the closed-form algebra are machine-checked in Lean (scope in `lean/README.md`). The target-journal ladder (Management Science first, then JFQA, Review of Finance, …) and the remaining pre-submission checklist live in `submission/README.md` — consult it before making claims about journal fit.
 
 ## Commands
 

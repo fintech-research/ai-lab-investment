@@ -22,7 +22,7 @@ Results are labeled by method: Propositions 1–3 for analytical results, **Nume
 
 ## Proof Verification
 
-The closed-form algebra of Propositions 1–3 is machine-checked in Lean 4/Mathlib (`../lean/`), and Internet Appendix A opens with a paragraph describing exactly what is and is not formalized. If you change a closed form, a first-order condition, or a comparative static, check whether the corresponding Lean theorem and that scope paragraph need updating (`lean/README.md` maps theorems to paper results).
+Parts of the closed-form algebra of Propositions 1–3 and Corollary 1 are machine-checked in Lean 4/Mathlib (`../lean/`), as identities and inequalities under stated hypotheses (no optimality, existence or uniqueness argument and no number), and Internet Appendix A opens with two paragraphs describing exactly what is and is not formalized. Never write "machine-checked" or "formally verified" next to a claim that `lean/README.md` does not map to a theorem. If you change a closed form, a first-order condition, or a comparative static, check whether the corresponding Lean theorem and that scope paragraph need updating (`lean/README.md` maps theorems to paper results).
 
 ## IMPORTANT: Figures
 
