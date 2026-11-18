@@ -72,9 +72,9 @@ drop `informs2014.bst` (from the INFORMS LaTeX author package) into `paper/` and
       stripped from the blind manuscript, so the generative-AI statement in
       `ai-disclosure.md` must go into the cover letter / portal disclosure field instead
 - [ ] Keywords (3–5, as printed on the manuscript title page): real options; irreversible
-      capacity investment; artificial intelligence; duopoly preemption; default risk
+      capacity investment; artificial intelligence; duopoly entry timing; default risk
 - [ ] JEL codes (from `paper/keywords.tex`): C73, D25, G31, G32, G33, L13, O33
-      (C73 = stochastic and dynamic games, for the preemption equilibrium; D25 =
+      (C73 = stochastic and dynamic games, for the entry equilibrium; D25 =
       intertemporal firm choice: investment, capacity, financing)
 - [ ] INFORMS subject classifications (proposed; confirm the exact wording against the
       portal's list at submission time):
