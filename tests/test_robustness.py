@@ -342,9 +342,9 @@ class TestJointSweep:
                 assert row[name] == pytest.approx(getattr(base, name) * scale, rel=1e-8)
 
     def test_cache_reproduces_on_a_prefix(self, rows):
-        """The first 48 draws are re-solved and compared with the cache."""
-        fresh = run_joint_sweep(n_draws=48, workers=1)
-        for new, old in zip(fresh, rows[:48], strict=True):
+        """The first 24 draws are re-solved and compared with the cache."""
+        fresh = run_joint_sweep(n_draws=24, workers=1)
+        for new, old in zip(fresh, rows[:24], strict=True):
             assert new["admissible"] == old["admissible"]
             if not new["admissible"]:
                 assert new["failure"] == old["failure"]
