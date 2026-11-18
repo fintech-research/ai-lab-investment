@@ -400,7 +400,7 @@ def create_default_boundaries() -> plt.Figure:
     fig.legend(
         handles, labels, loc="lower center", ncol=4, fontsize="small", frameon=False
     )
-    fig.tight_layout(rect=(0.0, 0.08, 1.0, 1.0))
+    fig.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
     return fig
 
 
@@ -449,9 +449,12 @@ def create_credit_risk() -> plt.Figure:
         policy = float(profiles["par"][role]["phi_policy"])
         for ax in (ax_r, ax_q):
             ax.axvline(policy, color=colour, linestyle=":", linewidth=0.9)
-    ax_p.plot([], [], "k-", linewidth=1.4, label="Par debt")
-    ax_p.plot([], [], "k--", linewidth=1.4, label="Fairly priced debt")
     ax_p.legend(loc="upper left", fontsize="x-small", framealpha=0.95)
+    ax_s.plot([], [], color="0.45", linestyle="-", linewidth=1.4, label="Par debt")
+    ax_s.plot(
+        [], [], color="0.45", linestyle="--", linewidth=1.4, label="Fairly priced debt"
+    )
+    ax_s.legend(loc="upper left", fontsize="x-small", framealpha=0.95)
 
     ax_s.set_xlabel(r"Leverage $\ell$ (D/I)")
     ax_s.set_ylabel("Spread at entry over $r$ (bps)")
