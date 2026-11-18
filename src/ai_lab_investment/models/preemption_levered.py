@@ -91,7 +91,7 @@ from bisect import bisect_right
 from dataclasses import dataclass
 from itertools import pairwise
 from math import inf, isfinite
-from typing import cast
+from typing import NamedTuple, cast
 
 import numpy as np
 from scipy import interpolate, linalg, optimize
@@ -1410,38 +1410,176 @@ def expected_entry_time(params: ModelParameters, X_from: float, X_to: float) -> 
 DEVIATION_TOLERANCE = 1e-5
 
 
+class EntryScan(NamedTuple):
+    """Demand scan behind X_L.
+
+    By default the scan is anchored at two objects that exist at every
+    admissible parameterization, the single firm's post-switch trigger
+    X_H* and its precommitted-scale pre-switch trigger X*: it runs from
+    ``span[0]`` times the lower of the two to ``span[1]`` times the higher,
+    with ``points`` points per decade, and is extended by a decade at a time
+    (at most `ENTRY_SCAN_EXTENSION` at each end) while the quantity that
+    decides the answer peaks at an end. With ``fixed`` the scan is instead
+    ``points`` points over ``span`` in units of X_H*, with no extension.
+    ``xatol`` is the tolerance on log X_L of the refinement.
+    """
+
+    points: float
+    span: tuple[float, float]
+    xatol: float
+    fixed: bool = False
+
+
+#: Decades by which the scan behind X_L may be extended at each end.
+ENTRY_SCAN_EXTENSION = 3
+
+
+def entry_scan_anchors(game: ExactPreemptionGame) -> tuple[float, float]:
+    """(X_H*, X*): the single firm's post-switch and precommitted triggers.
+
+    X* is replaced by X_H* where the precommitted-scale problem has no
+    solution on its capacity grid.
+    """
+    try:
+        X_star = float(game.single.precommitted_optimum().X_star)
+    except (RuntimeError, ValueError):
+        X_star = float("nan")
+    if not (isfinite(X_star) and X_star > 0.0):
+        X_star = game.X_ref
+    return game.X_ref, X_star
+
+
+def entry_scan_grid(game: ExactPreemptionGame, scan: EntryScan) -> np.ndarray:
+    """Initial demand grid of the scan behind X_L (see `EntryScan`)."""
+    if scan.fixed:
+        low, high = scan.span
+        return game.X_ref * np.geomspace(low, high, int(scan.points))
+    anchors = entry_scan_anchors(game)
+    low, high = scan.span[0] * min(anchors), scan.span[1] * max(anchors)
+    n = int(np.ceil(scan.points * np.log10(high / low))) + 1
+    return np.geomspace(low, high, n)
+
+
+def _leader_row(
+    game: ExactPreemptionGame, X: float, start: tuple[float, float] | None
+) -> tuple[float, float, float, float]:
+    K, phi, lead = game.leader_best_policy(X, start)
+    follow = float(game.subgame(K, phi).follower_value(X)[0])
+    return K, phi, lead, follow
+
+
 def _scan_leader(
     game: ExactPreemptionGame,
     grid: np.ndarray,
-    X_P: float,
-    start: tuple[float, float],
-) -> tuple[np.ndarray, np.ndarray]:
+    pivot: int,
+    start: tuple[float, float] | None = None,
+) -> tuple[np.ndarray, np.ndarray, bool, bool]:
     """Leader's best policy and both roles' values along a demand grid.
 
-    The optimizer is warm-started from X_P outward in both directions. The
+    The optimizer starts at ``grid[pivot]`` (from ``start`` when given,
+    otherwise cold) and is warm-started outward in both directions. The
     grid is truncated where no leader policy keeps the follower out.
 
     Returns:
-        (grid, table) with rows (K_L, phi_L, L*, F) of the table.
+        (grid, table, complete_low, complete_high), with rows (K_L, phi_L,
+        L*, F) of the table, and whether the scan reached each end of the
+        grid.
     """
-    pivot = int(np.argmin(np.abs(np.log(grid / X_P))))
     rows: dict[int, tuple[float, float, float, float]] = {}
     for indices in (range(pivot, -1, -1), range(pivot + 1, len(grid))):
-        policy = start
+        if pivot in indices:
+            policy = start
+        elif pivot in rows:
+            policy = rows[pivot][:2]
+        else:
+            break
         for i in indices:
-            X = float(grid[i])
             try:
-                K, phi, lead = game.leader_best_policy(X, policy)
+                row = _leader_row(game, float(grid[i]), policy)
             except RuntimeError:
                 break
-            policy = (K, phi)
-            follow = float(game.subgame(K, phi).follower_value(X)[0])
-            rows[i] = (K, phi, lead, follow)
+            policy = row[:2]
+            rows[i] = row
     kept = sorted(rows)
     if len(kept) < 5 or kept != list(range(kept[0], kept[-1] + 1)):
         msg = "Leader re-optimization failed on the entry scan"
         raise RuntimeError(msg)
-    return grid[kept], np.array([rows[i] for i in kept])
+    table = np.array([rows[i] for i in kept])
+    return grid[kept], table, kept[0] == 0, kept[-1] == len(grid) - 1
+
+
+def _extend_scan(
+    game: ExactPreemptionGame,
+    grid: np.ndarray,
+    table: np.ndarray,
+    points: np.ndarray,
+    upward: bool,
+) -> tuple[np.ndarray, np.ndarray, bool]:
+    """Continue the scan over ``points``, outward from one end of ``grid``.
+
+    Returns the extended grid and table and whether every point was solved
+    (the scan stops where no leader policy keeps the follower out).
+    """
+    edge = -1 if upward else 0
+    policy = (float(table[edge, 0]), float(table[edge, 1]))
+    rows = []
+    for X in points:
+        try:
+            row = _leader_row(game, float(X), policy)
+        except RuntimeError:
+            break
+        policy = row[:2]
+        rows.append(row)
+    complete = len(rows) == len(points)
+    if not rows:
+        return grid, table, complete
+    new_grid, new_rows = points[: len(rows)], np.array(rows)
+    if upward:
+        return np.concatenate([grid, new_grid]), np.vstack([table, new_rows]), complete
+    return (
+        np.concatenate([new_grid[::-1], grid]),
+        np.vstack([new_rows[::-1], table]),
+        complete,
+    )
+
+
+def _extend_entry_scan(
+    game: ExactPreemptionGame,
+    scan: EntryScan,
+    grid: np.ndarray,
+    table: np.ndarray,
+    open_low: bool,
+    open_high: bool,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """Extend the scan by a decade at an end while the answer peaks there.
+
+    The decisive quantity is h = [L* - W] X^{-beta_L^+} where leading beats
+    waiting somewhere on the scan, and L* / W otherwise. An end is extended
+    only if the scan reached it, at most `ENTRY_SCAN_EXTENSION` times.
+
+    Returns:
+        (grid, table, decades added).
+    """
+    if scan.fixed:
+        return grid, table, 0
+    wait = game.mutual_waiting_claim("reoptimized")
+    step = float(grid[1] / grid[0])
+    n_new = int(np.ceil(scan.points))
+    added = {"low": 0, "high": 0}
+    while True:
+        h = (table[:, 2] - wait(grid)) * grid ** (-game.bp)
+        score = h if np.max(h) > 0.0 else table[:, 2] / wait(grid)
+        i = int(np.argmax(score))
+        if i == 0 and open_low and added["low"] < ENTRY_SCAN_EXTENSION:
+            points = grid[0] * step ** -np.arange(1, n_new + 1)
+            grid, table, open_low = _extend_scan(game, grid, table, points, False)
+            added["low"] += 1
+        elif i == len(grid) - 1 and open_high and added["high"] < ENTRY_SCAN_EXTENSION:
+            points = grid[-1] * step ** np.arange(1, n_new + 1)
+            grid, table, open_high = _extend_scan(game, grid, table, points, True)
+            added["high"] += 1
+        else:
+            return grid, table, added["low"] + added["high"]
 
 
 def _stopping_check(
@@ -1528,13 +1666,39 @@ def _spline_peak(X: np.ndarray, h: np.ndarray) -> tuple[float, float]:
     return float(fine[i]), float(values[i])
 
 
+#: Keys of `assigned_leader_equilibrium` evaluated at X_L (nan, or inf for
+#: the triggers, when no firm invests before the switch on the scan).
+_ENTRY_KEYS: tuple[str, ...] = (
+    "X_L",
+    "K_L",
+    "phi_L",
+    "leader_value",
+    "follower_value",
+    "waiting_value",
+    "lead_over_wait",
+    "follower_over_leader",
+    "X_L_over_X_P",
+    "coefficient_ratio",
+    "leader_best_other_trigger",
+    "coefficient_single_peaked",
+    "lcp_trigger",
+    "lcp_upper_set",
+    "lcp_coefficient_error",
+    "follower_margin",
+    "follower_margin_to_X_P",
+    "follower_margin_if_leading_after_switch",
+    "X_L_no_stop",
+    "X_L_roles_kept",
+    "wait_no_stop_ratio",
+)
+
+
 def assigned_leader_equilibrium(
     game: ExactPreemptionGame,
-    X_P: float,
-    start: tuple[float, float],
-    n_scan: int = 26,
-    span: tuple[float, float] = (0.03, 10.0),
-    xatol: float = 1e-4,
+    X_P: float = float("nan"),
+    scan: EntryScan | None = None,
+    lead_at_X_P: float = float("nan"),
+    start: tuple[float, float] | None = None,
 ) -> dict[str, float]:
     """First investment when one firm leads and the other follows.
 
@@ -1566,11 +1730,23 @@ def assigned_leader_equilibrium(
     V_follow, the value of waiting for the leader's entry or for the switch,
     and not F(X).
 
+    Locating X_L
+    ------------
+    X_L maximizes h(X) = [L*(X) - W(X)] X^{-b}. It is searched for on the
+    demand scan of `EntryScan`, anchored at the single firm's triggers X_H*
+    and X* and not at the rent-equalization trigger X_P, so that it is
+    located wherever it exists, including where the game has no X_P
+    (following beats leading at every scanned demand). The scan point that
+    maximizes h is refined by a bounded search between its neighbors. When
+    L* <= W at every scanned demand no firm invests before the switch on
+    the scan: ``first_investment`` is 0.0, X_L is inf, and
+    ``waiting_equilibrium`` says whether mutual waiting is then an
+    equilibrium on the scan (no firm gains by investing first, since
+    leading pays L* < W, and the post-switch game is a race).
+
     No-deviation conditions, all checked numerically on the scan
     ------------------------------------------------------------
-    1. Leader, among triggers. X_L maximizes h(X) = [L*(X) - W(X)] X^{-b},
-       the coefficient of a leader that invests at X given that its rival
-       never invests first: ``leader_best_other_trigger`` is the largest
+    1. Leader, among triggers. ``leader_best_other_trigger`` is the largest
        h(X) / h(X_L) over the other scan points, and
        ``coefficient_single_peaked`` says that h rises up to X_L and falls
        above it on the scan.
@@ -1585,13 +1761,16 @@ def assigned_leader_equilibrium(
        [V_follow(X) - L*(X)] / V_follow(X) on the scan. Because V_follow -
        V_lead = [F(X_L) - L*(X_L)] (X / X_L)^b and V_lead >= L* by condition
        1, it holds whenever the follower is the better-off role at X_L
-       (``follower_over_leader`` >= 1), that is, whenever X_L <= X_P.
+       (``follower_over_leader`` >= 1), that is, whenever X_L <= X_P, and in
+       particular wherever the game has no X_P (F >= L* at every scanned
+       demand).
     4. Follower, off the path. If the leader has failed to invest at a
        demand between X_L and X_P, the follower still prefers that the
        leader invest: ``follower_margin_to_X_P`` is the smallest [F(X) -
-       L*(X)] / F(X) over the scan points in that range. Above X_P both
-       firms want to lead and the profile is not an equilibrium of those
-       subgames; they are reached only if the game starts there.
+       L*(X)] / F(X) over the scan points in that range (over every scan
+       point above X_L where there is no X_P). Above X_P both firms want to
+       lead and the profile is not an equilibrium of those subgames; they
+       are reached only if the game starts there.
     5. Follower, after the leader's entry: its policy is the best response
        by construction (checked against a linear complementarity solve in
        the tests).
@@ -1616,49 +1795,90 @@ def assigned_leader_equilibrium(
 
     Args:
         game: The game.
-        X_P: Rent-equalization trigger.
-        start: Leader's policy (K_L, phi_L) at X_P, to warm-start the scan.
-        n_scan: Points of the log scan.
-        span: Range of the scan, in units of X_P.
-        xatol: Tolerance on log X_L in the refinement.
+        X_P: Rent-equalization trigger, nan when the game has none. It is
+            used only for the checks and ratios that refer to it, never to
+            place the scan.
+        scan: The scan (`ENTRY_SCAN` by default).
+        lead_at_X_P: L*(X_P), for ``coefficient_ratio``; nan if unknown.
+        start: Leader's policy (K_L, phi_L) to start the optimizer at the
+            scan point nearest X_H*; by default it starts cold.
 
     Returns:
-        Dict with ``X_L``, the leader's policy ``K_L`` and ``phi_L`` there,
-        ``leader_value``, ``follower_value`` and ``waiting_value`` at X_L,
-        ``lead_over_wait`` and ``follower_over_leader``, ``X_L_over_X_P``,
-        ``coefficient_ratio`` (h(X_L) over h at the scan point nearest
-        X_P), the checks listed above, ``X_L_no_stop`` and
+        Dict with ``first_investment``, ``X_L``, the leader's policy ``K_L``
+        and ``phi_L`` there, ``leader_value``, ``follower_value`` and
+        ``waiting_value`` at X_L, ``lead_over_wait`` and
+        ``follower_over_leader``, ``X_L_over_X_P``, ``coefficient_ratio``
+        (h(X_L) / h(X_P)), the checks listed above, ``X_L_no_stop`` and
         ``X_L_roles_kept`` (the trigger under the mutual-waiting value
         without the option to stop, and with the leader's role kept through
         the switch; both located on a spline of the scan),
         ``wait_no_stop_ratio`` (that waiting value over W at X_L, less
         one), ``follower_margin_if_leading_after_switch`` (condition 3 for
         a follower that would be the firm to lead after the switch, whose
-        waiting value is `post_switch_leading_claim`) and the scan
-        (``entry_scan_points``,
-        ``entry_scan_low``, ``entry_scan_high`` in units of X_P, the last
-        being where the scan stopped).
+        waiting value is `post_switch_leading_claim`),
+        ``entry_max_lead_over_wait`` (the largest L* / W on the scan) and
+        the scan (``entry_scan_points``, ``entry_scan_low`` and
+        ``entry_scan_high`` in units of X_H*, the last two being where the
+        scan stopped, and ``entry_scan_extensions``, the decades added).
+        Without a first investment the keys evaluated at X_L are nan.
     """
+    scan = ENTRY_SCAN if scan is None else scan
     bp = game.bp
+    nan = float("nan")
     wait = game.mutual_waiting_claim("reoptimized")
-    grid, table = _scan_leader(game, X_P * np.geomspace(*span, n_scan), X_P, start)
+    grid = entry_scan_grid(game, scan)
+    pivot = int(np.argmin(np.abs(np.log(grid / game.X_ref))))
+    grid, table, open_low, open_high = _scan_leader(game, grid, pivot, start)
+
+    grid, table, extensions = _extend_entry_scan(
+        game, scan, grid, table, open_low, open_high
+    )
     h = (table[:, 2] - wait(grid)) * grid ** (-bp)
+    lead = table[:, 2]
+    wait_all = wait(grid)
+    race = (
+        game.post_switch_assigned_trigger > game.post_switch_trigger
+        and game.post_switch_single_crossing
+    )
+    common = {
+        "entry_max_lead_over_wait": float(np.max(lead / wait_all)),
+        "post_switch_race": float(race),
+        "post_switch_trigger": game.post_switch_trigger,
+        "post_switch_assigned_trigger": game.post_switch_assigned_trigger,
+        "entry_scan_points": float(len(grid)),
+        "entry_scan_low": float(grid[0] / game.X_ref),
+        "entry_scan_high": float(grid[-1] / game.X_ref),
+        "entry_scan_extensions": float(extensions),
+    }
     i = int(np.argmax(h))
+    if h[i] <= 0.0:
+        # No firm invests before the switch on the scan. Leading pays L* < W
+        # at every scanned demand, so (given a race after the switch) no firm
+        # gains by investing first, and the follower's condition is moot.
+        out = dict.fromkeys(_ENTRY_KEYS, nan) | {"X_L": inf, "X_L_roles_kept": inf}
+        return (
+            out
+            | common
+            | {
+                "first_investment": 0.0,
+                "equilibrium": 0.0,
+                "waiting_equilibrium": float(race),
+            }
+        )
     interior = 0 < i < len(grid) - 1
     policy = {"start": (float(table[i, 0]), float(table[i, 1]))}
 
     def coefficient(X: float) -> tuple[float, tuple[float, float, float, float]]:
-        K, phi, lead = game.leader_best_policy(X, policy["start"])
-        policy["start"] = (K, phi)
-        follow = float(game.subgame(K, phi).follower_value(X)[0])
-        return (lead - float(wait(X)[0])) * X ** (-bp), (K, phi, lead, follow)
+        row = _leader_row(game, X, policy["start"])
+        policy["start"] = row[:2]
+        return (row[2] - float(wait(X)[0])) * X ** (-bp), row
 
-    if interior and h[i] > 0.0:
+    if interior:
         res = optimize.minimize_scalar(
             lambda z: -coefficient(float(np.exp(z)))[0] / h[i],
             bounds=(np.log(grid[i - 1]), np.log(grid[i + 1])),
             method="bounded",
-            options={"xatol": xatol},
+            options={"xatol": scan.xatol},
         )
         X_new = float(np.exp(res.x))
         h_new, row = coefficient(X_new)
@@ -1670,10 +1890,10 @@ def assigned_leader_equilibrium(
             i = j
     X_L = float(grid[i])
     K_L, phi_L, lead_L, follow_L = (float(v) for v in table[i])
+    lead = table[:, 2]
     wait_all = wait(grid)
     wait_L = float(wait_all[i])
     h_L = float(h[i])
-    lead = table[:, 2]
 
     # 1. The leader among triggers.
     others = np.delete(h, i)
@@ -1682,15 +1902,17 @@ def assigned_leader_equilibrium(
     lcp_trigger, lcp_upper_set, lcp_coefficient = _stopping_check(game, grid, h)
     lcp_error = (
         float(np.max(np.abs(lcp_coefficient / h_L - 1.0)))
-        if lcp_coefficient.size and h_L > 0.0
+        if lcp_coefficient.size
         else float("nan")
     )
     # 3. The follower before the leader's entry.
     below = grid <= X_L
     v_follow = wait_all[below] + (follow_L - wait_L) * (grid[below] / X_L) ** bp
     follower_margin = float(np.min((v_follow - lead[below]) / v_follow))
-    # 4. The follower between X_L and X_P, off the path.
-    between = (grid > X_L) & (grid < X_P * (1.0 - 1e-6))
+    # 4. The follower between X_L and X_P (above X_L where there is no X_P),
+    # off the path.
+    upper = X_P * (1.0 - 1e-6) if isfinite(X_P) else inf
+    between = (grid > X_L) & (grid < upper)
     margin_to_X_P = (
         float(np.min(1.0 - lead[between] / table[between, 3]))
         if between.any()
@@ -1700,15 +1922,9 @@ def assigned_leader_equilibrium(
     leading = game.post_switch_leading_claim()(grid)
     v_alt = leading[below] + (follow_L - leading[i]) * (grid[below] / X_L) ** bp
     follower_margin_alt = float(np.min((v_alt - lead[below]) / v_alt))
-    # 6. The post-switch game.
-    race = (
-        game.post_switch_assigned_trigger > game.post_switch_trigger
-        and game.post_switch_single_crossing
-    )
     tol = DEVIATION_TOLERANCE
     holds = (
         interior
-        and h_L > 0.0
         and float(np.max(others)) <= h_L * (1.0 + tol)
         and lcp_upper_set == 1.0
         and abs(lcp_trigger / X_L - 1.0) < 0.02
@@ -1723,7 +1939,9 @@ def assigned_leader_equilibrium(
         X_alt, h_alt = _spline_peak(grid, (lead - claim(grid)) * grid ** (-bp))
         return X_alt if h_alt > 0.0 else inf
 
+    h_P = (lead_at_X_P - float(wait(X_P)[0])) * X_P ** (-bp) if isfinite(X_P) else nan
     out = {
+        "first_investment": 1.0,
         "X_L": X_L,
         "K_L": K_L,
         "phi_L": phi_L,
@@ -1732,9 +1950,10 @@ def assigned_leader_equilibrium(
         "waiting_value": wait_L,
         "lead_over_wait": lead_L / wait_L,
         "follower_over_leader": follow_L / lead_L,
-        "X_L_over_X_P": X_L / X_P,
-        "coefficient_ratio": h_L / float(h[int(np.argmin(np.abs(np.log(grid / X_P))))]),
+        "X_L_over_X_P": X_L / X_P if isfinite(X_P) else nan,
+        "coefficient_ratio": h_L / h_P,
         "equilibrium": float(holds),
+        "waiting_equilibrium": 0.0,
         "leader_best_other_trigger": float(np.max(others)) / h_L,
         "coefficient_single_peaked": float(single_peaked),
         "lcp_trigger": lcp_trigger,
@@ -1743,13 +1962,7 @@ def assigned_leader_equilibrium(
         "follower_margin": follower_margin,
         "follower_margin_to_X_P": margin_to_X_P,
         "follower_margin_if_leading_after_switch": follower_margin_alt,
-        "post_switch_race": float(race),
-        "post_switch_trigger": game.post_switch_trigger,
-        "post_switch_assigned_trigger": game.post_switch_assigned_trigger,
-        "entry_scan_points": float(n_scan),
-        "entry_scan_low": float(grid[0] / X_P),
-        "entry_scan_high": float(grid[-1] / X_P),
-    }
+    } | common
     if isinstance(game, LeveredPreemptionGame):
         no_stop = game.mutual_waiting_claim("no_stop")
         out["X_L_no_stop"] = other_trigger(no_stop)
@@ -1813,7 +2026,7 @@ def equilibrium_record(
     bankruptcy_cost: float = 0.30,
     n_scan: int = 25,
     x_range: tuple[float, float] = (0.03, 300.0),
-    entry_scan: tuple[int, tuple[float, float], float] | None = None,
+    entry_scan: EntryScan | None = None,
     rent_equalization: dict | None = None,
     recovery_rule: str = "net_with_shutdown",
     contest: str = "tullock",
@@ -1837,9 +2050,16 @@ def equilibrium_record(
     ``rent_eq_``; ``exists``, ``n_sign_changes`` and the scan
     (``scan_points``, ``scan_low``, ``scan_high``) describe that solve.
 
+    X_L is located without reference to X_P (`assigned_leader_equilibrium`
+    and `EntryScan`), so it is reported wherever it exists, also where
+    there is no rent-equalization trigger on the scan (``exists`` 0.0; the
+    record then has no ``rent_eq_`` keys and keeps ``max_gap_over_follower``
+    and the ``scan_peak*`` keys of that scan). Where L* <= W at every
+    scanned demand, ``first_investment`` is 0.0, X_L is inf and the objects
+    at X_L are absent.
+
     Args:
-        entry_scan: (points, range in units of X_P, tolerance on log X_L)
-            of the scan behind X_L.
+        entry_scan: The scan behind X_L (`ENTRY_SCAN` by default).
         rent_equalization: A record of an earlier solve of the same cell.
             Its ``X_P``, the leader's policy there and the description of
             its scan are then reused instead of re-solved (the X_P solve
@@ -1875,6 +2095,12 @@ def equilibrium_record(
             "K_L": old.get(prefix + "K_L", old.get("K_L")),
             "phi_L": old.get(prefix + "phi_L", old.get("phi_L")),
         }
+        sol |= {
+            key: value
+            for key, value in old.items()
+            if key.startswith("scan_peak")
+            or key in ("max_gap_over_follower", "max_lead_over_wait")
+        }
         scan = (old["scan_points"], old["scan_low"], old["scan_high"])
     out: dict[str, float | str] = {
         "lam": params.lam,
@@ -1893,31 +2119,37 @@ def equilibrium_record(
     }
     if contest != "tullock":
         out["contest"] = contest
-    if not sol["exists"]:
+    rent: dict[str, float] | None = None
+    X_P = float("nan")
+    if sol["exists"]:
+        X_P = float(sol["X_P"])
+        at_X_P = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
+        wait = game.mutual_waiting_claim("reoptimized")
+        rent = _entry_objects(game, at_X_P, X_P)
+        rent["lead_over_wait"] = rent["leader_value"] / float(wait(X_P)[0])
+    else:
         # Why there is no trigger: the largest (L* - F) / F on the scan is
         # negative when following is better at every scanned demand level.
-        out["max_gap_over_follower"] = sol.get("max_gap_over_follower", float("nan"))
-        # Coarse substitute for X_L when it cannot be located from X_P: the
-        # scan point at which a leader whose rival follows would enter, with
-        # no refinement and no deviation check (inf: leading never beats
-        # mutual waiting on the scan).
+        # The scan point that maximizes [L* - W] X^{-beta_L^+} on that scan
+        # is kept for comparison with the located X_L.
         for key, value in sol.items():
-            if key.startswith("scan_peak") or key == "max_lead_over_wait":
+            if key.startswith("scan_peak") or key in (
+                "max_gap_over_follower",
+                "max_lead_over_wait",
+            ):
                 out[key] = value
-        return out
-    X_P = float(sol["X_P"])
-    at_X_P = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
-    wait = game.mutual_waiting_claim("reoptimized")
-    rent = _entry_objects(game, at_X_P, X_P)
-    rent["lead_over_wait"] = rent["leader_value"] / float(wait(X_P)[0])
-    points, span, xatol = ENTRY_SCAN if entry_scan is None else entry_scan
     entry = assigned_leader_equilibrium(
-        game, X_P, (at_X_P.K_L, at_X_P.phi_L), points, span, xatol
+        game,
+        X_P,
+        ENTRY_SCAN if entry_scan is None else entry_scan,
+        float("nan") if rent is None else rent["leader_value"],
     )
     out.update(entry)
-    at_X_L = game.subgame(entry["K_L"], entry["phi_L"])
-    out.update(_entry_objects(game, at_X_L, entry["X_L"]))
-    out.update({prefix + key: value for key, value in rent.items()})
+    if entry["first_investment"]:
+        at_X_L = game.subgame(entry["K_L"], entry["phi_L"])
+        out.update(_entry_objects(game, at_X_L, entry["X_L"]))
+    if rent is not None:
+        out.update({prefix + key: value for key, value in rent.items()})
     return out
 
 
@@ -1965,18 +2197,18 @@ SCAN_OVERRIDES: dict[tuple[float, str, float, str], tuple[int, tuple[float, floa
 }
 
 
-#: Default scan behind X_L: points, range in units of X_P, and the tolerance
-#: on log X_L of the refinement.
-ENTRY_SCAN: tuple[int, tuple[float, float], float] = (26, (0.03, 10.0), 1e-4)
+#: Default scan behind X_L: ten points per decade from 0.03 times the lower
+#: of X_H* and X* to ten times the higher, extended while X_L is at an end,
+#: and the tolerance on log X_L of the refinement (`EntryScan`).
+ENTRY_SCAN = EntryScan(10, (0.03, 10.0), 1e-4)
 
-#: Cells whose X_L is located on a narrower scan, for the reason given at
-#: `SCAN_OVERRIDES` (one evaluation of the leader's best policy takes several
-#: minutes there). The range brackets X_L / X_P found at zero leverage
-#: (0.52); the no-deviation checks then cover that range only.
-ENTRY_SCAN_OVERRIDES: dict[
-    tuple[float, str, float, str], tuple[int, tuple[float, float], float]
-] = {
-    (0.05, "envelope", leverage, "fair"): (7, (0.2, 1.6), 1e-3)
+#: Cells whose X_L is located on a narrower, fixed scan, for the reason given
+#: at `SCAN_OVERRIDES` (one evaluation of the leader's best policy takes
+#: several minutes there): seven points from 0.118 to 0.944 X_H*, the range
+#: of 0.2 to 1.6 times the X_P found at zero leverage, which brackets X_L
+#: there (0.31 X_H*); the no-deviation checks then cover that range only.
+ENTRY_SCAN_OVERRIDES: dict[tuple[float, str, float, str], EntryScan] = {
+    (0.05, "envelope", leverage, "fair"): EntryScan(7, (0.118, 0.944), 1e-3, True)
     for leverage in GRID_LEVERAGES
 }
 

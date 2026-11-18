@@ -152,9 +152,21 @@ class DuopolySolution:
         """True when every no-deviation check of the X_L profile holds.
 
         The checks are numerical and cover the demand scan stored in the
-        record (``entry_scan_low`` to ``entry_scan_high``, in units of X_P).
+        record (``entry_scan_low`` to ``entry_scan_high``: in units of X_H*
+        for a solve with the anchored scan of `preemption_levered.ENTRY_SCAN`,
+        in units of X_P in ``duopoly_equilibria.json``, which was located on
+        the earlier scan anchored at X_P).
         """
         return bool(self.record.get("equilibrium", 0.0))
+
+    @property
+    def first_investment(self) -> bool:
+        """True when a firm invests before the switch on the scan (X_L finite).
+
+        X_L is located without reference to X_P, so this can hold where
+        there is no rent-equalization trigger (``exists`` False).
+        """
+        return bool(self.record.get("first_investment", 1.0))
 
     @property
     def second_mover_advantage(self) -> bool:

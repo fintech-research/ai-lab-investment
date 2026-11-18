@@ -8,6 +8,8 @@ records against the solver's own conditions (rent equalization, optimality
 of the leader's policy) and the re-solves are marked ``slow``.
 """
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -899,8 +901,16 @@ class TestFirstInvestment:
         assert np.all(np.diff(advantage[3:]) < 0)
 
     def test_records_carry_the_entry_scan(self):
+        """The cache was located on the earlier scan, anchored at X_P.
+
+        26 points from 0.03 to 10 times X_P (seven from 0.2 to 1.6 times X_P
+        in the two cells of `ENTRY_SCAN_OVERRIDES`), with ``entry_scan_*``
+        in units of X_P. The scan of `ENTRY_SCAN`, anchored at X_H* and X*,
+        reproduces X_L in each of the 45 cells to within 2e-4 and K_L to
+        within 4e-4 (issue #182; `test_anchored_scan_reproduces_the_cache`
+        re-solves the baseline), so the cache was not rewritten.
+        """
         from ai_lab_investment.models.preemption_levered import (
-            ENTRY_SCAN,
             ENTRY_SCAN_OVERRIDES,
             SCAN_OVERRIDES,
         )
@@ -908,13 +918,32 @@ class TestFirstInvestment:
         assert set(ENTRY_SCAN_OVERRIDES) == set(SCAN_OVERRIDES)
         for r in GRID:
             cell = (r["lam"], r["scale"], r["leverage"], r["debt"])
-            points, (low, high), _ = ENTRY_SCAN_OVERRIDES.get(cell, ENTRY_SCAN)
+            narrow = cell in ENTRY_SCAN_OVERRIDES
+            points, (low, high) = (7, (0.2, 1.6)) if narrow else (26, (0.03, 10.0))
             assert r["entry_scan_points"] == points
             assert r["entry_scan_low"] == pytest.approx(low)
             # The scan may stop early where no leader policy keeps the
             # follower out; X_L is interior to what was scanned.
             assert r["entry_scan_high"] <= high * (1 + 1e-9)
             assert r["entry_scan_low"] < r["X_L_over_X_P"] < r["entry_scan_high"]
+            if narrow:
+                # The fixed scan now used there covers the same demand range.
+                scan = ENTRY_SCAN_OVERRIDES[cell]
+                assert scan.fixed and scan.points == points
+                assert scan.span[0] * r["X_H"] == pytest.approx(
+                    low * _rent(0.05)["X_P"], rel=0.01
+                )
+
+    @pytest.mark.slow
+    def test_anchored_scan_reproduces_the_cache(self):
+        """X_L located without reference to X_P, at baseline (two minutes)."""
+        cached = _record()
+        fresh = equilibrium_record(P, "envelope", rent_equalization=cached)
+        assert fresh["first_investment"] == 1.0
+        assert fresh["entry_scan_extensions"] == 0.0
+        for key in ("X_L", "K_L", "phi_L", "X_F", "K_F", "X_D_leader"):
+            assert fresh[key] == pytest.approx(cached[key], rel=5e-4), key
+        assert fresh["equilibrium"] == 1.0
 
     def test_trigger_and_capacity_hump_shaped(self):
         """Proposition 3(iv) at the benchmark: the peak is at lambda = 0.15."""
@@ -1071,17 +1100,24 @@ class TestNoDeviation:
     @pytest.mark.slow
     def test_narrow_scan_reproduces_the_trigger(self, games):
         """The scan of `ENTRY_SCAN_OVERRIDES`, applied where the answer is known."""
-        from ai_lab_investment.models.preemption_levered import ENTRY_SCAN_OVERRIDES
+        from ai_lab_investment.models.preemption_levered import (
+            ENTRY_SCAN_OVERRIDES,
+            EntryScan,
+        )
 
-        points, span, xatol = next(iter(ENTRY_SCAN_OVERRIDES.values()))
+        # The override's range, moved to bracket X_L at baseline (1.21 X_H*).
+        override = next(iter(ENTRY_SCAN_OVERRIDES.values()))
+        assert override.fixed
         r = _record()
+        shift = 1.21 / 0.31
+        scan = EntryScan(
+            override.points,
+            (override.span[0] * shift, override.span[1] * shift),
+            override.xatol,
+            fixed=True,
+        )
         out = assigned_leader_equilibrium(
-            games[("envelope", 0.0, "par")],
-            r["X_P"],
-            (r["rent_eq_K_L"], r["rent_eq_phi_L"]),
-            points,
-            span,
-            xatol,
+            games[("envelope", 0.0, "par")], r["X_P"], scan, r["rent_eq_leader_value"]
         )
         assert out["X_L"] == pytest.approx(r["X_L"], rel=2e-3)
         assert out["lcp_trigger"] == pytest.approx(out["X_L"], rel=5e-3)
@@ -1090,18 +1126,136 @@ class TestNoDeviation:
     @pytest.mark.slow
     def test_rejected_when_the_follower_would_preempt(self):
         """With L* raised above F at X_L the profile is not an equilibrium."""
+        from ai_lab_investment.models.preemption_levered import EntryScan
+
         r = _record()
+        X_P = r["X_P"] / r["X_H"]
         out = assigned_leader_equilibrium(
             _InflatedGame(P, "envelope"),
             r["X_P"],
-            (r["K_L"], r["phi_L"]),
-            5,
-            (0.25, 1.0),
-            5e-2,
+            EntryScan(5, (0.25 * X_P, X_P), 5e-2, fixed=True),
+            start=(r["K_L"], r["phi_L"]),
         )
         assert out["follower_over_leader"] < 1.0
         assert out["follower_margin"] < 0.0
         assert out["equilibrium"] == 0.0
+
+
+class _StubGame:
+    """Closed-form stand-in for the game, to test how X_L is searched for.
+
+    W(X) = X, L*(X) = W(X) + scale X^b exp(-[log(X / peak)]^2 / 2) and F =
+    1.2 L*, so that h = [L* - W] X^{-b} peaks at ``peak`` (negative
+    everywhere when ``scale`` < 0). The single firm's triggers are X_H* = 1
+    and X* = 3; there is no rent-equalization trigger (F > L* everywhere).
+    """
+
+    def __init__(self, peak: float, scale: float = 1.0):
+        from types import SimpleNamespace
+
+        from ai_lab_investment.models.preemption_exact import _negative_root
+
+        self.params = P
+        self.bp = P.beta_L
+        self.bn = _negative_root(P.sigma, P.mu_L, P.r + P.lam)
+        self.X_ref = 1.0
+        self.single = SimpleNamespace(
+            precommitted_optimum=lambda: SimpleNamespace(X_star=3.0)
+        )
+        self.post_switch_trigger = 1.0
+        self.post_switch_assigned_trigger = 5.0
+        self.post_switch_single_crossing = True
+        self.peak, self.scale = peak, scale
+        self.calls = 0
+
+    def wait(self, X):
+        return np.atleast_1d(np.asarray(X, dtype=float))
+
+    def mutual_waiting_claim(self, leader="reoptimized"):
+        return self.wait
+
+    def post_switch_leading_claim(self):
+        return self.wait
+
+    def lead(self, X):
+        bump = np.exp(-0.5 * np.log(X / self.peak) ** 2)
+        return X + (abs(self.scale) * X**self.bp * bump if self.scale > 0 else -0.1 * X)
+
+    def leader_best_policy(self, X, start=None):
+        self.calls += 1
+        return 1.0, 0.5, float(self.lead(X))
+
+    def subgame(self, K, phi):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            follower_value=lambda X: np.atleast_1d(1.2 * self.lead(float(X)))
+        )
+
+
+def _stub(peak: float, scale: float = 1.0) -> Any:
+    """A `_StubGame` typed as the game the search functions take."""
+    return _StubGame(peak, scale)
+
+
+class TestLocatingFirstInvestment:
+    """X_L is searched for without reference to X_P (issue #182)."""
+
+    def test_scan_is_anchored_at_the_single_firm_triggers(self):
+        from ai_lab_investment.models.preemption_levered import (
+            ENTRY_SCAN,
+            entry_scan_anchors,
+            entry_scan_grid,
+        )
+
+        game = _stub(peak=2.0)
+        assert entry_scan_anchors(game) == (1.0, 3.0)
+        grid = entry_scan_grid(game, ENTRY_SCAN)
+        assert grid[0] == pytest.approx(0.03)
+        assert grid[-1] == pytest.approx(30.0)
+        assert np.log10(grid[1] / grid[0]) <= 0.1 + 1e-12
+
+    def test_interior_peak_without_rent_equalization(self):
+        """The follower's condition is implied where there is no X_P.
+
+        F >= L* at every scanned demand, so V_follow - V_lead = [F(X_L) -
+        L*(X_L)] (X / X_L)^b >= 0 and V_lead >= L*: the follower's margin is
+        positive, as is its margin off the path (here over every scan point
+        above X_L), and the equilibrium is verified.
+        """
+        out = assigned_leader_equilibrium(_stub(peak=2.0))
+        assert out["first_investment"] == 1.0
+        assert out["X_L"] == pytest.approx(2.0, rel=1e-3)
+        assert np.isnan(out["X_L_over_X_P"])
+        assert out["follower_over_leader"] > 1.0
+        assert out["follower_margin"] > 0.0
+        assert out["follower_margin_to_X_P"] > 0.0
+        assert out["entry_scan_extensions"] == 0.0
+        assert out["equilibrium"] == 1.0
+
+    def test_scan_extends_toward_a_distant_peak(self):
+        """A peak at 300 X*, beyond the initial top of 10 X*."""
+        out = assigned_leader_equilibrium(_stub(peak=900.0))
+        assert out["X_L"] == pytest.approx(900.0, rel=1e-3)
+        assert out["entry_scan_extensions"] == 2.0
+        assert out["entry_scan_high"] > 900.0
+        assert out["equilibrium"] == 1.0
+
+    def test_extension_is_bounded(self):
+        out = assigned_leader_equilibrium(_stub(peak=1e5))
+        assert out["entry_scan_extensions"] == 3.0
+        assert out["X_L"] == pytest.approx(out["entry_scan_high"])
+        assert out["equilibrium"] == 0.0
+
+    def test_no_pre_switch_entry(self):
+        """L* < W at every scanned demand: no firm invests before the switch."""
+        out = assigned_leader_equilibrium(_stub(peak=2.0, scale=-1.0))
+        assert out["first_investment"] == 0.0
+        assert out["X_L"] == np.inf
+        assert out["entry_max_lead_over_wait"] == pytest.approx(0.9)
+        assert out["waiting_equilibrium"] == 1.0
+        assert out["equilibrium"] == 0.0
+        assert np.isnan(out["follower_margin"])
 
 
 class _InflatedGame(LeveredPreemptionGame):
