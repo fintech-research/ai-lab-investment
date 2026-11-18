@@ -650,7 +650,7 @@ def create_firm_comparison() -> plt.Figure:
             fontsize="small",
         )
     ax2.set_xlabel("Revenue multiple (2025/2024)")
-    ax2.set_ylabel("Leverage ratio")
+    ax2.set_ylabel(r"Leverage $\ell$ (D/I)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     return fig
