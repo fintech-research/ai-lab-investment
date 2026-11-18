@@ -159,8 +159,11 @@ def plot_dario_dilemma(
     ax.axhline(0, color="gray", alpha=0.3, linewidth=0.5)
 
     ax.set_xscale("log")
+    ax.set_xticks([0.02, 0.05, 0.10, 0.20, 0.50])
+    ax.set_xticklabels(["0.02", "0.05", "0.10", "0.20", "0.50"])
+    ax.minorticks_off()
     ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$ (log scale)")
-    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (\%)")
+    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
     ax.set_title(
         rf"Dario's Dilemma, precommitted scale ($\lambda_{{true}} = {fixed_true}$)"
     )
