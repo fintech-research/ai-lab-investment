@@ -214,24 +214,44 @@ class TestInstalledClaims:
         claims = g.installed_claims(K, phi, 0.0, 0.0, coupon)
         x = np.geomspace(claims.X_D, 1.0, 100)
         assert np.all(claims.debt(x) <= coupon / P.r + 1e-15)
-        # eq-recovery: (1 - b) min{Lambda+, U}, capped at the default-free claim.
+        # eq-recovery: (1 - b) min{Lambda+, U}, capped at the default-free claim,
+        # with Lambda the inference business and its owner's option to stop.
         flow = ((1 - phi) * K) ** P.alpha
-        liquidation = flow * claims.X_D * g.w_L - P.delta * (1 - phi) * K / P.r
+        a, c = flow * g.w_L, P.delta * (1 - phi) * K / P.r
+        X_I = g.m_L * c / a
+        X_D = claims.X_D
+        liquidation = a * X_D - c + (c - a * X_I) * (X_D / X_I) ** g.bn
         unlevered = g.installed_claims(K, phi, 0.0, 0.0, 0.0)
-        asset = float(unlevered.equity(claims.X_D)[0])
-        assert liquidation > 0
+        asset = float(unlevered.equity(X_D)[0])
+        assert liquidation > a * X_D - c > 0
         assert claims.recovery == pytest.approx(
             min(0.7 * min(liquidation, asset), coupon / P.r)
         )
         assert claims.recovery <= asset
 
-    def test_recovery_is_zero_at_the_optimal_allocation(self, games):
+    def test_net_rule_omits_the_option_to_stop(self):
+        g = LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="net")
+        K, phi = 0.0158, 0.30
+        flow = ((1 - phi) * K) ** P.alpha
+        X = 0.002
+        assert g.liquidation_value(flow, (1 - phi) * K, X) == pytest.approx(
+            flow * X * g.w_L - P.delta * (1 - phi) * K / P.r, rel=1e-12
+        )
+        with pytest.raises(ValueError, match="recovery_rule"):
+            LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="gross")
+
+    def test_recovery_at_the_optimal_allocation(self, games):
+        """Zero under the #177 rule; under the default rule the liquidator
+        can shut the inference business down and recovers a small positive
+        amount once the coupon pushes X_D above that business's own
+        shutdown boundary."""
         g = games[("envelope", 0.4, "par")]
         K = 0.0158
-        claims = g.installed_claims(
-            K, g.phi_star, 0.0, 0.0, 0.05 * 0.4 * P.c * K**P.gamma
-        )
-        assert claims.recovery == 0.0
+        coupon = 0.05 * 0.4 * P.c * K**P.gamma
+        net = LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="net")
+        assert net.installed_claims(K, g.phi_star, 0.0, 0.0, coupon).recovery == 0.0
+        claims = g.installed_claims(K, g.phi_star, 0.0, 0.0, coupon)
+        assert 0.0 < claims.recovery < 0.01 * coupon / P.r
 
 
 class TestLeaderClaims:
@@ -1191,6 +1211,12 @@ class TestMutualWaiting:
         assert np.all(leading(X)[1:] > 1.05 * wait(X)[1:])
 
 
+def _recovery_rate(record):
+    """Recovery over the default-free claim C_D / r of a cached record."""
+    claim = record["coupon_rate"] * record["debt_proceeds"] / P.r
+    return record["recovery"] / claim
+
+
 class TestSpreadAtEntry:
     """C23 at the rent-equalization trigger X_P (the values of issue #178)."""
 
@@ -1200,9 +1226,10 @@ class TestSpreadAtEntry:
         records = [_rent(lam, leverage, debt) for lam in GRID_LAMBDAS]
         spread = np.array([1e4 * r["spread"] for r in records])
         distance = np.array([r["distance_to_default"] for r in records])
-        # Risky from the first unit: recovery is zero in every cell.
+        # Risky from the first unit: recovery (issue #179 rule) is below 8% of
+        # the default-free claim in every cell, and zero under the #177 rule.
         assert np.all(spread > 20)
-        assert all(r["recovery"] == 0.0 for r in records)
+        assert all(_recovery_rate(r) < 0.08 for r in records)
         # Not weakly increasing in lambda: U-shaped, minimum in the interior.
         low = int(np.argmin(spread))
         assert 0 < low < len(spread) - 1
@@ -1219,9 +1246,11 @@ class TestSpreadAtEntry:
                 for lam in (0.10, 0.20, 0.50)
             ]
 
-        assert spreads(0.40, "par") == pytest.approx([35.2, 28.7, 33.8], abs=0.15)
-        assert spreads(0.40, "fair") == pytest.approx([41.9, 33.7, 36.7], abs=0.15)
-        assert spreads(0.65, "par") == pytest.approx([44.3, 35.2, 37.7], abs=0.15)
+        # Issue #179 rule; under the #177 rule 35.2, 28.7, 33.8 / 41.9, 33.7,
+        # 36.7 / 44.3, 35.2, 37.7.
+        assert spreads(0.40, "par") == pytest.approx([34.1, 28.5, 33.8], abs=0.15)
+        assert spreads(0.40, "fair") == pytest.approx([40.2, 33.3, 36.7], abs=0.15)
+        assert spreads(0.65, "par") == pytest.approx([42.4, 34.9, 37.7], abs=0.15)
         assert _rent(0.10, 0.40, "par")["distance_to_default"] == pytest.approx(
             5.28, abs=0.01
         )
@@ -1269,13 +1298,16 @@ class TestLeverageEffects:
         for key in ("K_L", "K_F", "X_P", "X_F"):
             path = self._path("fair", key)
             change = path / path[0] - 1.0
-            # Lower, not higher, and by little. At leverage 0.20 the change
-            # is within the precision of a solve (about 1e-4).
-            assert abs(change[1]) < 1.5e-3, key
-            assert -0.008 < change[2] < 0.0, key
-            assert -0.03 < change[3] < change[2], key
+            # Lower, not higher, and by little: at most 0.3% at leverage 0.20
+            # (within the precision of a solve, about 1e-4, under the #177
+            # rule; recovery adds the rest) and below 1.1% at 0.40.
+            assert -4e-3 < change[1] < 1.5e-3, key
+            assert -0.011 < change[2] < 0.0, key
+            assert -0.04 < change[3] < change[2], key
         x_p = self._path("fair", "X_P")
-        assert x_p[2] / x_p[0] - 1 == pytest.approx(-0.003, abs=0.001)
+        # -0.3% under the #177 rule; recovery raises the fairly priced
+        # leader's value at X_P and lowers the trigger further.
+        assert x_p[2] / x_p[0] - 1 == pytest.approx(-0.007, abs=0.001)
 
     def test_boundary_and_distance_survive_fair_pricing(self):
         boundary = self._path("fair", "X_D_leader")
@@ -1335,7 +1367,7 @@ class TestCreditAtFirstInvestment:
         spread = np.array([1e4 * r["spread"] for r in records])
         distance = np.array([r["distance_to_default"] for r in records])
         assert np.all(spread > 30)
-        assert all(r["recovery"] == 0.0 for r in records)
+        assert all(_recovery_rate(r) < 0.05 for r in records)
         low = int(np.argmin(spread))
         assert GRID_LAMBDAS[low] in (0.30, 0.40)
         assert np.all(np.diff(spread[: low + 1]) < 0)
@@ -1360,10 +1392,11 @@ class TestCreditAtFirstInvestment:
                 for lam in (0.10, 0.30, 0.50)
             ]
 
-        assert spreads(0.40, "par") == pytest.approx([50.2, 32.4, 34.0], abs=0.2)
-        assert spreads(0.40, "fair") == pytest.approx([55.6, 36.1, 37.0], abs=0.2)
-        assert spreads(0.65, "par") == pytest.approx([57.6, 37.3, 37.9], abs=0.2)
-        assert spreads(0.65, "fair") == pytest.approx([64.0, 41.8, 41.4], abs=0.2)
+        # Issue #179 rule; under the #177 rule 50.2 and 55.6 at lambda = 0.10.
+        assert spreads(0.40, "par") == pytest.approx([49.4, 32.4, 34.0], abs=0.2)
+        assert spreads(0.40, "fair") == pytest.approx([54.2, 36.0, 37.0], abs=0.2)
+        assert spreads(0.65, "par") == pytest.approx([56.2, 37.2, 37.9], abs=0.2)
+        assert spreads(0.65, "fair") == pytest.approx([61.8, 41.7, 41.4], abs=0.2)
         low = 1e4 * _record(0.05, 0.40, "par")["spread"]
         assert low == pytest.approx(95.8, abs=0.3)
         distance = _record(0.10, 0.40, "par")["distance_to_default"]
@@ -1408,7 +1441,7 @@ class TestCreditAtFirstInvestment:
             # is within the precision of a solve.
             assert abs(change[1]) < 3e-3, key
             assert -0.01 < change[2] < 0.0, key
-            assert -0.03 < change[3] < change[2], key
+            assert -0.04 < change[3] < change[2], key
         x_l = self._path("fair", "X_L")
         assert x_l[2] / x_l[0] - 1 == pytest.approx(-0.004, abs=0.002)
 

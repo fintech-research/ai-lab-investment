@@ -181,7 +181,7 @@ on the use of AI tools are available at
 Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \author[1]{Vincent Grégoire}
 \affil[1]{HEC Montréal}
-\date{November 17, 2026}
+\date{November 18, 2026}
 
 \begin{document}
 \maketitle
@@ -925,14 +925,16 @@ approximations}\label{sec-conventions}
 Two blocks of the model are solved in its exact primitives: the single
 firm of Section~\ref{sec-single-firm} and the entry game of
 Section~\ref{sec-duopoly}. The closed-form default boundary of
-Proposition 2 and the exhibits of Section~\ref{sec-calibration} and
-Section~\ref{sec-valuation} still rest on approximations, the first of
-which is the pure-power approximation of Section~\ref{sec-single-firm}.
-Table~\ref{tbl-domains} collects the model's operating assumptions, the
-domain over which each result is stated, and the approximations whose
-size I have measured, so that a reader can see which objects are exact
-and how large each departure is. The conventions are stated below; their
-magnitudes are in the table.
+Proposition 2, the exhibits of Section~\ref{sec-calibration} and Dario's
+dilemma in Section~\ref{sec-valuation} still rest on approximations, the
+first of which is the pure-power approximation of
+Section~\ref{sec-single-firm}; the credit exhibits of
+Section~\ref{sec-valuation} are evaluated at the exact policies, with
+the claims of the entry game. Table~\ref{tbl-domains} collects the
+model's operating assumptions, the domain over which each result is
+stated, and the approximations whose size I have measured, so that a
+reader can see which objects are exact and how large each departure is.
+The conventions are stated below; their magnitudes are in the table.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1707}}
@@ -978,9 +980,14 @@ Domain & Proposition 2(ii) & Fixed policy; closed form under symmetric
 shares \\
 Domain & Proposition 2(iii) & Common allocation, or monopoly \\
 Assumption & Recovery in default & \((1-b)\) times the inference
-business net of the operating cost of its capacity, floored at zero, at
-most the unlevered asset value and the default-free claim; zero after
-the switch, when that business has no revenue \\
+business net of the operating cost of its capacity, valued with its
+owner's option to shut it down, at most the unlevered asset value and
+the default-free claim; zero after the switch, when that business has no
+revenue \\
+Domain & Recovery at the model's policies & At most \(5\%\) of the
+default-free claim for \(\ell \leq 0.70\), so that cap never binds; the
+cap at the unlevered asset value binds only for the leader at
+\(\ell \leq 0.10\) \\
 Domain & Unlevered firm & Shutdown boundary:
 Equation~\ref{eq-default-boundary} at \(C_D = 0\); \(X_D\), equity and
 the default probability continuous at \(\ell = 0\) \\
@@ -1020,7 +1027,8 @@ capacity 62\% above the capacity at \(X_L\) and 52\% below that at
 capacity 1.6 times, those against a leader that enters at \(X_L\) \\
 Approximation & Single-boundary default (Proposition 2) & Overstates
 \(X_D\) by about 3\%, against faith-based survival, with or without
-debt \\
+debt; omits default after the switch, so the single firm's spread is
+\(17\) against \(22\) basis points on an infinitesimal issue \\
 Approximation & Par debt at \(r_c < r\) & Subsidy about 23\% of \(I\) at
 \(\ell = 0.40\); a fairly priced coupon is 2.5 times the par coupon;
 raises \(X_L\) by 37\% at \(\ell = 0.40\), where fairly priced debt
@@ -1070,10 +1078,9 @@ into one boundary. This is an approximation whose bias is signed and
 quantified in Table~\ref{tbl-domains}: it overstates \(X_D\) and so errs
 against faith-based survival. The same reduction gives the unlevered
 firm's shutdown boundary, which is Equation~\ref{eq-default-boundary} at
-a zero coupon. Proposition 2 and the credit exhibits of
-Section~\ref{sec-valuation} use it. The entry equilibrium does not: each
-claim in the game carries the boundary of the coupled problem (Internet
-Appendix B).
+a zero coupon. Proposition 2 uses it. The entry equilibrium and the
+credit exhibits of Section~\ref{sec-valuation} do not: each claim there
+carries the boundary of the coupled problem (Internet Appendix B).
 
 \textbf{Par debt issuance at an exogenous coupon.} Leverage \(\ell\) and
 the coupon rate \(r_c\) are exogenous, and debt is issued at par: the
@@ -1207,10 +1214,11 @@ operating cost, and the second does not depend on debt. With debt,
 same expression is the \emph{shutdown boundary} at which an all-equity
 owner stops operating, so \(X_D\) is continuous in leverage at
 \(\ell = 0\) and leverage shifts a boundary that exists without it. The
-shift is small at baseline: the operating-cost claim \(\delta K/r\) is
-about eighteen times the coupon claim \(C_D/r\) at \(\ell = 0.40\) and
-the pure-power capacity, so that leverage raises the boundary by
-\(5.5\%\) above the shutdown boundary.
+shift is small at baseline: at \(\ell = 0.40\) under par debt the
+operating-cost claim \(\delta K/r\) is about twelve times the coupon
+claim \(C_D/r\) at the single firm's precommitted-scale capacity and
+twenty-three times at the leader's, so that leverage raises the boundary
+by \(8.4\%\) and \(4.4\%\) above the shutdown boundary.
 
 \(A_{\text{eff},i}\) includes the H-regime continuation value through
 the \(\lambda\) term. This is the \emph{training-survival channel}, the
@@ -1323,17 +1331,19 @@ depends on \(\lambda\), the ranking reverses for
 \(\lambda \lesssim 0.034\), where the optimal allocation is too
 inference-heavy for the training-survival channel to dominate.
 
-Figure~\ref{fig-default-boundaries} shows how par-issued debt moves the
-triggers and the boundaries. It is drawn in the pure-power approximation
-of the equilibrium (Section~\ref{sec-conventions}), in which the
-follower's trigger and both boundaries are closed-form objects, and its
-levels are those of the approximation: there \(X_F^*\) rises from about
-\(0.12\) at \(\ell = 0.05\) to \(0.21\) at \(\ell = 0.65\), while
-\(X_F^*/X_{D,F}\) falls from about \(12\) to \(6\). The direction
-carries over to the exact game under par debt, in which the follower's
-trigger rises from \(0.044\) without debt to \(0.061\) at
-\(\ell = 0.40\) and its distance to default at entry falls from \(10.3\)
-to \(7.6\). It does not survive fairly priced debt (Remark 4).
+Figure~\ref{fig-default-boundaries} shows how debt moves both firms'
+entry triggers and boundaries in the equilibrium of the exact game, at
+the leverage levels of Table~\ref{tbl-duopoly-leverage}. Under par debt
+every line rises with leverage: from \(\ell = 0\) to \(0.65\) the first
+investment moves from \(0.0034\) to \(0.0059\) and the follower's
+trigger from \(0.044\) to \(0.078\), while the leader's distance to its
+boundary at entry falls from \(4.8\) to \(4.3\) and the follower's from
+\(10.3\) to \(6.0\). Under fairly priced debt the triggers barely move
+and the boundaries still rise, to distances of \(4.1\) and \(5.0\)
+(Remark 4). The band that bears on default along the equilibrium path is
+the leader's: from \(X_L\) the follower's trigger is reached before the
+switch with probability \(0.4\%\), and the follower enters \(107\) years
+after the leader in expectation.
 
 \begin{figure}[!htb]
 
@@ -1343,24 +1353,21 @@ to \(7.6\). It does not survive fairly priced debt (Remark 4).
 
 }
 
-\caption{\label{fig-default-boundaries}Investment and default boundaries
-as a function of leverage in the duopoly equilibrium. The solid line
-shows the follower's trigger \(X_F^*\); the dashed line shows the
-follower's default boundary \(X_{D,F}\); the gray solid line shows the
-leader's preemption trigger \(X_P\) and the gray dash-dotted line the
-leader's default boundary \(X_{D,L}\) (the anticipating leader's
-boundary of Internet Appendix A). The shaded band between \(X_{D,F}\)
-and \(X_F^*\) is the follower's post-entry continuation band: an
-installed follower also operates above \(X_F^*\), and a follower that
-has not yet entered is waiting below it. The vertical axis is
-logarithmic, so equal vertical distances correspond to equal
-proportional distances to the default boundary. The equilibrium is
-re-solved at each of 40 leverage levels spanning
-\(\ell \in [0.05, 0.65]\): the follower's capacity and training fraction
-are re-optimized at every level, while the leader's are held at the
-monopoly-phase optimum under the leader-scale convention of
-Section~\ref{sec-conventions}. Parameters: baseline calibration with
-coupon rate \(r_c = 0.05\) and bankruptcy cost \(b = 0.30\).}
+\caption{\label{fig-default-boundaries}Entry triggers and boundaries of
+the two firms against leverage in the equilibrium of the exact game. (a)
+Par debt at coupon rate \(r_c = 0.05\). (b) Fairly priced debt. Blue
+squares: first investment \(X_L\) (solid) and the leader's boundary
+\(X_{D,L}\) at its entry (dash-dotted); black circles: the follower's
+post-switch trigger \(X_F^*\) (solid) and its boundary \(X_{D,F}\) at
+its entry (dashed). Each shaded band runs from a firm's boundary to its
+entry trigger. The equilibrium is solved at each leverage level
+\(\ell \in \{0, 0.20, 0.40, 0.65\}\) (Table~\ref{tbl-duopoly-leverage}),
+with the leader's capacity and training fraction chosen at its entry
+demand and the follower's policy re-optimized; the boundaries are those
+of the coupled regime-switching claims, and at \(\ell = 0\) the shutdown
+boundaries. The vertical axis is logarithmic. Parameters: baseline
+calibration, bankruptcy cost \(b = 0.30\), recovery rule
+Equation~\ref{eq-recovery}.}
 
 \end{figure}%
 
@@ -1387,48 +1394,58 @@ at the shutdown boundary, so equity is continuous in leverage at
 \(\ell = 0\).\footnote{The shutdown option is \(0.25\%\) of the entry
   NPV at the pure-power trigger, where demand is 5.3 times the shutdown
   boundary, and \(0.14\%\) at the precommitted-scale policy of
-  Proposition 1(iii). It matters more at the preemption trigger, which
-  is 2.8 times the leader's boundary: including it lowers the unlevered
-  \(X_P\) by \(3\%\).}
+  Proposition 1(iii). In the entry game, whose leader enters at \(4.8\)
+  times its shutdown boundary, including it lowers the rent-equalization
+  trigger by \(4.3\%\).}
 
 Debt value is: \[
 D(X) = \frac{C_D}{r}\left[1 - \left(\frac{X}{X_D}\right)^{\beta_L^-}\right] + R(X_D) \left(\frac{X}{X_D}\right)^{\beta_L^-},
 \] where the recovery in default is
 \begin{equation}\protect\phantomsection\label{eq-recovery}{
-R(X_D) = \min\left\{(1 - b)\,\min\left\{\Lambda(X_D)^+,\; U(X_D)\right\},\; \frac{C_D}{r}\right\}, \quad \Lambda(X_D) = \frac{[(1-\phi_i)K_i]^\alpha \, s_i^L}{r - \mu_L + \lambda}\, X_D - \frac{\delta (1-\phi_i) K_i}{r},
-}\end{equation} \(b \in [0,1]\) is the fraction of liquidation value
-lost in bankruptcy, \(\Lambda(X_D)\) the liquidation value of productive
-assets and \(\Lambda^+ = \max\{\Lambda, 0\}\). Only the \emph{inference}
-business survives liquidation, while the H-regime continuation value is
-destroyed, because the post-AGI payoff requires the going concern. The
-liquidation value is net of the operating cost of the inference
-capacity, which is the cost that brings the firm to \(X_D\) in the first
-place: as in \citet{leland1994corporate}, what creditors take over is an
-asset value, here that of the inference business, whose buyer carries
-the same perpetual cost \(\delta\) per unit of capacity as the firm.
-With this definition the installed value
-Equation~\ref{eq-installed-value-L} is exactly \(\Lambda\) plus the
-training business. Recovery is floored at zero, and it is capped twice:
-by the unlevered asset value \(U(X_D)\) of the assets seized, because a
-small inference capacity can be worth more than a whole firm that cannot
-shed its training capacity, and by the default-free value of the claim.
+R(X_D) = \min\left\{(1 - b)\,\min\left\{\Lambda(X_D),\; U(X_D)\right\},\; \frac{C_D}{r}\right\},
+}\end{equation} where \[
+\Lambda(X) = \begin{cases} a_i X - c_i + (c_i - a_i X_I)\left(\dfrac{X}{X_I}\right)^{\beta_L^-} & X > X_I, \\ 0 & X \leq X_I, \end{cases}
+\] with \(a_i = [(1-\phi_i)K_i]^\alpha s_i^L/(r - \mu_L + \lambda)\) the
+inference revenue coefficient, \(c_i = \delta(1-\phi_i)K_i/r\) the
+operating cost of the inference capacity, and
+\(X_I = [\beta_L^-/(\beta_L^- - 1)]\, c_i/a_i\). Here \(b \in [0,1]\) is
+the fraction of liquidation value lost in bankruptcy and
+\(\Lambda(X_D)\) the liquidation value of productive assets. Only the
+\emph{inference} business survives liquidation, while the H-regime
+continuation value is destroyed, because the post-AGI payoff requires
+the going concern. The liquidation value is that of the inference
+business to an owner who carries the same perpetual cost \(\delta\) per
+unit of capacity as the firm, which is the cost that brings the firm to
+\(X_D\) in the first place, and who, like the unlevered firm, may shut
+the business down: \(X_I\) is Equation~\ref{eq-default-boundary} applied
+to the inference business alone at a zero coupon, and \(\Lambda\) is
+that business's unlevered asset value in the same single-boundary form
+as \(U\). As in \citet{leland1994corporate}, what creditors take over is
+an asset value. Without the option term, \(a_i X - c_i\) plus the
+training business is exactly the installed value
+Equation~\ref{eq-installed-value-L}. Recovery is capped twice: by the
+unlevered asset value \(U(X_D)\) of the assets seized, because a small
+inference capacity can be worth more than a whole firm that cannot shed
+its training capacity, and by the default-free value of the claim.
 
-The asymmetry between the two businesses matters for
-Section~\ref{sec-valuation}: faith-based survival lowers the
-\emph{probability} of default, but faith is worthless to creditors
-\emph{in} default, so a higher training fraction leaves them a smaller
-inference business. Where the model's firm operates, however, that
-business is worth less than its operating cost at the boundary. At the
-optimal allocation the inference business earns the fraction
-\(1 - \phi^*\) of revenue and bears the same fraction of operating cost,
-and at \(X_D\) total revenue covers only
-\(\beta_L^-/(\beta_L^- - 1) \approx 0.70\) of the fixed claims, so
-\(\Lambda(X_D) < 0\) unless the coupon exceeds about \(0.43\) times the
-operating cost; at the single-firm policies it is at most \(0.15\) times
-that cost for \(\ell \leq 0.70\). Recovery is therefore zero at those
-policies at every leverage, debt is risky from the first unit, and the
-allocation changes the loss given default only away from them (Internet
-Appendix A).
+Faith is worthless to creditors \emph{in} default, but that does not
+make a higher training fraction raise the loss given default where the
+model's firms operate. Revenue is concave in capacity and the operating
+cost linear, so moving capacity into training raises inference revenue
+per unit of inference capacity and lowers \(X_I\). At \(\phi^*\) the two
+businesses earn the same revenue per unit of capacity, so \(X_I\) equals
+the firm's shutdown boundary and \(\Lambda\) is the fraction
+\(1 - \phi^*\) of \(U\); with less training \(X_I\) lies above the
+shutdown boundary, and recovery is zero until the coupon raises \(X_D\)
+above it. Recovery is therefore weakly increasing in \(\phi\) around the
+model's policies, and small there: at most \(5\%\) of the default-free
+claim at the single firm's and the leader's entry for
+\(\ell \leq 0.70\), so debt is risky from the first unit and the loss
+given default is \(95\%\) or more (Section~\ref{sec-valuation}). A
+liquidator who could not shut the inference business down would recover
+nothing at those policies at any leverage, because at \(X_D\) total
+revenue covers only \(\beta_L^-/(\beta_L^- - 1) \approx 0.70\) of the
+fixed claims (Internet Appendix A).
 
 \subsubsection{Entry equilibrium}\label{entry-equilibrium}
 
@@ -1649,8 +1666,8 @@ rises by \(70\%\), \(K_F\) by \(70\%\), \(X_L\) by \(37\%\), \(X_F^*\)
 by \(37\%\) and the leader's boundary by \(46\%\), and the distance to
 default at entry falls from \(4.8\) to \(4.5\). These effects are the
 financing subsidy. With the coupon set so that debt is worth its
-proceeds at issuance, the same leverage lowers \(K_L\) by \(0.7\%\),
-\(K_F\) by \(0.5\%\), \(X_L\) by \(0.4\%\) and \(X_F^*\) by \(0.2\%\),
+proceeds at issuance, the same leverage lowers \(K_L\) by \(0.6\%\),
+\(K_F\) by \(0.4\%\), \(X_L\) by \(0.4\%\) and \(X_F^*\) by \(0.1\%\),
 while the leader's boundary still rises, by \(11\%\), and the distance
 to default at entry falls to \(4.3\).} The reason is that under fair
 pricing the entry value is firm value less \(I(K)\), which leverage
@@ -1995,29 +2012,48 @@ position along it (Figure~\ref{fig-growth-decomposition}).
 
 \subsection{Credit Risk Analysis}\label{credit-risk-analysis}
 
-Leverage, training allocation, demand uncertainty, and competition
-jointly generate credit risk; Internet Appendix H gives the spread and
-default-probability formulas, their measure qualifications, and the
-leverage curves (Figure~\ref{fig-credit-risk}). The training fraction
-\(\phi\) enters through two opposing channels. Below the allocation
-optimum, a higher \(\phi\) raises \(A_{\text{eff}}\) and lowers the
-default boundary \(X_D\) (the training-survival channel of Proposition
-2; the sign reverses above \(\phi^*\)), reducing the \emph{probability}
-of default. The recovery specification (Section~\ref{sec-duopoly}) works
-against this: a higher \(\phi\) shrinks the inference business creditors
-can liquidate, raising the \emph{loss given default}. At baseline the
-second channel modestly dominates, so spreads are mildly increasing in
-\(\phi\) at a given leverage even as default probabilities fall; that
-decomposition is what testable prediction 1 in
-Section~\ref{sec-discussion} proposes to test. At a fixed \(X = 0.10\)
-with \(K = 1\) and \(\phi = 0.5\), the spread is zero at \(\ell = 0.05\)
-and rises to 12, 41, and 97 bps at \(\ell = 0.20\), \(0.40\), and
-\(0.70\), while the five-year default probability rises from 0.63\% to
-1.80\%, 4.85\%, and 12.98\%. Both are \emph{model-implied risk-adjusted}
-objects rather than risk-neutral quantities, and because \(\ell\) and
-\(r_c\) are exogenous stress-test parameters (Section~\ref{sec-model}),
-they describe the response to an imposed debt burden rather than the
-optimal policy.
+Credit risk is evaluated where the model's firms invest: debt is issued
+at the single firm's precommitted-scale entry \((X^*, K^*, \phi^*)\) of
+Proposition 1(iii), at the duopoly's first investment
+\((X_L, K_L, \phi_L)\), with the leader's policy held at its unlevered
+equilibrium value, and at the follower's post-switch entry, and it is
+priced with the exact claims of Section~\ref{sec-duopoly} under par and
+fairly priced debt (Internet Appendix H, Table~\ref{tbl-credit-spread},
+Table~\ref{tbl-credit-pd}, Figure~\ref{fig-credit-risk}). The single
+firm is the monopoly case with its post-switch scale precommitted: with
+scale chosen at the switch it waits for the switch at baseline and
+issues no debt before it. Three findings follow, all numerical. First,
+at these policies credit risk is the risk of reaching a boundary that
+operating costs create without any debt, and leverage shifts that
+boundary. The operating-cost claim \(\delta K/r\) is twelve times the
+par coupon claim at \(\ell = 0.40\) for the single firm and twenty-three
+times for the leader, so the spread on an infinitesimal issue is already
+\(22\) basis points for the single firm and \(44\) for the leader, and
+leverage of \(0.40\) adds about \(4\) basis points to each under par
+debt and about \(11\) under fairly priced debt. The five-year default
+probabilities are \(0.16\%\) and \(0.84\%\) without debt and \(0.25\%\)
+and \(1.04\%\) at \(\ell = 0.40\) under par debt (\(0.47\%\) and
+\(1.44\%\) under fairly priced debt). Second, the firm exposed to
+default is the leader, which enters at \(4.8\) times its shutdown
+boundary against \(6.5\) for the single firm; the follower enters after
+the switch at ten times its boundary, under the H-regime drift, and its
+debt carries \(4\) basis points and a five-year default probability of
+\(0.001\%\) without leverage. Third, recovery plays almost no part.
+Under Equation~\ref{eq-recovery} it is at most \(5\%\) of the coupon
+claim at these policies for \(\ell \leq 0.70\), so the loss given
+default is \(95\%\) or more. Varying the training fraction at a fixed
+scale, more training raises recovery rather than lowering it: the
+inference business is worth nothing at the boundary for \(\phi\) up to
+about \(0.6\), and recovery rises through both policies
+(Figure~\ref{fig-credit-risk}, panel c). Over \(\phi \in [0.30, 0.75]\)
+the spread falls as \(\phi\) rises, for both firms and both debt
+conventions, so the default-probability and loss-given-default channels
+move together there rather than against each other. Spreads and default
+probabilities are \emph{model-implied risk-adjusted} objects rather than
+risk-neutral quantities, and because \(\ell\) and \(r_c\) are exogenous
+stress-test parameters (Section~\ref{sec-model}), the leverage gradients
+describe the response to an imposed debt burden at a fixed policy rather
+than an optimally chosen capital structure.
 
 \subsection{Dario's Dilemma}\label{darios-dilemma}
 
@@ -2130,21 +2166,21 @@ leverage's role.
 
 Expected value is not the only margin. The five-year default probability
 under the true demand process, evaluated at each firm's own optimal
-policy rather than the fixed \((X, K, \phi)\) used above, reveals a
-complementary asymmetry (a first passage under the L-regime drift that
-omits the regime switch, and therefore an upper bound on the pre-switch
-probability; Internet Appendix H). At \(\ell = 0.40\) a conservative
-firm (\(\lambda_{\text{invest}} = 0.02\)) faces 0.79\%, only slightly
-above the 0.64\% baseline, because its later entry (\(X^* = 0.0055\)
-against \(0.0047\)) nearly offsets its own allocation distortion. An
-aggressive firm (\(\lambda_{\text{invest}} = 0.50\)) faces 5.04\%,
-nearly eight times the baseline: it enters at a much lower trigger
-(\(X^* = 0.0033\)), and over-training (\(\phi^* = 0.97\) against
-\(0.70\)) depresses L-regime inference revenue and pushes the default
-boundary up. Together these cut its distance to default at entry from
-\(5.1\) to \(3.3\), against \(4.9\) for the conservative firm. Capacity
-plays no part: \(K^*\) is independent of \(\lambda\) (Proposition 1), so
-all three firms carry identical coupon obligations.
+policy, reveals a complementary asymmetry (a first passage under the
+L-regime drift that omits the regime switch, and therefore an upper
+bound on the pre-switch probability; Internet Appendix H). At
+\(\ell = 0.40\) a conservative firm (\(\lambda_{\text{invest}} = 0.02\))
+faces 0.79\%, only slightly above the 0.64\% baseline, because its later
+entry (\(X^* = 0.0055\) against \(0.0047\)) nearly offsets its own
+allocation distortion. An aggressive firm
+(\(\lambda_{\text{invest}} = 0.50\)) faces 5.04\%, nearly eight times
+the baseline: it enters at a much lower trigger (\(X^* = 0.0033\)), and
+over-training (\(\phi^* = 0.97\) against \(0.70\)) depresses L-regime
+inference revenue and pushes the default boundary up. Together these cut
+its distance to default at entry from \(5.1\) to \(3.3\), against
+\(4.9\) for the conservative firm. Capacity plays no part: \(K^*\) is
+independent of \(\lambda\) (Proposition 1), so all three firms carry
+identical coupon obligations.
 
 \begin{figure}[!htb]
 
@@ -2622,8 +2658,9 @@ H-regime values & Derived (choices) \\
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
 \(X^*\) & Investment trigger: exact pre-switch trigger in
-Section~\ref{sec-single-firm}, pure-power trigger in the calibration and
-credit blocks (Section~\ref{sec-conventions}) & Derived (choices) \\
+Section~\ref{sec-single-firm}, pure-power trigger in the calibration
+block and Dario's dilemma (Section~\ref{sec-conventions}) & Derived
+(choices) \\
 \(X_H^*\), \(K_H^*\) & Post-switch trigger and capacity (Proposition
 1(ii)) & Derived (primitives) \\
 \(X^{\text{pp}}\), \(K^{\text{pp}}\) & Trigger and capacity of the
@@ -3958,9 +3995,11 @@ appear to receive, without taking a position on its exact pricing.
 \emph{Recovery, the shutdown boundary, and fairly priced debt.} Three
 primitives of the credit block are stated here in full. First, recovery.
 Equation~\ref{eq-recovery} nets the operating cost of the inference
-capacity out of the liquidation value. In \citet{leland1994corporate}
-the bankruptcy payoff is a fraction of the unlevered value of the firm's
-assets, and with an operating cost that value is net of the cost;
+capacity out of the liquidation value and gives the owner of the
+inference business the option to shut it down. In
+\citet{leland1994corporate} the bankruptcy payoff is a fraction of the
+unlevered value of the firm's assets, and with an operating cost that
+value is net of the cost and includes the option to stop paying it;
 capitalizing inference revenue gross of the cost that triggers default
 instead makes debt default-free wherever the model's firm operates,
 since \((1-b)\) times the gross value is \(2.8\) times the coupon claim
@@ -3968,24 +4007,43 @@ at \(\ell = 0.40\) and still \(1.3\) times at \(\ell = 0.95\) at the
 pure-power policy, and exceeds the claim up to \(\ell = 0.70\) at the
 precommitted-scale policy of Proposition 1(iii). The cost is capitalized
 at \(r\), the perpetual commitment the firm itself carries in
-Equation~\ref{eq-installed-value-L}, so that the installed value splits
-exactly into the inference business \(\Lambda\) and the training
-business. A buyer who could stop paying at the regime switch would
-capitalize the cost at \(r + \lambda\) instead; the inference business
-would then be worth more than the whole firm at \(X_D\), the cap at the
-unlevered asset value \(U(X_D)\) would bind, and recovery would be
-second order in the coupon (\(6\%\) of the claim at \(\ell = 0.40\) at
-the precommitted-scale policy, against zero under
-Equation~\ref{eq-recovery}). The cap exists for that reason: revenue is
-concave in capacity and the cost is linear, so a small inference
-capacity can have a positive net value where the whole firm, which
-cannot shed training capacity, has none. Under either netting, recovery
-at the single-firm policies is zero or at most a fifth of the claim for
-\(\ell \leq 0.70\), and the debt carries a spread at every leverage: at
-the precommitted-scale policy and under par debt, \(17\) basis points on
-an infinitesimal issue, \(20\) at \(\ell = 0.40\) and \(23\) at
-\(\ell = 0.70\), with five-year default probabilities of \(0.19\%\),
-\(0.30\%\) and \(0.42\%\).
+Equation~\ref{eq-installed-value-L}, so that without the option the
+installed value splits exactly into the inference business and the
+training business, and the option is priced in the single-boundary form
+of Equation~\ref{eq-default-boundary}, so that the inference business is
+valued exactly as the unlevered firm is. With that option,
+\(\Lambda(X_D)\) is positive as soon as \(X_D\) exceeds the inference
+business's own shutdown boundary \(X_I\). At \(\phi^*\) the inference
+business earns the same revenue per unit of capacity as the whole firm,
+so \(X_I\) equals the firm's shutdown boundary and \(\Lambda\) is the
+fraction \(1 - \phi^*\) of \(U\); any coupon then raises \(X_D\) above
+\(X_I\), and in the single-boundary closed forms recovery at the
+precommitted-scale policy is \(1.0\%\), \(1.8\%\), \(3.0\%\) and
+\(3.8\%\) of the claim at \(\ell = 0.20\), \(0.40\), \(0.70\) and
+\(0.95\) under par debt, tending to zero with leverage. Without the
+option (\(\Lambda\) replaced by \((a_i X_D - c_i)^+\)) recovery is zero
+at that policy at every leverage up to \(0.70\), because at \(X_D\)
+total revenue covers only \(\beta_L^-/(\beta_L^- - 1)\) of the fixed
+claims and the inference business covers the same fraction of its own
+cost, which is not enough unless the coupon exceeds about \(0.43\) times
+the operating cost. A buyer who could also stop paying at the regime
+switch, when the inference stream ends, would capitalize the cost at
+\(r + \lambda\); the inference business would then be worth more than
+the whole firm at \(X_D\), the cap at the unlevered asset value
+\(U(X_D)\) would bind, and recovery would be \((1-b)U(X_D)\), \(6\%\) of
+the claim at \(\ell = 0.40\) at the precommitted-scale policy. The cap
+exists for that reason: revenue is concave in capacity and the cost is
+linear, so a small inference capacity can have a positive net value
+where the whole firm, which cannot shed training capacity, has none.
+Under every one of these rules, recovery at the single-firm policies is
+at most a fifth of the claim for \(\ell \leq 0.70\), and the debt
+carries a spread at every leverage. In the closed forms, at the
+precommitted-scale policy under par debt, the spread is \(17\) basis
+points on an infinitesimal issue, \(20\) at \(\ell = 0.40\) and \(23\)
+at \(\ell = 0.70\), with five-year default probabilities of \(0.19\%\),
+\(0.30\%\) and \(0.42\%\); the exact claims of Internet Appendix H,
+which include default after the switch, give \(22\), \(26\) and \(30\)
+basis points.
 
 Second, the unlevered firm. Its claim is Equation~\ref{eq-equity} at
 \(C_D = 0\), the unlevered asset value
@@ -4008,8 +4066,8 @@ coupon; because a higher coupon raises the boundary, debt value is not
 monotone in the coupon, the smallest root is taken, and no root exists
 when the proceeds exceed the debt capacity at \(X\). For debt issued at
 the precommitted-scale trigger the fair coupon rate on proceeds is \(r\)
-plus the spread, \(12.17\%\) to \(12.35\%\) as leverage rises from
-\(0.01\) to \(0.70\) (\(12.26\%\) at \(\ell = 0.40\)), about two and a
+plus the spread, \(12.17\%\) to \(12.33\%\) as leverage rises from
+\(0.01\) to \(0.70\) (\(12.25\%\) at \(\ell = 0.40\)), about two and a
 half times the par coupon; the higher coupon raises the boundary
 (\(0.00178\) against \(0.00160\) at \(\ell = 0.40\)) and the five-year
 default probability (\(0.55\%\) against \(0.30\%\)). The fair coupon
@@ -4490,14 +4548,18 @@ leader's default boundary; spreads are over \(r\). Par: coupon
 \(r_c\ell I(K_L)\) with \(r_c = 0.05\), so that the debt is worth less
 than half of its proceeds. Fair: coupon at which the debt is worth
 \(\ell I(K_L)\) at the entry demand. Bankruptcy cost \(b = 0.30\);
-recovery is zero in every cell. Each cell is one solve of the game on
-the scans of Table~\ref{tbl-duopoly-beliefs}, except the two fairly
-priced cells at \(\lambda = 0.05\): there the follower also enters
-before the switch and one evaluation of the leader's policy takes
+recovery rule Equation~\ref{eq-recovery}. Each cell is one solve of the
+game on the scans of Table~\ref{tbl-duopoly-beliefs}, except the two
+fairly priced cells at \(\lambda = 0.05\): there the follower also
+enters before the switch and one evaluation of the leader's policy takes
 minutes, so \(X_P\) is solved on a five-point scan between \(0.3\) and
 \(1.5\) times \(X_H^*\) that brackets the crossing found without debt,
 and \(X_L\) on a seven-point scan between \(0.2\) and \(1.6\) times
-\(X_P\).}\label{tbl-spread-entry}\tabularnewline
+\(X_P\). Under fairly priced debt, at the cells where the recovery rule
+moves the leader's value at \(X_P\) by more than \(10^{-5}\), \(X_P\) is
+solved on a bracket of \(\pm 3\%\) around the crossing located on these
+scans under the rule without the option to shut the inference business
+down.}\label{tbl-spread-entry}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
@@ -4544,21 +4606,20 @@ spread (bps)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.05 & 4.05 & 95.8 & 3.99 & 98.9 & 3.96 & 100.6 & 3.90 & 103.9 \\
-0.10 & 4.51 & 50.2 & 4.32 & 55.6 & 4.25 & 57.6 & 4.06 & 64.0 \\
-0.15 & 4.55 & 37.9 & 4.32 & 43.0 & 4.25 & 44.7 & 4.02 & 50.9 \\
-0.20 & 4.43 & 34.0 & 4.22 & 38.5 & 4.15 & 40.0 & 3.94 & 45.5 \\
-0.25 & 4.31 & 32.7 & 4.11 & 36.7 & 4.06 & 38.0 & 3.87 & 43.0 \\
-0.30 & 4.20 & 32.4 & 4.03 & 36.1 & 3.98 & 37.3 & 3.80 & 41.8 \\
+0.05 & 4.05 & 95.8 & 3.99 & 98.8 & 3.96 & 100.5 & 3.90 & 103.1 \\
+0.10 & 4.51 & 49.4 & 4.32 & 54.2 & 4.25 & 56.2 & 4.05 & 61.8 \\
+0.15 & 4.55 & 37.5 & 4.31 & 42.3 & 4.25 & 44.0 & 4.02 & 49.8 \\
+0.20 & 4.43 & 33.9 & 4.21 & 38.2 & 4.15 & 39.6 & 3.94 & 45.0 \\
+0.25 & 4.31 & 32.7 & 4.11 & 36.6 & 4.06 & 37.9 & 3.87 & 42.8 \\
+0.30 & 4.20 & 32.4 & 4.03 & 36.0 & 3.98 & 37.2 & 3.80 & 41.7 \\
 0.40 & 4.05 & 33.0 & 3.90 & 36.2 & 3.86 & 37.2 & 3.71 & 41.1 \\
 0.50 & 3.95 & 34.0 & 3.82 & 37.0 & 3.79 & 37.9 & 3.66 & 41.4 \\
 \end{longtable}
 
 Four features of Table~\ref{tbl-spread-entry} bear on the earlier
 draft's statement that the spread at entry is weakly increasing in
-\(\lambda\). First, the spread is positive in every cell: at the
-leader's policy the inference business is worth less than its operating
-cost at the boundary, recovery is zero, and the debt is risky from the
+\(\lambda\). First, the spread is positive in every cell: recovery is at
+most \(4.6\%\) of the default-free claim, and the debt is risky from the
 first unit. Under the gross recovery rule of the earlier draft the same
 debt was default-free at low arrival rates, which is the origin of the
 pattern a reviewer reported for the nested game (zero up to
@@ -4574,7 +4635,7 @@ spread falls; from \(\lambda = 0.15\) to the minimum the distance falls
 and the spread falls nonetheless, because a higher arrival rate makes
 \(\beta_L^-\) more negative and the default claim cheaper at a given
 distance; beyond the minimum the falling distance dominates. Fourth,
-fairly priced debt carries the higher spread, by \(3\) to \(7\) basis
+fairly priced debt carries the higher spread, by \(3\) to \(6\) basis
 points, because its coupon is about two and a half times the par coupon
 and raises the boundary. Spreads are up to \(15\) basis points higher
 than at the rent-equalization trigger at the same arrival rate, the
@@ -4671,29 +4732,29 @@ Coupon rate
 0.00 & none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.000700 & 4.81 &
 10.3 & n.a. & n.a. & 0.00857 \\
 0.20 & par & 0.00390 & 0.00533 & 0.0513 & 0.208 & 0.000833 & 4.68 & 8.9
-& 46.4 & 5.00\% & 0.00989 \\
+& 45.9 & 5.00\% & 0.00989 \\
 0.20 & fair & 0.00336 & 0.00416 & 0.0443 & 0.162 & 0.000739 & 4.55 & 7.8
-& 49.4 & 12.49\% & 0.00857 \\
+& 48.6 & 12.49\% & 0.00855 \\
 0.40 & par & 0.00461 & 0.00708 & 0.0607 & 0.276 & 0.001020 & 4.51 & 7.6
-& 50.2 & 5.00\% & 0.01164 \\
-0.40 & fair & 0.00335 & 0.00414 & 0.0442 & 0.162 & 0.000777 & 4.32 & 6.2
-& 55.6 & 12.56\% & 0.00855 \\
+& 49.4 & 5.00\% & 0.01164 \\
+0.40 & fair & 0.00335 & 0.00414 & 0.0443 & 0.162 & 0.000777 & 4.32 & 6.2
+& 54.2 & 12.54\% & 0.00851 \\
 0.65 & par & 0.00592 & 0.01084 & 0.0780 & 0.421 & 0.001392 & 4.25 & 6.0
-& 57.6 & 5.00\% & 0.01483 \\
-0.65 & fair & 0.00332 & 0.00408 & 0.0440 & 0.160 & 0.000819 & 4.06 & 5.0
-& 64.0 & 12.64\% & 0.00846 \\
+& 56.2 & 5.00\% & 0.01483 \\
+0.65 & fair & 0.00332 & 0.00408 & 0.0441 & 0.160 & 0.000819 & 4.05 & 5.0
+& 61.8 & 12.62\% & 0.00838 \\
 \end{longtable}
 
 Under par debt every object rises with leverage: at \(\ell = 0.65\) the
 leader's capacity is \(2.6\) times and the follower's \(2.6\) times its
 unlevered value, and both triggers are \(76\%\) higher. This is the
 financing subsidy acting as a lower cost of capacity. Under fairly
-priced debt the same leverage lowers the leader's capacity by \(2.1\%\),
-the follower's by \(1.7\%\), the leader's trigger by \(1.2\%\) and the
-follower's by \(0.6\%\): the direction is reversed and the size is at
+priced debt the same leverage lowers the leader's capacity by \(2.0\%\),
+the follower's by \(1.6\%\), the leader's trigger by \(1.2\%\) and the
+follower's by \(0.5\%\): the direction is reversed and the size is at
 most two percent. What leverage does under either convention is raise
 the boundary and shorten the distance to default, for the leader from
-\(4.81\) to \(4.25\) under par debt and \(4.06\) under fairly priced
+\(4.81\) to \(4.25\) under par debt and \(4.05\) under fairly priced
 debt at \(\ell = 0.65\), and for the follower at its entry from \(10.3\)
 to \(6.0\) and \(5.0\). The fairly priced firm sits closer to default
 than the par-financed one at the same leverage, since it pays the higher
@@ -6615,77 +6676,253 @@ Probabilities}\label{h.-credit-spreads-and-default-probabilities}
 \addcontentsline{toc}{subsection}{H. Credit Spreads and Default
 Probabilities}
 
-The formulas and the leverage curves behind the credit-risk discussion
-of Section~\ref{sec-valuation} are collected here.
+The formulas, the tables and the figure behind the credit-risk
+discussion of Section~\ref{sec-valuation} are collected here.
 
-\textbf{Credit spreads.} For a levered firm with leverage \(\ell\), the
-credit spread is: \[
+\textbf{Credit spreads.} For debt with coupon flow \(C_D\), the credit
+spread is: \[
 \text{spread} = \frac{C_D}{D(X)} - r,
-\] where \(C_D = r_c \ell I(K)\) is the total coupon flow, \(D(X)\) is
-the market value of debt given in Section~\ref{sec-model} (which differs
-from face value because of default risk), and the reference rate is the
-model's discount rate \(r\) (the WACC), not a risk-free rate.\footnote{The
-  benchmark is the model's discount rate \(r\) because all claims are
-  valued by discounting at \(r\): a default-free perpetuity with coupon
-  \(C_D\) is worth \(C_D/r\) and yields exactly \(r\), so the spread is
-  zero absent default risk and isolates the default-risk component. The
-  model has a single, risk-adjusted discount rate and therefore cannot
-  separately speak to the term-structure or risk-premium components of
-  observed corporate spreads; the reported spreads are model-implied
-  risk-adjusted objects, the default-risk increment over \(r\), and not
-  market credit spreads or yield spreads over Treasuries.} The training
-fraction \(\phi\) enters through \(A_{\text{eff}}\), which sets both the
-default boundary \(X_D\) of Equation~\ref{eq-default-boundary} and the
-liquidation value creditors recover there. Because leverage and the
-coupon rate are exogenous stress-test parameters
-(Section~\ref{sec-model}), the leverage gradients below describe the
-model's response to an imposed debt burden, not an optimally chosen
-capital structure. Higher leverage increases the default boundary
-\(X_D\) and the coupon claim, reducing debt value and widening spreads.
+\] where \(D(X)\) is the market value of the debt at its issuance demand
+\(X\) (which differs from the default-free value \(C_D/r\) because of
+default risk), \(C_D = r_c \ell I(K)\) under par debt and the coupon at
+which \(D(X) = \ell I(K)\) under fairly priced debt, and the reference
+rate is the model's discount rate \(r\) (the WACC), not a risk-free
+rate.\footnote{The benchmark is the model's discount rate \(r\) because
+  all claims are valued by discounting at \(r\): a default-free
+  perpetuity with coupon \(C_D\) is worth \(C_D/r\) and yields exactly
+  \(r\), so the spread is zero absent default risk and isolates the
+  default-risk component. The model has a single, risk-adjusted discount
+  rate and therefore cannot separately speak to the term-structure or
+  risk-premium components of observed corporate spreads; the reported
+  spreads are model-implied risk-adjusted objects, the default-risk
+  increment over \(r\), and not market credit spreads or yield spreads
+  over Treasuries.} Under fairly priced debt the spread is the coupon
+rate on the proceeds less \(r\). The debt values below are those of the
+entry game (Internet Appendix B): the boundary is the one of the coupled
+regime-switching problem, default can occur after the switch at the
+H-regime boundary, and recovery follows Equation~\ref{eq-recovery}.
+Because leverage and the coupon rate are exogenous stress-test
+parameters (Section~\ref{sec-model}), the leverage gradients below
+describe the model's response to an imposed debt burden at a fixed
+policy, not an optimally chosen capital structure.
 
 \textbf{Default probability.} The probability of default within horizon
 \(T\) is the first-passage probability for GBM hitting the barrier
 \(X_D\): \[
 P(\text{default within } T) = \mathcal{N}(-d_1) + \left(\frac{X_D}{X}\right)^{2\nu/\sigma^2} \mathcal{N}(-d_2),
-\] where \(\nu = \mu_L - \sigma^2/2\),
-\(d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})\),
+\] where \(\nu = \mu_s - \sigma^2/2\) with \(s\) the regime in which the
+firm enters, \(d_1 = [\ln(X/X_D) + \nu T]/(\sigma\sqrt{T})\),
 \(d_2 = [\ln(X/X_D) - \nu T]/(\sigma\sqrt{T})\), and \(\mathcal{N}\) is
 the standard normal CDF. This is the exact barrier hitting probability
 for GBM, consistent with the Leland-style first-passage default
-mechanism in the model; the L-regime drift \(\mu_L\) is the relevant one
-because the default boundary is an L-regime object (the firm defaults
-pre-switch). The calculation abstracts from the regime switch itself,
-since a switch to \(H\) before hitting \(X_D\) would effectively remove
-default risk, so the reported figures are upper bounds on the pre-switch
-default probability. Since \(\mu_L\) is the risk-adjusted
-(certainty-equivalent) drift, the result is a \emph{model-implied
-risk-adjusted} first-passage probability, computed under the same
-convention as the spread calculation. It is not a risk-neutral
-(pricing-measure) probability, because the model discounts at the WACC
-rather than at a risk-free rate (see the footnote in
+mechanism in the model. For a firm that enters before the switch the
+drift is \(\mu_L\) and the calculation abstracts from the switch itself,
+since a switch to \(H\) before hitting \(X_D\) replaces the boundary by
+the higher-drift H-regime problem, so the reported figures are upper
+bounds on the pre-switch default probability; for the follower, which
+enters after the switch, the drift is \(\mu_H\). Since \(\mu_s\) is the
+risk-adjusted (certainty-equivalent) drift, the result is a
+\emph{model-implied risk-adjusted} first-passage probability, computed
+under the same convention as the spread calculation. It is not a
+risk-neutral (pricing-measure) probability, because the model discounts
+at the WACC rather than at a risk-free rate (see the footnote in
 Section~\ref{sec-model}). The physical-measure probability, using the
 unadjusted drift, would be lower.
 
-\textbf{Leverage gradients.} Figure~\ref{fig-credit-risk} plots credit
-spreads and default probabilities against leverage. Both panels are
-evaluated at a fixed demand level \(X = 0.10\) for a firm with capacity
-\(K = 1\) and training fraction \(\phi = 0.5\), a representative
-interior allocation. Using the optimal \(\phi^* \approx 0.70\) instead
-shifts the level of the curves modestly, through the two opposing
-\(\phi\)-channels discussed in Section~\ref{sec-valuation}, without
-changing their shape. The spread is positive at every leverage, because
-recovery is net of operating costs (Equation~\ref{eq-recovery}) and is
-zero at this evaluation point up to \(\ell \approx 0.54\): it is 28 bps
-at \(\ell = 0.05\) and rises with leverage, reaching approximately 46
-bps at \(\ell = 0.20\), 79 bps at \(\ell = 0.40\), and 147 bps at
-\(\ell = 0.70\). Panel (b) shows the model-implied risk-adjusted
-five-year default probability (first passage under the risk-adjusted
-L-regime drift), which rises from 0.63\% at \(\ell = 0.05\) to 1.80\%,
-4.85\%, and 12.98\% at the same three leverage levels. The steep
-increase in default probability at high leverage reflects the shrinking
-distance to default: as leverage increases, the default boundary \(X_D\)
-rises while the firm's demand level is fixed, compressing the distance
-to default.
+\textbf{Credit at the model's own policies.}
+Table~\ref{tbl-credit-spread} and Table~\ref{tbl-credit-pd} report the
+spread and the five-year default probability for debt issued at three
+entry points, at eight leverage levels and under both debt conventions;
+Figure~\ref{fig-credit-risk} plots the same objects on a finer grid. The
+single firm enters at its precommitted-scale policy of Proposition
+1(iii), \((X^*, K^*, \phi^*) = (0.0093, 0.0158, 0.70)\), and is priced
+as an installed monopolist. The leader enters at the first investment of
+the unlevered equilibrium,
+\((X_L, K_L, \phi_L) = (0.0034, 0.0042, 0.68)\), held fixed across
+leverage while the follower best-responds at each leverage. The follower
+enters after the switch at its trigger \(X_F^*\) against that leader,
+all capacity in training, with its policy re-optimized at each leverage.
+Holding the leader's policy fixed isolates the effect of a given debt
+burden. Under fairly priced debt the re-solved equilibria at
+\(\ell = 0.20\) and \(0.40\) change the leader's capacity and trigger by
+less than \(1\%\) and its spread by less than \(0.1\) basis points;
+under par debt the subsidy raises the leader's trigger by \(37\%\) at
+\(\ell = 0.40\), and Table~\ref{tbl-duopoly-leverage} reports that
+equilibrium.
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\caption{Credit spread over \(r\) at entry, at the model's own policies.
+Debt is issued at each firm's entry demand: the single firm's
+precommitted-scale trigger \(X^*\), the leader's first investment
+\(X_L\) (policy of the unlevered equilibrium, held fixed across
+leverage) and the follower's post-switch trigger \(X_F^*\) (policy
+re-optimized at each leverage). Exact claims of the entry game (Internet
+Appendix B), recovery rule Equation~\ref{eq-recovery}, bankruptcy cost
+\(b = 0.30\). Par: coupon \(r_c \ell I(K)\) with \(r_c = 0.05\). Fair:
+coupon at which the debt is worth \(\ell I(K)\) at issuance. The row
+\(\ell = 0\) is the limit on an infinitesimal issue, evaluated at
+\(\ell = 10^{-6}\). Baseline
+calibration.}\label{tbl-credit-spread}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, fair (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, fair (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, fair (bps)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, fair (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, fair (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, par (bps)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, fair (bps)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.00 & 22.2 & 22.2 & 43.6 & 43.6 & 3.8 & 3.8 \\
+0.01 & 22.3 & 22.4 & 43.7 & 43.8 & 3.9 & 3.9 \\
+0.05 & 22.7 & 23.5 & 44.0 & 44.7 & 4.2 & 4.6 \\
+0.10 & 23.2 & 24.8 & 44.4 & 46.0 & 4.7 & 5.5 \\
+0.15 & 23.8 & 26.1 & 44.9 & 47.3 & 5.2 & 6.5 \\
+0.20 & 24.3 & 27.4 & 45.4 & 48.6 & 5.8 & 7.6 \\
+0.40 & 26.4 & 33.1 & 47.4 & 54.3 & 9.0 & 13.1 \\
+0.70 & 29.7 & 43.0 & 50.5 & 63.7 & 18.5 & 24.8 \\
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\caption{Five-year default probability at entry, at the model's own
+policies. First passage of demand from the entry demand to the firm's
+boundary within five years, under the risk-adjusted drift of the regime
+of entry (\(\mu_L\) for the single firm and the leader, with the regime
+switch omitted; \(\mu_H\) for the follower). At \(\ell = 0\) the
+boundary is the shutdown boundary. Policies, debt conventions and claims
+as in
+Table~\ref{tbl-credit-spread}.}\label{tbl-credit-pd}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, fair (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, fair (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, fair (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedleft
+\(\ell\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Single firm, fair (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Leader, fair (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, par (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower, fair (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0.00 & 0.16 & 0.16 & 0.84 & 0.84 & 0.001 & 0.001 \\
+0.01 & 0.16 & 0.16 & 0.84 & 0.85 & 0.001 & 0.001 \\
+0.05 & 0.17 & 0.18 & 0.86 & 0.90 & 0.001 & 0.002 \\
+0.10 & 0.18 & 0.21 & 0.89 & 0.97 & 0.002 & 0.003 \\
+0.15 & 0.19 & 0.24 & 0.91 & 1.04 & 0.003 & 0.006 \\
+0.20 & 0.20 & 0.28 & 0.94 & 1.11 & 0.004 & 0.009 \\
+0.40 & 0.25 & 0.47 & 1.04 & 1.44 & 0.02 & 0.04 \\
+0.70 & 0.35 & 0.90 & 1.21 & 2.07 & 0.11 & 0.23 \\
+\end{longtable}
+
+Without debt every firm already has a boundary, the shutdown boundary,
+at which it would stop operating: the single firm enters at \(6.46\)
+times it, the leader at \(4.81\) and the follower at \(10.3\), and debt
+carries a spread from the first unit, \(22\), \(44\) and \(4\) basis
+points in the limit. Leverage raises the boundary through the coupon and
+widens the spread to \(30\), \(51\) and \(18\) basis points at
+\(\ell = 0.70\) under par debt, and to \(43\), \(64\) and \(25\) under
+fairly priced debt, whose coupon rate on proceeds is \(r\) plus the
+spread, \(12.0\%\) to \(12.6\%\) here, about two and a half times the
+par coupon. The five-year default probability of the leader rises from
+\(0.84\%\) to \(1.21\%\) under par debt and to \(2.07\%\) under fairly
+priced debt over the same range. Recovery is between zero and \(4.8\%\)
+of the default-free claim in every cell, so the cap at that claim never
+binds. The cap at the unlevered asset value binds for the leader at low
+leverage (\(\ell \leq 0.10\) under par debt, \(\ell \leq 0.05\) under
+fairly priced debt), where its boundary is close to its shutdown
+boundary and the unlevered value there is close to zero; in every other
+cell the inference business is worth at most \(0.94\) of that value. For
+the single firm it is zero up to \(\ell = 0.15\) under par debt, because
+the coupled boundary lies below the inference business's own shutdown
+boundary until the coupon raises it; for the leader the boundary is
+above it from the first unit. The single-boundary closed forms of
+Proposition 2, evaluated at the same single-firm policy, place the
+boundary about \(3\%\) higher and omit default after the switch; they
+give spreads of \(17\), \(20\) and \(23\) basis points at \(\ell = 0\),
+\(0.40\) and \(0.70\) under par debt, below the \(22\), \(26\) and
+\(30\) of Table~\ref{tbl-credit-spread}, and five-year default
+probabilities of \(0.19\%\), \(0.30\%\) and \(0.42\%\).
+
+Panels (c) and (d) of Figure~\ref{fig-credit-risk} vary the training
+fraction at the single firm's and the leader's scale and entry demand,
+at \(\ell = 0.40\), which isolates the allocation's effect on credit at
+a fixed debt burden; no point other than \(\phi^*\) and \(\phi_L\) is a
+policy of the model. Recovery is zero for \(\phi \leq 0.6\), where the
+inference business is worth nothing at the boundary to an owner who may
+shut it down, rises through both policies, and flattens where the cap at
+the unlevered asset value binds. The spread falls in \(\phi\) over
+\([0.30, 0.75]\) under both debt conventions, because more training both
+lowers the probability of default after the switch and raises recovery,
+and rises again at the highest training fractions, beyond the allocation
+that minimizes the boundary (the U-shape of Proposition 2).
 
 \begin{figure}[!htb]
 
@@ -6695,17 +6932,26 @@ to default.
 
 }
 
-\caption{\label{fig-credit-risk}Credit risk as a function of leverage.
-(a) Credit spread in basis points, measured relative to the model's
-discount rate \(r\) rather than a risk-free rate. (b) Model-implied
-risk-adjusted five-year default probability (first passage under the
-risk-adjusted L-regime drift, with the regime switch omitted, so an
-upper bound on the pre-switch probability). Neither panel reports a
-risk-neutral (pricing-measure) object nor a market credit spread.
-Evaluated at a fixed demand level \(X = 0.10\) with capacity \(K = 1\)
-and training fraction \(\phi = 0.5\), using the Leland structural model
-with exogenous leverage, a stylized coupon rate \(r_c = 0.05\), and
-bankruptcy cost \(b = 0.30\). Parameters: baseline calibration.}
+\caption{\label{fig-credit-risk}Credit risk at the model's own policies.
+(a) Spread over \(r\) at entry against leverage. (b) Five-year default
+probability against leverage. (c) Recovery as a percentage of the
+default-free claim \(C_D/r\) against the training fraction, at leverage
+\(\ell = 0.40\). (d) Spread over \(r\) against the training fraction, at
+\(\ell = 0.40\). Black: single firm at its precommitted-scale policy
+\((X^*, K^*, \phi^*)\); blue: duopoly leader at the first investment
+\((X_L, K_L, \phi_L)\) of the unlevered equilibrium; gray: follower at
+its post-switch entry. Solid lines: par debt at \(r_c = 0.05\); dashed
+lines: fairly priced debt. In panels (a) and (b) the leverage grid has
+29 points on \([0, 0.70]\), the leader's policy is held fixed and the
+follower's re-optimized at each leverage; the point \(\ell = 0\) is the
+limit on an infinitesimal issue. In panels (c) and (d) the training
+fraction varies over a 66-point grid on \([0.30, 0.95]\) at each firm's
+capacity and entry demand; dotted vertical lines mark \(\phi_L\) (blue)
+and \(\phi^*\) (black). Default probabilities are first-passage
+probabilities under the risk-adjusted drift of the regime of entry, with
+the switch omitted for the single firm and the leader. Exact claims of
+the entry game, recovery rule Equation~\ref{eq-recovery}, bankruptcy
+cost \(b = 0.30\); baseline calibration.}
 
 \end{figure}%
 

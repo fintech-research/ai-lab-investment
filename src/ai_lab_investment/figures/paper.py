@@ -307,77 +307,100 @@ def create_lambda_option_value() -> plt.Figure:
 # ── Figure 5: Investment and default boundaries ──────────────────
 
 
+ROLE_STYLE = {
+    "single_firm": ("Single firm", "k"),
+    "leader": ("Duopoly leader", "steelblue"),
+    "follower": ("Duopoly follower", "0.55"),
+}
+"""Label and colour of each role in the credit figures."""
+
+DEBT_STYLE = {"par": "-", "fair": "--"}
+"""Line style of each debt convention in the credit figures."""
+
+
 def create_default_boundaries() -> plt.Figure:
-    """Follower trigger, leader trigger, and default boundary vs leverage."""
-    from ..models.duopoly import DuopolyModel
-    from ..models.parameters import ModelParameters
+    """Entry triggers and boundaries of both duopoly roles against leverage.
 
-    p = ModelParameters()
-    leverages = np.linspace(0.05, 0.65, 40)
-    X_F = np.full_like(leverages, np.nan)
-    X_L = np.full_like(leverages, np.nan)
-    X_D = np.full_like(leverages, np.nan)
-    X_DL = np.full_like(leverages, np.nan)
+    Model of record: the cached equilibria of the exact game at baseline
+    (`duopoly.load_equilibrium_grid`), at the leverage levels the cache
+    holds, one panel per debt convention. The leader's entry is the first
+    investment X_L; its boundary and the follower's are the coupled
+    boundaries of the exact claims, at each firm's entry.
+    """
+    from ..models.duopoly import load_equilibrium_grid
 
-    for i, lev in enumerate(leverages):
-        try:
-            duo = DuopolyModel(p, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30)
-            eq = duo.pure_power_preemption_equilibrium("H")
-            X_F[i] = eq["X_follower"]
-            X_L[i] = eq["X_leader"]
-            X_D[i] = eq["X_default_follower"]
-            X_DL[i] = eq["X_default_leader"]
-        except (ValueError, RuntimeError):
-            continue
+    cells = [
+        r
+        for r in load_equilibrium_grid()
+        if r["scale"] == "envelope" and abs(r["lam"] - 0.10) < 1e-12
+    ]
+    unlevered = [r for r in cells if r["leverage"] == 0.0]
+    if len(unlevered) != 1:
+        msg = "Expected one unlevered baseline cell in the equilibrium cache"
+        raise RuntimeError(msg)
 
-    fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
-    valid = ~np.isnan(X_F)
-
-    ax.fill_between(
-        leverages[valid],
-        X_D[valid],
-        X_F[valid],
-        alpha=0.15,
-        color="steelblue",
-        label=r"Follower's post-entry band ($X_{D,F}$ to $X_F^*$)",
+    fig, axes = plt.subplots(1, 2, figsize=(FULL_W, 3.6), sharey=True)
+    for ax, debt, title in zip(
+        axes, ("par", "fair"), ("(a) Par debt", "(b) Fairly priced debt"), strict=True
+    ):
+        rows = sorted(
+            unlevered + [r for r in cells if r["leverage"] > 0 and r["debt"] == debt],
+            key=lambda r: r["leverage"],
+        )
+        lev = np.array([r["leverage"] for r in rows])
+        X_F = np.array([r["X_F"] for r in rows])
+        X_DF = np.array([r["X_D_follower"] for r in rows])
+        X_L = np.array([r["X_L"] for r in rows])
+        X_DL = np.array([r["X_D_leader"] for r in rows])
+        ax.fill_between(lev, X_DF, X_F, alpha=0.12, color="0.5", linewidth=0)
+        ax.fill_between(lev, X_DL, X_L, alpha=0.15, color="steelblue", linewidth=0)
+        ax.plot(
+            lev,
+            X_F,
+            "k-o",
+            linewidth=1.4,
+            markersize=3,
+            label=r"Follower's trigger $X_F^*$",
+        )
+        ax.plot(
+            lev,
+            X_DF,
+            "k--o",
+            linewidth=1.1,
+            markersize=3,
+            label=r"Follower's boundary $X_{D,F}$",
+        )
+        ax.plot(
+            lev,
+            X_L,
+            "-s",
+            color="steelblue",
+            linewidth=1.4,
+            markersize=3,
+            label=r"First investment $X_L$",
+        )
+        ax.plot(
+            lev,
+            X_DL,
+            "-.s",
+            color="steelblue",
+            linewidth=1.1,
+            markersize=3,
+            label=r"Leader's boundary $X_{D,L}$",
+        )
+        ax.set_yscale("log")
+        ax.set_xlim(-0.02, 0.67)
+        ax.set_xticks(lev)
+        ax.set_xticklabels([f"{x:.2f}" for x in lev])
+        ax.set_xlabel(r"Leverage $\ell$ (D/I)")
+        ax.set_title(title, loc="left", fontweight="bold", fontsize="medium")
+    axes[0].set_ylim(4e-4, 0.15)
+    axes[0].set_ylabel(r"Demand level $X$ (log scale)")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc="lower center", ncol=4, fontsize="small", frameon=False
     )
-    ax.plot(
-        leverages[valid],
-        X_F[valid],
-        "k-",
-        linewidth=1.5,
-        label=r"Follower trigger $X_F^*$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_D[valid],
-        "k--",
-        linewidth=1.3,
-        label=r"Follower default boundary $X_{D,F}$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_L[valid],
-        "-",
-        color="0.5",
-        linewidth=1.0,
-        label=r"Leader trigger $X_P$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_DL[valid],
-        "-.",
-        color="0.5",
-        linewidth=1.0,
-        label=r"Leader default boundary $X_{D,L}$",
-    )
-
-    ax.set_yscale("log")
-    ax.set_ylim(1.5e-4, 0.4)
-    ax.set_xlabel("Leverage (D/I)")
-    ax.set_ylabel(r"Demand level $X$ (log scale)")
-    ax.legend(loc="lower right", framealpha=0.9, fontsize="small", ncol=2)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0.0, 0.08, 1.0, 1.0))
     return fig
 
 
@@ -385,44 +408,64 @@ def create_default_boundaries() -> plt.Figure:
 
 
 def create_credit_risk() -> plt.Figure:
-    """Two-panel: credit spread and default probability vs leverage.
+    """Credit spread, default probability and recovery at the model's policies.
 
-    Delegates to ValuationAnalysis.credit_spread_curve().
+    Delegates to `ValuationAnalysis.on_policy_credit` (panels a and b: the
+    single firm's precommitted-scale policy, the duopoly's first investment
+    and the follower's post-switch entry, across leverage, under both debt
+    conventions) and `ValuationAnalysis.credit_phi_profile` (panels c and
+    d: the training fraction varied at the single firm's and the leader's
+    scale and entry demand, at leverage 0.40).
     """
     from ..models import ModelParameters, ValuationAnalysis
 
-    p = ModelParameters()
-    va = ValuationAnalysis(p)
+    va = ValuationAnalysis(ModelParameters())
+    leverages = tuple(float(x) for x in np.linspace(0.0, 0.70, 29))
+    rows = va.on_policy_credit(leverages=leverages)
+    phis = np.linspace(0.30, 0.95, 66)
+    profiles = {
+        debt: va.credit_phi_profile(phis, 0.40, debt) for debt in ("par", "fair")
+    }
 
-    leverages = np.linspace(0.05, 0.70, 30)
-    result = va.credit_spread_curve(leverages)
+    fig, axes = plt.subplots(2, 2, figsize=(FULL_W, 5.6))
+    (ax_s, ax_p), (ax_r, ax_q) = axes
+    for role, (label, colour) in ROLE_STYLE.items():
+        for debt, style in DEBT_STYLE.items():
+            sel = [r for r in rows if r["role"] == role and r["debt"] == debt]
+            lev = np.array([r["leverage"] for r in sel])
+            kwargs = {"color": colour, "linestyle": style, "linewidth": 1.4}
+            name = label if debt == "par" else None
+            ax_s.plot(lev, [1e4 * r["spread"] for r in sel], **kwargs)
+            ax_p.plot(
+                lev, [100 * r["default_probability"] for r in sel], label=name, **kwargs
+            )
+    for role in ("single_firm", "leader"):
+        label, colour = ROLE_STYLE[role]
+        for debt, style in DEBT_STYLE.items():
+            prof = profiles[debt][role]
+            kwargs = {"color": colour, "linestyle": style, "linewidth": 1.4}
+            ax_r.plot(prof["phi"], 100 * prof["recovery_rate"], **kwargs)
+            ax_q.plot(prof["phi"], 1e4 * prof["spread"], **kwargs)
+        policy = float(profiles["par"][role]["phi_policy"])
+        for ax in (ax_r, ax_q):
+            ax.axvline(policy, color=colour, linestyle=":", linewidth=0.9)
+    ax_p.plot([], [], "k-", linewidth=1.4, label="Par debt")
+    ax_p.plot([], [], "k--", linewidth=1.4, label="Fairly priced debt")
+    ax_p.legend(loc="upper left", fontsize="x-small", framealpha=0.95)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
-
-    valid_s = ~np.isnan(result["credit_spread"])
-    if valid_s.sum() > 0:
-        ax1.plot(
-            result["leverage"][valid_s],
-            result["credit_spread"][valid_s] * 10_000,
-            "k-",
-            linewidth=1.5,
-        )
-    ax1.set_xlabel("Leverage (D/I)")
-    ax1.set_ylabel("Credit spread over $r$ (bps)")
-    ax1.set_title("(a)", loc="left", fontweight="bold")
-
-    valid_d = ~np.isnan(result["default_probability"])
-    if valid_d.sum() > 0:
-        ax2.plot(
-            result["leverage"][valid_d],
-            result["default_probability"][valid_d] * 100,
-            "k-",
-            linewidth=1.5,
-        )
-    ax2.set_xlabel("Leverage (D/I)")
-    ax2.set_ylabel("5-yr default prob., no-switch upper bound (%)")
-    ax2.set_title("(b)", loc="left", fontweight="bold")
-
+    ax_s.set_xlabel(r"Leverage $\ell$ (D/I)")
+    ax_s.set_ylabel("Spread at entry over $r$ (bps)")
+    ax_s.set_ylim(bottom=0)
+    ax_p.set_xlabel(r"Leverage $\ell$ (D/I)")
+    ax_p.set_ylabel("5-yr default prob., no switch (%)")
+    ax_p.set_ylim(bottom=0)
+    ax_r.set_xlabel(r"Training fraction $\phi$ (scale fixed)")
+    ax_r.set_ylabel(r"Recovery at $\ell = 0.40$ (% of claim)")
+    ax_r.set_ylim(bottom=0)
+    ax_q.set_xlabel(r"Training fraction $\phi$ (scale fixed)")
+    ax_q.set_ylabel(r"Spread at $\ell = 0.40$ (bps)")
+    for ax, tag in zip(axes.flat, ("(a)", "(b)", "(c)", "(d)"), strict=True):
+        ax.set_title(tag, loc="left", fontweight="bold")
     fig.tight_layout()
     return fig
 
