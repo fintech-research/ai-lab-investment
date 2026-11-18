@@ -668,10 +668,15 @@ class TestCachedEquilibria:
         fresh = equilibrium_record(P, "envelope", rent_equalization=cached)
         assert fresh["X_P"] == cached["X_P"]
         assert fresh["scan_points"] == cached["scan_points"]
-        for key in ("X_L", "K_L", "follower_margin", "lcp_trigger", "rent_eq_spread"):
+        for key in ("X_L", "K_L", "lcp_trigger", "rent_eq_spread"):
             if np.isnan(cached[key]):
                 continue
             assert fresh[key] == pytest.approx(cached[key], rel=3e-3), key
+        # The smallest margin over the scan points depends on where they lie,
+        # and the cache was located on the earlier scan anchored at X_P.
+        assert fresh["follower_margin"] == pytest.approx(
+            cached["follower_margin"], abs=1e-3
+        )
 
     @pytest.mark.slow
     def test_grid_writer_reuses_the_cache(self, tmp_path):
