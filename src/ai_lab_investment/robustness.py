@@ -205,7 +205,7 @@ def _headline_objects(params: ModelParameters) -> Headline:
 
     # Interim pin (issue #176): pure-power policy; issue #182 re-solves the sweep.
     _, _, phi_star = model.pure_power_trigger_capacity_phi()
-    equilibrium = duopoly.solve_preemption_equilibrium()
+    equilibrium = duopoly.pure_power_preemption_equilibrium()
     discount = equilibrium["X_leader"] / equilibrium["X_leader_monopolist"]
 
     return Headline(

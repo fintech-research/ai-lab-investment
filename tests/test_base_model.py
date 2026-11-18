@@ -799,7 +799,7 @@ class TestProposition1ClosedForm:
 
         duo = DuopolyModel(ModelParameters(r=0.15), leverage=0.0)
         with pytest.raises(RuntimeError, match="A2"):
-            duo.solve_leader_monopolist()
+            duo.pure_power_leader_monopolist()
 
 
 class TestCalibrationSectionClaims:

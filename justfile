@@ -55,6 +55,15 @@ test:
     @echo "🚀 Testing code: Running pytest"
     uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
+# Run the slow tests too (re-solves equilibria of the exact preemption game)
+test-slow:
+    @echo "🚀 Testing code: Running pytest, slow tests included"
+    uv run python -m pytest -m "slow or not slow"
+
+# Re-solve the cached duopoly equilibria behind the paper (about an hour)
+duopoly-grid:
+    uv run python -m ai_lab_investment.models.preemption_levered
+
 # Test if documentation can be built without warnings or errors
 docs-test:
     @echo "🚀 Testing docs build"

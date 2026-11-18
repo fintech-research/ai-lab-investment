@@ -322,7 +322,7 @@ def create_default_boundaries() -> plt.Figure:
     for i, lev in enumerate(leverages):
         try:
             duo = DuopolyModel(p, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30)
-            eq = duo.solve_preemption_equilibrium("H")
+            eq = duo.pure_power_preemption_equilibrium("H")
             X_F[i] = eq["X_follower"]
             X_L[i] = eq["X_leader"]
             X_D[i] = eq["X_default_follower"]
@@ -431,69 +431,90 @@ def create_credit_risk() -> plt.Figure:
 
 
 def create_competition_effect() -> plt.Figure:
-    """Single-panel: monopolist vs duopoly leader triggers over sigma."""
-    from ..models.duopoly import DuopolyModel
+    """Single firm's and duopoly leader's pre-switch triggers over lambda.
+
+    Model of record. The single firm's triggers are solved on the grid; the
+    leader's preemption trigger is read from the cached equilibria of the
+    exact game (`duopoly.load_equilibrium_grid`), which take one to two
+    minutes each to solve.
+    """
+    from ..models.base_model import SingleFirmModel
+    from ..models.duopoly import load_equilibrium_grid
     from ..models.parameters import ModelParameters
 
     p = ModelParameters()
-    # The interior-capacity condition (A2) requires beta_H < 1/(1-alpha),
-    # i.e. sigma > ~0.19 at the baseline WACC; start the grid at 0.20.
-    sigmas = np.linspace(0.20, 0.30, 30)
+    lams = np.geomspace(0.03, 0.50, 30)
+    unrestricted = np.full_like(lams, np.nan)
+    precommitted = np.full_like(lams, np.nan)
+    for i, lam in enumerate(lams):
+        sol = SingleFirmModel(p.with_param(lam=float(lam))).solve()
+        precommitted[i] = sol.precommitted.X_star
+        if sol.invests_before_switch:
+            unrestricted[i] = sol.X_star
 
-    mono_trig = np.full_like(sigmas, np.nan)
-    leader_trig = np.full_like(sigmas, np.nan)
-
-    for i, s in enumerate(sigmas):
-        try:
-            ps = p.with_param(sigma=s)
-            duo = DuopolyModel(ps, leverage=0.0)
-            eq = duo.solve_preemption_equilibrium("H")
-            mono_trig[i] = eq["X_leader_monopolist"]
-            leader_trig[i] = eq["X_leader"]
-        except (ValueError, RuntimeError):
-            pass
+    records = sorted(
+        (
+            r
+            for r in load_equilibrium_grid()
+            if r["scale"] == "envelope" and r["leverage"] == 0.0 and r["exists"]
+        ),
+        key=lambda r: r["lam"],
+    )
+    lam_duo = np.array([r["lam"] for r in records])
+    X_P = np.array([r["X_P"] for r in records])
+    X_L = np.array([r["assigned_X_L"] for r in records])
 
     fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
-
-    v_m = ~np.isnan(mono_trig)
-    v_l = ~np.isnan(leader_trig)
-    ax.plot(sigmas[v_m], mono_trig[v_m], "k-", linewidth=1.5, label="Monopolist")
+    top = 0.05
+    shown = np.where(unrestricted <= top, unrestricted, np.nan)
+    ax.plot(lams, shown, "k-", linewidth=1.5, label="Single firm, scale chosen freely")
     ax.plot(
-        sigmas[v_l],
-        leader_trig[v_l],
-        "--",
-        color="0.35",
-        linewidth=1.3,
-        label="Duopoly leader",
-    )
-    ax.set_xlabel(r"Volatility $\sigma$")
-    ax.set_ylabel(r"Investment trigger $X^*$")
-
-    # Trigger ratio on the right axis, so the ratio claims in the
-    # text are directly readable from the figure.
-    v_r = v_m & v_l
-    ax2 = ax.twinx()
-    ax2.plot(
-        sigmas[v_r],
-        leader_trig[v_r] / mono_trig[v_r],
+        lams,
+        precommitted,
         ":",
-        color="0.55",
+        color="0.45",
+        linewidth=1.3,
+        label="Single firm, precommitted scale",
+    )
+    ax.fill_between(lam_duo, X_L, X_P, color="steelblue", alpha=0.18, linewidth=0)
+    ax.plot(
+        lam_duo,
+        X_P,
+        "--o",
+        color="0.2",
+        linewidth=1.3,
+        markersize=3.5,
+        label=r"Duopoly, rent equalization $X_P$",
+    )
+    ax.plot(
+        lam_duo,
+        X_L,
+        "-.s",
+        color="steelblue",
         linewidth=1.2,
-        label=r"$X_P / X_L^{\mathrm{mono}}$ (right axis)",
+        markersize=3.0,
+        label=r"Duopoly, assigned leader $X_L$",
     )
-    ax2.set_ylabel(r"Trigger ratio $X_P / X_L^{\mathrm{mono}}$")
-    ax2.set_ylim(0.0, 1.0)
-    ax2.spines["right"].set_visible(True)
-
-    lines1, labels1 = ax.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(
-        lines1 + lines2,
-        labels1 + labels2,
-        loc="upper left",
+    ax.axvspan(0.0729, lams[-1], color="0.92", zorder=0)
+    ax.text(
+        0.2,
+        0.03,
+        "single firm waits\nfor the switch",
         fontsize="small",
-        framealpha=0.95,
+        ha="center",
+        va="center",
+        color="0.3",
     )
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(lams[0], lams[-1])
+    ax.set_ylim(2e-5, top)
+    ax.set_xticks([0.03, 0.05, 0.10, 0.20, 0.50])
+    ax.set_xticklabels(["0.03", "0.05", "0.10", "0.20", "0.50"])
+    ax.minorticks_off()
+    ax.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
+    ax.set_ylabel("Pre-switch investment trigger")
+    ax.legend(loc="lower center", fontsize="small", framealpha=0.95)
 
     fig.tight_layout()
     return fig
