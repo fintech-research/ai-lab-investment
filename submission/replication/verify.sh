@@ -26,10 +26,14 @@ echo
 THEOREMS=(
   AILab.euler_operator_rpow            # EulerODE.lean       (eq-hjb-L, eq-beta-H)
   AILab.charPoly_betaPlus              # CharacteristicRoots.lean (eq-beta-H)
-  AILab.trigger_from_boundary_conditions  # Proposition1.lean  (eq-trigger-phi)
-  AILab.alloc_foc_closed_form          # Proposition1Phi.lean (phi*)
-  AILab.faith_threshold                # Proposition2.lean   (eq-phi-underbar)
-  AILab.preemption_exists              # Duopoly.lean        (X_P existence)
+  AILab.trigger_from_boundary_conditions  # Proposition1.lean  (eq-trigger-H)
+  AILab.capObj_lt_capObj_KHstar        # Capacity.lean       (eq-K-H, global maximum)
+  AILab.premium_foc_iff                # PreSwitch.lean      (eq-premium)
+  AILab.alloc_foc_closed_form          # Proposition1Phi.lean (eq-phi-star)
+  AILab.default_smooth_pasting_iff     # Proposition2.lean   (eq-default-boundary)
+  AILab.inference_share_iff_foc        # Credit.lean         (eq-recovery)
+  AILab.corollary1_i                   # Corollary1.lean     (eq-installed-lambda)
+  AILab.followerFoc_unique             # Duopoly.lean        (eq-follower-foc)
 )
 {
   echo "import AILabProofs"

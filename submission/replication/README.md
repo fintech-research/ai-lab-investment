@@ -1,43 +1,27 @@
 # Machine-checked proof package — *Investing in Artificial General Intelligence*
 
-This package lets a referee verify the paper's closed-form results without
-checking the algebra by hand. It contains a formalization of the paper's
-derivations in [Lean 4](https://lean-lang.org/) against
-[Mathlib](https://github.com/leanprover-community/mathlib4), the community
-mathematics library. Every theorem is checked by the Lean kernel: there are no
-unproven placeholders (`sorry`-free), and every result depends only on Lean's
-three standard axioms (`propext`, `Classical.choice`, `Quot.sound`). If the
-package builds, the proofs are correct — the only question left for a human
-(or AI) reader is whether the formal statements faithfully transcribe the
-paper's equations, which is what `equations.tex` is for (see below).
+This package lets a referee check closed-form steps of the paper without redoing the algebra by hand. It contains a formalization of parts of the paper's derivations in [Lean 4](https://lean-lang.org/) against [Mathlib](https://github.com/leanprover-community/mathlib4), the community mathematics library. Every theorem is checked by the Lean kernel: there are no unproven placeholders (`sorry`-free), and every result depends only on Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`). If the package builds, the formal proofs have no gaps. Two questions remain for a human (or AI) reader: whether the formal statements faithfully transcribe the paper's equations, which is what `equations.tex` is for (see below), and whether the hypotheses of each theorem hold where the paper uses it, which the paper's Internet Appendix records result by result.
 
 ## Contents
 
 | Path | What it is |
 |:-----|:-----------|
-| `lean/` | The Lean 4 project (`AILabProofs`). Seven source files under `lean/AILabProofs/`, one per cluster of results. |
+| `lean/` | The Lean 4 project (`AILabProofs`). Eleven source files under `lean/AILabProofs/`, one per cluster of results. |
 | `lean/README.md` | The complete theorem-by-theorem map from Lean names to paper propositions and equation labels, plus the precise scope (what is and is not formalized). |
 | `equations.tex` | Every display equation of the paper and the Internet Appendix, in source order, each with its introducing prose and its equation label (e.g. `eq-trigger-phi`). Auto-generated from the manuscript source, so it cannot drift from the paper. |
 | `Dockerfile`, `verify.sh` | A self-contained verification environment: build the image and it installs Lean, downloads the prebuilt Mathlib, and kernel-checks every proof; running it prints the axiom report. Needs only Docker on the host (see [How to execute it](#how-to-execute-it)). |
 
 ## What is verified
 
-The algebraic and single-variable-calculus content of Propositions 1–3 — the
-steps a referee would otherwise check by hand:
+Identities and inequalities under stated hypotheses, conditional on the functional forms, exercise payoffs, and value matching and smooth pasting conditions that the paper derives:
 
-- the reduction of the homogeneous Euler ODE to the characteristic equation,
-  and the characteristic roots with their ordering (`EulerODE.lean`,
-  `CharacteristicRoots.lean`);
-- the investment trigger, NPV at the trigger, and capacity and allocation
-  first-order conditions with their closed forms, including uniqueness of the
-  interior training fraction (`Proposition1.lean`, `Proposition1Phi.lean`);
-- the faith-based-survival threshold and the default-boundary comparative
-  statics (`Proposition2.lean`);
-- the duopoly role-invariance of the allocation, the follower's separable
-  reduction, and the generic intermediate-value existence and strict-concavity
-  single-crossing lemmas underlying the preemption trigger, conditional on the
-  continuity, endpoint-sign, and zero-leverage concavity hypotheses the paper
-  supplies (`Duopoly.lean`).
+- the reduction of the homogeneous Euler ODE to the characteristic equation, and the characteristic roots with their ordering (`EulerODE.lean`, `CharacteristicRoots.lean`);
+- Proposition 1: the training-fraction first-order condition, its unique interior root `φ*` in closed form and its comparative statics (`Proposition1Phi.lean`); the post-switch trigger and NPV, the capacity first-order condition and its closed form `K_H*`, positive under (A2) and the unique global maximiser of the reduced capacity objective (`Proposition1.lean`, `Capacity.lean`); the particular solutions of the pre-switch problem and the equivalence of its first-order conditions with smooth pasting and the scale condition (`PreSwitch.lean`);
+- Proposition 2: smooth pasting on the equity value equivalent to the closed-form default boundary, the shutdown boundary and continuity in leverage, the faith-based survival threshold and its comparative statics, and the default-boundary monotonicities (`Proposition2.lean`); identities of the recovery rule at the optimal allocation (`Credit.lean`);
+- Corollary 1: the first and second derivatives of installed value in the arrival rate, monotonicity and strict concavity iff `φ > φ̲`, and the news identity (`Corollary1.lean`);
+- Proposition 3: the contest algebra behind the allocation condition, uniqueness of the root of the follower's capacity condition, and the algebra of the values before the first investment; plus two generic lemmas about the nested pure-power game (`Duopoly.lean`).
+
+No theorem proves that a policy is optimal in its stopping problem, that an equilibrium exists or is unique, or any number in the paper.
 
 Results are stated for abstract parameters under the paper's admissibility
 assumptions, so each theorem holds for *every* admissible parameter value,
@@ -54,15 +38,7 @@ and the commands behind each exhibit) can be assembled from the repository
 with `just build-replication-package` extended accordingly, and will be
 archived with the paper upon publication.
 
-**Not formalized** (see `lean/README.md` for the precise list): the derivation
-of the HJB equation from stochastic-calculus primitives and the
-optimal-stopping verification theorem (taken as the starting point, as in the
-paper's appendix), the pure-power (`A₁ = 0`) form of the low-regime option
-value — a solution convention rather than a theorem — the model-specific
-hypotheses of the preemption lemmas (endpoint signs, one of them verified
-computationally, and zero-leverage concavity), and all numerical results. Numerical results are
-reproducible from the public code repository:
-<https://github.com/fintech-research/ai-lab-investment/>.
+**Not formalized** (see `lean/README.md` for the precise list): the derivation of the HJB equations from stochastic-calculus primitives and every optimal-stopping verification argument, including the optimality of the default rule (taken as the starting point, as in the paper's appendix); the pre-switch two-region system as a whole and the waiting margin; the pure-power (`A₁ = 0`) approximation; the single-boundary reduction of the credit block and the recovery caps; existence of a root of the follower's condition; the entry equilibrium of the duopoly; and all numerical results. Numerical results are reproducible from the public code repository: <https://github.com/fintech-research/ai-lab-investment/>.
 
 ## How to read it (no Lean experience needed)
 
