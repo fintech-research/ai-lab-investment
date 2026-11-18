@@ -598,8 +598,9 @@ def create_firm_comparison() -> plt.Figure:
         ax.set_xticks(x)
 
     # Upper axis: show the outlier region
-    ax_top.set_ylim(18, 22)
-    ax_top.set_yticks([18, 20, 22])
+    top_lo = int(max(capex_int)) - 2
+    ax_top.set_ylim(top_lo, top_lo + 4)
+    ax_top.set_yticks([top_lo, top_lo + 2, top_lo + 4])
     ax_top.set_xticklabels([])
     ax_top.tick_params(bottom=False)
     ax_top.set_title("(a)", loc="left", fontweight="bold")
@@ -649,7 +650,7 @@ def create_firm_comparison() -> plt.Figure:
             fontsize="small",
         )
     ax2.set_xlabel("Revenue multiple (2025/2024)")
-    ax2.set_ylabel("Leverage ratio")
+    ax2.set_ylabel(r"Leverage $\ell$ (D/I)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     return fig

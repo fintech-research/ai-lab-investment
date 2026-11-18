@@ -32,7 +32,7 @@ from .parameters import ModelParameters
 # of `fixed_pie_robustness`. Still at the pure-power approximation
 # (`pure_power_*`): the nested-game half of `fixed_pie_robustness`, labelled
 # as such, and the growth-option and capacity-gap decompositions behind
-# Internet Appendix G (named by no sub-issue; #183 or #184). The
+# Internet Appendix G (issue #184; #183 re-solved the calibration only). The
 # `pure_power_dilemma*` methods are kept as the nested approximation, so that
 # the earlier draft's dilemma numbers reproduce and their error can be
 # stated; they feed no main-text number.

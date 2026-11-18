@@ -837,10 +837,9 @@ class TestCalibrationSectionClaims:
         assert self._premium_ratio(ModelParameters(alpha=0.535)) < 1.0 / 1.5
 
     def test_lower_alpha_lowers_trigger_and_capacity(self):
-        """Section 4's sensitivity discussion: lower alpha reduces capacity
-        *and* lowers the trigger. The direction holds in the model of
-        record; the levels Section 4 still quotes are the pure-power ones,
-        pinned in TestPurePowerApproximation until issue #183."""
+        """Internet Appendix C's comparative statics: lower alpha reduces
+        capacity *and* lowers the trigger in the model of record, X* = 0.0028
+        and 0.083 at alpha = 0.38 and 0.45 (quoted since issue #183)."""
         triggers, capacities = [], []
         for alpha in [0.38, 0.40, 0.45]:
             X, K, _ = SingleFirmModel(
@@ -1091,9 +1090,11 @@ class TestPurePowerApproximation:
         assert np.all(np.diff(v, 2) < 0)
 
     def test_calibration_section_levels(self):
-        """Levels still quoted in @sec-calibration (issue #183 re-solves
-        them): triggers 0.0015 and 0.038 at alpha = 0.38 and 0.45, and
-        (X*, K*) = (0.0667, 0.0747) at delta = 0.10."""
+        """Pure-power levels the earlier draft quoted in the calibration
+        section: triggers 0.0015 and 0.038 at alpha = 0.38 and 0.45, and
+        (X*, K*) = (0.0667, 0.0747) at delta = 0.10. Since issue #183 the
+        paper quotes the model-of-record levels (pinned above and in
+        tests/test_calibration.py::TestUnits)."""
         triggers = {
             alpha: SingleFirmModel(
                 ModelParameters(alpha=alpha)
