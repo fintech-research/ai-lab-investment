@@ -1716,18 +1716,60 @@ class TestAppendixERobustness:
     """
 
     def test_fixed_pie_table(self, va):
-        """tbl-fixedpie: phi_F = 0.70 under both contests; X_P / X_L^mono
-        0.555 (Tullock) vs 0.606 (fixed pie); phi_underbar 0.18. The two
-        ratios were 0.573 and 0.628 before the unlevered claims carried
-        the shutdown option (issue #177)."""
+        """tbl-fixedpie (issue #182), two layers.
+
+        Exact primitives: against the leader of the benchmark equilibrium
+        the follower's capacity is 39 times the leader's under Tullock and
+        1.6 times under the arithmetic-mean benchmark, its trigger 15.9
+        against 1.9 times X_H*; the post-switch game is a race under
+        Tullock (leading worth 0.71 to 1.82 times following on the scan) and
+        not under the benchmark (1.00 to 2.24).
+
+        Nested pure-power game: phi_F = 0.70 under both contests; X_P over
+        the pure-power single-firm trigger 0.555 against 0.606."""
         result = va.fixed_pie_robustness(leverage=0.0)
-        assert "error" not in result
-        assert "fixedpie_error" not in result
-        assert abs(result["tullock_phi_F"] - 0.70) < 0.01
-        assert abs(result["fixedpie_phi_F"] - 0.70) < 0.01
-        assert abs(result["tullock_preemption_discount"] - 0.555) < 0.005
-        assert abs(result["fixedpie_preemption_discount"] - 0.606) < 0.005
-        assert abs(result["tullock_phi_underbar"] - 0.180) < 0.005
+        assert result["exact_K_L"] == pytest.approx(0.004163, rel=1e-3)
+        assert result["exact_tullock_K_F_over_K_L"] == pytest.approx(39.05, abs=0.05)
+        assert result["exact_mean_K_F_over_K_L"] == pytest.approx(1.561, abs=0.005)
+        assert result["exact_tullock_X_F_over_X_H"] == pytest.approx(15.91, abs=0.02)
+        assert result["exact_mean_X_F_over_X_H"] == pytest.approx(1.931, abs=0.005)
+        assert result["exact_tullock_lead_over_follow_min"] == pytest.approx(
+            0.711, abs=0.005
+        )
+        assert result["exact_tullock_lead_over_follow_max"] == pytest.approx(
+            1.816, abs=0.005
+        )
+        assert result["exact_mean_lead_over_follow_min"] == pytest.approx(1.0, abs=1e-9)
+        assert result["exact_mean_lead_over_follow_max"] == pytest.approx(
+            2.238, abs=0.005
+        )
+        assert result["exact_tullock_race"] is True
+        assert result["exact_mean_race"] is False
+        assert "nested_tullock_error" not in result
+        assert "nested_mean_error" not in result
+        assert abs(result["nested_tullock_phi_F"] - 0.70) < 0.01
+        assert abs(result["nested_mean_phi_F"] - 0.70) < 0.01
+        assert abs(result["nested_tullock_trigger_ratio"] - 0.555) < 0.005
+        assert abs(result["nested_mean_trigger_ratio"] - 0.606) < 0.005
+        assert abs(result["phi_underbar"] - 0.180) < 0.005
+
+    def test_benchmark_contest_has_no_post_switch_race(self):
+        """Under the arithmetic-mean benchmark the entry game of the model
+        of record has no mutual-waiting value: leading beats following at
+        every demand level after the switch, so the solver reports that the
+        post-switch game has no rent-equalization trigger."""
+        from ai_lab_investment.models.preemption_levered import LeveredPreemptionGame
+
+        game = LeveredPreemptionGame(ModelParameters(), contest="arithmetic_mean")
+        entry = game.follower_post_switch_entry(0.003)
+        other = game.follower_post_switch_entry(0.3)
+        # The follower's problem does not involve the leader's capacity.
+        assert pytest.approx(other.K_F, rel=1e-6) == entry.K_F
+        assert pytest.approx(other.X_F, rel=1e-6) == entry.X_F
+        with pytest.raises(RuntimeError, match="No preemption trigger"):
+            game.mutual_waiting_claim("reoptimized")
+        with pytest.raises(ValueError, match="contest must be one of"):
+            LeveredPreemptionGame(ModelParameters(), contest="cournot")
 
     def test_duopoly_dilemma_table(self, va):
         """tbl-duopoly-dilemma: 26%->38% conservative, 6%->17% aggressive;
@@ -1765,11 +1807,13 @@ class TestAppendixERobustness:
         assert r_aggr["phi_rival"] == pytest.approx(0.7009, abs=5e-4)
 
     def test_dynamic_phi_table(self, va):
-        """tbl-dynamic-phi: phi_1 at or below the static optimum, rising
-        back toward it as reallocation gets costlier; phi_H at the training
-        corner when kappa = 0; value gains declining in the adjustment
-        cost. The routine also returns the static threshold phi_underbar
-        for reference; it does not solve the default problem.
+        """tbl-dynamic-phi at the model of record (issue #182): capacity
+        held at the precommitted-scale K* = 0.0158, static revenue value
+        1.87 per unit of demand. phi_1 at or below the static optimum,
+        rising back toward it as reallocation gets costlier; phi_H at the
+        training corner when kappa is small; value gains declining in the
+        adjustment cost. The routine also returns the static threshold
+        phi_underbar for reference; it does not solve the default problem.
 
         The table prints phi to two decimals and value gains to one, so
         the tolerances (0.005 on phi, 0.03pp on gains) are set to fail on
@@ -1778,15 +1822,17 @@ class TestAppendixERobustness:
         # kappa -> (phi_1, phi_H, phi_L2, value gain %)
         expected = {
             0.0: (0.010, 0.990, 0.7009, 5.056),
-            0.5: (0.6017, 0.990, 0.6602, 1.896),
-            2.0: (0.6871, 0.9235, 0.6908, 0.859),
-            10.0: (0.6979, 0.7514, 0.6981, 0.196),
+            0.5: (0.5683, 0.990, 0.6569, 2.098),
+            2.0: (0.6801, 0.990, 0.6872, 1.144),
+            10.0: (0.6967, 0.7708, 0.6971, 0.272),
         }
         gains = []
         for kappa, (phi_1, phi_H, phi_L2, gain) in expected.items():
             r = va.two_period_dynamic_phi(adjustment_cost=kappa)
             assert "error" not in r
             assert r["phi_static"] == pytest.approx(0.7009, abs=5e-4)
+            assert r["K_static"] == pytest.approx(0.015784, rel=1e-3)
+            assert r["value_static"] == pytest.approx(1.8687, abs=5e-4)
             assert r["phi_1_dynamic"] == pytest.approx(phi_1, abs=0.005)
             assert r["phi_H_dynamic"] == pytest.approx(phi_H, abs=0.005)
             assert r["phi_L2_dynamic"] == pytest.approx(phi_L2, abs=0.005)
@@ -1796,6 +1842,9 @@ class TestAppendixERobustness:
             assert r["phi_1_dynamic"] <= r["phi_static"] + 1e-3
             gains.append(r["value_gain_pct"])
         assert all(g1 >= g2 - 1e-9 for g1, g2 in itertools.pairwise(gains))
+        # Longer commitment period: phi_1 = 0.10 at kappa = 0 and dt = 5.
+        longer = va.two_period_dynamic_phi(dt=5.0)
+        assert longer["phi_1_dynamic"] == pytest.approx(0.098, abs=0.002)
 
     def test_two_period_decomposition_collapses_to_a_eff(self, va):
         """The two-period value decomposition is exact: with the same
@@ -1803,7 +1852,7 @@ class TestAppendixERobustness:
         eq-a-eff, so the static benchmark behind the tbl-dynamic-phi value
         gains is literally the static model's revenue coefficient."""
         model = SingleFirmModel(va.params)
-        _, K_s, phi_s = model.pure_power_trigger_capacity_phi()
+        _, K_s, phi_s = model.optimal_trigger_capacity_phi()
         a_eff = model._effective_revenue_coeff_single(phi_s, K_s)
         for dt in [0.25, 1.0, 5.0]:
             r = va.two_period_dynamic_phi(dt=dt, adjustment_cost=1.0)

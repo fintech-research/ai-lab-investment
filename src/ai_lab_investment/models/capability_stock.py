@@ -592,7 +592,14 @@ class CapabilityStockModel:
         if regime == "immediate":
             return StockPolicy(regime, 0.0, float("nan"), self.phi_star, True)
         root, start = _first_upcrossing(self._trigger_gap, *_LOG_K_RANGE)
-        if root is None or start >= 0.0:
+        if start >= 0.0:
+            # The smooth-pasting residual is already non-negative at the
+            # smallest capacity searched (e^-70): the trigger exists but at a
+            # scale below it, which happens when beta_H is just under
+            # 1 / (1 - alpha), next to the upper bound of (A2). At every
+            # demand level of interest the firm is in its investment region.
+            return StockPolicy("immediate", 0.0, float("nan"), self.phi_star, True)
+        if root is None:
             msg = "Interior trigger lies outside the capacity range searched."
             raise RuntimeError(msg)
         K = float(np.exp(root))

@@ -1162,11 +1162,15 @@ arithmetic-mean industry-revenue benchmark).
 
 Revenue expansion means that the leader's gain from capacity dominance
 partly reflects pie expansion, not just share theft, which could amplify
-preemption incentives. Internet Appendix E re-solves the equilibrium
-under an arithmetic-mean industry-revenue benchmark, under which the
-training fraction and the survival threshold are unchanged and only the
-preemption discount moves, and discusses why the mechanisms carry over
-to Cournot competition.
+preemption incentives. Internet Appendix E evaluates an arithmetic-mean
+industry-revenue benchmark in which a firm's revenue does not depend on
+its rival's capacity (Table~\ref{tbl-fixedpie}). There the follower's
+capacity is \(1.6\) times the leader's instead of \(39\) times, and the
+game after the switch is no longer a race, so the equilibrium of
+Proposition 3(iii), with its large follower, is specific to a contest in
+which capacity takes revenue from the rival; the survival threshold
+\(\underline{\phi}\) does not involve the contest. The Cournot
+alternative is discussed there qualitatively and is not solved.
 
 The training fraction enters both contests and moves a firm's position
 in opposite directions across regimes: a higher \(\phi_i\) raises the
@@ -1827,9 +1831,21 @@ risk and elevated costs of equity (Internet Appendix C). Condition (A2),
 \(r \in (0.097, 0.135)\), so the Google-like (\(0.10\)) and baseline
 cases lie inside the window while the OpenAI-like (\(0.14\)),
 Anthropic-like (\(0.15\)), and xAI-like (\(0.18\)) archetypes violate
-its upper bound. Every trigger and capacity result is therefore computed
-at the baseline WACC; archetype-specific WACCs enter only through the
-capacity-free inversion
+its upper bound. The window is narrow for a structural reason, and it is
+the same under the model of record as under the pure-power
+approximation, because both rest on the post-switch scale problem. The
+scale choice sets a pure-power revenue, proportional to \(K^\alpha\),
+against a cost \(\delta K/r + cK^\gamma\) that is linear at small scale
+and a power at large scale, so an interior capacity exists only when the
+option-adjusted revenue elasticity \(\alpha\beta_H/(\beta_H - 1)\) lies
+between the two cost elasticities, \(1\) and \(\gamma\): above the upper
+bound of (A2) the firm shrinks toward zero scale, and below the lower
+bound it grows without limit. The capacity problem is well-posed only
+inside that window, and when all nine parameters are drawn jointly
+within \(\pm 25\%\) of the baseline, \(53\%\) of \(4{,}096\) draws fall
+outside it (Internet Appendix E). Every trigger and capacity result is
+therefore computed at the baseline WACC; archetype-specific WACCs enter
+only through the capacity-free inversion
 \(\lambda = (\hat{\phi}/(1-\hat{\phi}))^{1-\alpha}(r - \mu_H)\) below
 (Internet Appendix B).
 
@@ -1844,8 +1860,8 @@ concave revenue technology but do not measure \(\alpha\): a loss
 exponent is not a revenue elasticity, so \(\alpha = 0.40\) is a chosen
 value. Condition (A2) admits only \(\alpha \in (0.356, 0.534)\), placing
 \(\alpha = 0.40\) near the lower bound, and the trigger and capacity are
-highly sensitive to it there, with elasticities of \(+19.7\) and
-\(+24.2\) (Table~\ref{tbl-elasticities} in the Internet Appendix). That
+highly sensitive to it there, with elasticities of \(+20.4\) and
+\(+24.0\) (Table~\ref{tbl-elasticities} in the Internet Appendix). That
 sensitivity is why the paper reports ratios and percentage differences
 rather than levels. The cost function \(I(K) = cK^\gamma\) with
 convexity \(\gamma = 1.50\) captures increasing marginal costs from
@@ -2001,12 +2017,12 @@ rescaled with the units.
 Table~\ref{tbl-elasticities} in the Internet Appendix reports
 elasticities of the optimal policy at the baseline; Internet Appendix D
 develops the comparative statics and Internet Appendix E the
-\(\pm 25\%\) parameter-perturbation sweep. The signs are the standard
-real-options ones: within the model, a higher \(\lambda\) lowers the
-trigger and raises \(\phi^*\), so more optimistic firms invest earlier
-and train more. The elasticities with respect to \(r\) and \(\alpha\)
-are large, so these comparative statics are read as directions rather
-than magnitudes, inside the admissible (A2) window.
+one-at-a-time and joint \(\pm 25\%\) parameter sweeps. The signs are the
+standard real-options ones: within the model, a higher \(\lambda\)
+lowers the trigger and raises \(\phi^*\), so more optimistic firms
+invest earlier and train more. The elasticities with respect to \(r\)
+and \(\alpha\) are large, so these comparative statics are read as
+directions rather than magnitudes, inside the admissible (A2) window.
 
 \section{Quantitative Implications}\label{sec-valuation}
 
@@ -2455,9 +2471,17 @@ polar case in which the whole H-regime prize must be bought in advance,
 so its \(\phi^* \approx 0.70\) is an \emph{upper bound}. That exercise
 solves allocation and value only, not default or belief mismatch, so
 what it says about the headline mechanisms is a conjecture rather than a
-result: the Proposition 2 solvency floor and the Numerical Finding 1
-asymmetry both run through the \emph{level} of pre-switch training,
-which the lower \(\phi_1\) would attenuate.
+result. The Proposition 2 solvency floor runs through the \emph{level}
+of pre-switch training, which the lower \(\phi_1\) would attenuate. For
+the Numerical Finding 1 asymmetry the direction is open: re-purposing
+lets an over-trainer recover, which lowers the optimistic loss, and lets
+an under-trainer catch up, which lowers the pessimistic one. An
+extension in which capability, and not compute, has to be in place at
+the switch (Internet Appendix E, Table~\ref{tbl-capability}) keeps the
+pre-switch training fraction positive under free redeployment as long as
+capability built late is worth less than \(57\%\) of capability in
+place; on its grid the pessimistic error remains the costlier one for
+equal errors in \(\lambda\) and not for equal proportional errors.
 
 The training technology is stylized in four further respects. Training
 earns no revenue in regime \(L\) and post-switch revenue requires no
@@ -6272,8 +6296,12 @@ workflows) uses inference hardware to produce capability improvements
 previously achievable only through training. The model treats
 \(\hat{\phi}\) as a fixed allocation at investment time; in practice,
 firms dynamically reallocate GPUs between training and inference on
-timescales of weeks (Section~\ref{sec-discussion} discusses the
-direction of bias from this simplification).
+timescales of weeks. What a lab cannot re-purpose at the switch is the
+capability already trained, not the compute, and the
+pre-positioned-capability extension of Internet Appendix E
+(Table~\ref{tbl-capability}) solves the single firm's problem under that
+reading; Section~\ref{sec-discussion} discusses the direction of the
+bias from holding the allocation fixed.
 
 \textbf{Baseline policy.} Under the baseline calibration, the exact
 single-firm problem of Proposition 1 gives the training fraction
@@ -6340,10 +6368,13 @@ prediction.
 \subsection*{D. Parameter Sensitivity}\label{d.-parameter-sensitivity}
 \addcontentsline{toc}{subsection}{D. Parameter Sensitivity}
 
-Table~\ref{tbl-elasticities} reports the elasticities of the optimal
-trigger \(X^*\), capacity \(K^*\), and training fraction \(\phi^*\) with
-respect to each model parameter, computed numerically at the baseline
-calibration.
+Table~\ref{tbl-elasticities} reports the elasticities of the single
+firm's policy in the model of record with respect to each model
+parameter: the trigger \(X^*\) and capacity \(K^*\) of the
+precommitted-scale problem of Proposition 1(iii) and the training
+fraction \(\phi^*\). They are computed numerically at the baseline
+calibration (function \texttt{policy\_elasticities} of module
+\texttt{robustness.py}).
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2200}}
@@ -6352,17 +6383,17 @@ calibration.
   >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1400}}
   >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1400}}
   >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1400}}@{}}
-\caption{Elasticities of the optimal trigger, capacity, and training
-fraction with respect to model parameters. For a parameter \(\theta\),
-\(\varepsilon_{X^*} = (\partial X^* / \partial \theta) \cdot (\theta / X^*)\),
-and \(\varepsilon_{K^*}\) and \(\varepsilon_{\phi^*}\) are defined
-analogously for \(K^*\) and \(\phi^*\); all are evaluated at baseline
-values via central finite differences (\(\pm 0.01\%\) perturbation).
-``\(\approx 0\)'' marks entries that round to zero at the displayed
-precision. Those entries arise where the parameter does not enter the
-relevant first-order condition, so the computed value is
-finite-difference noise around an exact
-zero.}\label{tbl-elasticities}\tabularnewline
+\caption{Elasticities of the single firm's trigger, capacity, and
+training fraction with respect to model parameters. \(X^*\) and \(K^*\)
+are the trigger and capacity of the precommitted-scale problem of the
+model of record (Proposition 1(iii)) and \(\phi^*\) the closed-form
+training fraction. For a parameter \(\theta\),
+\(\varepsilon_{X^*} = \partial \ln X^* / \partial \ln \theta\), and
+\(\varepsilon_{K^*}\) and \(\varepsilon_{\phi^*}\) are defined
+analogously; all are central differences in logs at the baseline values
+with a relative step of \(0.1\%\), the policy being re-solved at each
+step. A ``\(0\)'' marks a parameter that does not enter the first-order
+condition for \(\phi^*\).}\label{tbl-elasticities}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Parameter
@@ -6397,110 +6428,426 @@ Baseline
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Discount rate & \(r\) & 0.12 & \(-20.8\) & \(-28.8\) & \(-1.0\) \\
-Revenue elasticity & \(\alpha\) & 0.40 & \(+19.7\) & \(+24.2\) &
+Discount rate & \(r\) & 0.12 & \(-21.6\) & \(-28.2\) & \(-1.0\) \\
+Revenue elasticity & \(\alpha\) & 0.40 & \(+20.4\) & \(+24.0\) &
 \(+0.2\) \\
-H-regime drift & \(\mu_H\) & 0.06 & \(+15.2\) & \(+20.8\) & \(+0.5\) \\
-Volatility & \(\sigma\) & 0.25 & \(+9.2\) & \(+12.0\) & \(\approx 0\) \\
-Cost convexity & \(\gamma\) & 1.50 & \(+3.2\) & \(+7.0\) &
-\(\approx 0\) \\
-Operating cost rate & \(\delta\) & 0.03 & \(+2.2\) & \(+2.0\) &
-\(\approx 0\) \\
-Arrival rate & \(\lambda\) & 0.10 & \(-0.2\) & \(\approx 0\) &
-\(+0.5\) \\
+H-regime drift & \(\mu_H\) & 0.06 & \(+15.3\) & \(+19.7\) & \(+0.5\) \\
+Volatility & \(\sigma\) & 0.25 & \(+9.6\) & \(+11.8\) & \(0\) \\
+Cost convexity & \(\gamma\) & 1.50 & \(+3.1\) & \(+6.6\) & \(0\) \\
+Operating cost rate & \(\delta\) & 0.03 & \(+2.2\) & \(+2.0\) & \(0\) \\
+Arrival rate & \(\lambda\) & 0.10 & \(+0.2\) & \(+0.5\) & \(+0.5\) \\
 \end{longtable}
 
 The discount rate \(r\) and revenue elasticity \(\alpha\) are the most
 influential parameters for trigger and capacity, consistent with their
 central roles in real-options theory (the cost of waiting) and the
 production technology (the value of capacity). These are local
-elasticities at a baseline that Internet Appendix B shows sits close to
-the upper bound of the interior-capacity condition (A2), where the
-closed form for \(K^*\) is steep; the large trigger and capacity
-elasticities therefore reflect the location of the baseline in the (A2)
-window, and the scale results are not a robust quantitative prediction
-of the model. The training fraction \(\phi^*\) is insensitive to most
-parameters. Its first-order condition involves the parameters only
-through the ratio \(w_H/w_L = \lambda/(r - \mu_H)\) and the revenue
-elasticity \(\alpha\), so \(\phi^*\) responds to \(\lambda\)
+elasticities at a baseline that sits close to the upper bound of the
+interior-capacity condition (A2), where capacity is steep in the
+parameters (Internet Appendix E states the window); elasticities of
+\(20\) to \(28\) mean that a \(1\%\) change in \(r\) or \(\alpha\) moves
+capacity by a quarter, so the trigger and capacity levels are not a
+robust quantitative prediction of the model. The elasticities of the
+post-switch policy \((X_H^*, K_H^*)\), which is also the capacity of the
+pure-power approximation, are close to these (\(-20.7\) and \(-28.8\)
+for \(r\), \(+19.5\) and \(+24.2\) for \(\alpha\)), with one difference:
+\(K_H^*\) and \(X_H^*\) do not respond to \(\lambda\) at all, while the
+pre-switch capacity does (\(+0.5\)). The training fraction \(\phi^*\) is
+insensitive to most parameters. Its first-order condition involves the
+parameters only through the ratio \(w_H/w_L = \lambda/(r - \mu_H)\) and
+the revenue elasticity \(\alpha\), so \(\phi^*\) responds to \(\lambda\)
 (\(\varepsilon = +0.5\)), \(\mu_H\) (\(\varepsilon = +0.5\)), \(r\)
 (\(\varepsilon = -1.0\)), and, weakly, \(\alpha\)
 (\(\varepsilon = +0.2\)). Volatility \(\sigma\), cost convexity
 \(\gamma\), and the operating cost rate \(\delta\) do not enter the
-training-allocation first-order condition at all, so the
-``\(\approx 0\)'' entries in those rows are finite-difference noise
-rather than small effects. Similarly, \(K^*\) does not depend on
-\(\lambda\) (Proposition 1), which
-\(\varepsilon_{K^*,\lambda} \approx 0\) reproduces.
+training-allocation first-order condition at all.
 
 \subsection*{E. Robustness}\label{e.-robustness}
 \addcontentsline{toc}{subsection}{E. Robustness}
 
-Five exercises assess robustness. The first perturbs each calibrated
-parameter and re-computes the objects the paper's qualitative claims
-rest on. The second asks how much the duopoly results depend on the
-Tullock contest form, and quantifies the part of that question an
-arithmetic-mean industry-revenue benchmark can answer. The third
-quantifies the bias from holding the training fraction static. The
-fourth asks whether competitive preemption amplifies the belief-mismatch
-asymmetry. The fifth asks what a three-regime capability ladder would
-change; that exercise is qualitative, as is the Cournot discussion
-inside the second.
+Six exercises assess robustness. The first states where the capacity
+problem is well-posed and perturbs the calibrated parameters, one at a
+time and jointly, re-computing the objects the paper's qualitative
+claims rest on in the model of record. The second asks how much the
+duopoly results depend on the Tullock contest form, and quantifies the
+part of that question an arithmetic-mean industry-revenue benchmark can
+answer. The third quantifies the bias from holding the training fraction
+static, and the fourth solves an extension in which capability, not
+compute, has to be in place at the switch. The fifth computes the belief
+mismatch inside the entry equilibrium. The sixth asks what a
+three-regime capability ladder would change; that exercise is
+qualitative, as is the Cournot discussion inside the second.
 
-\textbf{Parameter-perturbation sweep.} The baseline values are chosen
-rather than estimated, so the first question is which qualitative claims
-survive perturbing them. I perturb each of the nine calibrated
+\textbf{Where the capacity problem is well-posed.} The scale choice sets
+a pure-power revenue, proportional to \(K^\alpha\), against a cost
+\(\delta K/r + cK^\gamma\) that is linear at small scale and a power at
+large scale. After the switch the firm maximizes
+\(a(K)^{\beta_H}/b(K)^{\beta_H - 1}\) with \(a \propto K^\alpha\) and
+\(b\) that cost, so an interior capacity exists if and only if the
+option-adjusted revenue elasticity \(\alpha\beta_H/(\beta_H-1)\) lies
+strictly between the elasticities of the cost at its two ends, \(1\) and
+\(\gamma\), which is condition (A2),
+\(1/\gamma < (\beta_H-1)/(\alpha\beta_H) < 1\). When the upper bound of
+(A2) fails the linear term is too weak to stop the firm shrinking toward
+zero scale, and when the lower bound fails the convex term is too weak
+to stop it growing without limit. The model of record does not widen
+this window. Every pre-switch object in it, the precommitted-scale
+policy, the value of waiting and the entry game, is built on the
+post-switch scale problem, which is unchanged, so the admissible region
+is the one (A2) implies. At the baseline values of the other parameters
+it is \(r \in (0.097, 0.135)\), \(\mu_H \in (0.051, 0.077)\),
+\(\sigma \in (0.190, 0.392)\), \(\alpha \in (0.356, 0.534)\) and
+\(\gamma > 1.124\); the parameters \(\mu_L\), \(\lambda\), \(\delta\)
+and \(c\) do not enter (A2). The entry game needs \(\alpha < 1/2\) in
+addition, for a unique capacity on the exercise envelope. Inside the
+window the problem is well-posed but steep: capacity goes to zero at one
+edge and to infinity at the other, which is where the elasticities of
+\(20\) to \(28\) in Table~\ref{tbl-elasticities} come from. The two
+sweeps below measure what this does to the paper's objects (module
+\texttt{robustness.py}; \texttt{just\ run-sweep}).
+
+\textbf{One-at-a-time sweep.} I perturb each of the nine calibrated
 parameters (\(r\), \(\mu_L\), \(\mu_H\), \(\sigma\), \(\lambda\),
 \(\alpha\), \(\gamma\), \(\delta\), and \(c\)) one at a time by
-\(\pm 25\%\) from the baseline, giving eighteen draws, and re-compute at
-each draw the four objects the paper's qualitative claims rest on: the
-Dario's dilemma asymmetry (the conservative loss relative to the
-aggressive loss), the scale-gap index \(g\), the faith-based survival
-thresholds \(\underline{\phi}\) and \(\tilde{\phi}\) relative to the
-optimal allocation \(\phi^*\), and the trigger ratio
-\(X_P/X_L^{\text{mono}}\). Draws that leave the admissible region are
-reported with the condition they violate rather than silently dropped,
-since it is the boundary behavior that dropping them would hide. The
-exercise is implemented in the code repository (module
-\texttt{robustness.py}).
+\(\pm 25\%\) from the baseline, giving eighteen draws, and re-solve at
+each draw the single firm of the model of record: the allocation
+\(\phi^*\) and the thresholds \(\underline{\phi}\) and \(\tilde{\phi}\),
+the precommitted-scale policy \((X^*, K^*)\), whether the firm that
+chooses its scale at the switch invests before it, and Dario's dilemma
+in the three metrics of Table~\ref{tbl-dilemma-pairs} with the draw's
+own arrival rate as the truth. Draws that leave the admissible region
+are reported with the condition they violate and are not dropped.
 
-Thirteen of the eighteen draws are admissible and five violate the
-interior-capacity condition (A2). Four fail through its upper bound
-\((\beta_H - 1)/(\alpha\beta_H) < 1\), which sends the capacity problem
-toward zero scale when it is violated: \(r = 0.15\), \(\mu_H = 0.045\),
-\(\sigma = 0.188\), and \(\alpha = 0.30\). The remaining failure is
-\(r = 0.09\), which violates the \emph{lower} bound
-\(1/\gamma < (\beta_H - 1)/(\alpha\beta_H)\); the admissible window for
-\(r\) is \((0.097, 0.135)\), so both directions of the \(\pm 25\%\)
-range for \(r\) fall outside it. The admissibility boundary therefore
-binds for \(r\), \(\mu_H\), \(\sigma\), and \(\alpha\), and the
-surviving draw closest to the boundary is \(\gamma = 1.125\), which
-clears the lower bound by about \(0.001\).
+Five of the eighteen draws violate (A2). Four fail through its upper
+bound: \(r = 0.15\), \(\mu_H = 0.045\), \(\sigma = 0.188\), and
+\(\alpha = 0.30\). The fifth, \(r = 0.09\), violates the lower bound, so
+both directions of the \(\pm 25\%\) range for \(r\) fall outside the
+window. A sixth draw, \(\gamma = 1.125\), clears the lower bound by
+\(0.001\) and is inside the window, but the optimal capacity there lies
+above the range the solver searches (\(K\) up to \(e^{15}\)), and I
+report it as unsolved. Twelve draws are solved.
 
-Across the thirteen admissible draws, no headline sign reverses. The
-conservative loss exceeds the aggressive loss in every draw, with the
-asymmetry ratio ranging from \(3.6\) to \(6.0\) (baseline \(4.6\)). The
-scale-gap index \(g\) stays between \(48\%\) and \(59\%\) at
-\(K/K^* = 0.1\) and between \(19\%\) and \(30\%\) at \(K/K^* = 0.3\).
-The ordering \(0 < \underline{\phi} < \tilde{\phi} < \phi^*\) holds in
-every draw, with \(\underline{\phi} \in [0.10, 0.23]\),
-\(\tilde{\phi} \in [0.19, 0.37]\), and \(\phi^* \in [0.59, 0.79]\), so
-the faith-based survival mechanism is operative at the optimal
-allocation throughout. The trigger ratio stays between \(0.53\) and
-\(0.63\), always strictly below one. All four objects are ratios or
-value shares, and \(\delta\) and \(c\) only set the cost scale, in which
-the value functions are homogeneous (Section~\ref{sec-calibration});
-these two parameters therefore move \(K^*\) and \(X^*\) but leave the
-normalized quantities unchanged. This sweep is also the reproducible
-content of the statements elsewhere in this Internet Appendix that a
-sign holds ``across all parameterizations,'' including the \(W''' > 0\)
-sign underlying Numerical Finding 1, which the sweep computes directly
-by finite differences at a fixed reference demand (positive at both step
-sizes in every admissible draw), and the loss ranking at the matched
-pair \(\lambda_{\text{true}}(1 \pm 0.8)\), which holds in every draw
-with a ratio between \(5.0\) and \(8.0\) (baseline \(6.3\)): those are
-one-at-a-time perturbations of this kind around the baseline
-calibration, not a search over the joint parameter space.
+Across those twelve, \(\phi^* \in [0.59, 0.79]\),
+\(\underline{\phi} \in [0.10, 0.23]\) and
+\(\tilde{\phi} \in [0.19, 0.37]\), and the ordering
+\(0 < \underline{\phi} < \tilde{\phi} < \phi^*\) holds in every draw.
+The firm that chooses its scale at the switch waits for it in eleven
+draws; at \(\gamma = 1.875\) the ratio of the value of waiting to the
+exercise envelope at high demand falls to \(0.997\) (baseline \(1.08\))
+and the firm has a finite pre-switch trigger, at a demand about a
+thousand times the precommitted-scale trigger. For the
+precommitted-scale version of the dilemma, the pessimistic loss exceeds
+the optimistic loss in every draw for equal errors in \(\lambda\) (ratio
+between \(18.7\) and \(27.5\), baseline \(24.6\)) and for equal errors
+in \(\log\lambda\) (between \(1.8\) and \(2.8\) at a factor of five,
+baseline \(2.4\); between \(1.7\) and \(7.2\) at a factor of \(1.8\),
+baseline \(3.3\)). For equal errors in expected years the baseline
+ranking, in which the optimist loses slightly more (ratio \(0.78\)),
+holds in eleven draws and reverses at \(\lambda = 0.075\) (ratio
+\(1.58\)). With scale chosen at the switch the pessimist loses between
+\(36\%\) and \(53\%\) and the optimist at \(1.8\lambda\) loses nothing.
+The parameters \(\delta\) and \(c\) only set the cost scale, in which
+the value functions are homogeneous (Section~\ref{sec-calibration}), so
+they move \(X^*\) and \(K^*\) and leave every ratio and share at its
+baseline value. The scale-gap index of Internet Appendix G, which is
+defined at the pure-power policy, stays between \(50\%\) and \(59\%\) at
+one tenth of that capacity and between \(25\%\) and \(30\%\) at three
+tenths.
+
+The entry game of Section~\ref{sec-duopoly} is re-solved at zero
+leverage at each draw that is admissible for it, and compared with the
+single firm at the same draw. Of the twelve solved draws,
+\(\alpha = 0.50\) lies outside the game's domain, and at
+\(\mu_H = 0.075\) the game has no rent-equalization trigger on the
+demand scan: following is worth more than leading at every scanned
+demand level, by at least \(4\%\), and leading is worth at most \(0.98\)
+of mutual waiting, so on the scan neither firm invests before the
+switch. In the ten other draws the equilibrium of Proposition 3(iii)
+passes its no-deviation checks and every qualitative statement about it
+holds: the first investment \(X_L\) is between \(0.27\) and \(0.40\) of
+the precommitted-scale trigger \(X^*\) (baseline \(0.36\)) and between
+\(0.26\) and \(0.58\) of \(X_P\) (\(0.39\)); the leader installs between
+\(0.17\) and \(0.31\) of \(K^*\) (\(0.26\)) and trains with between
+\(0.93\) and \(0.99\) of \(\phi^*\) (\(0.97\)); the follower's
+post-switch trigger is between \(5.7\) and \(42\) times \(X_L\)
+(\(13\)); and following is worth between \(1.05\) and \(1.17\) times
+leading at \(X_L\) (\(1.10\)). The draws of \(\delta\) and \(c\)
+reproduce the baseline ratios to three digits.
+
+\emph{The cell \(\gamma = 1.9\).} The diagnostic that preceded the
+choice of the model of record found the game close to a knife edge at
+\(\gamma = 1.9\) when the leader's scale was held fixed, and I report
+that cell here (it lies just outside the \(\pm 25\%\) range, which ends
+at \(1.875\)). With the leader choosing its scale the equilibrium exists
+and passes its checks at both values: at \(\gamma = 1.9\), \(X_L\) is
+\(0.33\) of \(X^*\) and \(0.24\) of \(X_P\), the leader installs
+\(0.24\) of \(K^*\), and following is worth \(1.17\) times leading.
+Three properties of the baseline do not carry over. The single firm with
+scale chosen at the switch no longer waits (the waiting margin is
+\(0.993\)), although its trigger is about \(300\) times \(X^*\). The
+difference \(L^* - F\) changes sign twice on the scan, at
+\(\gamma = 1.875\) as well, so \(X_P\) is the first of two crossings and
+not the only one. And at \(\gamma = 1.9\) the follower no longer waits
+for the switch at every demand level: it would enter before the switch
+at a demand several hundred thousand times \(X_L\), which is of no
+practical consequence but is a different best response.
+
+\textbf{Joint sweep.} One-at-a-time perturbations do not search the
+joint parameter space, so I also draw all nine parameters together:
+\(4{,}096\) points of a scrambled Sobol sequence with a fixed seed in
+the box of \(\pm 25\%\) around the baseline. Of these, \(2{,}179\)
+(\(53.2\%\)) lie outside the window, \(1{,}286\) through the upper bound
+of (A2) and \(893\) through the lower bound. Of the \(1{,}917\) inside
+it, seven are not solved because an optimum lies above the capacity
+range searched (six in the precommitted-scale problem, one in the
+problem with scale chosen at the switch), and \(1{,}910\) are solved.
+Table~\ref{tbl-joint-sweep} reports the distribution of each object over
+the solved draws. It is a statement about that box and those draws, not
+about the parameter space at large.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.4000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1200}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1200}}@{}}
+\caption{Single-firm objects of the model of record across the joint
+sweep. Draws: \(4{,}096\) points of a scrambled Sobol sequence (seed
+\(182\)) with each of \(r\), \(\mu_L\), \(\mu_H\), \(\sigma\),
+\(\lambda\), \(\alpha\), \(\gamma\), \(\delta\) and \(c\) uniform within
+\(\pm 25\%\) of its baseline value; the table covers the \(1{,}910\)
+draws that satisfy (A2) and are solved. The waiting margin is the ratio
+of the value of waiting for the switch to the exercise envelope at high
+demand for the firm that chooses its scale at the switch, which waits
+when the ratio is at least one. \(K^*\) is the capacity of the
+precommitted-scale policy. Losses are those of a firm that invests on
+the belief shown when the draw's arrival rate \(\lambda\) is the truth,
+in percent of the informed firm's value at half its precommitted-scale
+trigger, with precommitted post-switch scale unless stated. The loss
+ratios divide the pessimistic by the optimistic loss at the pairs
+\((0.2\lambda, 1.8\lambda)\), \((0.2\lambda, 5\lambda)\),
+\((\lambda/1.8, 1.8\lambda)\) and at the pair with equal errors in
+expected years to the switch whose optimistic member is \(1.8\lambda\).
+The pure-power errors are the trigger and capacity of the pure-power
+approximation relative to the precommitted-scale policy. The scale-gap
+index is that of Internet Appendix
+G.}\label{tbl-joint-sweep}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Object
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Median
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Min.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Max.
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Object
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Median
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Min.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Max.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(\phi^*\) & 0.53 & 0.71 & 0.85 & 0.37 & 0.92 \\
+\(\underline{\phi}\) & 0.06 & 0.18 & 0.30 & 0.02 & 0.35 \\
+\(\tilde{\phi}\) & 0.15 & 0.32 & 0.46 & 0.05 & 0.52 \\
+Waiting margin & 0.95 & 1.11 & 1.29 & 0.80 & 1.49 \\
+\(\log_{10} K^*\) & \(-4.8\) & \(-1.1\) & 1.3 & \(-6.3\) & 6.5 \\
+Loss at \(0.2\lambda\) (\%) & 22.1 & 32.8 & 43.4 & 17.9 & 50.8 \\
+Loss at \(\lambda/1.8\) (\%) & 1.1 & 4.4 & 12.6 & 0.5 & 20.5 \\
+Loss at \(1.8\lambda\) (\%) & 0.7 & 1.4 & 2.4 & 0.4 & 3.4 \\
+Loss at \(5\lambda\) (\%) & 7.0 & 14.2 & 22.4 & 5.0 & 29.0 \\
+Loss ratio, equal errors in \(\lambda\) & 14.4 & 23.3 & 36.8 & 9.2 &
+54.1 \\
+Loss ratio, equal errors in \(\log\lambda\), factor 5 & 1.74 & 2.35 &
+3.34 & 1.13 & 4.42 \\
+Loss ratio, equal errors in \(\log\lambda\), factor 1.8 & 1.07 & 3.04 &
+7.55 & 0.50 & 17.81 \\
+Loss ratio, equal errors in expected years & 0.33 & 0.73 & 1.69 & 0.21 &
+7.83 \\
+Loss at \(0.2\lambda\), scale chosen at the switch (\%) & 27.3 & 41.3 &
+53.8 & 22.4 & 62.7 \\
+Pure-power trigger error (\%) & \(-60\) & \(-50\) & \(-38\) & \(-66\) &
+\(-20\) \\
+Pure-power capacity error (\%) & \(-67\) & \(-55\) & \(-43\) & \(-75\) &
+\(-27\) \\
+Scale-gap index at \(K/K^{\text{pp}} = 0.1\) (\%) & 43 & 52 & 58 & 40 &
+61 \\
+\end{longtable}
+
+The objects in Table~\ref{tbl-joint-sweep} separate into three groups.
+The allocation and the thresholds are stable: \(\phi^*\) stays between
+\(0.53\) and \(0.85\) in nine draws out of ten, and the ordering
+\(0 < \underline{\phi} < \tilde{\phi} < \phi^*\) holds in \(1{,}894\) of
+the \(1{,}910\) draws (\(99.2\%\)); the sixteen exceptions, in which
+\(\tilde{\phi}\) exceeds \(\phi^*\), have \(\lambda \leq 0.093\)
+together with \(r \geq 0.134\) and \(\mu_H \leq 0.053\), a low ratio
+\(\lambda/(r - \mu_H)\). Levels are not stable: the capacity \(K^*\)
+covers almost thirteen orders of magnitude across the solved draws and
+six between the \(5\%\) and \(95\%\) quantiles, the counterpart in the
+joint sweep of the elasticities of Table~\ref{tbl-elasticities}. The
+error of the pure-power approximation is large in every draw, between
+\(20\%\) and \(66\%\) in the trigger and between \(27\%\) and \(75\%\)
+in capacity, always downward.
+
+The qualitative statements about the single firm survive unevenly. That
+the firm with scale chosen at the switch waits for it holds in
+\(1{,}645\) draws (\(86.1\%\)); in the other \(265\) it has a finite
+pre-switch trigger, and these are concentrated at high cost convexity
+and long timelines (\(242\) have \(\gamma \geq 1.5\) and \(218\) have
+\(\lambda < 0.10\)). For Dario's dilemma with precommitted scale, the
+pessimistic error is the costlier one in every solved draw for equal
+errors in \(\lambda\) (the ratio is never below \(9\)) and for equal
+errors in \(\log\lambda\) at a factor of five (never below \(1.13\)). At
+a factor of \(1.8\) in logs it is the costlier one in \(1{,}829\) draws
+(\(95.8\%\)) and the ranking reverses in \(81\), of which \(80\) have
+\(\lambda \geq 0.10\). For equal errors in expected years the baseline
+ranking, in which the optimist loses more, holds in \(1{,}373\) draws
+(\(71.9\%\)) and reverses in \(537\), of which \(499\) have
+\(\lambda < 0.10\): the sign of the horizon comparison follows the
+arrival rate and is not a robust property. With scale chosen at the
+switch the pessimist at \(0.2\lambda\) loses between \(22\%\) and
+\(63\%\), and the optimist at \(1.8\lambda\) loses nothing in
+\(1{,}647\) draws and at most \(0.5\%\) in the others. These counts are
+the reproducible content of the robustness statements made elsewhere in
+this Internet Appendix about the single firm.
+
+The entry game is solved on a subsample, because one equilibrium takes
+between three minutes and an hour: the first \(64\) joint draws, in the
+order of the sequence, that satisfy (A2) and \(\alpha < 1/2\).
+Table~\ref{tbl-duopoly-sweep} reports the \(47\) draws at which the
+solver finds an equilibrium candidate.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1700}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1200}}@{}}
+\caption{Objects of the entry game across the joint sweep, zero
+leverage. Subsample: the first \(64\) draws of the sequence of
+Table~\ref{tbl-joint-sweep} that satisfy (A2) and \(\alpha < 1/2\); the
+table covers the \(47\) of them at which the solver locates the
+rent-equalization trigger \(X_P\) and the first investment \(X_L\) (in
+the other \(17\) it does not, for the reasons given in the text).
+\(X^*\), \(K^*\) and \(\phi^*\) are the single firm's precommitted-scale
+trigger and capacity and its training fraction at the same draw;
+\(X_F^*\) and \(K_F\) are the follower's post-switch trigger and
+capacity; \(L^*/W\) is the leader's entry value over the value of mutual
+waiting and \(F/L^*\) the follower's value over the leader's, both at
+\(X_L\). ``Holds in'' counts the draws, out of \(47\), at which the
+statement in the previous column is true; the no-deviation checks are
+those of the proof of Proposition 3, on the same scans as in
+Table~\ref{tbl-duopoly-order}.}\label{tbl-duopoly-sweep}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Object
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Median
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Min.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Max.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Statement
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Holds in
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Object
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+5\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Median
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+95\%
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Min.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Max.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Statement
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Holds in
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(X_L / X^*\) & 0.16 & 0.34 & 2.46 & 0.13 & 5.16 & below one & 42 \\
+\(X_L / X_P\) & 0.07 & 0.38 & 1.00 & 0.05 & 1.07 & below one & 44 \\
+\(K_L / K^*\) & 0.12 & 0.30 & 3.38 & 0.09 & 9.65 & below one & 42 \\
+\(\phi_L / \phi^*\) & 0.905 & 0.981 & 1.002 & 0.867 & 1.003 & below one
+& 42 \\
+\(X_F^* / X_L\) & 5.9 & 20 & 377 & 5.1 & 951 & above one & 47 \\
+\(K_F / K_L\) & 13 & 56 & 467 & 9.5 & 1283 & & \\
+\(L^* / W\) at \(X_L\) & 1.02 & 1.08 & 1.13 & 1.02 & 1.19 & & \\
+\(F / L^*\) at \(X_L\) & 1.00 & 1.08 & 1.19 & 0.99 & 1.25 & above one &
+44 \\
+No-deviation checks & & & & & & all hold & 39 \\
+\end{longtable}
+
+The duopoly statements are less robust to joint perturbation than the
+single-firm ones, and less robust than the one-at-a-time sweep suggests.
+First, in \(15\) of the \(64\) draws (\(23\%\)) the game has no
+rent-equalization trigger on the demand scan: following is worth more
+than leading at every scanned demand level, by between \(0.02\%\) and
+\(21\%\) at the closest point. In four of them leading is also worth
+less than mutual waiting everywhere on the scan, so no firm invests
+before the switch there; in the other eleven a firm whose rival follows
+would still enter at some scanned demand, between \(1.4\) and \(300\)
+times \(X_H^*\) (median \(2.0\)), but the solver locates \(X_L\)
+relative to \(X_P\) and I do not report an equilibrium for these draws.
+In two further draws, next to the lower bound of (A2), the follower's
+capacity leaves the range searched. Second, among the \(47\) solved
+draws the first investment precedes the single firm's precommitted-scale
+trigger in \(42\) and follows it in five, where the leader is also
+larger than the single firm. Third, \(X_L\) lies below \(X_P\), with
+following the better role at \(X_L\), in \(44\) draws; in the other
+three \(X_L\) exceeds \(X_P\) by between \(1.5\%\) and \(7\%\), the
+follower would rather lead, and the first investment is at \(X_P\), the
+outcome of a race and not of a second-mover advantage. Fourth, in five
+draws the game after the switch is not a race, so the value of mutual
+waiting that defines \(X_L\) rests on a continuation that does not
+apply. The no-deviation checks therefore all hold in \(39\) of the
+\(47\) draws (\(83\%\)). The follower's post-switch trigger lies above
+\(X_L\) in every solved draw, and the follower waits for the switch at
+every demand level in \(40\) of them; in the other seven it also has a
+pre-switch trigger, at a demand between \(300\) and \(14{,}000\) times
+\(X_L\). What is robust on this subsample is that the leader enters
+small and early relative to the follower; that it enters before the
+single firm, that following is the better role, and that the selected
+equilibrium exists in the form of Proposition 3(iii) hold in most draws
+and not in all.
 
 \textbf{Alternative contest functions.} The Tullock contest is a reduced
 form, so the concern is that the duopoly results are artifacts of its
@@ -6524,37 +6871,51 @@ maps directly to a larger revenue share (\(s_i \propto K_i^\alpha\)),
 whereas under Cournot, additional capacity lowers the equilibrium price,
 partially offsetting the quantity gain.
 
-The quantified check re-solves the duopoly equilibrium under an
-\emph{arithmetic-mean industry-revenue benchmark}: shares remain
-Tullock, but the industry pie is the arithmetic mean of the firms'
-standalone revenues, so firm \(i\) earns
-\(s_i \cdot (y_i + y_j)/2 = y_i/2\), half its standalone revenue, where
-\(y_i = [(1-\phi_i)K_i]^\alpha\) in the L-regime and
-\(y_i = (\phi_i K_i)^\alpha\) in the H-regime. Under symmetry this
+The quantified check uses an \emph{arithmetic-mean industry-revenue
+benchmark}: shares remain Tullock, but the revenue of a market is the
+arithmetic mean of the standalone revenues of the firms active in it, so
+a firm facing an active rival earns \(s_i \cdot (y_i + y_j)/2 = y_i/2\),
+half its standalone revenue, where \(y_i = [(1-\phi_i)K_i]^\alpha\) in
+the inference market and \(y_i = (\phi_i K_i)^\alpha\) in the training
+market; a firm alone in a market earns \(y_i\). Under symmetry this
 coincides exactly with the Tullock payoff. Under asymmetry it removes
 two things at once: the quadratic-mean revenue expansion, and the
 dependence of a firm's post-entry revenue on its rival's capacity, since
 \(y_i/2\) does not involve \(y_j\) (the pie itself still moves with both
 capacities, so this is not a fixed prize). The comparison therefore
-bounds the contribution of pie expansion from above rather than
-isolating it; a benchmark with a genuinely exogenous prize, or a Cournot
-market, would be needed to separate the two. Table~\ref{tbl-fixedpie}
-reports the comparison.
+bounds the contribution of pie expansion from above and does not isolate
+it; a benchmark with a genuinely exogenous prize, or a Cournot market,
+would be needed to separate the two. Table~\ref{tbl-fixedpie} reports
+the comparison at two layers, which should not be mixed: the exact
+primitives of the model of record, where the benchmark can be evaluated
+but its entry equilibrium cannot be constructed, and the nested
+pure-power game of Internet Appendix B, where the earlier draft solved
+it.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4500}}
-  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5000}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2200}}
   >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}@{}}
-\caption{Duopoly equilibrium under the Tullock contest and the
-arithmetic-mean industry-revenue benchmark. The benchmark keeps Tullock
-shares but sets the industry pie to the arithmetic mean of the firms'
-standalone revenues, so total industry revenue does not expand with
-capacity asymmetry and each firm's revenue is independent of its rival's
-capacity. Both columns report the zero-leverage duopoly equilibrium at
-the baseline calibration. \(\phi_F^*\) is the follower's optimal
-training fraction; \(X_P/X_L^{\text{mono}}\) is the preemption trigger
-relative to the leader's unconstrained trigger; \(\underline{\phi}\) is
-the faith-based survival threshold of
+\caption{The Tullock contest and the arithmetic-mean industry-revenue
+benchmark at the baseline calibration and zero leverage. The benchmark
+keeps Tullock shares but sets the revenue of a market to the arithmetic
+mean of the standalone revenues of the firms active in it, so a firm
+facing an active rival earns half its standalone revenue. Exact
+primitives: the follower's post-switch trigger (in units of the single
+firm's post-switch trigger \(X_H^*\)) and capacity are its best
+response, on the claims with the option to stop, to the leader of the
+benchmark equilibrium of the model of record,
+\((K_L, \phi_L) = (0.0042, 0.68)\); ``leading over following'' is the
+value of entering first after the switch, at the capacity that is best
+for the leader at that demand, over the value of following it, on
+thirteen log-spaced demand levels between \(0.01\) and \(100\) times
+\(X_H^*\); the post-switch game is a race when following is the better
+role at the bottom of that scan and leading is at least as good above
+some demand level. Nested pure-power game: the reduced-form game of
+Internet Appendix B solved under each contest; \(\phi_F^*\) is the
+follower's training fraction, \(X_P/X^{\text{pp}}\) the
+rent-equalization trigger over the single firm's pure-power trigger, and
+\(\underline{\phi}\) the threshold of
 Equation~\ref{eq-phi-underbar}.}\label{tbl-fixedpie}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
@@ -6578,24 +6939,58 @@ Arithmetic-mean benchmark
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
+\emph{Exact primitives} & & \\
+Follower's post-switch trigger, \(X_F^*/X_H^*\) & 15.9 & 1.9 \\
+Follower's capacity, \(K_F/K_L\) & 39 & 1.6 \\
+Leading over following after the switch, smallest on the scan & 0.71 &
+1.00 \\
+Leading over following after the switch, largest on the scan & 1.82 &
+2.24 \\
+Post-switch game is a race & yes & no \\
+\emph{Nested pure-power game} & & \\
 \(\phi_F^*\) & 0.70 & 0.70 \\
-Trigger ratio \(X_P / X_L^{\text{mono}}\) & 0.57 & 0.63 \\
+Trigger ratio \(X_P / X^{\text{pp}}\) & 0.56 & 0.61 \\
 \(\underline{\phi}\) & 0.18 & 0.18 \\
 \end{longtable}
 
-The training fraction and the faith-based survival threshold are
-identical across specifications: both depend on the balance between
-L-regime inference value and H-regime training value within
-\(A_{\text{eff}}\), not on the revenue-expansion property. The trigger
-ratio is higher under the benchmark (0.63 against 0.57 under Tullock),
-so preemption is weaker. The difference combines the removed revenue
-expansion with the removed rival-capacity channel, so it should be read
-as the joint effect of the two, an upper bound on the part attributable
-to pie expansion alone; the leader's monopoly-phase advantage is smaller
-under the benchmark for both reasons. The Dario's dilemma asymmetry
-ratio (underinvestment cost relative to overinvestment cost) is
-preserved because it operates through the training allocation channel,
-which is independent of the contest form.
+In the exact primitives two properties of the benchmark equilibrium of
+Section~\ref{sec-duopoly} turn out to rest on the dependence of a firm's
+revenue on its rival's capacity. The first is the scale asymmetry. Under
+the Tullock form the follower answers the leader's training capacity
+with a capacity \(39\) times as large and waits for a demand level
+\(15.9\) times \(X_H^*\); under the benchmark its problem does not
+involve the leader at all, and it enters at \(1.9\) times \(X_H^*\) with
+a capacity \(1.6\) times the leader's. The second is the equilibrium
+itself. The first investment \(X_L\) of Proposition 3(iii) is defined
+against the value \(W\) of mutual waiting, which prices each firm at the
+follower's value in a post-switch race. Under the benchmark there is no
+such race: a firm that enters first after the switch keeps half its
+standalone revenue whatever its rival installs, so leading at the best
+scale is worth at least as much as following at every demand level
+scanned (between \(1.00\) and \(2.24\) times, against \(0.71\) to
+\(1.82\) under Tullock, where the crossing defines the race). The solver
+of the model of record therefore finds no post-switch rent-equalization
+trigger under the benchmark, and \(X_L\) and \(X_P\) are not computed
+for it. I do not conclude that the benchmark has no equilibrium with
+investment before the switch, only that it is not the equilibrium of
+Proposition 3(iii); the second-mover advantage at \(X_L\) and the large
+follower are properties of a contest in which capacity takes revenue
+from the rival. Because the benchmark removes pie expansion and the
+rival-capacity channel together, the comparison cannot say which of the
+two is responsible.
+
+In the nested pure-power game the training fraction and the faith-based
+survival threshold are identical across specifications: both depend on
+the balance between L-regime inference value and H-regime training value
+within \(A_{\text{eff}}\), not on the revenue-expansion property. The
+trigger ratio is higher under the benchmark (\(0.61\) against \(0.56\)
+under Tullock), so the pull toward early entry is weaker. These two
+numbers are objects of the earlier draft's reduced-form game and are
+reported for continuity; they are not objects of the model of record, in
+which the single firm has no pure-power trigger to compare with. The
+single-firm Dario's dilemma involves no contest and is unaffected. The
+duopoly dilemma of Table~\ref{tbl-duopoly-dilemma} is computed inside
+the Tullock equilibrium and has no counterpart under the benchmark.
 
 \textbf{Dynamic training reallocation.} Holding \(\phi\) fixed for the
 life of the project is a central limitation of the model, and the
@@ -6606,15 +7001,16 @@ once, at the end of the first period, conditioning on what it has
 observed: to \(\phi_H\) if the regime switch has occurred by then, to
 \(\phi_{L2}\) if it has not. After the revision the allocation is fixed
 forever, so each branch continues with the corresponding perpetuity.
-Capacity is held at the static optimum \(K^*\), which isolates the
+Capacity is held at \(K^* = 0.0158\), the capacity of the single firm's
+precommitted-scale policy in the model of record, which isolates the
 allocation margin, and reallocation incurs a quadratic adjustment cost
 \(\kappa \cdot (\Delta\phi)^2\) charged in the branch in which it
 occurs. All values in the exercise, including \(\kappa\), are measured
 per unit of demand \(X_0\) at the fixed capacity \(K^*\), in the same
-units as the revenue coefficients; the static revenue value is \(1.33\)
+units as the revenue coefficients; the static revenue value is \(1.87\)
 per unit of \(X_0\), so on the grid \(\kappa \in \{0.5, 2, 10\}\) a full
 reversal of the baseline allocation (\(\Delta\phi \approx 0.4\) at
-\(\kappa = 0.5\)) costs about \(6\%\) of that value at the cheapest
+\(\kappa = 0.5\)) costs about \(4\%\) of that value at the cheapest
 setting and \(\kappa = 10\) makes any revision larger than a few points
 prohibitive, which spans the range from nearly free to effectively
 static. Writing \(\rho = r - \mu_L + \lambda\) for the hazard-adjusted
@@ -6648,7 +7044,11 @@ first period with no switch. \(\phi^* = 0.70\) in the static model;
 \(\phi_1\) and \(\phi_H\) are constrained to \([0.01, 0.99]\), and the
 \(\kappa = 0\) row attains both bounds (the unconstrained optimum at
 \(\kappa = 0\) is \(\phi_1 \approx 0.007\), and the objective is nearly
-flat there). Value gains are relative to the static revenue coefficient
+flat there). Capacity is held at \(K^* = 0.0158\), the
+precommitted-scale capacity of the model of record; it enters only
+through the size of the adjustment cost relative to revenue, so the
+\(\kappa = 0\) and \(\kappa = \infty\) rows do not depend on it. Value
+gains are relative to the static revenue coefficient
 \(A_{\text{eff}}(\phi^*, K^*)\).}\label{tbl-dynamic-phi}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
@@ -6681,15 +7081,15 @@ Value gain
 \bottomrule\noalign{}
 \endlastfoot
 0 (free) & 0.01 & 0.99 & 0.70 & 5.1\% \\
-0.5 & 0.60 & 0.99 & 0.66 & 1.9\% \\
-2.0 & 0.69 & 0.92 & 0.69 & 0.9\% \\
-10.0 & 0.70 & 0.75 & 0.70 & 0.2\% \\
+0.5 & 0.57 & 0.99 & 0.66 & 2.1\% \\
+2.0 & 0.68 & 0.99 & 0.69 & 1.1\% \\
+10.0 & 0.70 & 0.77 & 0.70 & 0.3\% \\
 \(\infty\) (static) & 0.70 & 0.70 & 0.70 & 0\% \\
 \end{longtable}
 
 Three findings emerge. First, the option to revise pushes the initial
 allocation \emph{below} the static optimum, by more the cheaper
-reallocation is: \(\phi_1\) falls from \(\phi^* = 0.70\) to \(0.60\) at
+reallocation is: \(\phi_1\) falls from \(\phi^* = 0.70\) to \(0.57\) at
 \(\kappa = 0.5\) and to the lower bound of the admissible range when
 revision is free. The mechanism is that H-regime revenue in the model
 scales with the training capacity in place at the time,
@@ -6706,14 +7106,14 @@ allocation does not drift over time: \(\phi_{L2} = \phi^* = 0.70\)
 exactly when \(\kappa = 0\). Second, the value of the option is modest
 and is used mainly after the switch: the gain over the static allocation
 is \(5.1\%\) of the gross revenue value at fixed capacity under free
-reallocation, falling to \(0.2\%\) when adjustment costs are high, and
+reallocation, falling to \(0.3\%\) when adjustment costs are high, and
 the post-switch allocation goes to the training corner
-(\(\phi_H \to 0.99\) at \(\kappa = 0\)). Third, and by way of scope, the
-exercise solves the allocation and the gross revenue value only; it does
-not solve the default problem or the belief-mismatch comparison under a
-revisable allocation, so it establishes nothing about the faith-based
-survival threshold or the Dario's dilemma asymmetry in a dynamic model.
-The static threshold \(\underline{\phi} \approx 0.18\) of
+(\(\phi_H = 0.99\) for \(\kappa\) up to \(2\)). Third, and by way of
+scope, the exercise solves the allocation and the gross revenue value
+only; it does not solve the default problem or the belief-mismatch
+comparison under a revisable allocation, so it establishes nothing about
+the faith-based survival threshold or the Dario's dilemma asymmetry in a
+dynamic model. The static threshold \(\underline{\phi} \approx 0.18\) of
 Equation~\ref{eq-phi-underbar} is a function of the parameters alone and
 is unaffected by construction. Note also that a \(5\%\) gain in gross
 revenue value coexists with a large change in the very observable used
@@ -6763,26 +7163,220 @@ static model, since \(\hat{\phi}\) then represents a deliberate choice
 made despite the option to re-purpose rather than an irreversible
 commitment.
 
-Dynamic reallocation would attenuate the paper's headline mechanisms
-without eliminating them. The faith-based survival channel (Proposition
-2) would be weakened because a struggling firm could shift from training
-to inference to boost L-regime cash flow, partially offsetting the
-default-boundary reduction from high \(\phi\). The channel survives,
-however, to the extent that expected post-switch revenue reflects
-\emph{cumulative} training investment rather than the compute currently
-allocated, so that \(\phi\) continues to enter \(A_{\text{eff}}\); in
-the opposite limit, where compute is re-purposed at the switch, the
-continuation-value floor remains, created by the option to move into
-training upon a switch, but it no longer varies with the firm's
-pre-switch \(\phi\). The Dario's dilemma asymmetry (Numerical Finding 1)
-would likewise be attenuated because an over-training firm could
-partially recover by reallocating to inference, reducing the cost of
-aggressive overinvestment; the asymmetry between underinvestment and
-overinvestment would narrow but persist, because the dominant channel,
-the destruction of H-regime option value from under-training, operates
-through the \emph{level} of training investment, not its adjustability.
-A full dynamic treatment with continuous \(\phi_t\) control is left for
-future work.
+What dynamic reallocation would do to the paper's two headline
+mechanisms is not computed by the two-period exercise, and what follows
+is a conjecture conditional on how reallocation enters. The faith-based
+survival channel (Proposition 2) would be weakened, because a struggling
+firm could shift from training to inference to raise L-regime cash flow,
+partially offsetting the lower default boundary that a high \(\phi\)
+buys. The channel survives to the extent that expected post-switch
+revenue reflects \emph{cumulative} training investment rather than the
+compute currently allocated, so that \(\phi\) continues to enter
+\(A_{\text{eff}}\); in the opposite limit, where compute is re-purposed
+at the switch, the continuation-value floor remains, created by the
+option to move into training upon a switch, but it no longer varies with
+the firm's pre-switch \(\phi\). For Dario's dilemma (Numerical Finding
+1) two correction channels act on the gap between the two errors, in
+opposite directions. A firm that has over-trained can recover part of
+its loss by moving compute back to inference, which lowers the
+optimistic loss and, taken alone, widens the gap between the pessimistic
+and the optimistic loss. A firm that has under-trained can catch up by
+moving compute into training once the switch is observed, which lowers
+the pessimistic loss and, taken alone, narrows the gap. Which channel
+dominates depends on the cost and speed of each correction, so the
+direction of the net effect on the asymmetry is open; the extension
+below computes it for one technology. A full dynamic treatment with
+continuous \(\phi_t\) control is left for future work.
+
+\textbf{Pre-positioned capability.} The two-period exercise shows that
+the static \(\phi^*\) rests on compute that cannot be re-purposed at the
+switch, and Internet Appendix C notes that labs reallocate GPUs between
+training and inference within weeks. This extension asks what the single
+firm does under a technology that is consistent with both: what cannot
+be bought at the switch is capability, not compute. It is an extension
+and not the model of record; none of the paper's other numbers uses it.
+Training capacity in place when the switch arrives counts in full in the
+post-switch market, and capability built afterwards counts at the rate
+\(\kappa \in [0, 1]\), the \emph{late-training effectiveness}, for
+incumbents and entrants alike (the symbol is reused: here and in
+Table~\ref{tbl-capability} \(\kappa\) is this effectiveness, not the
+adjustment cost of Table~\ref{tbl-dynamic-phi}). An installed firm
+redeploys its inference capacity to training at the switch, so its
+post-switch revenue is \(X[\phi K + \kappa(1-\phi)K]^\alpha\), and a
+firm that installs \(K\) after the switch earns \(X(\kappa K)^\alpha\).
+The case \(\kappa = 0\) is a strict stock, in which a late entrant earns
+nothing, and \(\kappa = 1\) is the flow economy with free redeployment,
+the case behind the first row of Table~\ref{tbl-dynamic-phi}. The model
+of record is not a member of this family: its entrant has \(\kappa = 1\)
+and its incumbent cannot redeploy. Everything else is as in the
+single-firm problem with scale chosen whenever the firm invests: the
+firm picks the trigger, the capacity and the allocation, and a firm
+without capacity at the switch keeps the option to enter. The stopping
+problem is solved exactly, as one scalar root for \((X^*, K^*)\) with
+the allocation in closed form (module \texttt{capability\_stock.py},
+function \texttt{capability\_extension} of \texttt{robustness.py}).
+
+The allocation maximizes
+\((1-\phi)^\alpha + \lambda A_H [\kappa + (1-\kappa)\phi]^\alpha\) with
+\(A_H = 1/(r - \mu_H)\), which gives
+\begin{equation}\protect\phantomsection\label{eq-phi-kappa}{
+\phi^*(\kappa) = \max\left\{0,\; \frac{1 - M\kappa}{1 + M(1-\kappa)}\right\}, \qquad M = \left[\lambda A_H (1-\kappa)\right]^{-1/(1-\alpha)},
+}\end{equation} and reduces to the \(\phi^*\) of Proposition 1 at
+\(\kappa = 0\). The pre-switch training fraction is positive if and only
+if \(\kappa^{1-\alpha} < \lambda A_H (1-\kappa)\), which at baseline is
+\(\kappa < 0.571\). This is the answer the extension gives to the
+concern that \(\phi^*\) exists only because compute is immobile: with
+compute freely redeployed at the switch, the firm still trains before
+the switch whenever capability built late is worth less than about
+\(57\%\) of capability in place. Table~\ref{tbl-capability} reports the
+solution on a grid of \(\kappa\).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1300}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1600}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1300}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0500}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}@{}}
+\caption{The single firm under pre-positioned capability, at the
+baseline calibration. \(\kappa\) is the effectiveness of capability
+built after the switch relative to capability in place when it arrives,
+for an entrant and for the inference capacity an incumbent redeploys to
+training. \(X^*\) and \(K^*\) are the pre-switch trigger and capacity of
+the exact stopping problem with scale chosen whenever the firm invests,
+and \(X_E\) is the trigger of a firm that enters after the switch.
+\(\phi^*\) is Equation~\ref{eq-phi-kappa}; \(\underline{\phi}\) and
+\(\tilde{\phi}\) are the thresholds of Proposition 2 recomputed with the
+post-switch capability \(\phi K + \kappa(1-\phi)K\) (zero when every
+allocation qualifies). \(V/V_{\text{rec}}\) is the firm's value at the
+demand \(X_0 = 0.0046\), half the precommitted-scale trigger of the
+model of record, divided by the value of the model of record's firm
+there. The last three columns are the losses of a firm that follows the
+policy optimal under the belief shown when the true arrival rate is
+\(0.10\), in percent of the informed firm's value at half its own
+trigger. The first row (``Record'') is the model of record with scale
+chosen at the switch, whose losses are those of
+Table~\ref{tbl-dilemma}.}\label{tbl-capability}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\kappa\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*/X_E\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\underline{\phi}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\tilde{\phi}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(V/V_{\text{rec}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.50\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\kappa\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*/X_E\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\underline{\phi}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\tilde{\phi}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(V/V_{\text{rec}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.02\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.18\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Loss, \(0.50\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Record & waits & & & 0.70 & 0.18 & 0.32 & 1.00 & 40.6 & 0.0 & 0.0 \\
+0.05 & \(1.1 \times 10^{-9}\) & \(1.1 \times 10^{-13}\) &
+\(1.2 \times 10^{-7}\) & 0.68 & 0.15 & 0.30 & 0.81 & 29.7 & 3.0 &
+28.7 \\
+0.10 & \(4.3 \times 10^{-8}\) & \(5.4 \times 10^{-11}\) &
+\(6.2 \times 10^{-6}\) & 0.65 & 0.11 & 0.27 & 0.82 & 29.6 & 2.7 &
+28.7 \\
+0.20 & \(1.5 \times 10^{-6}\) & \(2.1 \times 10^{-8}\) &
+\(2.9 \times 10^{-4}\) & 0.59 & 0.02 & 0.22 & 0.84 & 20.8 & 2.2 &
+28.8 \\
+0.30 & \(1.1 \times 10^{-5}\) & \(5.5 \times 10^{-7}\) &
+\(2.4 \times 10^{-3}\) & 0.50 & 0 & 0.15 & 0.87 & 12.5 & 1.7 & 28.8 \\
+0.50 & \(8.5 \times 10^{-5}\) & \(1.8 \times 10^{-5}\) & 0.023 & 0.19 &
+0 & 0 & 0.94 & 4.0 & 1.3 & 18.1 \\
+0.75 & \(2.2 \times 10^{-4}\) & \(1.0 \times 10^{-4}\) & 0.072 & 0 & 0 &
+0 & 1.08 & 3.9 & 1.0 & 3.2 \\
+1.00 & \(4.2 \times 10^{-4}\) & \(3.0 \times 10^{-4}\) & 0.15 & 0 & 0 &
+0 & 1.20 & 4.5 & 0.8 & 1.5 \\
+\end{longtable}
+
+Four things change relative to the model of record. First, the firm has
+a finite pre-switch trigger at every \(\kappa\) on the grid, where the
+single firm of the model of record waits for the switch. The level of
+that trigger is set by \(\kappa\) and not by the rest of the
+calibration: it lies between \(10^{-7}\) and \(0.15\) of the entrant's
+trigger, and capacity rises by six orders of magnitude between
+\(\kappa = 0.05\) and \(\kappa = 0.30\) (the elasticity of \(K^*\) to
+\(\kappa\) is \(8.3\) at \(\kappa = 0.2\) and \(5.5\) at
+\(\kappa = 0.5\)). The extension therefore restores pre-switch
+investment by the single firm without delivering a level for it, and the
+interval of each parameter on which capacity is interior is the same as
+under (A2), because the entrant's problem is the post-switch problem.
+Second, the training fraction falls as late capability becomes a better
+substitute for capability in place, from \(0.68\) at \(\kappa = 0.05\)
+to \(0.19\) at \(\kappa = 0.5\) and to zero above \(0.571\). Third, the
+faith thresholds fall with it: \(\underline{\phi}\) is zero from
+\(\kappa = 0.22\) and \(\tilde{\phi}\) is zero at \(\kappa = 0.5\), so
+that at higher \(\kappa\) a higher arrival rate lowers the default
+boundary at every allocation. Fourth, the firm is worth less than the
+model of record's firm where late capability is worth little (\(0.81\)
+at \(\kappa = 0.05\)), because the option to enter after the switch is
+impaired, and more where redeployment is effective (\(1.20\) at
+\(\kappa = 1\)).
+
+The last three columns give the computed counterpart of the conjecture
+above for this technology. Both correction channels operate. The
+pessimistic loss falls from \(30\%\) to \(4\%\) as \(\kappa\) rises to
+\(0.5\), because a firm that trained too little redeploys its inference
+capacity at the switch; the loss of the far optimist stays at \(29\%\)
+up to \(\kappa = 0.3\) and falls to \(1.5\%\) at \(\kappa = 1\), where
+pre-switch training is worthless under every belief. For equal errors in
+\(\lambda\) (\(0.02\) against \(0.18\)) the pessimist loses more at
+every \(\kappa\) on the grid, by a factor between \(3.0\) and \(11\).
+For equal proportional errors (\(0.02\) against \(0.50\)) the ranking
+depends on \(\kappa\): the two losses are within \(4\%\) of each other
+at \(\kappa \leq 0.10\), the optimist loses more at \(\kappa\) between
+\(0.2\) and \(0.5\) (ratios \(0.72\), \(0.43\) and \(0.22\)), and the
+pessimist loses more at \(0.75\) and \(1\). So under this technology the
+asymmetry in levels of \(\lambda\) persists and the asymmetry in logs
+does not, a statement about the grid of Table~\ref{tbl-capability} at
+the baseline calibration and not about the model of record.
 
 \textbf{Duopoly Dario's dilemma.} The single-firm exercise (Numerical
 Finding 1) describes the monopoly case. Here the mismatch is computed
@@ -7303,14 +7897,15 @@ optimal \emph{net} value, since assets-in-place are measured gross of
 the sunk investment cost while the benchmark nets it out. At the
 baseline calibration \(g\) equals 50\% at \(K/K^* = 0.1\) and 26\% at
 \(K/K^* = 0.3\), so the index runs at roughly 25--50\% over that range;
-the sweep in Internet Appendix E reports 48--59\% and 19--30\% at those
-two points, so the band survives one-at-a-time perturbation of each
-parameter by \(\pm 25\%\). Because \(c = 1\) fixes the cost scale by
-normalization (Section~\ref{sec-calibration}), \(K^*\) is not a physical
-quantity and \(K/K^*\) cannot be read off observed compute stocks; I
-therefore make no claim about which point on the axis describes a given
-firm, and the content of the figure is entirely the monotone decline and
-the location of the crossover.
+the sweeps in Internet Appendix E report 50--59\% and 25--30\% at those
+two points when each parameter is moved by \(\pm 25\%\) one at a time,
+and 40--61\% and 16--33\% when all nine are moved jointly, so the band
+survives both. Because \(c = 1\) fixes the cost scale by normalization
+(Section~\ref{sec-calibration}), \(K^*\) is not a physical quantity and
+\(K/K^*\) cannot be read off observed compute stocks; I therefore make
+no claim about which point on the axis describes a given firm, and the
+content of the figure is entirely the monotone decline and the location
+of the crossover.
 
 \begin{figure}[!htb]
 

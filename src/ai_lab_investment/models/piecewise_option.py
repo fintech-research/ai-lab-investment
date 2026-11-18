@@ -806,7 +806,9 @@ class SingleFirmSolution:
         invests_before_switch: True when the unrestricted problem has a
             finite pre-switch trigger.
         X_star, K_star: That trigger and capacity (inf and nan when the firm
-            waits for the switch).
+            waits for the switch; zero and nan when the trigger lies below
+            the smallest scale searched, next to the upper bound of (A2),
+            and the firm invests at once at every demand level of interest).
         waiting_margin: Ratio of the waiting value to the exercise envelope
             as demand grows; the firm waits when it is at least one.
         precommitted: Two-region solution with precommitted post-switch
@@ -897,7 +899,9 @@ def solve_single_firm(params: ModelParameters) -> SingleFirmSolution:
     unrestricted = CapabilityStockModel(params)
     policy = unrestricted.policy
     precommitted = pw.precommitted_optimum()
-    invests = policy.status == "interior"
+    # "immediate": the trigger lies below every demand level searched, so
+    # the firm invests at once (trigger reported as zero, capacity as nan).
+    invests = policy.status != "never"
     exponent = params.gamma / (params.gamma - params.alpha)
     return SingleFirmSolution(
         lam=params.lam,

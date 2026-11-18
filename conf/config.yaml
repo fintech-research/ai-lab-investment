@@ -5,3 +5,7 @@ tasks:
   phase4_calibration: true
   phase5_valuation: true
   robustness_sweep: true
+robustness:
+  # false: the joint sweep is read from models/robustness_joint.csv;
+  # true: its 4096 draws are re-solved (a few minutes), as `just run-sweep` does
+  recompute_joint: false
