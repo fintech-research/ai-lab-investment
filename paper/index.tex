@@ -875,12 +875,13 @@ and rises below that threshold. Third, for a firm that has invested,
 higher \(\lambda\) raises value when the allocation trains enough for
 the switch to be good news, \(\phi > \underline{\phi}\), and lowers it
 otherwise, where a faster switch mainly truncates inference revenue:
-installed value moves with \(\partial A_{\text{eff}}/\partial \lambda\).
-These timing and scale responses are numerical findings at the baseline
-values of the other parameters (Table~\ref{tbl-beliefs} in Internet
-Appendix B); the prediction that a firm holding a shorter AGI timeline
-allocates more compute to training is the one that holds in every
-version of the problem.}
+installed value moves with \(\partial A_{\text{eff}}/\partial \lambda\),
+and where it rises in \(\lambda\) it is concave in \(\lambda\)
+(Corollary 1, Internet Appendix A). These timing and scale responses are
+numerical findings at the baseline values of the other parameters
+(Table~\ref{tbl-beliefs} in Internet Appendix B); the prediction that a
+firm holding a shorter AGI timeline allocates more compute to training
+is the one that holds in every version of the problem.}
 
 Figure~\ref{fig-lambda-option-value} plots the value of a firm that has
 not invested against the arrival rate, re-solving its problem at each
@@ -889,9 +890,12 @@ not invested against the arrival rate, re-solving its problem at each
 crosses \(\underline{\phi}\), then rises, convexly up to
 \(\lambda \approx 0.05\) and \emph{concavely} beyond; over the
 policy-relevant range \(\lambda \in [0.1, 0.5]\) it is increasing and
-concave. That concavity is the basis of testable prediction 3 in
-Section~\ref{sec-discussion}, which is stated for the concave range
-only.
+concave. This is the value of an unexercised option, re-optimized at
+each \(\lambda\). Testable prediction 3 in Section~\ref{sec-discussion}
+rests on a different object, the value of a firm that has already
+invested, at its installed capacity and allocation, which is increasing
+and concave in \(\lambda\) at every arrival rate when
+\(\phi > \underline{\phi}\) (Corollary 1, Internet Appendix A).
 
 \begin{figure}[!htb]
 
@@ -2311,73 +2315,108 @@ Overinvestment}\label{welfare-and-overinvestment}
 
 I do not solve a planner's problem, so the model characterizes no social
 optimum; the benchmark it computes is the monopolist's policy. Against
-that benchmark preemption accelerates entry: the leader enters strictly
-earlier than a monopolist would (Proposition 3,
-Figure~\ref{fig-competition-effect}), and the follower then enters to
-preserve its contest share. Whether industry capacity exceeds what two
-firms would install cooperatively, and so whether preemption dissipates
-rents on net, requires a benchmark I do not compute.
+that benchmark competition brings investment forward. At baseline a
+monopolist that chooses its scale when the switch arrives waits for it,
+whereas in the entry game one firm invests before the switch, at
+\(X_L\), and the other waits for the switch and enters after it
+(Proposition 3, Figure~\ref{fig-competition-effect}). Whether industry
+capacity exceeds what two firms would install cooperatively, and so
+whether competition dissipates rents on net, requires a benchmark I do
+not compute.
 
 \subsection{Testable Predictions}\label{testable-predictions}
 
-The model generates four cross-sectional predictions, testable in
-principle on the small cross-section of frontier AI labs; \(\hat{\phi}\)
-is a firm's observed training fraction.
+The model generates three cross-sectional predictions and one
+conjecture, testable in principle on the small cross-section of frontier
+AI labs. I write \(\phi^{\mathrm{o}}\) for a lab's measured share of
+compute devoted to training, an empirical object distinct from the
+model's allocation \(\phi\) and from the training fractions
+\(\hat{\phi}\) assigned to the archetypes in
+Section~\ref{sec-calibration}. Each item names the model object it rests
+on and whether the property used is analytical or numerical.
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  Training has two faces in credit risk. The prediction on default
-  probability is mediated by beliefs: a lab that trains more because it
-  expects the switch sooner (higher \(\hat{\phi}\) revealing higher
-  \(\lambda\), Section~\ref{sec-calibration}) should exhibit a
-  \emph{lower default probability} conditional on leverage, capacity,
-  and demand. Holding beliefs fixed, the comparison is local: more
-  training lowers the default boundary only for \(\hat{\phi}\) below the
-  allocation optimum, and raises it for \(\hat{\phi}\) above it. The
-  prediction on recovery is unconditional: higher \(\hat{\phi}\) implies
-  \emph{higher losses given default}, since the continuation value that
-  sustains solvency is destroyed in bankruptcy. The net effect on
-  spreads is ambiguous, so the sharper prediction is the decomposition,
-  that training-heavy labs default less often but recover less when they
-  do.
+  Training-heavy labs should carry less credit risk, through the default
+  probability and not through recovery. Conditional on leverage,
+  capacity, and demand, a lab whose higher \(\phi^{\mathrm{o}}\)
+  reflects an expectation of an earlier switch should sit further from
+  its default boundary. The object is the closed-form boundary of
+  Proposition 2 (single-boundary reduction): at a fixed allocation it
+  falls in \(\lambda\) if and only if \(\phi > \tilde{\phi}\),
+  analytically, and along the model's allocation \(\phi^*(\lambda)\) the
+  allocation's own effect vanishes because \(\phi^*\) minimizes the
+  boundary, so the boundary falls with optimism wherever
+  \(\phi^* > \tilde{\phi}\), which holds for \(\lambda \gtrsim 0.034\)
+  at baseline. At a given belief, the spread falls as the training
+  fraction rises over \(\phi \in [0.30, 0.75]\) at the single firm's and
+  the leader's scale and entry demand, under both debt conventions
+  (Figure~\ref{fig-credit-risk}, numerical). The model does not predict
+  that training-heavy labs recover less in default: at its policies
+  recovery is at most \(5\%\) of the claim and rises with \(\phi\)
+  (Section~\ref{sec-valuation}, numerical), so the loss given default is
+  close to total whatever the allocation.
 \item
-  Firms with higher \(\hat{\phi}\) should have higher equity betas,
-  under the auxiliary assumption, imported from
+  Firms with higher \(\phi^{\mathrm{o}}\) should have higher equity
+  betas, under the auxiliary assumption, imported from
   \citet{aguerrevere2009real}, that the H-regime component of value
   carries the higher systematic-risk loading; the model itself discounts
   every claim at a single rate \(r\) and has no pricing kernel, so this
   is a conjecture about value composition rather than a model
   implication. Because composition here shifts with the
-  training-inference split at a given capacity, \(\hat{\phi}\) should
-  carry explanatory power beyond capacity and concentration measures.
+  training-inference split at a given capacity, \(\phi^{\mathrm{o}}\)
+  should carry explanatory power beyond capacity and concentration
+  measures.
 \item
-  Equity value is increasing but \emph{concave} in \(\lambda\) over the
-  policy-relevant range (Section~\ref{sec-model},
-  Figure~\ref{fig-lambda-option-value}), because the regime-switch
-  option saturates, so within that range negative timeline news should
-  reduce AI lab valuations by more than equally sized positive news
-  increases them. The claim does not extend to the smallest arrival
-  rates: below \(\lambda \approx 0.085\) the option value is convex in
-  \(\lambda\), and below \(\lambda \approx 0.025\), where the optimal
-  allocation falls under the faith-based survival threshold
-  \(\underline{\phi}\), it \emph{decreases} in \(\lambda\) (Remark 3).
-  The prediction is therefore silent about firms priced on very long
-  timelines, and high-\(\hat{\phi}\) firms carry the larger exposure.
+  The value of an installed lab should respond asymmetrically to
+  timeline news. The object is the value of a firm that has invested and
+  holds its capacity and allocation fixed when beliefs change, not the
+  value of the unexercised option in
+  Figure~\ref{fig-lambda-option-value}. Its going-concern value
+  \(A_{\text{eff}}(\lambda) X - \delta K/r\) is increasing and strictly
+  concave in \(\lambda\) at every arrival rate when
+  \(\phi > \underline{\phi} \approx 0.18\), so news that lengthens
+  expected timelines lowers it by more than news of the same size that
+  shortens them raises it (Corollary 1, Internet Appendix A,
+  analytical); below \(\underline{\phi}\) it falls in \(\lambda\) and
+  the asymmetry reverses. With the option to stop, for unlevered value
+  and for levered equity, and for the duopoly leader, whose value also
+  carries the follower's dilution, the same shape holds numerically at
+  the model's policies and on the grid of Internet Appendix A, away from
+  the boundary; it fails close to the boundary and, for the leader, at
+  low training fractions. At a common belief the sensitivity and the
+  asymmetry rise with the training fraction (Corollary 1(iii)). Across
+  labs whose training fractions differ because their beliefs differ they
+  do not: at the model's allocation the semi-elasticity of revenue value
+  in \(\lambda\) is \(2.25\) at \(\lambda = 0.10\) and \(0.30\) at
+  \(\lambda = 0.50\), so the most optimistic labs are the least exposed
+  to timeline news.
 \item
-  Training fractions should be explained by beliefs about AI timelines
-  and technology parameters, not by competitive position: leader,
-  follower, and monopolist all choose the same \(\phi^*\) (Proposition
-  3(ii)). Order of entry should predict investment \emph{timing} and
-  \emph{scale} but not, controlling for beliefs, the training-inference
-  split.
+  Training shares should rise with beliefs about AI timelines, and
+  capacity should not be a monotone proxy for those beliefs. The single
+  firm's \(\phi^*\) increases in \(\lambda\) in closed form (Proposition
+  1(i)). In the entry game the leader's \(\phi_L\) also rises with
+  \(\lambda\) at every arrival rate on the grid and lies below
+  \(\phi^*\) by \(14\%\) at \(\lambda = 0.03\), \(3.1\%\) at baseline
+  and \(0.2\%\) at \(\lambda = 0.50\) (Proposition 3(ii), numerical),
+  while the date and the scale of the first investment are hump-shaped
+  in \(\lambda\), with a maximum near \(0.15\) (Proposition 3(iv),
+  numerical). Competitive position therefore lowers the training share
+  of a lab that invests before the switch by little except at long
+  timelines, and a lab that enters after the switch trains with all its
+  capacity (Proposition 3(i)). Controlling for technology,
+  \(\phi^{\mathrm{o}}\) should order labs by beliefs where capital
+  expenditure need not.
 \end{enumerate}
 
 These predictions are directional, and the small cross-section currently
-limits formal testing: recovery regressions using training-compute
-proxies could test prediction 1, and event studies around capability
-releases could test the asymmetric response.
+limits formal testing: default-probability and spread regressions on
+training-compute proxies could test prediction 1, event studies around
+capability releases and forecast revisions could test prediction 3, and
+regressions of training shares and capital expenditure on belief proxies
+could test prediction 4.
 
 \subsection{Policy Implications}\label{policy-implications}
 
@@ -2392,14 +2431,16 @@ calibrated optimum, where \(\phi^* > \tilde{\phi}\), a downward revision
 in \(\lambda\) would raise the default boundary and cut equity value
 simultaneously; with no asset market and no feedback from liquidation
 onto prices, the model cannot take the further step to fire sales or
-contagion. On competition policy, preemption cuts the leader's trigger
-well below the monopolist's (Section~\ref{sec-duopoly}), so capacity
-announcements are weak evidence about demand expectations: a firm racing
-a rival and a firm expecting an early switch both enter early. On
-disclosure, \(\phi\) jointly determines the default boundary and the
-composition of firm value (Propositions 1 and 2), so an investor working
-inside this model would need \(\hat{\phi}\), not compute spending alone,
-to locate a lab relative to its default boundary.
+contagion. On competition policy, competition brings the first
+investment forward (at baseline the monopolist waits for the switch,
+while the leader of the entry game invests before it,
+Section~\ref{sec-duopoly}), and the leader's date and scale of entry are
+hump-shaped in \(\lambda\), so capacity announcements are weak evidence
+about timeline beliefs. On disclosure, \(\phi\) jointly determines the
+default boundary and the composition of firm value (Propositions 1 and
+2), so an investor working inside this model would need the training
+share \(\phi^{\mathrm{o}}\), not compute spending alone, to locate a lab
+relative to its default boundary.
 
 \subsection{Limitations}\label{limitations}
 
@@ -2756,65 +2797,108 @@ Derived (choices) \\
 Derivations}\label{a.-proofs-and-supporting-derivations}
 \addcontentsline{toc}{subsection}{A. Proofs and Supporting Derivations}
 
-The algebraic and single-variable-calculus content of Propositions 1--3
-is machine-checked in Lean 4\footnote{\url{https://lean-lang.org/}} and
-its mathematical library Mathlib. For Proposition 1, the formalization
-covers the trigger and capacity algebra of Steps 1--4, namely the
-trigger for a payoff linear in demand, the net present value at the
-trigger, the capacity first-order condition and its closed-form
-solution, which is the post-switch capacity \(K_H^*\) of part (ii) and
-the capacity of the pure-power approximation
-Equation~\ref{eq-trigger-phi} and does not depend on the training
-fraction (the limit argument that makes this root the global maximum is
-elementary calculus and is not formalized), and the reduction of the
-training-fraction first-order condition to the unique interior critical
-point \(\phi^*\) in closed form together with its comparative statics
-(Steps 5--6). It also covers the reduction of the homogeneous Euler ODE
-to the characteristic equation Equation~\ref{eq-beta-H} (a power
-solution \(X^\beta\) solves the ODE if and only if \(Q(\beta) = 0\)) and
-the sign, magnitude, and ordering of its roots, namely \(\beta_H > 1\),
-\(\beta_L^- < 0\), and \(\beta_L^+ > \beta_H\). For Proposition 2, it
-covers the quotient-rule derivative
+Parts of the algebra and single-variable calculus behind Propositions 1
+to 3 and Corollary 1 are machine-checked in Lean 4\footnote{\url{https://lean-lang.org/}}
+and its mathematical library Mathlib. Each formalized result is an
+identity or an inequality under stated hypotheses, conditional on the
+functional forms of the value functions, the exercise payoffs, and the
+value matching and smooth pasting conditions derived in the proofs
+below; none proves that a policy is optimal in its stopping problem,
+that an equilibrium exists or is unique, or any number in the paper. For
+Proposition 1, the formalization covers the reduction of the homogeneous
+Euler ODE to the characteristic equation Equation~\ref{eq-beta-H} (a
+power solution \(X^\beta\) solves it if and only if \(Q(\beta) = 0\))
+and the sign and ordering of the roots, \(\beta_H > 1\),
+\(\beta_L^- < 0\) and \(\beta_L^+ > \beta_H\); for part (i), the
+reduction of the allocation first-order condition to its unique interior
+root \(\phi^*\) and the comparative statics of \(\phi^*\) (Steps 5 and
+6); for part (ii), the trigger and the net present value for a payoff
+linear in demand, the equivalence of Equation~\ref{eq-foc-K} with the
+closed form Equation~\ref{eq-K-H}, the positivity of that closed form
+under (A2), and the sign of the derivative of the reduced capacity
+objective of Step 3, which makes \(K_H^*\) its unique global maximizer
+(Steps 1 to 4, which with \(a = g(\phi^*)\) also give the pure-power
+approximation Equation~\ref{eq-trigger-phi}); and for part (iii), the
+particular solutions in Equation~\ref{eq-particular-C} and
+Equation~\ref{eq-option-L-upper}, the sign \(Q_L(\beta_H) < 0\), and the
+equivalence of the first-order conditions of Step 7 in the trigger and
+in capacity with smooth pasting of Equation~\ref{eq-premium} and with
+Equation~\ref{eq-scale-foc}. For Proposition 2, it covers the
+equivalence of smooth pasting on Equation~\ref{eq-equity} with the
+closed-form boundary Equation~\ref{eq-default-boundary}, the shutdown
+boundary at a zero coupon and the continuity of the boundary in
+leverage, the monotonicity of the boundary in leverage and rival
+capacity, the quotient-rule derivative
 \(\partial A_{\text{eff}}/\partial \lambda\), the faith-based survival
-condition, the threshold Equation~\ref{eq-phi-underbar}, the
-monotonicity of the default boundary in leverage and rival capacity,
-and, for the exact net threshold \(\tilde{\phi}\), the markup channel's
-monotonicity in \(\lambda\) together with the net-condition
-rearrangement. For Proposition 3, it covers the scale-invariance of the
-Tullock contest share and the contest-derivative factorization that
-underlie the allocation condition of part (ii), and the separable
-reduction of an entrant's revenue coefficient at a common allocation, of
-which the capacity condition of part (i) is the same algebra with all
-capacity in training. It also contains generic intermediate-value
-existence and strict-concavity single-crossing lemmas. Those two were
-written for the preemption trigger of the nested pure-power game without
-the shutdown option (Internet Appendix B) and say nothing about the
-triggers of Proposition 3(iii), which are numerical findings. Each
-theorem is proved in full, depends only on the proof assistant's
-standard logical axioms, and is stated for arbitrary admissible
-parameters rather than the baseline calibration alone.
+condition, the threshold Equation~\ref{eq-phi-underbar} and its
+comparative statics in \(\alpha\), \(r\) and \(\mu_H - \mu_L\), and, for
+\(\tilde{\phi}\), the monotonicity of the markup channel in \(\lambda\)
+and the net-condition rearrangement. For the recovery rule
+Equation~\ref{eq-recovery}, it covers the following facts at \(\phi^*\):
+the inference business earns the firm's revenue per unit of capacity if
+and only if the allocation first-order condition holds, so that \(X_I\)
+equals the firm's shutdown boundary and \(\Lambda = (1 - \phi^*)U\); and
+without the liquidator's option to shut down, the inference business has
+positive net value at \(X_D\) if and only if the coupon exceeds
+\((1 - M)/M\) times the operating cost, with
+\(M = \beta_L^-/(\beta_L^- - 1)\). For Corollary 1, it covers
+Equation~\ref{eq-installed-lambda}, part (i) in full (strictly
+increasing and strictly concave on \(\lambda \geq 0\) if and only if
+\(\phi > \underline{\phi}\), with the converse cases), the identity of
+part (ii) and its sign, and, for part (iii),
+\(\partial G/\partial \phi > 0\) and the monotonicity of the
+semi-elasticity in \(\phi\). For Proposition 3, it covers the follower's
+revenue elasticity \(\alpha(2 - s_F)\) and the strict decrease of the
+logarithmic derivative of its option coefficient, so that
+Equation~\ref{eq-follower-foc} has at most one root (part i); the scale
+invariance of the contest share and the contest-derivative factorization
+behind the critical-point statement of part (ii); and the algebra of
+Equation~\ref{eq-values-before-entry} used in the no-deviation argument
+of part (iii), with the values and the maximization that defines \(X_L\)
+taken as given. The package also contains an intermediate-value lemma
+and a strict-concavity single-crossing lemma that concern only the
+nested pure-power game of Internet Appendix B and say nothing about
+\(X_L\) or \(X_P\). Each theorem is proved in full, depends only on the
+proof assistant's standard logical axioms, and is stated for arbitrary
+parameters satisfying its hypotheses rather than for the baseline
+calibration alone; \texttt{lean/README.md} in the package maps each
+theorem to the result it supports.
 
-The scope is the algebra and calculus \emph{downstream} of the
-optimal-stopping problem. The Hamilton--Jacobi--Bellman ODE
-(Equation~\ref{eq-hjb-L}) and the value matching and smooth pasting
-conditions are taken as given; conditional on them, the verification
-establishes the reduction to the characteristic equation, the closed
-forms, the first-order conditions, and the comparative statics that
-follow. The stochastic-calculus derivation of the HJB equation itself,
-and the optimal-stopping argument that the candidate value functions are
-optimal, are not formalized; nor is the two-region system of Proposition
-1(iii) (Step 7), which is solved numerically, or the pure-power
-(\(A_1 = 0\)) form of the L-regime option value, which is an
-approximation rather than a theorem (the remark on the pure-power form
-after the Proof of Proposition 1 below, and
-Section~\ref{sec-conventions}). Results that are numerical in nature,
-the magnitude of \(\tilde{\phi}\), the entry equilibrium of Proposition
-3(iii) to (v), and the coupled-ODE, piecewise-stopping, and
-Dario's-dilemma computations (Internet Appendix B), are likewise not
-formalized. The Lean proof package accompanies the submission; the code
-reproducing the numerical results (Python source, locked environment,
-and the commands behind each exhibit) is in the public repository and
-will be archived with the paper upon publication.
+The following are not formalized. The stochastic-calculus derivation of
+the Hamilton--Jacobi--Bellman equations (Equation~\ref{eq-hjb-L} and the
+equity and debt equations) is taken as given, and so is every
+optimal-stopping verification argument: that smooth pasting
+characterizes the optimal investment or default rule, which for the
+default boundary means that only the algebra of smooth pasting is
+formalized and not its optimality, and that a candidate value function
+is the value function. In Proposition 1, that \(\phi^*\) is a maximum
+and not only a critical point (the Inada limits and the strict concavity
+of Step 5), and the two-region system of part (iii) as a whole: the
+uniqueness argument that reduces the homogeneous part to a multiple of
+\(X^{\beta_L^+}\), the value and slope matching at \(X_H^*\) that pin
+down \((A_1, G_1, G_2)\), the existence of a solution, and its single
+maximum in capacity, which is a numerical finding. Nor are the waiting
+margin Equation~\ref{eq-waiting-margin} and the existence criterion
+built on it, the pure-power (\(A_1 = 0\)) form of the L-regime option
+value, which is an approximation rather than a theorem (the remark on
+the pure-power form after the Proof of Proposition 1 below, and
+Section~\ref{sec-conventions}), or, in Proposition 2, the
+single-boundary reduction and the sign and size of its bias, the
+leverage-training substitution of part (iii), and the magnitudes of
+\(m\) and \(\tilde{\phi}\). The caps of the recovery rule, the fair
+coupon, and every spread, default probability and recovery level are not
+formalized. In Proposition 3, the existence of a root of
+Equation~\ref{eq-follower-foc} and the follower's problem with the
+option to stop, that the critical point of part (ii) is a maximum, and
+the entry equilibrium of parts (iii) to (v) and Remark 4 are not
+formalized; neither is Corollary 1 for the claims that carry the option
+to stop. Results that are numerical in nature, Numerical Finding 1, the
+error of the pure-power approximation, and the coupled-ODE,
+piecewise-stopping and entry-game computations of Internet Appendix B,
+are likewise not formalized. The Lean proof package accompanies the
+submission; the code reproducing the numerical results (Python source,
+locked environment, and the commands behind each exhibit) is in the
+public repository and will be archived with the paper upon publication.
 
 \subsubsection*{Proof of Proposition 1}\label{proof-of-proposition-1}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 1}
@@ -3342,6 +3426,135 @@ decreasing in \(K_j\) (holding \(K_i\) fixed). Since
 \(\partial A_{\text{eff},i} / \partial K_j < 0\), and
 \(\partial X_D / \partial K_j > 0\): stronger rivals raise the default
 boundary. \(\square\)
+
+\subsubsection*{Installed value in the arrival rate (Corollary
+1)}\label{installed-value-in-the-arrival-rate-corollary-1}
+\addcontentsline{toc}{subsubsection}{Installed value in the arrival rate
+(Corollary 1)}
+
+Testable prediction 3 of Section~\ref{sec-discussion} concerns a firm
+that has already invested and cannot change its capacity, allocation or
+coupon when beliefs about the switch change. Its object is therefore not
+the value of the unexercised option in
+Figure~\ref{fig-lambda-option-value}, which re-optimizes the policy at
+each \(\lambda\), but installed value at a fixed policy.
+
+\textbf{Corollary 1} (Installed value in \(\lambda\)). \emph{Hold a
+single installed firm's capacity \(K > 0\), allocation
+\(\phi \in (0, 1)\), coupon \(C_D \geq 0\) and current demand \(X > 0\)
+fixed, and let \(\lambda \geq 0\) vary, with
+\(\Pi_L = [(1-\phi)K]^\alpha\), \(\Pi_H = (\phi K)^\alpha/(r - \mu_H)\),
+\(\Delta = r - \mu_L + \lambda\) and
+\(G \equiv \Pi_H (r - \mu_L) - \Pi_L\). The going-concern value
+\(V(\lambda) = A_{\text{eff}}(\lambda) X - (\delta K + C_D)/r\), the
+installed value of Equation~\ref{eq-installed-value-L} net of the
+default-free coupon claim and without the option to stop, satisfies}
+\begin{equation}\protect\phantomsection\label{eq-installed-lambda}{
+V'(\lambda) = \frac{X G}{\Delta^2}, \qquad V''(\lambda) = -\frac{2 X G}{\Delta^3}.
+}\end{equation} \emph{(i) \(V\) is strictly increasing and strictly
+concave in \(\lambda\) on all of \(\lambda \geq 0\) if and only if
+\(\phi > \underline{\phi}\) of Equation~\ref{eq-phi-underbar}; it is
+strictly decreasing and strictly convex if \(\phi < \underline{\phi}\)
+and constant at \(\phi = \underline{\phi}\). (ii) For news of size
+\(h \in (0, \Delta)\),
+\([V(\lambda) - V(\lambda - h)] - [V(\lambda + h) - V(\lambda)] = 2h^2 X G/[\Delta(\Delta - h)(\Delta + h)]\),
+which is positive if and only if \(\phi > \underline{\phi}\): bad news
+lowers value by more than good news of the same size raises it. (iii) At
+given \((\lambda, K, X)\), \(V'\), \(-V''\) and the difference in (ii)
+increase in \(\phi\) (so the curvature \(|V''|\) does for
+\(\phi > \underline{\phi}\)), and so does the semi-elasticity of the
+revenue value \(A_{\text{eff}} X\) in \(\lambda\).}
+
+\emph{Proof.} \(A_{\text{eff}} = (\Pi_L + \lambda \Pi_H)/\Delta\) is a
+ratio of two affine functions of \(\lambda\), and neither \(\delta K/r\)
+nor \(C_D/r\) depends on \(\lambda\). The first derivative is the
+quotient-rule expression of the proof of Proposition 2(ii) times \(X\);
+differentiating it again gives \(V''\), since \(G\) does not depend on
+\(\lambda\). With \(\Delta > 0\) both signs are those of \(G\) and do
+not change with \(\lambda\), so there is no range of convexity.
+\(G > 0\) is Equation~\ref{eq-faith-condition} at monopoly shares, which
+reduces to \((\phi/(1-\phi))^\alpha > (r - \mu_H)/(r - \mu_L)\), that is
+\(\phi > \underline{\phi}\), exactly as in the symmetric case of that
+proof (the shares cancel in both). This proves (i). For (ii),
+\(A_{\text{eff}}(\lambda) - A_{\text{eff}}(\lambda') = G(\lambda - \lambda')/[\Delta(\lambda)\Delta(\lambda')]\),
+so the loss from bad news is \(X G h/[\Delta(\Delta - h)]\) and the gain
+from good news \(X G h/[\Delta(\Delta + h)]\); their difference is the
+stated expression. For (iii),
+\(\partial G/\partial \phi = \alpha[\Pi_H(r - \mu_L)/\phi + \Pi_L/(1-\phi)] > 0\),
+and with \(\rho = \Pi_H/\Pi_L\), which increases in \(\phi\), the
+semi-elasticity is
+\(\partial \ln A_{\text{eff}}/\partial \lambda = (\rho(r - \mu_L) - 1)/[(1 + \lambda\rho)\Delta]\),
+whose derivative in \(\rho\) is \(1/(1 + \lambda\rho)^2 > 0\).
+\(\square\)
+
+The identities in Equation~\ref{eq-installed-lambda}, in (ii) and in
+(iii) are checked symbolically
+(\texttt{symbolic\_duopoly.installed\_value\_in\_lambda}, asserted in
+the test suite). The Lean package covers
+Equation~\ref{eq-installed-lambda}, part (i) with its converse cases,
+the identity in (ii) and its sign, and, for (iii),
+\(\partial G/\partial \phi > 0\) and the monotonicity of the
+semi-elasticity in \(\phi\), taking the going-concern value as given
+(the scope paragraph at the start of this appendix).
+
+Part (iii) holds at a common belief. It does not extend to firms whose
+allocations differ because their beliefs differ: at the model's
+allocation \(\phi^*(\lambda)\) the semi-elasticity of \(A_{\text{eff}}\)
+in \(\lambda\) is \(2.24\) at \(\lambda = 0.05\), \(2.25\) at \(0.10\),
+\(1.18\) at \(0.20\) and \(0.30\) at \(0.50\), because the second term
+of Equation~\ref{eq-a-eff} saturates as \(\lambda\) grows.
+
+\emph{What the corollary does not cover.} The installed firm of the
+model of record also holds the option to stop: the shutdown option
+without debt, the default option with it, with the coupled
+regime-switching boundary of Section~\ref{sec-duopoly}. Its value in
+\(\lambda\) has no closed form, and I check its shape numerically, on
+\(33\) arrival rates spanning \([0.02, 0.80]\) at the baseline values of
+the other parameters.
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Unlevered value with the shutdown option.} At \(K = 0.0158\) and
+  \(\phi \in \{0.25, 0.30, 0.50, 0.70, 0.90, 0.99\}\), value is
+  increasing and concave in \(\lambda\) at twelve demand levels from
+  \(1.25\) to \(20\) times the highest shutdown boundary over that
+  range, and at the single firm's precommitted-scale policy
+  \((X^*, K^*, \phi^*)\), where the option adds less than \(1\%\) to the
+  going-concern value. It fails near the boundary, where the option to
+  stop is convex in \(\lambda\): at \(1.01\) times the boundary and
+  \(\phi = 0.70\), value is increasing but not concave. Just above
+  \(\underline{\phi}\) the option also overturns the sign close to the
+  boundary: at \(\phi = 0.19\) value falls in \(\lambda\) at \(1.5\)
+  times the boundary, although the going-concern value rises, and it is
+  increasing and concave at three times the boundary.
+\item
+  \emph{Levered equity.} The equity of the installed firm depends on the
+  coupon only through the total fixed cost \(q = \delta K + C_D\): the
+  equity equations and the smooth-pasting condition are homogeneous of
+  degree one in \((X, q)\), and recovery does not enter equity. Levered
+  equity at demand \(X\) is therefore \(q/(\delta K)\) times unlevered
+  value at demand \(X\,\delta K/q\), and has the same shape in
+  \(\lambda\) at the same distance to its boundary. At the single firm's
+  policy it is increasing and concave in \(\lambda\) under par debt at
+  \(\ell = 0.40\) and \(0.70\).
+\item
+  \emph{The duopoly leader.} Before the follower enters, the leader's
+  value also carries the dilution of its post-switch revenue by the
+  follower, which comes sooner when \(\lambda\) is higher, so it is not
+  \(A_{\text{eff}} X\) less a constant. At the leader's baseline policy
+  \((K_L, \phi_L) = (0.0042, 0.679)\), with the follower re-solved at
+  each \(\lambda\), its value is increasing and concave in \(\lambda\)
+  at \(0.5\), \(1\) and \(1.5\) times \(X_L\), without debt and under
+  par debt at \(\ell = 0.40\). At the same scale and \(\phi = 0.25\) the
+  dilution term makes it non-monotone in \(\lambda\) on
+  \([0.10, 0.50]\), although \(\phi > \underline{\phi}\).
+\end{itemize}
+
+These checks are pinned in
+\texttt{tests/test\_valuation.py::TestValueInLambda}, which also keeps
+the option-value checks of Figure~\ref{fig-lambda-option-value} apart
+from them.
 
 \subsubsection*{Proof of Proposition 3}\label{proof-of-proposition-3}
 \addcontentsline{toc}{subsubsection}{Proof of Proposition 3}
@@ -4134,6 +4347,14 @@ Proposition 2(ii) & Faith-based survival; closed-form thresholds
 (exact, both channels) & Closed-form & Assumption 1; symmetric shares \\
 Proposition 2(iii)--(iv) & Leverage-training substitution; rival
 capacity effect & Analytical (mechanical) & Assumption 1 \\
+Corollary 1 & Installed going-concern value increasing and concave in
+\(\lambda\) if and only if \(\phi > \underline{\phi}\); news asymmetry &
+Closed-form & Assumption 1; single installed firm, any
+\((X, K, \phi)\) \\
+Corollary 1, with the option to stop & Same shape for unlevered value
+with shutdown, levered equity, and the installed leader & Computational
+& Baseline; \(\lambda \in [0.02, 0.80]\); away from the boundary; leader
+at its policy (Internet Appendix A) \\
 Proposition 3(i) & Follower's post-switch capacity and trigger & Scalar
 condition with a unique root & Assumption 1; claim without the option to
 stop \\
@@ -6019,7 +6240,7 @@ archetypes fall between these extremes.
 with respect to \(\lambda\) (\(\varepsilon \approx +0.5\) at baseline,
 reflecting \(\varepsilon_{\phi^*,\lambda} = (1-\phi^*)/(1-\alpha)\))
 means the inverse mapping \(\lambda(\hat{\phi})\) is steep: modest
-uncertainty in the observed training fraction (\(\pm 0.10\)) translates
+uncertainty in the assigned training fraction (\(\pm 0.10\)) translates
 into a wide range of implied arrival rates. Inverting the closed-form
 allocation first-order condition,
 \(\lambda = (\hat{\phi}/(1-\hat{\phi}))^{1-\alpha}(r - \mu_H)\), for
@@ -6536,11 +6757,11 @@ revenue.\footnote{An extension with unknown \(\lambda\) and Bayesian
 exponential-arrival exercise, the bias is therefore the value of the
 re-purposing option, and it has one immediate consequence for the
 calibration: because the static model overstates the pre-switch training
-fraction, the implied \(\lambda\) that rationalizes a given observed
+fraction, the implied \(\lambda\) that rationalizes a given
 \(\hat{\phi}\) is \emph{higher} under the dynamic model than under the
-static model, since the observed \(\hat{\phi}\) then represents a
-deliberate choice made despite the option to re-purpose rather than an
-irreversible commitment.
+static model, since \(\hat{\phi}\) then represents a deliberate choice
+made despite the option to re-purpose rather than an irreversible
+commitment.
 
 Dynamic reallocation would attenuate the paper's headline mechanisms
 without eliminating them. The faith-based survival channel (Proposition
@@ -6817,18 +7038,17 @@ spillover pushes toward underinvestment in training.
 Section~\ref{sec-discussion} could be assessed more fully as the
 cross-section of publicly traded AI labs expands, though the small
 sample currently limits formal statistical testing. Default-probability
-and recovery regressions could test the two-faces decomposition in
-prediction 1 using training-fraction proxies, such as the ratio of
-pre-training compute to total compute disclosed in some filings. Event
-studies around AI capability and timeline announcements, model releases,
-benchmark results, and prominent revisions of AGI forecasts, could test
-the predicted asymmetric equity response to timeline news.
-Cross-sectional investment regressions could test whether investment
-intensity increases in \(\lambda\) proxies and whether the
-training-inference split is explained by belief proxies rather than by
-order of entry or leverage. These exercises require data that are
-currently scarce but becoming available as AI firms go public and
-disclosure norms develop.
+and spread regressions could test prediction 1 using training-share
+proxies, such as the ratio of pre-training compute to total compute
+disclosed in some filings; the model predicts no effect of the training
+share on recovery. Event studies around AI capability and timeline
+announcements, model releases, benchmark results, and prominent
+revisions of AGI forecasts, could test the predicted asymmetric response
+of installed labs' values to timeline news. Cross-sectional regressions
+could test whether training shares rise with belief proxies while
+capital expenditure does not move monotonically with them. These
+exercises require data that are currently scarce but becoming available
+as AI firms go public and disclosure norms develop.
 
 \textbf{Policy implications.} On policy, the faith-based survival
 mechanism (Proposition 2) sharpens the familiar concern about
@@ -6840,20 +7060,21 @@ the mechanism does imply is that solvency depends on a belief parameter,
 so a downward revision in \(\lambda\) would raise the default boundary
 and cut equity value at once; whether investors' beliefs about AI
 timelines are themselves accurate is outside the model's scope. On
-disclosure, \(\hat{\phi}\) summarizes a firm's intertemporal trade-off
-between current revenue and future capability, so two labs with
-identical capital expenditure can carry very different solvency and
-value composition. Whether requiring standardized disclosure of training
-allocation would improve any dimension of market efficiency is a
-question the model cannot address, since it contains no information
-asymmetry, no belief updating by investors, and no price formation; the
-claim it supports is narrower, that an investor working inside this
-model would need \(\hat{\phi}\), and not compute spending alone, to
-locate a lab relative to its default boundary. On competition policy,
-capacity investment serves two purposes at once, generating revenue and
-deterring a rival; the model evaluates no intervention and so ranks no
-policies, and what it supplies is the strategic component of investment
-that such an evaluation would have to price.
+disclosure, a lab's measured training share \(\phi^{\mathrm{o}}\)
+summarizes its intertemporal trade-off between current revenue and
+future capability, so two labs with identical capital expenditure can
+carry very different solvency and value composition. Whether requiring
+standardized disclosure of training allocation would improve any
+dimension of market efficiency is a question the model cannot address,
+since it contains no information asymmetry, no belief updating by
+investors, and no price formation; the claim it supports is narrower,
+that an investor working inside this model would need
+\(\phi^{\mathrm{o}}\), and not compute spending alone, to locate a lab
+relative to its default boundary. On competition policy, capacity
+investment serves two purposes at once, generating revenue and deterring
+a rival; the model evaluates no intervention and so ranks no policies,
+and what it supplies is the strategic component of investment that such
+an evaluation would have to price.
 
 \textbf{Financing structures beyond public debt and equity.} The labs
 whose decisions the model represents finance themselves in varied ways.

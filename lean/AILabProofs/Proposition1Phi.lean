@@ -3,10 +3,10 @@ import AILabProofs.Basic
 set_option linter.style.header false
 
 /-!
-# Proposition 1 — optimal training fraction `φ*`
+# Proposition 1(i) — optimal training fraction `φ*`
 
-This file verifies Proposition 1's allocation result (`paper/_appendix.qmd`,
-"Proof of Proposition 1", Step 5, and `paper/_model.qmd`).  Factoring `K^α` out of
+This file verifies Proposition 1(i), the allocation result (`paper/_appendix.qmd`,
+"Proof of Proposition 1", Steps 5--6, and `paper/_model.qmd`, eq-phi-star).  Factoring `K^α` out of
 the effective revenue coefficient, the firm chooses `φ` to maximise
 
 `g(φ) = w_L (1-φ)^α + w_H φ^α`,   `w_L, w_H > 0`,  `α ∈ (0,1)`,
@@ -21,6 +21,10 @@ where `w_L = 1/(r-μ_L+λ)` and `w_H = λ A_H/(r-μ_L+λ)`.
   `ρ/(1+ρ)` with `ρ = (w_H/w_L)^{1/(1-α)}` — establishing the unique interior
   critical point `φ*`.
 * `alloc_foc_closed_form` : the two combined — the closed form for `φ*`.
+
+The file shows that `φ*` is the unique interior critical point of `g`.  That it is the
+maximiser (the Inada limits and the strict concavity of Step 5) is elementary and not
+formalized here.
 -/
 
 namespace AILab
