@@ -88,7 +88,7 @@ ai-lab-investment/
 │   ├── cover-letter.md, ai-disclosure.md
 │   └── replication/             # Referee-facing package (Lean + equation listing + Dockerfile)
 ├── notebooks/
-│   └── model_derivation.ipynb   # SymPy derivation notebook (8 sections + summary + completeness audit)
+│   └── model_derivation.ipynb   # SymPy derivation notebook (10 sections + summary + completeness audit)
 ├── references/                  # Lit review, data compendium, background notes (source material)
 ├── reports/                     # Review reports (yours goes here; do not read others)
 ├── slides/                      # Presentation slides (out of review scope)

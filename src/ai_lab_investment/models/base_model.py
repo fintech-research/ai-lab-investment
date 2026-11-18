@@ -164,9 +164,10 @@ class SingleFirmModel:
         The trigger exists when 1/gamma < Phi < 1, where
         Phi = (1-1/beta)/alpha. When Phi >= 1 the standalone scale
         problem of this regime has no interior optimum (the option
-        factor diverges as K -> 0); for regime L this is Assumption A3,
-        which does not by itself rule out investment in L in the full
-        model (see the module docstring).
+        factor diverges as K -> 0); for regime L this is the L-regime
+        insufficiency condition (formerly labelled A3), which does not
+        by itself rule out investment in L in the full model (see the
+        module docstring).
         """
         Phi = self._option_premium_ratio(regime)
         return 1.0 / self.params.gamma < Phi < 1.0
@@ -270,15 +271,15 @@ class SingleFirmModel:
         """Solve for the regime L option.
 
         When an interior trigger exists (phi_L < 1), returns (X_L*, K_L*, D_L).
-        When no interior standalone trigger exists (Phi_L >= 1, Assumption
-        A3), this *simple-mode* routine returns (None, None, 0.0) and
-        prices the option as F_L(X) = C * X^beta_H (the forced-ODE
+        When no interior standalone trigger exists (Phi_L >= 1, the L-regime
+        insufficiency condition), this *simple-mode* routine returns
+        (None, None, 0.0) and prices the option as F_L(X) = C * X^beta_H (the forced-ODE
         particular solution). This is a convention for the simple mode,
         not an economic result that the firm never invests in L; the
         full model (`solve`) decides that in the exact problem.
 
         IMPORTANT -- the interior branch is a pure-power approximation.
-        Under the paper's calibration and (A3), Phi_L >= 1 and the branch
+        Under the paper's calibration Phi_L >= 1 and the branch
         is dead: only the no-trigger branch is ever taken. It becomes
         live only for parameterizations with a much larger alpha (e.g.
         alpha > 0.67 at the baseline volatility), and there it is *not*
@@ -305,7 +306,7 @@ class SingleFirmModel:
         if self.has_interior_trigger("L"):
             # Interior solution of the *pure-power* L problem (C ignored);
             # see the docstring: inconsistent with the C-inclusive
-            # smooth-pasting fit below whenever C != 0, and dead under (A3).
+            # smooth-pasting fit below whenever C != 0, and dead when Phi_L >= 1.
             if C != 0.0:
                 logging.warning(
                     "Interior L-trigger branch entered with C=%.4g != 0: "
