@@ -68,6 +68,10 @@ duopoly-grid:
 duopoly-grid-fresh:
     uv run python -m ai_lab_investment.models.preemption_levered fresh
 
+# Recompute the cached duopoly Dario's dilemma (about ten minutes on 8 workers)
+dilemma-grid:
+    uv run python -m ai_lab_investment.models.belief_mismatch
+
 # Test if documentation can be built without warnings or errors
 docs-test:
     @echo "🚀 Testing docs build"

@@ -527,31 +527,655 @@ class TestCreditPrimitivesTable:
 
 
 # ------------------------------------------------------------------
-# Dario dilemma
+# Dario's dilemma in the model of record (issue #180)
 # ------------------------------------------------------------------
 
 
+@pytest.fixture(scope="module")
+def exact_va():
+    """One analysis object for the exact dilemma (it caches the solves)."""
+    return ValuationAnalysis(ModelParameters())
+
+
 class TestDarioDilemma:
+    """Single firm, exact values, both versions of the problem."""
+
+    @pytest.mark.parametrize("version", ["precommitted", "unrestricted"])
+    def test_matched_beliefs_no_loss(self, exact_va, version):
+        result = exact_va.dario_dilemma(0.10, 0.10, version)
+        assert result["value_loss_pct"] == 0.0
+        assert result["timing_pct"] == pytest.approx(0.0, abs=1e-12)
+
+    def test_reference_demand_is_half_the_true_trigger(self, exact_va):
+        result = exact_va.dario_dilemma(0.10, 0.20)
+        X_star, _, _ = SingleFirmModel(ModelParameters()).optimal_trigger_capacity_phi()
+        assert result["X_0"] == pytest.approx(0.5 * X_star, rel=1e-12)
+        assert result["X_optimal"] == pytest.approx(X_star, rel=1e-9)
+        assert exact_va.dario_dilemma(0.10, 0.20, "unrestricted")[
+            "X_0"
+        ] == pytest.approx(result["X_0"], rel=1e-12)
+
+    @pytest.mark.parametrize(
+        ("belief", "loss"),
+        [
+            (0.02, 32.46),
+            (0.03, 23.57),
+            (0.05, 8.31),
+            (0.10 / 1.8, 4.33),
+            (9.0 / 130.0, 1.03),
+            (0.18, 1.32),
+            (0.20, 1.87),
+            (0.50, 13.25),
+        ],
+    )
+    def test_precommitted_losses(self, exact_va, belief, loss):
+        """Numerical Finding 1, tbl-dilemma: losses in percent of the
+        informed firm's value at X_0 = X*/2."""
+        result = exact_va.dario_dilemma(0.10, belief)
+        assert result["value_loss_pct"] * 100 == pytest.approx(loss, abs=0.02)
+        assert result["is_conservative"] is (belief < 0.10)
+
+    @pytest.mark.parametrize(
+        ("belief", "loss"),
+        [(0.02, 40.59), (0.05, 2.69), (0.10 / 1.8, 0.46), (0.075, 0.0), (0.50, 0.0)],
+    )
+    def test_unrestricted_losses(self, exact_va, belief, loss):
+        """With scale chosen at the switch a belief at or above 0.073 says
+        to wait, as the truth does, and costs nothing."""
+        result = exact_va.dario_dilemma(0.10, belief, "unrestricted")
+        assert result["value_loss_pct"] * 100 == pytest.approx(loss, abs=0.02)
+        assert result["waits"] is (belief > 0.073)
+
+    def test_policies_behind_the_losses(self, exact_va):
+        """The pessimist's own trigger lies below X_0, so it installs at
+        once at the scale it believes best there; the optimists wait for
+        their own triggers, which lie below the informed firm's."""
+        low = exact_va.dario_dilemma(0.10, 0.02)
+        assert low["immediate"] is True
+        assert low["trigger_mismatch"] == pytest.approx(3.115e-5, rel=1e-3)
+        assert low["X_mismatch"] == pytest.approx(low["X_0"])
+        assert low["K_mismatch"] == pytest.approx(0.00534, abs=1e-5)
+        assert low["phi_mismatch"] == pytest.approx(0.1381, abs=1e-4)
+        assert low["K_optimal"] == pytest.approx(0.01578, abs=1e-5)
+        for belief, X, K, phi in [
+            (0.18, 0.00913, 0.01842, 0.862),
+            (0.50, 0.00655, 0.01581, 0.972),
+        ]:
+            high = exact_va.dario_dilemma(0.10, belief)
+            assert high["immediate"] is False
+            assert high["X_mismatch"] == pytest.approx(X, abs=1e-5)
+            assert high["K_mismatch"] == pytest.approx(K, abs=1e-5)
+            assert high["phi_mismatch"] == pytest.approx(phi, abs=1e-3)
+
+    @pytest.mark.parametrize("version", ["precommitted", "unrestricted"])
+    @pytest.mark.parametrize("belief", [0.02, 0.05, 0.18, 0.50])
+    def test_components_sum_to_the_loss(self, exact_va, version, belief):
+        r = exact_va.dario_dilemma(0.10, belief, version)
+        total = r["timing_pct"] + r["capacity_pct"] + r["allocation_pct"]
+        assert total == pytest.approx(r["value_loss_pct"], abs=1e-12)
+        assert r["timing_pct"] >= -1e-12
+
+    @pytest.mark.parametrize(
+        ("belief", "timing", "capacity", "allocation"),
+        [
+            (0.02, 8.41, -0.17, 24.23),
+            (0.05, 4.04, 0.26, 4.02),
+            (0.18, 0.00, 0.31, 1.01),
+            (0.50, 1.54, 3.88, 7.84),
+        ],
+    )
+    def test_decomposition(self, exact_va, belief, timing, capacity, allocation):
+        """tbl-dilemma: allocation is the largest component on both sides;
+        timing matters for the pessimist, capacity for the far optimist."""
+        r = exact_va.dario_dilemma(0.10, belief)
+        got = [100 * r[k] for k in ("timing_pct", "capacity_pct", "allocation_pct")]
+        assert got == pytest.approx([timing, capacity, allocation], abs=0.02)
+
+    def test_unrestricted_loss_is_timing_and_allocation(self, exact_va):
+        r = exact_va.dario_dilemma(0.10, 0.02, "unrestricted")
+        got = [100 * r[k] for k in ("timing_pct", "capacity_pct", "allocation_pct")]
+        assert got == pytest.approx([19.43, -0.15, 21.31], abs=0.02)
+
+    def test_loss_is_the_exact_value_of_a_feasible_policy(self, exact_va):
+        """The mismatched value is the exact value, under the true rate, of
+        a threshold policy; it reproduces the threshold valuation of
+        `piecewise_option` and never exceeds the optimum."""
+        from ai_lab_investment.models.piecewise_option import PiecewiseOptionModel
+
+        pw = PiecewiseOptionModel(ModelParameters())
+        for belief in (0.05, 0.18, 0.50):
+            r = exact_va.dario_dilemma(0.10, belief)
+            direct = pw.threshold_value(
+                r["K_mismatch"], r["phi_mismatch"], r["X_mismatch"], r["X_0"]
+            )
+            assert r["value_mismatch"] == pytest.approx(direct, rel=1e-10)
+            assert r["value_mismatch"] < r["value_optimal"]
+
+    def test_agrees_with_the_independent_rechecks(self):
+        """At the reference demand of the earlier re-checks, X^pp / 2, the
+        losses reproduce `piecewise_option.dilemma_bias` (Nelder-Mead on
+        the exact value) and `capability_stock.belief_mismatch`."""
+        from ai_lab_investment.models.capability_stock import (
+            StockSpec,
+            belief_mismatch,
+        )
+        from ai_lab_investment.models.piecewise_option import dilemma_bias
+
+        p = ModelParameters()
+        X_pp, _, _ = SingleFirmModel(p).pure_power_trigger_capacity_phi()
+        va = ValuationAnalysis(p)
+        beliefs = (0.05, 0.20, 0.50)
+        old = dilemma_bias(p, lambda_invest_values=beliefs)
+        for belief, loss in zip(beliefs, old["loss_piecewise_pct"], strict=True):
+            new = va.dario_dilemma(0.10, belief, X_0=0.5 * X_pp)["value_loss_pct"]
+            assert new * 100 == pytest.approx(loss, abs=0.02)
+        stock = belief_mismatch(p, StockSpec(), lambda_invest=(0.02, 0.05, 0.20))
+        for belief, loss in zip((0.02, 0.05, 0.20), stock["loss_pct"], strict=True):
+            new = va.dario_dilemma(0.10, belief, "unrestricted", X_0=0.5 * X_pp)
+            assert new["value_loss_pct"] * 100 == pytest.approx(loss, abs=0.02)
+
+    def test_unknown_version_raises(self, exact_va):
+        with pytest.raises(ValueError, match="version must be"):
+            exact_va.dario_dilemma(0.10, 0.20, "nested")
+
+    def test_surface(self, exact_va):
+        vals = np.array([0.05, 0.10, 0.20])
+        surface = exact_va.dario_dilemma_surface(vals, vals)
+        assert surface["value_loss_pct"].shape == (3, 3)
+        assert np.all(np.diagonal(surface["value_loss_pct"]) == 0.0)
+        assert np.all(surface["value_loss_pct"] >= 0.0)
+
+
+class TestDilemmaMatchedErrors:
+    """The asymmetry in the three metrics in which errors can be matched:
+    additive (lambda), proportional (log lambda) and horizon (1 / lambda)."""
+
+    def test_pairs(self):
+        from ai_lab_investment.models.belief_mismatch import (
+            additive_pair,
+            horizon_pair,
+            matched_pairs,
+            proportional_pair,
+        )
+
+        assert additive_pair(0.10, 0.08) == pytest.approx((0.02, 0.18))
+        assert proportional_pair(0.10, 5.0) == pytest.approx((0.02, 0.50))
+        low, high = horizon_pair(0.10, 10.0 - 1.0 / 0.18)
+        assert (1 / low - 10.0, 10.0 - 1 / high) == pytest.approx(
+            (4.444, 4.444), abs=1e-3
+        )
+        with pytest.raises(ValueError, match="exceeds the true horizon"):
+            horizon_pair(0.10, 40.0)
+        pairs = matched_pairs(0.10)
+        assert pairs["additive"] == pytest.approx((0.02, 0.18))
+        assert pairs["proportional_low"] == pytest.approx((0.02, 0.50))
+        assert pairs["proportional_high"] == pytest.approx((0.10 / 1.8, 0.18))
+        assert pairs["horizon"] == pytest.approx((9.0 / 130.0, 0.18))
+
+    @pytest.mark.parametrize(
+        ("metric", "low", "high", "ratio"),
+        [
+            ("additive", 32.46, 1.32, 24.6),
+            ("proportional_low", 32.46, 13.25, 2.45),
+            ("proportional_high", 4.33, 1.32, 3.28),
+            ("horizon", 1.03, 1.32, 0.776),
+        ],
+    )
+    def test_precommitted(self, exact_va, metric, low, high, ratio):
+        """The pessimist loses more in levels of lambda and in logs; in
+        expected years to the switch the optimist loses slightly more."""
+        m = exact_va.dario_dilemma_matched(0.10)[metric]
+        assert m["loss_low"] * 100 == pytest.approx(low, abs=0.02)
+        assert m["loss_high"] * 100 == pytest.approx(high, abs=0.02)
+        assert m["ratio"] == pytest.approx(ratio, rel=0.01)
+
+    def test_unrestricted_is_one_sided(self, exact_va):
+        """With scale chosen at the switch only the pessimist can lose."""
+        matched = exact_va.dario_dilemma_matched(0.10, version="unrestricted")
+        for m in matched.values():
+            assert m["loss_high"] == 0.0
+            assert m["loss_low"] >= 0.0
+        assert matched["additive"]["loss_low"] * 100 == pytest.approx(40.59, abs=0.02)
+        assert matched["horizon"]["loss_low"] * 100 == pytest.approx(0.0, abs=1e-3)
+
+    def test_small_equal_additive_errors(self, exact_va):
+        """Locally the pessimistic side is the steeper one: the third
+        derivative of the policy value is positive at both step sizes, and
+        the losses at 0.10 -/+ 0.01 are ordered accordingly."""
+        w3 = [exact_va.dilemma_third_derivative(0.10, h) for h in (0.005, 0.01)]
+        assert all(v > 0 for v in w3)
+        assert w3 == pytest.approx([543.0, 628.0], rel=0.02)
+        low = exact_va.dario_dilemma(0.10, 0.09)["value_loss_pct"]
+        high = exact_va.dario_dilemma(0.10, 0.11)["value_loss_pct"]
+        assert low > high > 0.0
+        assert exact_va.dilemma_third_derivative(0.10, 0.005, "unrestricted") == 0.0
+
+    def test_other_true_rates(self):
+        """Internet Appendix A: at true rates 0.05 and 0.20 the rankings in
+        levels and at a factor of five hold; at a factor of 1.8 and in
+        expected time the sign depends on the true rate."""
+        from ai_lab_investment.models.belief_mismatch import (
+            SingleFirmMismatch,
+            matched_pairs,
+        )
+
+        expected = {
+            0.05: {"additive": 8.9, "proportional_low": 2.18,
+                   "proportional_high": 3.12, "horizon": 2.25},
+            0.20: {"additive": 31.2, "proportional_low": 2.97,
+                   "proportional_high": 0.60, "horizon": 0.24},
+        }  # fmt: skip
+        for truth, ratios in expected.items():
+            model = SingleFirmMismatch(ModelParameters(), truth)
+            for name, (low, high) in matched_pairs(truth, 0.8 * truth).items():
+                got = model.matched(low, high)["ratio"]
+                assert got == pytest.approx(ratios[name], rel=0.02)
+
+    def test_ranking_across_reference_demands(self):
+        """The losses are not invariant to X_0. Across X_0 = X*/4, X*/2 and
+        3X*/4 the additive and proportional rankings hold and the horizon
+        pair stays close to even."""
+        from ai_lab_investment.models.belief_mismatch import SingleFirmMismatch
+
+        model = SingleFirmMismatch(ModelParameters(), 0.10)
+        rows = model.reference_sensitivity(
+            (0.02, 9.0 / 130.0, 0.18, 0.50), (0.25, 0.5, 0.75)
+        )
+        table = [
+            [100 * row[f"loss_{b:g}"] for b in (0.02, 9.0 / 130.0, 0.18, 0.50)]
+            for row in rows
+        ]
+        expected = [
+            [39.97, 0.34, 0.43, 4.35],
+            [32.46, 1.03, 1.32, 13.25],
+            [27.44, 1.99, 2.57, 22.77],
+        ]
+        for got, want in zip(table, expected, strict=True):
+            assert got == pytest.approx(want, abs=0.02)
+            assert got[0] > got[3] > got[2] > got[1]
+
+
+class TestDarioDilemmaLeveraged:
+    """The single firm's dilemma on the levered claims and its tail risk."""
+
+    LEVERAGES = (0.0, 0.01, 0.05, 0.15, 0.40)
+
+    @pytest.fixture(scope="class")
+    def rows(self, exact_va):
+        return {
+            (lev, belief): exact_va.dario_dilemma_leveraged(0.10, belief, lev)
+            for lev in self.LEVERAGES
+            for belief in (0.02, 0.10, 0.18, 0.50)
+        }
+
+    def test_matched_beliefs_no_loss(self, rows):
+        for lev in self.LEVERAGES:
+            assert rows[lev, 0.10]["value_loss_pct"] == 0.0
+
+    def test_losses_do_not_move_with_fairly_priced_leverage(self, rows):
+        """C21: under fairly priced debt leverage leaves the expected-value
+        loss where the option to stop operating puts it."""
+        for lev in self.LEVERAGES:
+            got = [100 * rows[lev, b]["value_loss_pct"] for b in (0.02, 0.18, 0.50)]
+            assert got == pytest.approx([31.76, 1.29, 12.74], abs=0.03)
+
+    def test_continuous_at_zero_leverage(self, rows):
+        for belief in (0.02, 0.18, 0.50):
+            zero, small = rows[0.0, belief], rows[0.01, belief]
+            assert small["value_loss_pct"] == pytest.approx(
+                zero["value_loss_pct"], abs=1e-4
+            )
+            assert small["default_prob_mismatch"] == pytest.approx(
+                zero["default_prob_mismatch"], rel=0.05
+            )
+
+    def test_option_to_stop_lowers_the_loss_slightly(self, exact_va, rows):
+        plain = exact_va.dario_dilemma(0.10, 0.50)["value_loss_pct"]
+        assert plain * 100 == pytest.approx(13.25, abs=0.02)
+        assert rows[0.0, 0.50]["value_loss_pct"] < plain
+
+    @pytest.mark.parametrize(
+        ("leverage", "probabilities"),
+        [
+            (0.0, (0.156, 0.371, 0.345, 1.795)),
+            (0.01, (0.161, 0.378, 0.356, 1.841)),
+            (0.05, (0.182, 0.405, 0.403, 2.030)),
+            (0.15, (0.244, 0.478, 0.540, 2.562)),
+            (0.40, (0.467, 0.705, 1.028, 4.285)),
+        ],
+    )
+    def test_default_probabilities(self, rows, leverage, probabilities):
+        """tbl-dilemma-tail: five-year first passage to the boundary at
+        which the firm stops operating, informed firm then beliefs 0.02,
+        0.18 and 0.50, in percent, fairly priced debt."""
+        got = [100 * rows[leverage, 0.02]["default_prob_optimal"]] + [
+            100 * rows[leverage, b]["default_prob_mismatch"] for b in (0.02, 0.18, 0.50)
+        ]
+        assert got == pytest.approx(probabilities, abs=0.003)
+
+    def test_informed_firm_matches_the_credit_table(self, rows):
+        """The informed firm's rows are those of tbl-credit-pd."""
+        assert rows[0.0, 0.18]["default_prob_optimal"] * 100 == pytest.approx(
+            0.16, abs=0.005
+        )
+        assert rows[0.40, 0.18]["default_prob_optimal"] * 100 == pytest.approx(
+            0.47, abs=0.005
+        )
+        assert rows[0.0, 0.18]["distance_optimal"] == pytest.approx(6.46, abs=0.01)
+
+    def test_distance_to_the_boundary(self, rows):
+        """Both mistaken firms enter closer to the boundary than the
+        informed firm, the far optimist closest; the boundary exists
+        without debt and leverage shifts it."""
+        for lev, want in [
+            (0.0, (6.46, 5.58, 5.65, 4.12)),
+            (0.40, (5.36, 4.96, 4.62, 3.40)),
+        ]:
+            got = [rows[lev, 0.02]["distance_optimal"]] + [
+                rows[lev, b]["distance_mismatch"] for b in (0.02, 0.18, 0.50)
+            ]
+            assert got == pytest.approx(want, abs=0.01)
+            assert got[0] > got[1] > got[3]
+            assert got[0] > got[2] > got[3]
+
+    def test_par_debt_carries_the_subsidy(self, exact_va):
+        """Under par debt at r_c < r the levered objective rewards scale,
+        so the pessimist's loss rises with leverage and the optimists'
+        falls."""
+        par = [
+            100
+            * exact_va.dario_dilemma_leveraged(0.10, b, 0.40, debt="par")[
+                "value_loss_pct"
+            ]
+            for b in (0.02, 0.18, 0.50)
+        ]
+        assert par == pytest.approx([35.36, 0.88, 12.35], abs=0.03)
+
+    def test_unrestricted_firm_that_waits_has_no_boundary(self, exact_va):
+        r = exact_va.dario_dilemma_leveraged(0.10, 0.50, 0.40, "unrestricted")
+        assert r["value_loss_pct"] == 0.0
+        assert r["default_prob_mismatch"] == 0.0
+        low = exact_va.dario_dilemma_leveraged(0.10, 0.02, 0.40, "unrestricted")
+        assert low["value_loss_pct"] * 100 == pytest.approx(40.25, abs=0.03)
+        assert low["default_prob_mismatch"] * 100 == pytest.approx(0.705, abs=0.003)
+
+
+class TestDuopolyDilemma:
+    """The dilemma inside the entry equilibrium (C13), from the cache
+    `duopoly_dilemma.json`; the slow tests re-solve cells of it."""
+
+    BELIEFS = (0.02, 0.03, 0.05, 0.10 / 1.8, 9.0 / 130.0, 0.075, 0.15, 0.18, 0.20,
+               0.25, 0.30, 0.40, 0.50)  # fmt: skip
+
+    @pytest.fixture(scope="class")
+    def grid(self):
+        from ai_lab_investment.models.belief_mismatch import load_dilemma_grid
+
+        return load_dilemma_grid()
+
+    def test_grid(self, grid):
+        from ai_lab_investment.models.duopoly import cached_equilibrium
+
+        assert grid["lambda_true"] == 0.10
+        assert grid["X_0"] == pytest.approx(0.5 * cached_equilibrium()["X_L"])
+        assert [p["lambda_invest"] for p in grid["policies"]] == pytest.approx(
+            self.BELIEFS
+        )
+        # Two roles, zero leverage plus four levels under two conventions.
+        assert len(grid["cells"]) == len(self.BELIEFS) * 2 * 9
+
+    @pytest.mark.parametrize(
+        ("belief", "loss"),
+        [
+            (0.02, 47.81),
+            (0.03, 24.81),
+            (0.05, 11.68),
+            (0.10 / 1.8, 9.62),
+            (9.0 / 130.0, 4.09),
+            (0.075, 1.87),
+            (0.15, 0.83),
+            (0.18, 1.75),
+            (0.20, 2.62),
+            (0.30, 10.71),
+            (0.40, 24.96),
+            (0.50, 31.75),
+        ],
+    )
+    def test_mistaken_leader(self, exact_va, belief, loss):
+        """tbl-duopoly-dilemma: the leader loses on both sides."""
+        cell = exact_va.dario_dilemma_duopoly(0.10, belief, "leader")
+        assert cell["leads"] == 1.0
+        assert cell["value_loss_pct"] * 100 == pytest.approx(loss, abs=0.03)
+        parts = cell["timing_pct"] + cell["capacity_pct"] + cell["allocation_pct"]
+        assert parts == pytest.approx(cell["value_loss_pct"], abs=1e-10)
+
+    def test_mistaken_follower_loses_only_by_taking_the_lead(self, exact_va):
+        """A follower's post-switch policy does not involve lambda, so a
+        mistaken follower that stays one loses nothing; for beliefs at or
+        below 0.069 and at or above 0.40 it takes the lead and loses the
+        leader's loss plus the follower's role."""
+        for belief in self.BELIEFS:
+            follow = exact_va.dario_dilemma_duopoly(0.10, belief, "follower")
+            lead = exact_va.dario_dilemma_duopoly(0.10, belief, "leader")
+            stays = 0.07 < belief < 0.35
+            assert follow["leads"] == (0.0 if stays else 1.0)
+            if stays:
+                assert follow["value_loss_pct"] == 0.0
+                assert not np.isfinite(follow["X_pre_switch"])
+            else:
+                assert follow["value_loss_pct"] > lead["value_loss_pct"]
+                assert follow["X_entry"] == lead["X_entry"]
+        losses = [
+            100 * exact_va.dario_dilemma_duopoly(0.10, b, "follower")["value_loss_pct"]
+            for b in (0.02, 9.0 / 130.0, 0.40, 0.50)
+        ]
+        assert losses == pytest.approx([49.62, 7.41, 27.56, 34.11], abs=0.03)
+
+    @pytest.mark.parametrize(
+        ("metric", "ratio"),
+        [
+            ("additive", 27.3),
+            ("proportional_low", 1.51),
+            ("proportional_high", 5.49),
+            ("horizon", 2.33),
+        ],
+    )
+    def test_matched_pairs(self, exact_va, metric, ratio):
+        """The leader's pessimistic loss exceeds its optimistic loss in all
+        three metrics, by a factor of 27 in levels and 1.5 at a factor of
+        five in logs."""
+        from ai_lab_investment.models.belief_mismatch import matched_pairs
+
+        low, high = matched_pairs(0.10)[metric]
+        got = (
+            exact_va.dario_dilemma_duopoly(0.10, low)["value_loss_pct"]
+            / exact_va.dario_dilemma_duopoly(0.10, high)["value_loss_pct"]
+        )
+        assert got == pytest.approx(ratio, rel=0.01)
+
+    def test_policies(self, grid):
+        """The pessimists' triggers lie below X_0, so they invest at once;
+        the far optimist does too; the others wait for their triggers."""
+        by_belief = {round(p["lambda_invest"], 6): p for p in grid["policies"]}
+        for belief in self.BELIEFS:
+            pol = by_belief[round(belief, 6)]
+            assert pol["immediate"] == (1.0 if belief < 0.06 or belief == 0.50 else 0.0)
+            assert pol["leads_before_switch"] == 1.0
+        low, high = by_belief[0.02], by_belief[0.5]
+        assert low["phi"] == pytest.approx(0.01, abs=1e-3)  # bound of the search
+        assert (high["K"], high["phi"]) == pytest.approx((0.00258, 0.970), abs=1e-3)
+        assert by_belief[0.18]["X_entry"] == pytest.approx(0.003547, rel=1e-3)
+
+    def test_best_response_is_the_equilibrium_policy_when_followers_wait(self, grid):
+        """For beliefs at which a follower waits for the switch (0.075 and
+        above) the mistaken leader's best response to a rival that follows
+        is the leader's policy of the equilibrium at that belief."""
+        from ai_lab_investment.models.duopoly import cached_equilibrium
+
+        for pol in grid["policies"]:
+            belief = pol["lambda_invest"]
+            if belief < 0.07 or pol["immediate"] or abs(belief - 0.18) < 1e-9:
+                continue
+            eq = cached_equilibrium(lam=belief)
+            assert not np.isfinite(eq["X_F_pre_switch"])
+            assert pol["X_entry"] == pytest.approx(eq["X_L"], rel=3e-3)
+            assert pol["K"] == pytest.approx(eq["K_L"], rel=5e-3)
+            assert pol["phi"] == pytest.approx(eq["phi_L"], abs=1e-3)
+            assert pol["believed_entry_value"] == pytest.approx(
+                eq["leader_value"], rel=1e-3
+            )
+
+    def test_rival_follows(self, grid):
+        """Roles: in every cell in which the mistaken firm invests first,
+        the informed rival prefers following to investing first, and waits
+        for the switch once it follows."""
+        cells = [c for c in grid["cells"] if c["leads"] == 1.0]
+        assert all(not np.isfinite(c["rival_pre_switch_entry"]) for c in cells)
+        margins = [c["rival_margin"] for c in cells if c["leverage"] == 0.0]
+        assert len(margins) == len(self.BELIEFS) + 7
+        assert min(margins) == pytest.approx(0.034, abs=0.002)
+
+    def test_fairly_priced_leverage_leaves_the_losses(self, exact_va):
+        for lev in (0.01, 0.05, 0.15, 0.40):
+            got = [
+                100
+                * exact_va.dario_dilemma_duopoly(0.10, b, "leader", lev)[
+                    "value_loss_pct"
+                ]
+                for b in (0.02, 0.18, 0.50)
+            ]
+            assert got == pytest.approx([47.81, 1.75, 31.75], abs=0.03)
+
+    @pytest.mark.parametrize(
+        ("leverage", "probabilities"),
+        [
+            (0.0, (0.84, 1.56, 1.64, 8.67)),
+            (0.05, (0.90, 1.68, 1.78, 9.06)),
+            (0.15, (1.04, 1.91, 2.06, 9.88)),
+            (0.40, (1.44, 2.62, 2.92, 12.11)),
+        ],
+    )
+    def test_leader_default_probabilities(self, exact_va, leverage, probabilities):
+        """tbl-dilemma-tail: the informed leader, then beliefs 0.02, 0.18
+        and 0.50, five-year first passage in percent, fairly priced debt.
+        The informed leader's entries are those of tbl-credit-pd."""
+        cells = [
+            exact_va.dario_dilemma_duopoly(0.10, b, "leader", leverage)
+            for b in (0.02, 0.18, 0.50)
+        ]
+        got = [100 * cells[0]["default_prob_optimal"]] + [
+            100 * c["default_prob_mismatch"] for c in cells
+        ]
+        assert got == pytest.approx(probabilities, abs=0.01)
+        distances = [cells[0]["distance_optimal"]] + [
+            c["distance_mismatch"] for c in cells
+        ]
+        assert distances[0] > distances[1] > distances[3]
+
+    def test_cached_cell_reproduces_from_its_policy(self, grid):
+        """Valuation under the true rate, re-done from the cached policy."""
+        from ai_lab_investment.models.belief_mismatch import DuopolyMismatch
+
+        model = DuopolyMismatch(ModelParameters(), policies=grid["policies"])
+        for role in ("leader", "follower"):
+            fresh = model.cell(0.50, role, 0.05, "fair")
+            cached = next(
+                c
+                for c in grid["cells"]
+                if c["lambda_invest"] == 0.50
+                and c["role"] == role
+                and c["leverage"] == 0.05
+                and c["debt"] == "fair"
+            )
+            for key in ("value_optimal", "value_mismatch", "default_prob_mismatch"):
+                assert fresh[key] == pytest.approx(cached[key], rel=1e-9)
+
+    def test_uncached_cell_raises(self, exact_va):
+        with pytest.raises(KeyError, match="No cached duopoly dilemma"):
+            exact_va.dario_dilemma_duopoly(0.10, 0.12)
+        with pytest.raises(KeyError, match="lambda_true"):
+            exact_va.dario_dilemma_duopoly(0.20, 0.30)
+
+    @pytest.mark.slow
+    @pytest.mark.parametrize("belief", [0.02, 0.18])
+    def test_resolved_cells_match_the_cache(self, grid, belief):
+        """Re-solves the mistaken firm's policy under its belief (one
+        immediate investor, one that waits for its trigger) and both
+        roles' losses, about two minutes each."""
+        va = ValuationAnalysis(ModelParameters())
+        cached = next(
+            p for p in grid["policies"] if abs(p["lambda_invest"] - belief) < 1e-9
+        )
+        for role in ("leader", "follower"):
+            fresh = va.dario_dilemma_duopoly(0.10, belief, role, solve=True)
+            stored = va.dario_dilemma_duopoly(0.10, belief, role)
+            assert fresh["leads"] == stored["leads"]
+            assert fresh["value_loss_pct"] == pytest.approx(
+                stored["value_loss_pct"], abs=2e-4
+            )
+            if role == "leader":
+                assert fresh["X_entry"] == pytest.approx(cached["X_entry"], rel=2e-3)
+                assert fresh["rival_margin"] == pytest.approx(
+                    stored["rival_margin"], abs=2e-3
+                )
+
+
+# ------------------------------------------------------------------
+# Dario's dilemma under the pure-power approximation (earlier draft)
+# ------------------------------------------------------------------
+
+
+class TestPurePowerDilemmaRecheck:
+    """The pure-power losses against the exact ones at the reference demand
+    of the earlier re-check, X^pp / 2 (moved from test_piecewise_option)."""
+
+    @pytest.fixture(scope="class")
+    def baseline_dilemma(self):
+        from ai_lab_investment.models.piecewise_option import dilemma_bias
+
+        return dilemma_bias(ModelParameters(), lambda_invest_values=(0.02, 0.20))
+
+    def test_asymmetry_survives_exact_valuation(self, baseline_dilemma):
+        d = baseline_dilemma
+        i_low = d["lambda_invest"].index(0.02)
+        i_high = d["lambda_invest"].index(0.20)
+        # Conservative beliefs remain far costlier than aggressive ones, and
+        # the asymmetry is larger than in the reduced form.
+        assert d["loss_piecewise_pct"][i_low] > d["loss_piecewise_pct"][i_high]
+        ratio_exact = d["loss_piecewise_pct"][i_low] / d["loss_piecewise_pct"][i_high]
+        ratio_reduced = d["loss_reduced_pct"][i_low] / d["loss_reduced_pct"][i_high]
+        assert ratio_exact > ratio_reduced
+        # Fixed reference demand X_0 = X*(lambda_true)/2 for every belief.
+        assert d["loss_piecewise_pct"][i_low] == pytest.approx(39.8, abs=2.0)
+        assert d["loss_piecewise_pct"][i_high] == pytest.approx(0.63, abs=0.1)
+
+    def test_training_fraction_unchanged(self, baseline_dilemma):
+        d = baseline_dilemma
+        for rf_phi, pw_phi in zip(d["phi_reduced"], d["phi_piecewise"], strict=True):
+            assert pw_phi == pytest.approx(rf_phi, rel=1e-5)
+
+
+class TestPurePowerDilemma:
     def test_matched_beliefs_no_loss(self, va):
         """When beliefs match, value loss should be zero."""
-        result = va.dario_dilemma(lambda_true=0.20, lambda_invest=0.20)
+        result = va.pure_power_dilemma(lambda_true=0.20, lambda_invest=0.20)
         assert "error" not in result
         assert abs(result["value_loss"]) < 1e-8
         assert abs(result["value_loss_pct"]) < 1e-8
 
     def test_mismatched_beliefs_positive_loss(self, va):
         """Mismatched beliefs should produce positive value loss."""
-        result = va.dario_dilemma(lambda_true=0.30, lambda_invest=0.10)
+        result = va.pure_power_dilemma(lambda_true=0.30, lambda_invest=0.10)
         assert "error" not in result
         assert result["value_loss"] >= 0.0
 
     def test_conservative_flag(self, va):
         """Should correctly identify conservative vs aggressive."""
-        result = va.dario_dilemma(lambda_true=0.30, lambda_invest=0.10)
+        result = va.pure_power_dilemma(lambda_true=0.30, lambda_invest=0.10)
         assert "error" not in result
         assert result["is_conservative"] is True
 
-        result2 = va.dario_dilemma(lambda_true=0.10, lambda_invest=0.30)
+        result2 = va.pure_power_dilemma(lambda_true=0.10, lambda_invest=0.30)
         assert "error" not in result2
         assert result2["is_conservative"] is False
 
@@ -559,37 +1183,37 @@ class TestDarioDilemma:
         """Dario dilemma surface should have correct shape."""
         lt = np.array([0.1, 0.2, 0.3])
         li = np.array([0.1, 0.2])
-        result = va.dario_dilemma_surface(lt, li)
+        result = va.pure_power_dilemma_surface(lt, li)
         assert result["value_loss_pct"].shape == (3, 2)
 
     def test_surface_diagonal_near_zero(self, va):
         """Diagonal of the surface (matched beliefs) should be near zero."""
         vals = np.array([0.1, 0.2, 0.3])
-        result = va.dario_dilemma_surface(vals, vals)
+        result = va.pure_power_dilemma_surface(vals, vals)
         diag = np.diagonal(result["value_loss_pct"])
         assert not np.any(np.isnan(diag))
         assert np.all(np.abs(diag) < 0.01)
 
 
-class TestDarioDilemmaLeveraged:
+class TestPurePowerDilemmaLeveraged:
     """Tests for the leveraged Dario's dilemma."""
 
     def test_matched_beliefs_no_loss(self, va):
         """When beliefs match, value loss should be zero."""
-        result = va.dario_dilemma_leveraged(0.10, 0.10, leverage=0.40)
+        result = va.pure_power_dilemma_leveraged(0.10, 0.10, leverage=0.40)
         assert "error" not in result
         assert abs(result["value_loss_pct"]) < 1e-6
 
     def test_value_losses_non_negative(self, va):
         """Mismatched beliefs produce non-negative value losses."""
         for li in [0.02, 0.50]:
-            result = va.dario_dilemma_leveraged(0.10, li, leverage=0.40)
+            result = va.pure_power_dilemma_leveraged(0.10, li, leverage=0.40)
             assert "error" not in result
             assert result["value_loss_pct"] >= -1e-6
 
     def test_default_prob_consistency_with_main_method(self, va):
         """Default probs should match the standalone default_probability()."""
-        result = va.dario_dilemma_leveraged(0.10, 0.10, leverage=0.40)
+        result = va.pure_power_dilemma_leveraged(0.10, 0.10, leverage=0.40)
         assert "error" not in result
         # The leveraged method evaluates under p_true; create matching VA
         p_true = va.params.with_param(lam=0.10)
@@ -613,8 +1237,8 @@ class TestDarioDilemmaLeveraged:
         (section 5.2: 0.64% baseline, 0.79% conservative, 5.04%
         aggressive). Pinned to +/-0.01pp, i.e. one digit of the printed
         two-decimal percentage."""
-        r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
-        r_aggr = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        r_cons = va.pure_power_dilemma_leveraged(0.10, 0.02, leverage=0.40)
+        r_aggr = va.pure_power_dilemma_leveraged(0.10, 0.50, leverage=0.40)
         assert "error" not in r_cons
         assert "error" not in r_aggr
         assert r_cons["default_prob_optimal"] * 100 == pytest.approx(0.64, abs=0.01)
@@ -654,9 +1278,9 @@ class TestDarioDilemmaLeveraged:
         boundary at ell = 0 the loss and both probabilities are
         continuous, and the aggressive-to-correct ratio is 8.4 without
         any debt (7.8 at ell = 0.40)."""
-        zero = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.0)
-        small = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.01)
-        high = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        zero = va.pure_power_dilemma_leveraged(0.10, 0.50, leverage=0.0)
+        small = va.pure_power_dilemma_leveraged(0.10, 0.50, leverage=0.01)
+        high = va.pure_power_dilemma_leveraged(0.10, 0.50, leverage=0.40)
         assert zero["value_loss_pct"] * 100 == pytest.approx(21.585, abs=0.005)
         assert small["value_loss_pct"] == pytest.approx(
             zero["value_loss_pct"], abs=1e-6
@@ -671,27 +1295,27 @@ class TestDarioDilemmaLeveraged:
             for d in (zero, small, high)
         ]
         assert ratio == pytest.approx([8.39, 8.37, 7.84], abs=0.01)
-        # The unlevered dilemma of `dario_dilemma` values the claim
-        # without the shutdown option (22.58%); issue #180 reconciles it.
-        plain = va.dario_dilemma(0.10, 0.50)["value_loss_pct"]
+        # The unlevered `pure_power_dilemma` values the claim without the
+        # shutdown option (22.58%).
+        plain = va.pure_power_dilemma(0.10, 0.50)["value_loss_pct"]
         assert plain * 100 == pytest.approx(22.578, abs=0.005)
 
     def test_aggressive_higher_default_prob(self, va):
         """Aggressive overinvestment has higher default probability."""
-        r_cons = va.dario_dilemma_leveraged(0.10, 0.02, leverage=0.40)
-        r_aggr = va.dario_dilemma_leveraged(0.10, 0.50, leverage=0.40)
+        r_cons = va.pure_power_dilemma_leveraged(0.10, 0.02, leverage=0.40)
+        r_aggr = va.pure_power_dilemma_leveraged(0.10, 0.50, leverage=0.40)
         assert "error" not in r_cons
         assert "error" not in r_aggr
         assert r_aggr["default_prob_mismatch"] > r_cons["default_prob_mismatch"]
 
 
-class TestDilemmaAsymmetry:
+class TestPurePowerDilemmaAsymmetry:
     def test_underinvestment_costlier_for_equal_mismatch(self, va):
         """Numerical Finding 1: for the same |lambda_invest - lambda_true|,
         the conservative loss exceeds the aggressive loss."""
         for delta in [0.05, 0.08]:
-            r_cons = va.dario_dilemma(0.10, 0.10 - delta)
-            r_aggr = va.dario_dilemma(0.10, 0.10 + delta)
+            r_cons = va.pure_power_dilemma(0.10, 0.10 - delta)
+            r_aggr = va.pure_power_dilemma(0.10, 0.10 + delta)
             assert "error" not in r_cons
             assert "error" not in r_aggr
             assert r_cons["value_loss_pct"] > r_aggr["value_loss_pct"]
@@ -700,8 +1324,8 @@ class TestDilemmaAsymmetry:
         """Regression: paper values 26% (lambda=0.02) and 6% (lambda=0.20),
         and the asymmetry ratio 4.6 quoted in Internet Appendix E. Pinned
         to +/-0.2pp so a one-digit drift in the printed percentage fails."""
-        r_cons = va.dario_dilemma(0.10, 0.02)
-        r_aggr = va.dario_dilemma(0.10, 0.20)
+        r_cons = va.pure_power_dilemma(0.10, 0.02)
+        r_aggr = va.pure_power_dilemma(0.10, 0.20)
         assert r_cons["value_loss_pct"] * 100 == pytest.approx(26.19, abs=0.2)
         assert r_aggr["value_loss_pct"] * 100 == pytest.approx(5.63, abs=0.2)
         ratio = r_cons["value_loss_pct"] / r_aggr["value_loss_pct"]
@@ -720,8 +1344,8 @@ class TestDilemmaAsymmetry:
             p = ModelParameters(delta=delta)
             v = ValuationAnalysis(p)
             losses.append((
-                v.dario_dilemma(0.10, 0.02)["value_loss_pct"],
-                v.dario_dilemma(0.10, 0.20)["value_loss_pct"],
+                v.pure_power_dilemma(0.10, 0.02)["value_loss_pct"],
+                v.pure_power_dilemma(0.10, 0.20)["value_loss_pct"],
             ))
             eq = DuopolyModel(p, leverage=0.0).pure_power_preemption_equilibrium("L")
             discounts.append(eq["X_leader"] / eq["X_leader_monopolist"])
@@ -894,8 +1518,8 @@ class TestAppendixERobustness:
         """tbl-duopoly-dilemma: 26%->38% conservative, 6%->17% aggressive;
         competition amplifies both losses but preserves the asymmetry.
         Pinned to +/-0.2pp, one digit of the printed percentage."""
-        r_cons = va.dario_dilemma_duopoly(0.10, 0.02)
-        r_aggr = va.dario_dilemma_duopoly(0.10, 0.20)
+        r_cons = va.pure_power_dilemma_duopoly(0.10, 0.02)
+        r_aggr = va.pure_power_dilemma_duopoly(0.10, 0.20)
         assert "error" not in r_cons
         assert "error" not in r_aggr
         assert r_cons["value_loss_pct_single"] * 100 == pytest.approx(26.19, abs=0.2)
@@ -914,8 +1538,8 @@ class TestAppendixERobustness:
         0.0047 and under-allocates to training (phi = 0.14 vs 0.70); the
         aggressive firm leads at X* = 0.0040 while over-allocating
         (phi = 0.88)."""
-        r_cons = va.dario_dilemma_duopoly(0.10, 0.02)
-        r_aggr = va.dario_dilemma_duopoly(0.10, 0.20)
+        r_cons = va.pure_power_dilemma_duopoly(0.10, 0.02)
+        r_aggr = va.pure_power_dilemma_duopoly(0.10, 0.20)
         assert r_cons["X_focal"] == pytest.approx(0.005515, abs=5e-6)
         assert r_cons["X_rival"] == pytest.approx(0.004722, abs=5e-6)
         assert r_cons["phi_focal"] == pytest.approx(0.1381, abs=5e-4)
@@ -995,7 +1619,7 @@ class TestOptionValueCurvatureInLambda:
         assert np.all(np.diff(vals, 2) < 0)  # concave in lambda
 
 
-class TestDilemmaMatchedErrorsAndCurvature:
+class TestPurePowerDilemmaCurvature:
     """Numerical Finding 1 at equal additive errors, and the W''' sign the
     appendix's Taylor argument rests on, at a fixed reference demand."""
 
@@ -1004,14 +1628,17 @@ class TestDilemmaMatchedErrorsAndCurvature:
         return ValuationAnalysis(ModelParameters())
 
     def test_matched_pair_losses(self, va):
-        cons = va.dario_dilemma(0.10, 0.02)["value_loss_pct"] * 100
-        aggr = va.dario_dilemma(0.10, 0.18)["value_loss_pct"] * 100
+        cons = va.pure_power_dilemma(0.10, 0.02)["value_loss_pct"] * 100
+        aggr = va.pure_power_dilemma(0.10, 0.18)["value_loss_pct"] * 100
         assert cons == pytest.approx(26.19, abs=0.2)
         assert aggr == pytest.approx(4.15, abs=0.2)
         assert cons / aggr == pytest.approx(6.3, abs=0.1)
 
     def test_third_derivative_positive_and_step_stable(self, va):
-        w3 = {h: va.dilemma_third_derivative(0.10, h) for h in (0.005, 0.01, 0.02)}
+        w3 = {
+            h: va.pure_power_dilemma_third_derivative(0.10, h)
+            for h in (0.005, 0.01, 0.02)
+        }
         assert all(v > 0 for v in w3.values())
         assert w3[0.005] == pytest.approx(w3[0.01], rel=0.05)
 
@@ -1022,14 +1649,16 @@ class TestDilemmaMatchedErrorsAndCurvature:
             ModelParameters()
         ).pure_power_trigger_capacity_phi()
         X_0 = 0.5 * X_true
-        W0 = va.dilemma_policy_value(0.10, 0.10, X_0)
+        W0 = va.pure_power_dilemma_policy_value(0.10, 0.10, X_0)
         gap = (
-            va.dilemma_policy_value(0.10, 0.10 + h, X_0)
-            - va.dilemma_policy_value(0.10, 0.10 - h, X_0)
+            va.pure_power_dilemma_policy_value(0.10, 0.10 + h, X_0)
+            - va.pure_power_dilemma_policy_value(0.10, 0.10 - h, X_0)
         ) / W0
-        cubic = va.dilemma_third_derivative(0.10, 0.01, X_0) * h**3 / 3.0 / W0
+        cubic = (
+            va.pure_power_dilemma_third_derivative(0.10, 0.01, X_0) * h**3 / 3.0 / W0
+        )
         assert gap == pytest.approx(cubic, rel=0.15)
 
     def test_policy_value_rejects_x0_above_trigger(self, va):
         with pytest.raises(ValueError, match="below the policy trigger"):
-            va.dilemma_policy_value(0.10, 0.10, 1.0)
+            va.pure_power_dilemma_policy_value(0.10, 0.10, 1.0)

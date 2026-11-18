@@ -1134,7 +1134,7 @@ def piecewise_bias(
         params: Model parameters (baseline calibration when None).
         x0_ratio: Evaluation demand as a fraction of the reduced-form
             trigger. The default 0.5 matches the reference level used by
-            `ValuationAnalysis.dario_dilemma`.
+            `ValuationAnalysis.pure_power_dilemma`.
         reoptimize: Also re-optimize (K, phi) inside the exact model.
 
     Returns:
@@ -1276,7 +1276,7 @@ def dilemma_bias(
     X_0 = x0_ratio * rf_true["X_star"]
     opt_true = pw_true.optimal_policy(X_0)
     for lam_i in lambda_invest_values:
-        rf = va.dario_dilemma(lambda_true, lam_i)
+        rf = va.pure_power_dilemma(lambda_true, lam_i)
         p_i = params.with_param(lam=lam_i)
         opt_i = PiecewiseOptionModel(p_i).optimal_policy(X_0)
         if opt_true is None or opt_i is None:

@@ -3,7 +3,9 @@
 Solver-level tests of the core module. The single-firm solution object, the
 belief comparative statics and everything that pins the pure-power
 approximation (formerly TestReducedFormConsistency and TestBaselineBias
-here) are in tests/test_base_model.py.
+here) are in tests/test_base_model.py; the dilemma re-check that compared
+the pure-power losses with the exact ones (formerly TestDilemmaRecheck) is in
+tests/test_valuation.py with the other pure-power dilemma tests.
 """
 
 import numpy as np
@@ -12,7 +14,6 @@ import pytest
 from ai_lab_investment.models.parameters import ModelParameters
 from ai_lab_investment.models.piecewise_option import (
     PiecewiseOptionModel,
-    dilemma_bias,
     envelope_bias,
     envelope_dilemma,
     piecewise_bias,
@@ -38,11 +39,6 @@ def reduced(default_params):
 @pytest.fixture
 def fixed_policy_solution(model, reduced):
     return model.solve(reduced["K_star"], reduced["phi_star"])
-
-
-@pytest.fixture(scope="module")
-def baseline_dilemma():
-    return dilemma_bias(ModelParameters(), lambda_invest_values=(0.02, 0.20))
 
 
 class TestSetup:
@@ -255,27 +251,6 @@ class TestLowLambdaBranch:
         b = piecewise_bias(default_params.with_param(lam=0.02))
         assert b["reported_value_bias_pct"] > 10.0
         assert b["trigger_bias_fixed_pct"] < 0.0
-
-
-class TestDilemmaRecheck:
-    def test_asymmetry_survives_exact_valuation(self, baseline_dilemma):
-        d = baseline_dilemma
-        i_low = d["lambda_invest"].index(0.02)
-        i_high = d["lambda_invest"].index(0.20)
-        # Conservative beliefs remain far costlier than aggressive ones, and
-        # the asymmetry is larger than in the reduced form.
-        assert d["loss_piecewise_pct"][i_low] > d["loss_piecewise_pct"][i_high]
-        ratio_exact = d["loss_piecewise_pct"][i_low] / d["loss_piecewise_pct"][i_high]
-        ratio_reduced = d["loss_reduced_pct"][i_low] / d["loss_reduced_pct"][i_high]
-        assert ratio_exact > ratio_reduced
-        # Fixed reference demand X_0 = X*(lambda_true)/2 for every belief.
-        assert d["loss_piecewise_pct"][i_low] == pytest.approx(39.8, abs=2.0)
-        assert d["loss_piecewise_pct"][i_high] == pytest.approx(0.63, abs=0.1)
-
-    def test_training_fraction_unchanged(self, baseline_dilemma):
-        d = baseline_dilemma
-        for rf_phi, pw_phi in zip(d["phi_reduced"], d["phi_piecewise"], strict=True):
-            assert pw_phi == pytest.approx(rf_phi, rel=1e-5)
 
 
 class TestEnvelope:

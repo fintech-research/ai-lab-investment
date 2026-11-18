@@ -6,8 +6,8 @@ Decomposes firm value into:
 3. Regime switch option: additional value from potential L->H transition
 
 Computes credit risk metrics (default probability, credit spread) and
-quantifies the "Dario dilemma" — the cost of belief mismatches between
-a firm's true lambda and its investment strategy.
+quantifies Dario's dilemma, the cost of investing on a belief about lambda
+that differs from the true rate (`belief_mismatch`, issue #180).
 """
 
 from typing import Any
@@ -15,19 +15,26 @@ from typing import Any
 import numpy as np
 
 from .base_model import SingleFirmModel
+from .belief_mismatch import (
+    DuopolyMismatch,
+    SingleFirmMismatch,
+    cached_dilemma_cell,
+    matched_pairs,
+)
 from .duopoly import DEFAULT_RECOVERY_RULE, DuopolyModel, cached_equilibrium
 from .parameters import ModelParameters
 
-# Interim pins (issue #176). The credit exhibits are at the model of record
-# since issue #179: `on_policy_credit` evaluates them at the single firm's
-# precommitted-scale policy and at the duopoly's first investment, and the
-# credit primitives (`credit_metrics`, `credit_table`, `credit_spread`,
-# `default_probability`) take an explicit policy. Still at the pure-power
-# approximation (`pure_power_*`), so the present draft's numbers stay
-# reproducible: Dario's dilemma and its levered and duopoly variants (#180),
-# `two_period_dynamic_phi` and `fixed_pie_robustness` (#182), and the
-# growth-option and capacity-gap decompositions behind Internet Appendix G
-# (named by no sub-issue; #183 or #184).
+# Interim pins (issue #176). At the model of record: the credit exhibits
+# since issue #179 (`on_policy_credit`) and Dario's dilemma since issue #180
+# (`dario_dilemma`, `dario_dilemma_leveraged`, `dario_dilemma_duopoly`, exact
+# values in `belief_mismatch`). Still at the pure-power approximation
+# (`pure_power_*`): `two_period_dynamic_phi` and `fixed_pie_robustness`
+# (#182; the latter quotes the pure-power dilemma ratio, as does the sweep in
+# `robustness.py`), and the growth-option and capacity-gap decompositions
+# behind Internet Appendix G (named by no sub-issue; #183 or #184). The
+# `pure_power_dilemma*` methods are kept as the nested approximation, so that
+# the earlier draft's dilemma numbers reproduce and their error can be
+# stated; they feed no main-text number.
 
 ON_POLICY_LEVERAGES: tuple[float, ...] = (0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.40, 0.70)
 """Leverage grid of the on-policy credit table (issue #179)."""
@@ -693,22 +700,179 @@ class ValuationAnalysis:
         return out
 
     # ------------------------------------------------------------------
-    # Dario dilemma
+    # Dario's dilemma in the model of record (issue #180)
     # ------------------------------------------------------------------
+
+    def _single_firm_mismatch(
+        self, lambda_true: float, version: str, X_0: float | None
+    ) -> SingleFirmMismatch:
+        cache = self.__dict__.setdefault("_mismatch", {})
+        key = (float(lambda_true), version, X_0)
+        if key not in cache:
+            cache[key] = SingleFirmMismatch(
+                self.params,
+                lambda_true,
+                version,
+                X_0=X_0,
+                recovery_rule=self.recovery_rule,
+            )
+        return cache[key]
 
     def dario_dilemma(
         self,
         lambda_true: float,
         lambda_invest: float,
+        version: str = "precommitted",
+        X_0: float | None = None,
     ) -> dict[str, Any]:
-        """Quantify the cost of belief mismatches.
+        """Cost of investing on the belief ``lambda_invest``, single firm.
+
+        The mistaken firm follows the policy that is optimal under its
+        belief in the exact problem (trigger, capacity, training fraction,
+        or waiting for the switch) and that policy is valued exactly under
+        ``lambda_true``, at the reference demand ``X_0`` (default: half the
+        precommitted-scale trigger at the true rate). See
+        `belief_mismatch.SingleFirmMismatch.loss` for the keys, which
+        include the timing, capacity and allocation components.
+
+        Args:
+            version: ``"precommitted"`` (post-switch scale precommitted, the
+                problem of Proposition 1(iii) and the main-text version) or
+                ``"unrestricted"`` (scale chosen at the switch, in which a
+                firm may wait for the switch).
+        """
+        return self._single_firm_mismatch(lambda_true, version, X_0).loss(lambda_invest)
+
+    def dario_dilemma_matched(
+        self,
+        lambda_true: float = 0.10,
+        additive: float = 0.08,
+        version: str = "precommitted",
+        X_0: float | None = None,
+    ) -> dict[str, dict[str, float]]:
+        """Losses at the matched pairs of `belief_mismatch.matched_pairs`.
+
+        One entry per error metric (additive, the two proportional pairs,
+        horizon), each with the two beliefs, their losses and the ratio of
+        the pessimistic to the optimistic loss.
+        """
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return {
+            name: model.matched(low, high)
+            for name, (low, high) in matched_pairs(lambda_true, additive).items()
+        }
+
+    def dario_dilemma_leveraged(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        leverage: float = 0.40,
+        version: str = "precommitted",
+        debt: str = "fair",
+        X_0: float | None = None,
+    ) -> dict[str, Any]:
+        """The single firm's dilemma on the levered claims.
+
+        The policies are the unlevered ones at each belief; the claims are
+        the exact claims of the credit block (option to stop operating,
+        coupled boundary, debt under the recovery rule), and the value is
+        the shareholders' entry value, which under fairly priced debt is
+        firm value less the outlay. Also returns, for each policy, the
+        distance to the boundary at entry and the five-year first-passage
+        probability (`belief_mismatch.SingleFirmMismatch.levered`). At
+        zero leverage the boundary is the shutdown boundary, so the loss
+        differs slightly from `dario_dilemma`, whose claims carry no option
+        to stop.
+        """
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return model.levered(lambda_invest, leverage, debt)
+
+    def dario_dilemma_surface(
+        self,
+        lambda_true_range: np.ndarray,
+        lambda_invest_range: np.ndarray,
+        version: str = "precommitted",
+    ) -> dict[str, np.ndarray]:
+        """Value loss on a grid of (true, invest) arrival rates."""
+        value_loss = np.full((len(lambda_true_range), len(lambda_invest_range)), np.nan)
+        for i, lt in enumerate(lambda_true_range):
+            for j, li in enumerate(lambda_invest_range):
+                value_loss[i, j] = self.dario_dilemma(lt, li, version)["value_loss_pct"]
+        return {
+            "lambda_true": lambda_true_range,
+            "lambda_invest": lambda_invest_range,
+            "value_loss_pct": value_loss,
+        }
+
+    def dilemma_third_derivative(
+        self,
+        lambda_true: float,
+        step: float,
+        version: str = "precommitted",
+        X_0: float | None = None,
+    ) -> float:
+        """Third derivative in the belief of the exact value of the belief's
+        policy, at ``lambda_true`` and a fixed reference demand, in units of
+        the optimal value. Positive when small equal additive errors cost
+        more on the pessimistic side."""
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return model.third_derivative(step)
+
+    def dario_dilemma_duopoly(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        role: str = "leader",
+        leverage: float = 0.0,
+        debt: str = "fair",
+        solve: bool = False,
+    ) -> dict[str, Any]:
+        """The dilemma inside the entry equilibrium of the model of record.
+
+        The benchmark is the equilibrium in which one firm leads at X_L and
+        the other follows; the mistaken firm is the leader or the follower
+        (``role``) and its rival, at the true rate, best-responds
+        (`belief_mismatch.DuopolyMismatch`). Read from the cache
+        `duopoly_dilemma.json` at the baseline calibration; with ``solve``
+        the cell is computed (a few minutes).
+        """
+        if not solve:
+            if self.params != ModelParameters().with_param(lam=self.params.lam):
+                msg = "The cached duopoly dilemma is at the baseline calibration"
+                raise KeyError(msg)
+            if abs(lambda_true - 0.10) > 1e-12:
+                msg = "The cached duopoly dilemma has lambda_true = 0.10"
+                raise KeyError(msg)
+            return cached_dilemma_cell(lambda_invest, role, leverage, debt)
+        model = DuopolyMismatch(
+            self.params, lambda_true, recovery_rule=self.recovery_rule
+        )
+        return model.cell(lambda_invest, role, leverage, debt)
+
+    # ------------------------------------------------------------------
+    # Dario's dilemma under the pure-power approximation (earlier draft)
+    # ------------------------------------------------------------------
+
+    def pure_power_dilemma(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+    ) -> dict[str, Any]:
+        """Belief-mismatch cost under the pure-power approximation.
+
+        The nested approximation of the earlier draft, kept so that its
+        numbers reproduce and their error against `dario_dilemma` can be
+        stated. Both policies are the pure-power ones and both are priced
+        with the timing factor (X_0 / X*)^beta_H, which makes the
+        percentage loss independent of X_0.
 
         Uses the phi-aware model where lambda enters through A_eff, so
-        the optimal trigger X* and allocation phi* depend on lambda. The
-        optimal capacity K* does *not*: by Proposition 1 it is
-        independent of both lambda and phi, so belief mismatches distort
-        timing and allocation only, never scale (and hence never the
-        coupon, which is proportional to I(K*)).
+        the trigger X* and allocation phi* depend on lambda. The pure-power
+        capacity does *not*: it is independent of both lambda and phi, so
+        in this approximation belief mismatches distort timing and
+        allocation only, never scale (and hence never the coupon, which is
+        proportional to I(K*)). In the exact problem capacity responds to
+        the belief.
 
         If a firm's true lambda (private belief) differs from the lambda
         it uses for investment decisions, what is the cost?
@@ -788,7 +952,7 @@ class ValuationAnalysis:
             "is_conservative": lambda_invest < lambda_true,
         }
 
-    def dilemma_policy_value(
+    def pure_power_dilemma_policy_value(
         self,
         lambda_true: float,
         lambda_invest: float,
@@ -799,7 +963,7 @@ class ValuationAnalysis:
         The unlevered value, at demand X_0, of following the policy optimal
         under lambda_invest when the true arrival rate is lambda_true:
         NPV(X*) (X_0 / X*)^beta_H with the reduced-form timing factor. X_0
-        must lie below the policy's trigger. Unlike `dario_dilemma`, which
+        must lie below the policy's trigger. Unlike `pure_power_dilemma`, which
         picks X_0 per pair (harmless for percentage losses because the
         common power cancels), this evaluator holds X_0 fixed so that W
         can be differentiated in lambda_invest.
@@ -816,7 +980,7 @@ class ValuationAnalysis:
         ) - model_true.investment_cost(K_inv)
         return float(npv * (X_0 / X_inv) ** p_true.beta_H)
 
-    def dilemma_third_derivative(
+    def pure_power_dilemma_third_derivative(
         self,
         lambda_true: float,
         step: float,
@@ -836,18 +1000,23 @@ class ValuationAnalysis:
             ).pure_power_trigger_capacity_phi()
             X_0 = 0.5 * X_true
         W = [
-            self.dilemma_policy_value(lambda_true, lambda_true + k * step, X_0)
+            self.pure_power_dilemma_policy_value(
+                lambda_true, lambda_true + k * step, X_0
+            )
             for k in (-2, -1, 1, 2)
         ]
         return float((W[3] - 2.0 * W[2] + 2.0 * W[1] - W[0]) / (2.0 * step**3))
 
-    def dario_dilemma_leveraged(
+    def pure_power_dilemma_leveraged(
         self,
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.40,
     ) -> dict[str, Any]:
-        """Quantify belief-mismatch cost with leverage (default risk).
+        """Belief-mismatch cost with leverage, pure-power approximation.
+
+        Nested approximation of the earlier draft (see `pure_power_dilemma`);
+        the model of record is `dario_dilemma_leveraged`.
 
         Uses total firm value (E + D) from the Leland structural model,
         so deadweight bankruptcy costs (b * V(X_D)) are captured. In the
@@ -868,7 +1037,7 @@ class ValuationAnalysis:
         resulting policy.
 
         Consequence for the appendix argument: unlike the unleveraged
-        dario_dilemma(), the objective returned here is NOT maximized at
+        pure_power_dilemma(), the objective returned here is NOT maximized at
         lambda_invest == lambda_true by construction, because the policy
         is not re-optimized against the levered objective. Numerically
         the gap is negligible -- at baseline with leverage 0.40 the
@@ -959,19 +1128,19 @@ class ValuationAnalysis:
             "is_conservative": lambda_invest < lambda_true,
         }
 
-    def dario_dilemma_surface(
+    def pure_power_dilemma_surface(
         self,
         lambda_true_range: np.ndarray,
         lambda_invest_range: np.ndarray,
     ) -> dict[str, np.ndarray]:
-        """Compute value loss for a grid of (true, invest) lambda pairs."""
+        """`pure_power_dilemma` on a grid of (true, invest) lambda pairs."""
         n_t = len(lambda_true_range)
         n_i = len(lambda_invest_range)
         value_loss = np.full((n_t, n_i), np.nan)
 
         for i, lt in enumerate(lambda_true_range):
             for j, li in enumerate(lambda_invest_range):
-                result = self.dario_dilemma(lt, li)
+                result = self.pure_power_dilemma(lt, li)
                 if "value_loss_pct" in result:
                     value_loss[i, j] = result["value_loss_pct"]
 
@@ -1169,16 +1338,22 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
-    # Duopoly Dario dilemma (OF-6)
+    # Non-equilibrium duopoly comparison of the earlier draft (OF-6)
     # ------------------------------------------------------------------
 
-    def dario_dilemma_duopoly(
+    def pure_power_dilemma_duopoly(
         self,
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.0,
     ) -> dict[str, Any]:
-        """Dario's dilemma in a duopoly: one-sided belief mismatch.
+        """Non-equilibrium duopoly comparison of the earlier draft.
+
+        Not the model of record (`dario_dilemma_duopoly` computes the
+        mismatch inside the entry equilibrium). Kept as the labelled
+        comparison of Internet Appendix E: pure-power policies, a rival
+        that does not best-respond, and a benchmark of symmetric
+        simultaneous entry that is not an equilibrium of the game.
 
         A well-calibrated rival follows its *single-firm* optimal policy
         (trigger, capacity, training fraction) under lambda_true; it does
@@ -1218,7 +1393,7 @@ class ValuationAnalysis:
             return {"error": "No solution at invest lambda"}
 
         # --- single-firm benchmark (reuse existing method) ---
-        sf = self.dario_dilemma(lambda_true, lambda_invest)
+        sf = self.pure_power_dilemma(lambda_true, lambda_invest)
 
         # --- duopoly evaluation ---
         # Determine who leads. The firm with the lower trigger enters first.
@@ -1493,8 +1668,8 @@ class ValuationAnalysis:
         phi_underbar = duo_tullock.faith_threshold()
 
         # Dario dilemma asymmetry ratio under Tullock
-        dd_cons = self.dario_dilemma(0.10, 0.02)
-        dd_aggr = self.dario_dilemma(0.10, 0.20)
+        dd_cons = self.pure_power_dilemma(0.10, 0.02)
+        dd_aggr = self.pure_power_dilemma(0.10, 0.20)
         loss_cons = dd_cons.get("value_loss_pct", np.nan)
         loss_aggr = dd_aggr.get("value_loss_pct", np.nan)
         asym_tullock = abs(loss_cons / loss_aggr) if loss_aggr != 0 else np.nan
