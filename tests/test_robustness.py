@@ -585,7 +585,10 @@ class TestDuopolyCells:
         for cell in duopoly_cells():
             cached = duopoly[cell["cell"]]
             assert cached["values"] == pytest.approx(cell["values"], rel=1e-12)
-            assert ("failure" in cached) or cached["record"]["exists"] == 1.0
+            # Every cell is solved; a draw without a rent-equalization
+            # trigger is a solve (X_L located, or no pre-switch entry).
+            assert "failure" not in cached, cell["cell"]
+            assert "first_investment" in cached["record"]
 
     def test_baseline_comes_from_the_equilibrium_cache(self, duopoly):
         record = duopoly["baseline"]["record"]
@@ -622,25 +625,34 @@ class TestDuopolySubsample:
 
     def test_one_at_a_time_counts(self, one_at_a_time):
         """Twelve solved single-firm draws; alpha = 0.5 is outside the
-        game, mu_H = 0.075 has no rent-equalization trigger, ten solve."""
+        game, at mu_H = 0.075 no firm invests before the switch, ten have a
+        first investment and every statement holds in them."""
         summary = one_at_a_time
         assert summary.n_duopoly == 11
-        assert summary.n_duopoly_failed == 1
+        assert summary.n_duopoly_failed == 0
+        assert summary.n_duopoly_no_entry == 1
+        assert summary.n_waiting_equilibrium == 1
         assert summary.n_no_rent_equalization == 1
-        ((label, reason),) = summary.duopoly_failures
-        assert label == "mu_H+"
-        assert reason.startswith("no rent-equalization trigger")
-        solved = summary.n_duopoly - summary.n_duopoly_failed
-        assert all(count == solved for count in summary.duopoly_sign_counts.values())
+        assert summary.n_first_investment == 10
+        assert all(
+            count == summary.n_first_investment
+            for count in summary.duopoly_sign_counts.values()
+        )
 
     def test_no_entry_at_the_higher_post_switch_drift(self, duopoly):
         """mu_H = 0.075: following beats leading at every scanned demand
-        (by at least 4%) and leading never beats mutual waiting."""
+        (by at least 4%) and leading never beats mutual waiting, on the
+        scan for X_P and on the wider scan for X_L, so no firm invests
+        before the switch and mutual waiting is an equilibrium on the scan."""
         record = duopoly["oat:mu_H+"]["record"]
         assert record["n_sign_changes"] == 0.0
         assert record["max_gap_over_follower"] == pytest.approx(-0.041, abs=1e-3)
         assert record["max_lead_over_wait"] == pytest.approx(0.979, abs=1e-3)
         assert record["scan_peak"] == inf
+        assert record["first_investment"] == 0.0
+        assert record["X_L"] == inf
+        assert record["entry_max_lead_over_wait"] == pytest.approx(0.983, abs=1e-3)
+        assert record["waiting_equilibrium"] == 1.0
 
     def test_one_at_a_time_ranges(self, one_at_a_time):
         expected = {
@@ -690,97 +702,151 @@ class TestDuopolySubsample:
         assert record["X_F_pre_switch"] / record["X_L"] > 5e5
 
     def test_joint_counts(self, joint):
-        """64 draws: 47 solved, 15 without a rent-equalization trigger on
-        the scan, 2 where the follower's capacity leaves the range."""
+        """64 draws: a first investment before the switch in 59 (12 of them
+        without a rent-equalization trigger on the scan), none in five, no
+        solver failure."""
         assert joint.n_duopoly == 64
-        assert joint.n_duopoly_failed == 17
-        assert joint.n_no_rent_equalization == 15
-        other = [r for _, r in joint.duopoly_failures if not r.startswith("no rent")]
-        assert len(other) == 2
-        assert all(reason.startswith("solver failure") for reason in other)
+        assert joint.n_duopoly_failed == 0
+        assert joint.n_first_investment == 59
+        assert joint.n_duopoly_no_entry == 5
+        assert joint.n_waiting_equilibrium == 5
+        assert joint.n_no_rent_equalization == 17
 
     def test_joint_sign_counts(self, joint):
         assert joint.duopoly_sign_counts == {
-            "sign_entry_before_single": 42,
-            "sign_entry_before_rent_eq": 44,
-            "sign_leader_smaller": 42,
-            "sign_leader_trains_less": 42,
-            "sign_follower_later": 47,
-            "sign_second_mover": 44,
-            "sign_equilibrium": 39,
+            "sign_entry_before_single": 48,
+            "sign_entry_before_rent_eq": 56,
+            "sign_leader_smaller": 48,
+            "sign_leader_trains_less": 50,
+            "sign_follower_later": 59,
+            "sign_second_mover": 56,
+            "sign_equilibrium": 47,
         }
 
     def test_joint_quantiles(self, joint):
         """5%, 50%, 95% quantiles of tbl-duopoly-sweep."""
         expected = {
-            "X_L_over_X_star": (0.160, 0.342, 2.455),
+            "X_L_over_X_star": (0.1637, 0.4151, 20.14),
             "X_L_over_X_P": (0.0712, 0.377, 0.999),
-            "K_L_over_K_star": (0.115, 0.299, 3.381),
-            "phi_L_over_phi_star": (0.905, 0.981, 1.002),
-            "X_F_over_X_L": (5.88, 20.4, 377.1),
-            "K_F_over_K_L": (12.7, 55.7, 467.3),
-            "lead_over_wait": (1.022, 1.076, 1.133),
-            "follower_over_leader": (1.000, 1.077, 1.190),
+            "K_L_over_K_star": (0.1156, 0.3465, 53.12),
+            "phi_L_over_phi_star": (0.888, 0.980, 1.003),
+            "X_F_over_X_L": (5.052, 18.45, 479.8),
+            "K_F_over_K_L": (9.838, 53.68, 1289.0),
+            "lead_over_wait": (1.013, 1.078, 1.149),
+            "follower_over_leader": (1.002, 1.082, 1.246),
         }
         for name, values in expected.items():
             table = joint.duopoly_quantiles[name]
             got = (table["q5"], table["q50"], table["q95"])
             assert got == pytest.approx(values, rel=3e-3), name
-        assert joint.range("X_L_over_X_star") == pytest.approx((0.1324, 5.16), rel=3e-3)
+        assert joint.duopoly_quantiles["X_L_over_X_P"]["n"] == 47
+        assert joint.range("X_L_over_X_star") == pytest.approx(
+            (0.1324, 290.3), rel=3e-3
+        )
         assert joint.range("X_L_over_X_P") == pytest.approx((0.0468, 1.074), rel=3e-3)
+        assert joint.range("K_L_over_K_star") == pytest.approx((0.0852, 1596), rel=3e-3)
 
     def test_why_the_equilibrium_checks_fail(self, joint_rows, duopoly):
-        """Eight of the 47 solved draws: in three X_L lies above X_P (the
-        follower would rather lead), in five the post-switch game is not a
-        race. The follower waits for the switch in 40 draws."""
+        """Twelve of the 59 draws with a first investment: in three X_L lies
+        above X_P (the follower would rather lead), in eight the post-switch
+        game is not a race, and in one the follower would rather lead at a
+        scan point above X_L although the scan for X_P finds no crossing.
+        The follower waits for the switch in 49 draws."""
         solved = [row for row in joint_rows if "X_L_over_X_star" in row]
-        assert len(solved) == 47
+        assert len(solved) == 59
         failing = [row for row in solved if not row["sign_equilibrium"]]
         above = [row for row in failing if row["X_L_over_X_P"] > 1.0]
-        no_race = [
-            row
-            for row in failing
-            if duopoly[f"joint:{row['draw']}"]["record"]["post_switch_race"] == 0.0
-        ]
-        assert (len(failing), len(above), len(no_race)) == (8, 3, 5)
+
+        def record(row):
+            return duopoly[f"joint:{row['draw']}"]["record"]
+
+        no_race = [row for row in failing if record(row)["post_switch_race"] == 0.0]
+        rest = [row for row in failing if row not in above and row not in no_race]
+        assert (len(failing), len(above), len(no_race)) == (12, 3, 8)
         assert not {row["draw"] for row in above} & {row["draw"] for row in no_race}
+        assert [row["draw"] for row in rest] == [116]
+        (row,) = rest
+        assert not row["has_rent_equalization"]
+        assert record(row)["follower_margin_to_X_P"] == pytest.approx(-2.6e-4, abs=2e-5)
         assert max(row["X_L_over_X_P"] for row in above) == pytest.approx(
             1.074, abs=1e-3
         )
-        assert sum(row["follower_waits_for_switch"] for row in solved) == 40
+        assert sum(row["follower_waits_for_switch"] for row in solved) == 49
         assert sum(row["single_crossing"] for row in solved) == 40
 
-    def test_draws_without_a_rent_equalization_trigger(self, joint_rows):
-        """Following beats leading at every scanned demand; in eleven of
-        the fifteen a leader whose rival follows would still enter on the
-        scan, in four leading never beats mutual waiting."""
+    def test_draws_without_a_rent_equalization_trigger(self, joint_rows, duopoly):
+        """Following beats leading at every demand of the scan for X_P. The
+        anchored scan for X_L finds a first investment in twelve of the 17,
+        between 1.1 and 1,000 times X_H*, and verifies the equilibrium in
+        eight; in five leading never beats mutual waiting on it."""
         rows = [row for row in joint_rows if "scan_peak_over_X_H" in row]
-        assert len(rows) == 15
+        assert len(rows) == 17
         gaps = [row["scan_max_gap_over_follower"] for row in rows]
         assert max(gaps) < 0.0
         assert min(gaps) == pytest.approx(-0.210, abs=1e-3)
-        enters = [row for row in rows if row["scan_max_lead_over_wait"] > 1.0]
-        assert len(enters) == 11
-        assert all(isfinite(row["scan_peak_over_X_H"]) for row in enters)
-        assert sum(not isfinite(row["scan_peak_over_X_H"]) for row in rows) == 4
-        peaks = sorted(row["scan_peak_over_X_H"] for row in enters)
-        assert peaks[0] == pytest.approx(1.39, abs=0.01)
-        assert peaks[len(peaks) // 2] == pytest.approx(2.04, abs=0.01)
-        assert peaks[-1] == pytest.approx(300.0, rel=1e-6)
+        enters = [row for row in rows if "X_L_over_X_star" in row]
+        none = [row for row in rows if row.get("duopoly_no_entry")]
+        assert (len(enters), len(none)) == (12, 5)
+        assert sum(row["sign_equilibrium"] for row in enters) == 8
+        X_L = sorted(
+            duopoly[f"joint:{row['draw']}"]["record"]["X_L"] / row["X_H"]
+            for row in enters
+        )
+        assert X_L[0] == pytest.approx(1.148, abs=0.01)
+        assert X_L[-1] == pytest.approx(995.0, rel=1e-2)
+        lead = [row["duopoly_entry_max_lead_over_wait"] for row in none]
+        assert max(lead) == pytest.approx(0.980, abs=1e-3)
+        assert all(row["duopoly_waiting_equilibrium"] == 1.0 for row in none)
+
+    def test_follower_condition_without_rent_equalization(self, joint_rows, duopoly):
+        """Where there is no X_P the follower's condition is implied.
+
+        F >= L* at every scanned demand, so F(X_L) >= L*(X_L) and V_follow
+        - V_lead = [F(X_L) - L*(X_L)] (X / X_L)^b >= 0, with V_lead >= L*
+        by the leader's condition: the follower's margin before the leader's
+        entry is positive in every such draw.
+        """
+        rows = [
+            row
+            for row in joint_rows
+            if "X_L_over_X_star" in row and not row["has_rent_equalization"]
+        ]
+        assert len(rows) == 12
+        for row in rows:
+            record = duopoly[f"joint:{row['draw']}"]["record"]
+            assert record["follower_over_leader"] > 1.0
+            assert record["follower_margin"] > 0.0
+            assert record["leader_best_other_trigger"] <= 1.0
+            assert record["lcp_upper_set"] == 1.0
+
+    def test_former_solver_failures(self, duopoly):
+        """Next to the lower bound of (A2) the follower's capacity used to
+        leave the bracket searched; with the bracket raised the three cells
+        solve, and no firm invests before the switch on the scan."""
+        for name in ("oat:gamma-", "joint:25", "joint:57"):
+            cell = duopoly[name]
+            assert "failure" not in cell, name
+            assert cell["record"]["first_investment"] == 0.0, name
+            assert cell["record"]["entry_max_lead_over_wait"] < 1.0, name
 
     def test_cached_records_are_internally_consistent(self, duopoly):
         """Without re-solving: rent equalization at X_P and the definition
         of the reported ratios hold in every solved cell."""
         for name, cell in duopoly.items():
-            if cell.get("failure") or name == "baseline":
+            if name == "baseline":
                 continue
             record = cell["record"]
-            assert record["rent_eq_leader_value"] == pytest.approx(
-                record["rent_eq_follower_value"], rel=1e-4
-            ), name
-            assert record["X_L_over_X_P"] == pytest.approx(
-                record["X_L"] / record["X_P"], rel=1e-9
-            )
+            if not record["first_investment"]:
+                continue
+            if record["exists"]:
+                assert record["rent_eq_leader_value"] == pytest.approx(
+                    record["rent_eq_follower_value"], rel=1e-4
+                ), name
+                assert record["X_L_over_X_P"] == pytest.approx(
+                    record["X_L"] / record["X_P"], rel=1e-9
+                )
+            else:
+                assert np.isnan(record["X_L_over_X_P"]), name
             assert record["lead_over_wait"] == pytest.approx(
                 record["leader_value"] / record["waiting_value"], rel=1e-9
             )

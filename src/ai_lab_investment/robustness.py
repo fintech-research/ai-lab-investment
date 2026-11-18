@@ -178,6 +178,7 @@ DUOPOLY_FIELDS: tuple[str, ...] = (
     "follower_waits_for_switch",
     "equilibrium_verified",
     "single_crossing",
+    "has_rent_equalization",
 )
 
 DUOPOLY_SCAN_FIELDS: tuple[str, ...] = (
@@ -190,11 +191,14 @@ DUOPOLY_SCAN_FIELDS: tuple[str, ...] = (
     "scan_peak_follower_over_leader",
 )
 """What is reported where the entry game has no rent-equalization trigger on
-the demand scan, so that X_L is not located: the largest (L* - F) / F and
-L* / W on the scan, and the scan point at which a leader whose rival follows
-would enter (`ExactPreemptionGame.rent_equalization_reoptimized`), relative
-to X_H* and to the precommitted-scale trigger, with L* / W and F / L* there.
-Scan points are 47% apart; nothing is refined or checked."""
+the demand scan of `ExactPreemptionGame.rent_equalization_reoptimized`: the
+largest (L* - F) / F and L* / W on that scan, and its point at which a leader
+whose rival follows would enter, relative to X_H* and to the precommitted-
+scale trigger, with L* / W and F / L* there. Those scan points are 47% apart
+and nothing about them is refined or checked; since issue #182 the first
+investment X_L itself is located and checked in these draws too
+(`preemption_levered.assigned_leader_equilibrium`), and this is kept for
+comparison with it."""
 
 SIGN_LABELS: dict[str, str] = {
     "sign_faith": "0 < phi_underbar < phi_tilde < phi*",
@@ -220,7 +224,9 @@ SIGN_LABELS: dict[str, str] = {
 
 DUOPOLY_SIGN_LABELS: dict[str, str] = {
     "sign_entry_before_single": "X_L below the precommitted-scale trigger X*",
-    "sign_entry_before_rent_eq": "X_L below the rent-equalization trigger X_P",
+    "sign_entry_before_rent_eq": (
+        "X_L below the rent-equalization trigger X_P (or no X_P on the scan)"
+    ),
     "sign_leader_smaller": "K_L below the precommitted-scale K*",
     "sign_leader_trains_less": "phi_L below phi*",
     "sign_follower_later": "X_F* above X_L",
@@ -410,10 +416,12 @@ def duopoly_objects(
     delta and c leaves them unchanged.
     """
     X_L, X_P = float(record["X_L"]), float(record["X_P"])
+    has_X_P = bool(record["exists"])
+    nan = float("nan")
     return {
         "X_L_over_X_star": X_L / single["X_star"],
-        "X_L_over_X_P": X_L / X_P,
-        "X_P_over_X_star": X_P / single["X_star"],
+        "X_L_over_X_P": X_L / X_P if has_X_P else nan,
+        "X_P_over_X_star": X_P / single["X_star"] if has_X_P else nan,
         "K_L_over_K_star": float(record["K_L"]) / single["K_star"],
         "phi_L_over_phi_star": float(record["phi_L"]) / single["phi_star"],
         "X_F_over_X_L": float(record["X_F"]) / X_L,
@@ -426,6 +434,7 @@ def duopoly_objects(
         ),
         "equilibrium_verified": float(record["equilibrium"]),
         "single_crossing": float(record["n_sign_changes"] == 1.0),
+        "has_rent_equalization": float(has_X_P),
     }
 
 
@@ -434,7 +443,9 @@ def duopoly_signs(objects: dict[str, float]) -> dict[str, bool]:
     o = objects
     return {
         "sign_entry_before_single": o["X_L_over_X_star"] < 1.0,
-        "sign_entry_before_rent_eq": o["X_L_over_X_P"] < 1.0,
+        # Without X_P on the scan, following beats leading at every scanned
+        # demand, so the first investment is below any crossing there.
+        "sign_entry_before_rent_eq": not o["X_L_over_X_P"] >= 1.0,
         "sign_leader_smaller": o["K_L_over_K_star"] < 1.0,
         "sign_leader_trains_less": o["phi_L_over_phi_star"] < 1.0,
         "sign_follower_later": o["X_F_over_X_L"] > 1.0,
@@ -556,26 +567,40 @@ def evaluate_values(base: ModelParameters, values: dict[str, float]) -> dict[str
 
 
 def _attach_duopoly(row: dict[str, Any], cell: dict[str, Any] | None) -> None:
-    """Add the cached duopoly objects of ``cell`` to an admissible row."""
+    """Add the cached duopoly objects of ``cell`` to an admissible row.
+
+    A solver failure is recorded under ``duopoly_failure``; a solve in which
+    no firm invests before the switch on the scan under ``duopoly_no_entry``
+    (with ``duopoly_waiting_equilibrium``); otherwise the objects at X_L and
+    their signs are added. Where the game has no rent-equalization trigger
+    on its scan the `DUOPOLY_SCAN_FIELDS` are added as well.
+    """
     if cell is None or not row["admissible"]:
         return
     if cell.get("failure"):
         row["duopoly_failure"] = cell["failure"]
-        record = cell.get("record", {})
-        if "scan_peak" in record:
-            row.update({
-                "scan_max_gap_over_follower": float(record["max_gap_over_follower"]),
-                "scan_max_lead_over_wait": float(record["max_lead_over_wait"]),
-                "scan_peak_over_X_H": float(record["scan_peak"]) / row["X_H"],
-                "scan_peak_over_X_star": float(record["scan_peak"]) / row["X_star"],
-                "scan_peak_interior": float(record["scan_peak_interior"]),
-                "scan_peak_lead_over_wait": float(record["scan_peak_lead_over_wait"]),
-                "scan_peak_follower_over_leader": float(
-                    record["scan_peak_follower_over_leader"]
-                ),
-            })
         return
-    objects = duopoly_objects(cell["record"], row)
+    record = cell["record"]
+    if "scan_peak" in record:
+        row.update({
+            "scan_max_gap_over_follower": float(record["max_gap_over_follower"]),
+            "scan_max_lead_over_wait": float(record["max_lead_over_wait"]),
+            "scan_peak_over_X_H": float(record["scan_peak"]) / row["X_H"],
+            "scan_peak_over_X_star": float(record["scan_peak"]) / row["X_star"],
+            "scan_peak_interior": float(record["scan_peak_interior"]),
+            "scan_peak_lead_over_wait": float(record["scan_peak_lead_over_wait"]),
+            "scan_peak_follower_over_leader": float(
+                record["scan_peak_follower_over_leader"]
+            ),
+        })
+    if not record.get("first_investment", 1.0):
+        row["duopoly_no_entry"] = True
+        row["duopoly_waiting_equilibrium"] = float(record["waiting_equilibrium"])
+        row["duopoly_entry_max_lead_over_wait"] = float(
+            record["entry_max_lead_over_wait"]
+        )
+        return
+    objects = duopoly_objects(record, row)
     row.update(objects)
     row.update(duopoly_signs(objects))
 
@@ -704,10 +729,16 @@ class SweepSummary:
         n_duopoly, n_duopoly_failed: Admissible draws with a duopoly solve,
             and those among them at which the solve failed.
         duopoly_failures: (label, reason) of those.
+        n_duopoly_no_entry: Solved draws at which no firm invests before the
+            switch on the scan (L* <= W at every scanned demand).
+        n_waiting_equilibrium: Those of them at which mutual waiting is an
+            equilibrium on the scan (the post-switch game is a race).
         duopoly_sign_counts, duopoly_sign_violations, duopoly_quantiles: The
-            same aggregates over the draws with a solved duopoly.
-        n_no_rent_equalization: Failed duopoly draws at which the game has
-            no rent-equalization trigger on the demand scan.
+            same aggregates over the draws with a first investment before
+            the switch (`n_first_investment`).
+        n_no_rent_equalization: Solved draws at which the game has no
+            rent-equalization trigger on the demand scan (with or without a
+            first investment).
         scan_quantiles: Quantiles of `DUOPOLY_SCAN_FIELDS` over those draws.
     """
 
@@ -722,11 +753,18 @@ class SweepSummary:
     n_duopoly: int
     n_duopoly_failed: int
     duopoly_failures: list[tuple[str, str]]
+    n_duopoly_no_entry: int
+    n_waiting_equilibrium: int
     duopoly_sign_counts: dict[str, int]
     duopoly_sign_violations: dict[str, list[str]]
     duopoly_quantiles: dict[str, dict[str, float]]
     n_no_rent_equalization: int
     scan_quantiles: dict[str, dict[str, float]]
+
+    @property
+    def n_first_investment(self) -> int:
+        """Draws with a duopoly solve and a first investment before the switch."""
+        return self.n_duopoly - self.n_duopoly_failed - self.n_duopoly_no_entry
 
     @property
     def n_solver_failures(self) -> int:
@@ -786,6 +824,7 @@ def summarize_sweep(rows: list[dict[str, Any]]) -> SweepSummary:
         counts[kind] = counts.get(kind, 0) + 1
     solved = [row for row in admissible if "X_L_over_X_star" in row]
     unsolved = [row for row in admissible if row.get("duopoly_failure")]
+    no_entry = [row for row in admissible if row.get("duopoly_no_entry")]
     return SweepSummary(
         n_draws=len(draws),
         n_admissible=len(admissible),
@@ -800,9 +839,13 @@ def summarize_sweep(rows: list[dict[str, Any]]) -> SweepSummary:
             for name in SIGN_LABELS
         },
         quantiles=_quantile_table(admissible, SINGLE_FIRM_FIELDS),
-        n_duopoly=len(solved) + len(unsolved),
+        n_duopoly=len(solved) + len(no_entry) + len(unsolved),
         n_duopoly_failed=len(unsolved),
         duopoly_failures=[(_label(row), row["duopoly_failure"]) for row in unsolved],
+        n_duopoly_no_entry=len(no_entry),
+        n_waiting_equilibrium=sum(
+            row["duopoly_waiting_equilibrium"] == 1.0 for row in no_entry
+        ),
         duopoly_sign_counts={
             name: sum(bool(row[name]) for row in solved) for name in DUOPOLY_SIGN_LABELS
         },
@@ -811,8 +854,11 @@ def summarize_sweep(rows: list[dict[str, Any]]) -> SweepSummary:
             for name in DUOPOLY_SIGN_LABELS
         },
         duopoly_quantiles=_quantile_table(solved, DUOPOLY_FIELDS),
-        n_no_rent_equalization=sum("scan_peak_over_X_H" in row for row in unsolved),
-        scan_quantiles=_quantile_table(unsolved, DUOPOLY_SCAN_FIELDS),
+        n_no_rent_equalization=sum("scan_peak_over_X_H" in row for row in admissible),
+        scan_quantiles=_quantile_table(
+            [row for row in admissible if "scan_peak_over_X_H" in row],
+            DUOPOLY_SCAN_FIELDS,
+        ),
     )
 
 
@@ -931,13 +977,6 @@ def _solve_duopoly_cell(cell: dict[str, Any]) -> dict[str, Any]:  # pragma: no c
         params = ModelParameters().with_param(**cell["values"])
         contest = cell.get("contest", "tullock")
         out["record"] = encode_record(equilibrium_record(params, contest=contest))
-        if not out["record"].get("exists"):
-            gap = out["record"].get("max_gap_over_follower")
-            out["failure"] = (
-                "no rent-equalization trigger on the demand scan "
-                f"({out['record']['n_sign_changes']:.0f} sign changes of L* - F, "
-                f"largest (L* - F) / F = {gap})"
-            )
     except _TimeCapError:
         out["failure"] = f"time cap of {DUOPOLY_TIME_CAP // 60} minutes reached"
     except (ValueError, RuntimeError, ArithmeticError, KeyError) as exc:
@@ -1207,11 +1246,13 @@ def _format_summary(summary: SweepSummary, list_failures: bool) -> list[str]:
     parts.append("")
     parts.append("Quantiles across admissible draws (n, min, 5, 25, 50, 75, 95, max):")
     parts.extend(_format_quantiles(summary.quantiles))
-    solved = summary.n_duopoly - summary.n_duopoly_failed
+    solved = summary.n_first_investment
     parts.append("")
     parts.append(
-        f"Duopoly subsample: {summary.n_duopoly} draws, {solved} solved, "
-        f"{summary.n_duopoly_failed} failed"
+        f"Duopoly subsample: {summary.n_duopoly} draws, {solved} with a first "
+        f"investment before the switch, {summary.n_duopoly_no_entry} without "
+        f"({summary.n_waiting_equilibrium} with mutual waiting an equilibrium "
+        f"on the scan), {summary.n_duopoly_failed} failed"
     )
     parts.extend(f"  {label}: {reason}" for label, reason in summary.duopoly_failures)
     for name, label in DUOPOLY_SIGN_LABELS.items():
@@ -1224,7 +1265,7 @@ def _format_summary(summary: SweepSummary, list_failures: bool) -> list[str]:
     if summary.n_no_rent_equalization:
         parts.append(
             f"No rent-equalization trigger on the scan: "
-            f"{summary.n_no_rent_equalization} draws (scan-point objects, unrefined)"
+            f"{summary.n_no_rent_equalization} draws (points of the X_P scan)"
         )
         parts.extend(_format_quantiles(summary.scan_quantiles))
     return parts

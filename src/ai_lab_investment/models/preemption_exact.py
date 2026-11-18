@@ -156,6 +156,9 @@ from .piecewise_option import (
 SCALES: tuple[str, ...] = ("precommitted", "envelope")
 
 _PENALTY = 1e20
+#: Largest gamma log K at which a capacity bracket is raised (K^gamma stays
+#: below the largest double).
+_LOG_K_CEILING = 600.0
 
 
 CONTESTS: tuple[str, ...] = ("tullock", "arithmetic_mean")
@@ -519,7 +522,14 @@ class ExactPreemptionGame:
             elasticity = float(self._revenue_elasticity(s))
             return p.alpha * beta * elasticity - (beta - 1.0) * Kb_prime / b
 
-        K_F = float(np.exp(optimize.brentq(bracket, -60.0, 40.0, xtol=1e-13)))
+        # Next to the lower bound of (A2) the follower's capacity against a
+        # large leader lies far above the leader's (its share must approach
+        # one before the cost elasticity catches up), so the upper end of the
+        # bracket is raised until the condition changes sign.
+        hi = 40.0
+        while bracket(hi) > 0.0 and hi < _LOG_K_CEILING / p.gamma:
+            hi += 20.0
+        K_F = float(np.exp(optimize.brentq(bracket, -60.0, hi, xtol=1e-13)))
         a = p.A_H * float(contest_revenue(K_F, T_L, p.alpha, self.contest))
         b = float(self.cost(K_F))
         X_F = beta / (beta - 1.0) * b / a
@@ -535,16 +545,24 @@ class ExactPreemptionGame:
         """
         p = self.params
         X_arr = np.atleast_1d(np.asarray(X, dtype=float))
-        lo = np.full_like(X_arr, -80.0)
-        hi = np.full_like(X_arr, 40.0)
-        for _ in range(64):
-            mid = 0.5 * (lo + hi)
-            K = np.exp(mid)
+
+        def rises(log_K: np.ndarray) -> np.ndarray:
+            K = np.exp(log_K)
             s = self._share(K, T_L)
             factor = s * self._revenue_elasticity(s)
             revenue = p.A_H * X_arr * p.alpha * K ** (p.alpha - 1.0) * factor
             marginal_cost = p.delta / p.r + p.c * p.gamma * K ** (p.gamma - 1.0)
-            up = revenue > marginal_cost
+            return revenue > marginal_cost
+
+        lo = np.full_like(X_arr, -80.0)
+        hi = np.full_like(X_arr, 40.0)
+        # Raised where the optimum lies above the default bracket (see
+        # `post_switch_entry`).
+        while (rises(hi) & (hi < _LOG_K_CEILING / p.gamma)).any():
+            hi = np.where(rises(hi), hi + 20.0, hi)
+        for _ in range(64):
+            mid = 0.5 * (lo + hi)
+            up = rises(mid)
             lo = np.where(up, mid, lo)
             hi = np.where(up, hi, mid)
         return np.exp(0.5 * (lo + hi))
