@@ -769,6 +769,62 @@ def effective_revenue_coefficient(syms):
     }
 
 
+def installed_value_in_lambda(syms):
+    """Shape in lambda of installed value at fixed (X, K, phi) (issue #181).
+
+    V(lambda) = A_eff(lambda) X - delta K / r with A_eff = (a + lambda b) /
+    (d + lambda), a = [(1-phi)K]^alpha, b = (phi K)^alpha / (r - mu_H),
+    d = r - mu_L, G = b d - a. Identities (residuals zero):
+
+    - dV/dlambda = X G / (d + lambda)^2;
+    - d2V/dlambda2 = -2 X G / (d + lambda)^3, so V is increasing and
+      strictly concave on lambda >= 0 iff G > 0, the faith condition of
+      Proposition 2(ii), i.e. phi > phi_underbar with monopoly shares;
+    - news asymmetry, for 0 < h < d + lambda: [V(lambda) - V(lambda - h)] -
+      [V(lambda + h) - V(lambda)] = 2 h^2 X G / [(d+lambda)(d+lambda-h)
+      (d+lambda+h)];
+    - dG/dphi = alpha [b d / phi + a / (1 - phi)] > 0;
+    - the semi-elasticity of A_eff in lambda is (rho d - 1) / [(1 + lambda
+      rho)(d + lambda)] with rho = b / a, whose derivative in rho is
+      1 / (1 + lambda rho)^2 > 0.
+    """
+    r, mu_L, mu_H = syms["r"], syms["mu_L"], syms["mu_H"]
+    lam, alpha, K, phi, X = (
+        syms["lam"],
+        syms["alpha"],
+        syms["K"],
+        syms["phi"],
+        syms["X"],
+    )
+    delta = syms["delta"]
+    h = sp.Symbol("h", positive=True)
+    rho = sp.Symbol("rho", positive=True)
+    a = ((1 - phi) * K) ** alpha
+    b = (phi * K) ** alpha / (r - mu_H)
+    d = r - mu_L
+    G = b * d - a
+    V = (a + lam * b) / (d + lam) * X - delta * K / r
+    asym = (V - V.subs(lam, lam - h)) - (V.subs(lam, lam + h) - V)
+    semi = sp.diff(sp.log((a + lam * b) / (d + lam)), lam)
+    semi_rho = (rho * d - 1) / ((1 + lam * rho) * (d + lam))
+    return {
+        "V": V,
+        "G": G,
+        "d1_residual": sp.simplify(sp.diff(V, lam) - X * G / (d + lam) ** 2),
+        "d2_residual": sp.simplify(sp.diff(V, lam, 2) + 2 * X * G / (d + lam) ** 3),
+        "asymmetry_residual": sp.simplify(
+            asym - 2 * h**2 * X * G / ((d + lam) * (d + lam - h) * (d + lam + h))
+        ),
+        "dG_dphi_residual": sp.simplify(
+            sp.diff(G, phi) - alpha * (b * d / phi + a / (1 - phi))
+        ),
+        "semi_elasticity_residual": sp.simplify(semi - semi_rho.subs(rho, b / a)),
+        "semi_elasticity_rho_residual": sp.simplify(
+            sp.diff(semi_rho, rho) - 1 / (1 + lam * rho) ** 2
+        ),
+    }
+
+
 # =====================================================================
 # 6. Optimal training fraction (Proposition 1(i))
 # =====================================================================

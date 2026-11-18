@@ -1132,15 +1132,96 @@ class ValuationAnalysis:
             "npv_optimal": npv_optimal,
         }
 
+    # ------------------------------------------------------------------
+    # Installed value vs lambda (Prediction 3, issue #181)
+    # ------------------------------------------------------------------
+
+    def installed_value_vs_lambda(
+        self,
+        lambda_values: np.ndarray,
+        X: float,
+        K: float,
+        phi: float,
+        coupon: float = 0.0,
+        role: str = "single_firm",
+    ) -> dict[str, Any]:
+        """Value of an installed firm across lambda at fixed (X, K, phi, coupon).
+
+        The firm has invested and cannot change (K, phi) or its coupon when
+        beliefs change; only lambda moves. Two objects:
+
+        - ``going_concern``: A_eff(lambda) X - (delta K + coupon)/r, the
+          installed value of eq-installed-value-L net of the default-free
+          coupon claim, with no option to stop. With a = [(1-phi)K]^alpha,
+          b = (phi K)^alpha / (r - mu_H), d = r - mu_L and G = b d - a, its
+          derivatives are X G/(d+lambda)^2 and -2 X G/(d+lambda)^3
+          (``d_going_concern``, ``d2_going_concern``): increasing and
+          strictly concave in lambda on all of lambda >= 0 iff G > 0, i.e.
+          iff phi > phi_underbar (eq-phi-underbar, Internet Appendix A).
+        - ``equity``: the exact claim of the model of record with the option
+          to stop (the shutdown option at zero coupon, the default option
+          otherwise), from `LeveredPreemptionGame`. ``role="single_firm"``
+          is the installed monopolist (`installed_claims` without a rival,
+          coupled regime-switching boundary); ``role="leader"`` is the
+          duopoly leader before the follower enters (`leader_claims` of the
+          subgame at (K, phi)), whose value also carries the follower's
+          dilution after the switch. Its shape in lambda is numerical; nan
+          where X is at or below the boundary or, for the leader, at or above
+          the follower's pre-switch trigger.
+
+        Returns:
+            Dict with ``lambda_values``, ``A_eff``, ``going_concern``,
+            ``d_going_concern``, ``d2_going_concern``, ``equity`` and
+            ``X_default`` (arrays), and ``phi_underbar`` (float).
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        if role not in ("single_firm", "leader"):
+            msg = f"role must be 'single_firm' or 'leader', got {role!r}"
+            raise ValueError(msg)
+        p = self.params
+        lams = np.asarray(lambda_values, dtype=float)
+        d = p.r - p.mu_L
+        a = ((1.0 - phi) * K) ** p.alpha
+        b = (phi * K) ** p.alpha / (p.r - p.mu_H)
+        G = b * d - a
+        A_eff = (a + lams * b) / (d + lams)
+        going_concern = A_eff * X - (p.delta * K + coupon) / p.r
+        equity = np.full(lams.shape, np.nan)
+        X_default = np.full(lams.shape, np.nan)
+        for i, lam in enumerate(lams):
+            game = LeveredPreemptionGame(p.with_param(lam=float(lam)))
+            if role == "single_firm":
+                claims = game.installed_claims(K, phi, 0.0, 0.0, coupon)
+            else:
+                sub = game.subgame(K, phi)
+                if sub.pre_switch.X_entry <= X:
+                    continue
+                claims = sub.leader_claims(coupon)
+            X_default[i] = claims.X_D
+            if X > claims.X_D:
+                equity[i] = float(claims.equity(X)[0])
+        return {
+            "lambda_values": lams,
+            "A_eff": A_eff,
+            "going_concern": going_concern,
+            "d_going_concern": X * G / (d + lams) ** 2,
+            "d2_going_concern": -2.0 * X * G / (d + lams) ** 3,
+            "equity": equity,
+            "X_default": X_default,
+            "phi_underbar": DuopolyModel(p).faith_threshold(),
+        }
+
     def equity_value_vs_lambda_with_phi(
         self,
         lambda_values: np.ndarray,
         X: float = 1.0,
     ) -> dict[str, np.ndarray]:
-        """Equity value and optimal phi across lambda values.
+        """Option value of a firm that has not invested, and phi*, across lambda.
 
-        Shows how both valuation and training allocation respond to
-        different beliefs about AI timelines.
+        Re-optimizes (X, K, phi) at each lambda under the pure-power
+        approximation, so this is the value of the unexercised option, not
+        of an installed firm (for which see `installed_value_vs_lambda`).
         """
         n = len(lambda_values)
         option_values = np.full(n, np.nan)

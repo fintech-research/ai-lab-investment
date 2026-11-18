@@ -733,27 +733,242 @@ class TestDilemmaAsymmetry:
 
 
 # ------------------------------------------------------------------
-# Equity value vs lambda
+# Value in lambda: the unexercised option and the installed firm
+# (paper Remark 3, fig-lambda-option-value, Prediction 3, issue #181)
 # ------------------------------------------------------------------
 
 
-class TestEquityValueVsLambda:
-    def test_shape(self, va):
-        """Should return arrays of correct length."""
+def _increasing_concave(values: np.ndarray) -> bool:
+    return bool(np.all(np.diff(values) > 0) and np.all(np.diff(values, 2) < 0))
+
+
+class TestValueInLambda:
+    """Two objects, kept apart. The *option* of a firm that has not invested
+    re-optimizes its policy at each lambda (fig-lambda-option-value). The
+    *installed* firm holds (K, phi) and its coupon fixed: its going-concern
+    value A_eff(lambda) X - (delta K + c_D)/r is increasing and concave in
+    lambda iff phi > phi_underbar (Internet Appendix A), and its exact equity
+    with the option to stop is checked on a grid."""
+
+    POLICY_LAMBDAS = np.linspace(0.10, 0.50, 9)
+    WIDE_LAMBDAS = np.linspace(0.02, 0.80, 33)
+
+    @pytest.fixture(scope="class")
+    def va(self):
+        return ValuationAnalysis(ModelParameters())
+
+    @pytest.fixture(scope="class")
+    def single_policy(self, va):
+        return va.single_firm_policy()
+
+    @pytest.fixture(scope="class")
+    def leader_policy(self):
+        from ai_lab_investment.models.duopoly import cached_equilibrium
+
+        record = cached_equilibrium(lam=0.10)
+        return record["X_L"], record["K_L"], record["phi_L"]
+
+    # -- the unexercised option ------------------------------------------
+
+    def test_option_shape(self, va):
         lam_vals = np.array([0.05, 0.10, 0.20, 0.50])
         result = va.equity_value_vs_lambda(lam_vals)
-        assert len(result["lambda_values"]) == 4
-        assert len(result["option_values"]) == 4
-        assert len(result["triggers"]) == 4
-        assert len(result["capacities"]) == 4
+        for key in ("lambda_values", "option_values", "triggers", "capacities"):
+            assert len(result[key]) == 4
 
-    def test_positive_values(self, va):
-        """Option values should be positive at all baseline-range lambdas."""
+    def test_option_positive(self, va):
         lam_vals = np.array([0.10, 0.20, 0.50])
         result = va.equity_value_vs_lambda(lam_vals)
-        valid = ~np.isnan(result["option_values"])
-        assert valid.sum() == len(lam_vals)
-        assert np.all(result["option_values"][valid] > 0)
+        assert np.all(np.isfinite(result["option_values"]))
+        assert np.all(result["option_values"] > 0)
+
+    def test_option_increasing_and_concave_over_policy_range(self, va):
+        """Option of the uninvested firm under the pure-power approximation.
+        Curvature in lambda is independent of X (F = C(lambda) X^beta_H below
+        the trigger), so one evaluation point suffices."""
+        vals = np.array([
+            SingleFirmModel(va.params.with_param(lam=lam)).pure_power_option_value(
+                0.001
+            )
+            for lam in self.POLICY_LAMBDAS
+        ])
+        assert _increasing_concave(vals)
+
+    # -- installed firm, going concern (analytical) ----------------------
+
+    def test_threshold_is_phi_underbar(self, va):
+        r = va.installed_value_vs_lambda(np.array([0.1]), 0.01, 0.01, 0.5)
+        assert r["phi_underbar"] == pytest.approx(0.1801, abs=1e-4)
+
+    def test_closed_form_derivatives_match_finite_differences(self, va):
+        lam, h = 0.10, 1e-4
+        r = va.installed_value_vs_lambda(
+            np.array([lam - h, lam, lam + h]), 0.009, 0.0158, 0.70
+        )
+        v = r["going_concern"]
+        assert (v[2] - v[0]) / (2 * h) == pytest.approx(
+            r["d_going_concern"][1], rel=1e-6
+        )
+        assert (v[2] - 2 * v[1] + v[0]) / h**2 == pytest.approx(
+            r["d2_going_concern"][1], rel=1e-4
+        )
+
+    @pytest.mark.parametrize("phi", [0.20, 0.30, 0.50, 0.70, 0.95])
+    def test_going_concern_increasing_concave_above_threshold(self, va, phi):
+        lams = np.linspace(0.0, 2.0, 41)
+        r = va.installed_value_vs_lambda(lams, 0.009, 0.0158, phi, coupon=1e-4)
+        assert _increasing_concave(r["going_concern"])
+        assert np.all(r["d_going_concern"] > 0)
+        assert np.all(r["d2_going_concern"] < 0)
+
+    @pytest.mark.parametrize("phi", [0.05, 0.10, 0.17])
+    def test_going_concern_decreasing_convex_below_threshold(self, va, phi):
+        lams = np.linspace(0.0, 2.0, 41)
+        r = va.installed_value_vs_lambda(lams, 0.009, 0.0158, phi)
+        assert np.all(np.diff(r["going_concern"]) < 0)
+        assert np.all(np.diff(r["going_concern"], 2) > 0)
+
+    def test_going_concern_flat_at_threshold(self, va):
+        phi_u = va.installed_value_vs_lambda(np.array([0.1]), 1.0, 1.0, 0.5)[
+            "phi_underbar"
+        ]
+        r = va.installed_value_vs_lambda(
+            np.linspace(0.0, 1.0, 11), 0.009, 0.0158, phi_u
+        )
+        assert np.ptp(r["going_concern"]) < 1e-12
+
+    def test_news_asymmetry_closed_form(self, va):
+        """V(lam) - V(lam - h) - [V(lam + h) - V(lam)]
+        = 2 h^2 X G / [(d + lam)(d + lam - h)(d + lam + h)]."""
+        p = va.params
+        X, K, phi, lam, h = 0.009, 0.0158, 0.70, 0.10, 0.05
+        r = va.installed_value_vs_lambda(np.array([lam - h, lam, lam + h]), X, K, phi)
+        v = r["going_concern"]
+        d = p.r - p.mu_L
+        G = (phi * K) ** p.alpha / (p.r - p.mu_H) * d - ((1 - phi) * K) ** p.alpha
+        expected = 2 * h**2 * X * G / ((d + lam) * (d + lam - h) * (d + lam + h))
+        assert (v[1] - v[0]) - (v[2] - v[1]) == pytest.approx(expected, rel=1e-10)
+        assert expected > 0
+
+    def test_exposure_increasing_in_phi_at_common_belief(self, va):
+        """At a common lambda and (X, K), the slope, the curvature and the
+        semi-elasticity of A_eff X in lambda all rise with phi."""
+        phis = np.linspace(0.05, 0.99, 30)
+        rows = [
+            va.installed_value_vs_lambda(np.array([0.10]), 0.009, 0.0158, phi)
+            for phi in phis
+        ]
+        slope = np.array([r["d_going_concern"][0] for r in rows])
+        curv = np.array([r["d2_going_concern"][0] for r in rows])
+        semi = slope / np.array([r["A_eff"][0] * 0.009 for r in rows])
+        assert np.all(np.diff(slope) > 0)
+        assert np.all(np.diff(curv) < 0)
+        assert np.all(np.diff(semi) > 0)
+
+    def test_exposure_hump_shaped_along_beliefs(self, va):
+        """Across firms whose allocation is phi*(lambda), the semi-elasticity
+        of A_eff in lambda is not monotone in phi*: it peaks near the
+        baseline belief and falls among the most optimistic firms."""
+        semi = {}
+        for lam in (0.05, 0.10, 0.20, 0.50):
+            phi = SingleFirmModel(va.params.with_param(lam=lam)).closed_form_phi_star()
+            r = va.installed_value_vs_lambda(np.array([lam]), 1.0, 1.0, phi)
+            semi[lam] = r["d_going_concern"][0] / r["A_eff"][0]
+        assert semi[0.05] == pytest.approx(2.24, abs=0.01)
+        assert semi[0.10] == pytest.approx(2.25, abs=0.01)
+        assert semi[0.20] == pytest.approx(1.18, abs=0.01)
+        assert semi[0.50] == pytest.approx(0.30, abs=0.01)
+
+    # -- installed firm, exact equity with the option to stop (numerical) --
+
+    def test_policy_values_include_the_option(self, va, single_policy):
+        X, K, phi = single_policy
+        r = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, X, K, phi)
+        assert np.all(r["equity"] > r["going_concern"])
+        assert np.all(r["equity"] - r["going_concern"] < 0.01 * r["equity"])
+
+    @pytest.mark.parametrize("leverage", [0.0, 0.40, 0.70])
+    def test_single_firm_equity_at_policy(self, va, single_policy, leverage):
+        """Installed monopolist at the precommitted-scale policy, par coupon."""
+        X, K, phi = single_policy
+        coupon = 0.05 * leverage * SingleFirmModel(va.params).investment_cost(K)
+        r = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, X, K, phi, coupon=coupon)
+        assert np.all(np.isfinite(r["equity"]))
+        assert _increasing_concave(r["equity"])
+
+    def test_equity_depends_on_the_coupon_only_through_the_fixed_cost(self, va):
+        """E(X; delta K + c) = s E(X/s; delta K) with s = (delta K + c)/(delta K):
+        levered equity is unlevered equity at a rescaled demand, so its shape
+        in lambda at a given distance to the boundary is the same."""
+        p = va.params
+        K, phi, X = 0.0158, 0.70, 0.009
+        coupon = 0.4 * p.delta * K
+        s = (p.delta * K + coupon) / (p.delta * K)
+        lev = va.installed_value_vs_lambda(self.POLICY_LAMBDAS, X, K, phi, coupon)
+        unl = va.installed_value_vs_lambda(self.POLICY_LAMBDAS, X / s, K, phi)
+        np.testing.assert_allclose(lev["equity"], s * unl["equity"], rtol=1e-8)
+        np.testing.assert_allclose(lev["X_default"], s * unl["X_default"], rtol=1e-8)
+
+    @pytest.mark.parametrize("phi", [0.25, 0.30, 0.50, 0.70, 0.90, 0.99])
+    def test_single_firm_equity_on_grid(self, va, phi):
+        """Increasing and concave on lambda in [0.02, 0.80] at demand from 1.25
+        to 20 times the highest boundary over that range (12 levels)."""
+        K = 0.0158
+        X_D = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 1.0, K, phi)["X_default"]
+        for multiple in np.geomspace(1.25, 20.0, 12):
+            r = va.installed_value_vs_lambda(
+                self.WIDE_LAMBDAS, multiple * X_D.max(), K, phi
+            )
+            assert _increasing_concave(r["equity"]), multiple
+
+    def test_option_overturns_the_sign_just_above_threshold(self, va):
+        """At phi = 0.19 > phi_underbar the going-concern value rises in
+        lambda, but with the shutdown option value falls at 1.5 times the
+        boundary; it rises at three times it."""
+        K, phi = 0.0158, 0.19
+        X_D = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 1.0, K, phi)["X_default"]
+        near = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 1.5 * X_D.max(), K, phi)
+        far = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 3.0 * X_D.max(), K, phi)
+        assert np.all(near["d_going_concern"] > 0)
+        assert np.all(np.diff(near["equity"]) < 0)
+        assert _increasing_concave(far["equity"])
+
+    def test_concavity_fails_next_to_the_boundary(self, va):
+        """The option to stop makes value convex in lambda close to the
+        boundary: the result is not stated there."""
+        K, phi = 0.0158, 0.70
+        X_D = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 1.0, K, phi)["X_default"]
+        r = va.installed_value_vs_lambda(self.WIDE_LAMBDAS, 1.01 * X_D.max(), K, phi)
+        assert np.all(np.diff(r["equity"]) > 0)
+        assert not np.all(np.diff(r["equity"], 2) < 0)
+
+    @pytest.mark.parametrize("leverage", [0.0, 0.40])
+    @pytest.mark.parametrize("multiple", [0.5, 1.0, 1.5])
+    def test_leader_equity_at_policy(self, va, leader_policy, leverage, multiple):
+        """Installed duopoly leader at (K_L, phi_L), follower dilution
+        included, at multiples of the entry demand X_L."""
+        X_L, K_L, phi_L = leader_policy
+        coupon = 0.05 * leverage * SingleFirmModel(va.params).investment_cost(K_L)
+        r = va.installed_value_vs_lambda(
+            self.WIDE_LAMBDAS, multiple * X_L, K_L, phi_L, coupon, role="leader"
+        )
+        assert np.all(np.isfinite(r["equity"]))
+        assert _increasing_concave(r["equity"])
+
+    def test_leader_dilution_breaks_the_shape_at_low_phi(self, va, leader_policy):
+        """At phi = 0.25 the follower's dilution, which arrives sooner when
+        lambda is higher, makes the leader's value non-monotone in lambda,
+        although the monopolist's going-concern value is increasing."""
+        X_L, K_L, _ = leader_policy
+        r = va.installed_value_vs_lambda(
+            self.POLICY_LAMBDAS, X_L, K_L, 0.25, role="leader"
+        )
+        assert np.all(r["d_going_concern"] > 0)
+        assert not np.all(np.diff(r["equity"]) > 0)
+
+    def test_rejects_unknown_role(self, va):
+        with pytest.raises(ValueError, match="role"):
+            va.installed_value_vs_lambda(np.array([0.1]), 0.01, 0.01, 0.5, role="x")
 
 
 # ------------------------------------------------------------------
@@ -970,29 +1185,6 @@ class TestAppendixERobustness:
             r = va.two_period_dynamic_phi(dt=dt, adjustment_cost=1.0)
             assert "error" not in r
             assert r["value_static"] == pytest.approx(a_eff, rel=1e-10)
-
-
-# ------------------------------------------------------------------
-# Option value curvature in lambda (paper, Equity Valuation Sensitivity)
-# ------------------------------------------------------------------
-
-
-class TestOptionValueCurvatureInLambda:
-    def test_increasing_and_concave_over_policy_range(self, va):
-        """The option value is increasing and concave in lambda over the
-        policy-relevant range [0.1, 0.5]. Curvature in lambda is
-        independent of X (F = C(lambda) X^beta_H below the trigger), so a
-        single evaluation point suffices."""
-        from ai_lab_investment.models.base_model import SingleFirmModel
-
-        lams = np.linspace(0.10, 0.50, 9)
-        vals = []
-        for lam in lams:
-            m = SingleFirmModel(va.params.with_param(lam=lam))
-            vals.append(m.pure_power_option_value(0.001))
-        vals = np.array(vals)
-        assert np.all(np.diff(vals) > 0)  # increasing in lambda
-        assert np.all(np.diff(vals, 2) < 0)  # concave in lambda
 
 
 class TestDilemmaMatchedErrorsAndCurvature:
