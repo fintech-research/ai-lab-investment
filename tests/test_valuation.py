@@ -1088,7 +1088,9 @@ class TestDuopolyDilemma:
                 and c["debt"] == "fair"
             )
             for key in ("value_optimal", "value_mismatch", "default_prob_mismatch"):
-                assert fresh[key] == pytest.approx(cached[key], rel=1e-9)
+                # Quadrature and root-finding differ in the last digits
+                # between platforms (macOS cache, Linux CI).
+                assert fresh[key] == pytest.approx(cached[key], rel=1e-7)
 
     def test_uncached_cell_raises(self, exact_va):
         with pytest.raises(KeyError, match="No cached duopoly dilemma"):
