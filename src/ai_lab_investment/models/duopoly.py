@@ -1,35 +1,49 @@
-"""Duopoly model: endogenous lambda, training allocation, default risk.
+"""Duopoly model: preemption game, training allocation, default risk.
 
-Solves for the Markov-perfect equilibrium of a preemption game between two
-firms under:
-- Regime-switching GBM demand with endogenous arrival rate
-- Training-inference allocation (phi) as a strategic variable
+Two layers live here.
+
+Model of record (issue #178). `DuopolyModel.solve()` returns the preemption
+equilibrium of the game in the exact piecewise primitives: demand is in
+regime L until a switch at rate lambda and in regime H afterwards, each firm
+may invest before or after the switch, the leader chooses its capacity and
+training fraction at the demand at which it enters, and every installed
+firm may stop operating (a shutdown boundary without debt, a default
+boundary with it). The game is solved in `preemption_levered` on top of
+`preemption_exact`; nothing in it is priced with the pure-power form or the
+unconditional A_eff coefficient. `DuopolySolution` reports the benchmark
+together with the fixed-scale leader variants and the nested approximation
+below. A solve takes one to two minutes, so the equilibria behind the paper
+are cached in `duopoly_equilibria.json` (`load_equilibrium_grid`).
+
+Nested approximation (the earlier draft's model). The `pure_power_*`
+methods solve the reduced-form game: the follower's option and the
+dilution of the leader's claim are valued with the H-regime exponent
+beta_H and the unconditional coefficient A_eff, and the leader is held at
+the monopoly-phase scale. They are kept so that every number of the
+earlier draft stays reproducible and its distance from the model of record
+can be reported. `valuation.py`, `robustness.py`, `calibration/` and most
+paper figures still call them (issues #179 to #184).
+
+Primitives shared by both layers:
 - Regime-specific contest functions:
     L-regime: share over inference capacity [(1-phi)*K]^alpha
     H-regime: share over training compute [phi*K]^alpha
-- Endogenous default boundary (Leland 1994), which is a shutdown
-  boundary for the unlevered firm (coupon zero in the same formula)
-- Preemption equilibrium (Huisman & Kort 2015)
+- Credit primitives (issue #177): recovery net of operating costs, a
+  shutdown boundary for the unlevered firm, par debt at r_c or the fair
+  coupon. The closed forms below (`default_boundary`, `equity_value`,
+  `debt_value`) use the single-boundary reduction; the exact game uses the
+  coupled regime-switching boundary.
 
 An endogenous arrival rate extension is plumbed through but switched
 off by default (xi = 0) and is NOT used in the paper:
     lambda_tilde = lam_0 + xi * [(phi_i*K_i)^eta + (phi_j*K_j)^eta]
-
-With xi > 0 it would create a positive externality: rival training helps
-bring AGI closer, benefiting both firms. When xi = 0 (the paper's
-specification and the default), lambda_tilde reduces to the exogenous
-lam and the machinery is inert; it is retained only for robustness
-experiments.
-
-Investment trigger methodology:
-    The investment trigger uses beta_H (the H-regime characteristic root)
-    because the investment option value is driven by H-regime expectations.
-    The installed value includes both L-regime inference revenue and
-    H-regime training revenue (via regime-switch continuation value),
-    providing a combined effective revenue coefficient A_eff for the trigger.
 """
 
+import json
 import logging
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 from scipy import optimize
@@ -46,6 +60,149 @@ _KPHI_STARTS: tuple[tuple[float, float], ...] = tuple(
 
 RECOVERY_RULES: tuple[str, ...] = ("net", "net_until_switch", "gross")
 """Recovery rules accepted by DuopolyModel (see `recovery_value`)."""
+
+
+EQUILIBRIUM_GRID_PATH = Path(__file__).with_name("duopoly_equilibria.json")
+"""Cached equilibria of the model of record (see `load_equilibrium_grid`)."""
+
+
+@dataclass(frozen=True)
+class DuopolySolution:
+    """Preemption equilibrium of the duopoly model of record.
+
+    The benchmark is the game in the exact primitives with a leader that
+    chooses (K_L, phi_L) at the demand at which it enters. Existence of the
+    trigger is a numerical finding on a finite demand scan; the trigger is
+    the first up-crossing of L*(X) - F(X) and no uniqueness or
+    subgame-perfection claim is attached to it.
+
+    X_P is the rent-equalization trigger: the lowest demand at which
+    leading is as good as following. It need not be the date of first
+    investment. At zero leverage the record also carries the trigger a firm
+    would choose if it knew its rival would follow (``assigned_X_L``); when
+    that trigger is below X_P (`second_mover_advantage`), following is the
+    better role between the two and the first investment falls somewhere in
+    [assigned_X_L, X_P].
+
+    Attributes:
+        record: Flat record of `preemption_levered.equilibrium_record`. Its
+            keys are also readable as attributes: ``X_P``, ``K_L``,
+            ``phi_L``, ``phi_star``, ``X_F`` and ``K_F`` (the follower's
+            post-switch trigger and capacity), ``X_F_pre_switch`` (inf when
+            the follower never enters before the switch),
+            ``leader_value``, ``follower_value``, ``lead_over_wait`` (zero
+            leverage only), the leader's credit objects at entry
+            (``X_D_leader``, ``distance_to_default``, ``coupon_rate``,
+            ``spread``, ``debt_value``, ``debt_proceeds``, ``recovery``),
+            the follower's boundary at its entry, and the first-passage
+            statistics. At zero leverage also ``assigned_X_L``,
+            ``assigned_K_L``, ``assigned_phi_L``,
+            ``assigned_follower_over_leader`` and
+            ``assigned_coefficient_ratio``
+            (`preemption_levered.leader_assigned_entry`).
+        single_firm: The monopoly case: ``invests_before_switch`` (scale
+            chosen whenever the firm invests) and the precommitted-scale
+            policy ``X_star``, ``K_star``.
+        fixed_scale: Rent equalization with the leader's policy held fixed,
+            keyed ``"pure_power"`` (the pure-power (K, phi*), the earlier
+            draft's convention) and ``"monopoly"`` (the precommitted-scale
+            single-firm optimum).
+        pure_power: Equilibrium of the nested approximation.
+    """
+
+    record: dict[str, Any]
+    single_firm: dict[str, Any] = field(default_factory=dict)
+    fixed_scale: dict[str, dict[str, float]] = field(default_factory=dict)
+    pure_power: dict[str, float] = field(default_factory=dict)
+
+    def __getattr__(self, name: str) -> Any:
+        record = object.__getattribute__(self, "record")
+        if name in record:
+            return record[name]
+        raise AttributeError(name)
+
+    @property
+    def exists(self) -> bool:
+        """True when a finite pre-switch preemption trigger was found."""
+        return bool(self.record["exists"])
+
+    @property
+    def second_mover_advantage(self) -> bool:
+        """True when the assigned leader's trigger lies below X_P.
+
+        False when the record carries no assigned-leader trigger (leverage
+        above zero).
+        """
+        return bool(self.record.get("assigned_below_rent_equalization", 0.0))
+
+    @property
+    def allocation_gap(self) -> float:
+        """phi_L / phi* - 1: how far the leader is from role invariance."""
+        return self.record["phi_L"] / self.record["phi_star"] - 1.0
+
+    @property
+    def scale_ratio(self) -> float:
+        """K_F / K_L."""
+        return self.record["K_F"] / self.record["K_L"]
+
+    @property
+    def trigger_ratio(self) -> float:
+        """X_F / X_P, the follower's post-switch trigger over the leader's."""
+        return self.record["X_F"] / self.record["X_P"]
+
+    @property
+    def preemption_ratio(self) -> float:
+        """X_P over the precommitted-scale single-firm trigger (nan if unknown)."""
+        if "X_star" not in self.single_firm:
+            return float("nan")
+        return self.record["X_P"] / self.single_firm["X_star"]
+
+    def pure_power_error(self) -> dict[str, float]:
+        """Relative error of the nested approximation against the benchmark."""
+        pairs = {"X_P": "X_leader", "K_L": "K_leader", "X_F": "X_follower"}
+        pairs["K_F"] = "K_follower"
+        return {
+            key: self.pure_power[other] / self.record[key] - 1.0
+            for key, other in pairs.items()
+            if other in self.pure_power
+        }
+
+
+def load_equilibrium_grid() -> list[dict[str, Any]]:
+    """Cached equilibria of the model of record at the baseline calibration.
+
+    One record per (lambda, post-switch scale, leverage, debt convention),
+    written by ``uv run python -m ai_lab_investment.models.preemption_levered``
+    and checked against the solver in `tests/test_duopoly_exact.py`. The
+    paper's duopoly numbers and `fig-competition-effect` read this file.
+    """
+    from .preemption_levered import decode_record
+
+    with EQUILIBRIUM_GRID_PATH.open() as handle:
+        return [decode_record(record) for record in json.load(handle)]
+
+
+def cached_equilibrium(
+    lam: float = 0.10,
+    scale: str = "envelope",
+    leverage: float = 0.0,
+    debt: str = "par",
+) -> dict[str, Any]:
+    """One record of `load_equilibrium_grid`.
+
+    Raises:
+        KeyError: If the cell is not in the cache.
+    """
+    for record in load_equilibrium_grid():
+        if (
+            abs(record["lam"] - lam) < 1e-12
+            and record["scale"] == scale
+            and abs(record["leverage"] - leverage) < 1e-12
+            and (record["debt"] == debt or leverage == 0.0)
+        ):
+            return record
+    msg = f"No cached equilibrium for lam={lam}, {scale}, leverage={leverage}, {debt}"
+    raise KeyError(msg)
 
 
 class DuopolyModel:
@@ -116,6 +273,107 @@ class DuopolyModel:
         self._cache: dict = {}
         #: Multistart convergence diagnostics, keyed by sub-problem.
         self.solver_diagnostics: dict[str, dict] = {}
+
+    # ------------------------------------------------------------------
+    # Model of record: the preemption game in the exact primitives
+    # ------------------------------------------------------------------
+
+    def exact_game(self, scale: str = "envelope", debt: str = "par"):
+        """The exact preemption game at this model's leverage and coupon.
+
+        Args:
+            scale: ``"envelope"`` (a firm that has not invested when the
+                switch arrives chooses its scale then; the model of record)
+                or ``"precommitted"`` (its post-switch scale is fixed at the
+                capacity optimal at its post-switch trigger).
+            debt: ``"par"`` or ``"fair"``.
+
+        Raises:
+            ValueError: For specifications the exact game does not cover
+                (endogenous arrival rate, the arithmetic-mean contest, a
+                recovery rule other than "net").
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        if self.params.xi != 0.0:
+            msg = "The exact game requires an exogenous arrival rate (xi = 0)"
+            raise ValueError(msg)
+        if self.contest != "tullock" or self.recovery_rule != "net":
+            msg = (
+                "The exact game is solved for the Tullock contest and the "
+                '"net" recovery rule only'
+            )
+            raise ValueError(msg)
+        return LeveredPreemptionGame(
+            self.params,
+            scale,
+            self.leverage,
+            self.coupon_rate,
+            self.bankruptcy_cost,
+            debt,
+        )
+
+    def solve(
+        self,
+        scale: str = "envelope",
+        debt: str = "par",
+        variants: bool = True,
+    ) -> DuopolySolution:
+        """Preemption equilibrium of the model of record.
+
+        The leader re-optimizes capacity and training fraction at the demand
+        at which it enters; the follower best-responds, before or after the
+        switch. With ``variants`` the solution also carries the fixed-scale
+        leader variants, the single-firm benchmark and the equilibrium of
+        the nested approximation (`pure_power_preemption_equilibrium`).
+        Takes one to two minutes; `cached_equilibrium` returns the stored
+        baseline records.
+        """
+        from .base_model import SingleFirmModel
+        from .preemption_levered import equilibrium_record
+
+        game = self.exact_game(scale, debt)
+        record = equilibrium_record(
+            self.params,
+            scale,
+            self.leverage,
+            debt,
+            self.coupon_rate,
+            self.bankruptcy_cost,
+        )
+        if not variants:
+            return DuopolySolution(record)
+        single = SingleFirmModel(self.params).solve()
+        single_firm = {
+            "invests_before_switch": single.invests_before_switch,
+            "waiting_margin": single.waiting_margin,
+            "X_star": single.precommitted.X_star,
+            "K_star": single.precommitted.K,
+        }
+        fixed_scale = {
+            "pure_power": game.rent_equalization(*game.paper_policy()),
+            "monopoly": game.rent_equalization(*game.exact_monopoly_policy()),
+        }
+        try:
+            pure_power = {
+                key: float(value)
+                for key, value in self.pure_power_preemption_equilibrium().items()
+                if isinstance(value, float | np.floating)
+            }
+        except RuntimeError:
+            pure_power = {}
+        return DuopolySolution(record, single_firm, fixed_scale, pure_power)
+
+    def hitting_statistics(self, X_from: float, X_to: float) -> dict[str, float]:
+        """First-passage statistics of demand from X_from to X_to.
+
+        See `preemption_levered.hitting_statistics`: the probability of
+        reaching X_to before the switch, if the switch never arrived, and
+        after it, and the expected post-switch passage time.
+        """
+        from .preemption_levered import hitting_statistics
+
+        return hitting_statistics(self.params, X_from, X_to)
 
     # ------------------------------------------------------------------
     # Endogenous arrival rate
@@ -1147,13 +1405,13 @@ class DuopolyModel:
             return 1e20
         return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
 
-    def solve_follower(
+    def pure_power_follower(
         self,
         K_L: float,
         phi_L: float,
         regime: str = "H",
     ) -> tuple[float, float, float, float]:
-        """Solve follower's optimal investment problem over (K, phi).
+        """Follower's problem of the nested pure-power game, over (K, phi).
 
         Given leader's (K_L, phi_L), find follower's optimal
         trigger, capacity, and training fraction. Leverage is the
@@ -1196,14 +1454,14 @@ class DuopolyModel:
         self._cache[cache_key] = (X_F, K_F, phi_F, lev_F)
         return X_F, K_F, phi_F, lev_F
 
-    def solve_follower_scalar(
+    def pure_power_follower_scalar(
         self,
         K_L: float,
         phi_L: float,
     ) -> tuple[float, float, float, float]:
         """Follower solution via the separable scalar reduction.
 
-        Verification counterpart to solve_follower(). At a common training
+        Verification counterpart to pure_power_follower(). At a common training
         fraction phi_F = phi_L = phi, the Tullock contest denominators
         factor: [(1-phi)K_F]^alpha + [(1-phi)K_L]^alpha
         = (1-phi)^alpha (K_F^alpha + K_L^alpha), and likewise for the
@@ -1413,7 +1671,7 @@ class DuopolyModel:
         only limited-liability floor is the one on the going-concern
         claim.
         """
-        X_F, K_F, phi_F, _ = self.solve_follower(K_L, phi_L)
+        X_F, K_F, phi_F, _ = self.pure_power_follower(K_L, phi_L)
         if X >= X_F:
             return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
         return self._leader_pre_entry_value(X, K_L, phi_L, lev_L, K_F, phi_F, X_F)
@@ -1454,7 +1712,7 @@ class DuopolyModel:
             return 1e20
         return -(beta * np.log(a_eff) - (beta - 1.0) * np.log(b))
 
-    def solve_leader_monopolist(
+    def pure_power_leader_monopolist(
         self,
         regime: str = "H",
     ) -> tuple[float, float, float, float]:
@@ -1463,8 +1721,8 @@ class DuopolyModel:
         The leader's (K, phi) maximizes the monopoly-phase option value;
         with leverage = 0 this coincides with the pure-power approximation
         SingleFirmModel.pure_power_trigger_capacity_phi (identical objectives).
-        Interim (issue #176): the duopoly is still solved under that
-        approximation; issue #178 re-solves it under the model of record.
+        This is the leader of the nested approximation; in the model of
+        record (`solve`) the leader chooses its scale at entry.
 
         Returns:
             (X_L_mono*, K_L*, phi_L*, lev_L): Leader's monopolist solution;
@@ -1534,7 +1792,7 @@ class DuopolyModel:
         F_follower(X) = B_F * X^beta_H   for X < X_F*
         F_follower(X) = NPV              for X >= X_F*
         """
-        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
+        X_F, K_F, phi_F, lev_F = self.pure_power_follower(K_L, phi_L, regime)
         p = self.params
         beta = p.beta_H
 
@@ -1552,18 +1810,21 @@ class DuopolyModel:
 
         L(X) - F(X)
         """
-        _, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
+        _, K_L, phi_L, lev_L = self.pure_power_leader_monopolist(regime)
         leader_val = self._leader_value_at(X, K_L, phi_L, lev_L)
         follower_opt = self.follower_option_value(X, K_L, phi_L, regime)
         return leader_val - follower_opt
 
-    def solve_preemption_equilibrium(
+    def pure_power_preemption_equilibrium(
         self, regime: str = "H", strict: bool = True
     ) -> dict:
-        """Solve for the preemption equilibrium.
+        """Preemption equilibrium of the nested pure-power game.
 
-        Finds X_P where the value of leading first equals the value
-        of following.
+        The reduced-form game of the earlier draft, not the model of record
+        (`solve`): the follower's option and the dilution of the leader's
+        claim are priced with beta_H and the unconditional A_eff, and the
+        leader is held at the monopoly-phase scale. Finds X_P where the
+        value of leading first equals the value of following.
 
         Args:
             regime: Regime label (cache key; the equilibrium objects are
@@ -1597,8 +1858,8 @@ class DuopolyModel:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        X_L_mono, K_L, phi_L, lev_L = self.solve_leader_monopolist(regime)
-        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
+        X_L_mono, K_L, phi_L, lev_L = self.pure_power_leader_monopolist(regime)
+        X_F, K_F, phi_F, lev_F = self.pure_power_follower(K_L, phi_L, regime)
 
         # Default boundaries: the leader's is that of a firm anticipating
         # follower entry (above the monopoly boundary), the follower's the
@@ -1706,7 +1967,7 @@ class DuopolyModel:
     # Leader-convention sensitivity: re-optimized leader scale
     # ------------------------------------------------------------------
 
-    def _solve_follower_warm(
+    def _pure_power_follower_warm(
         self,
         K_L: float,
         phi_L: float,
@@ -1714,15 +1975,15 @@ class DuopolyModel:
     ) -> tuple[float, float, float, float]:
         """Follower best response from a single warm-started Nelder-Mead.
 
-        Identical objective to solve_follower(), but with one starting
+        Identical objective to pure_power_follower(), but with one starting
         point instead of the 16-point deterministic multistart. Used only
-        inside solve_preemption_reoptimized_leader(), where the follower
+        inside pure_power_preemption_reoptimized_leader(), where the follower
         problem is re-solved at every evaluation of the leader's
         objective and the 16-start global search dominates the run time.
         The follower objective is smooth and single-peaked in (log K,
         phi) at every (K_L, phi_L) reached along the search, and the
         equilibrium returned by the sensitivity routine is cross-checked
-        against the 16-start solve_follower() at the fixed point.
+        against the 16-start pure_power_follower() at the fixed point.
         """
         lev_F = self.leverage
         result = optimize.minimize(
@@ -1750,15 +2011,15 @@ class DuopolyModel:
         """Leader entry NPV at X for a candidate (K_L, phi_L).
 
         Same three-phase construction as _leader_value_at(), but with the
-        follower solved from a warm start (see _solve_follower_warm).
+        follower solved from a warm start (see _pure_power_follower_warm).
         """
         lev_L = self.leverage
-        X_F, K_F, phi_F, _ = self._solve_follower_warm(K_L, phi_L, follower_x0)
+        X_F, K_F, phi_F, _ = self._pure_power_follower_warm(K_L, phi_L, follower_x0)
         if X >= X_F:
             return self.equity_value(X, phi_L, K_L, phi_F, K_F, lev_L)
         return self._leader_pre_entry_value(X, K_L, phi_L, lev_L, K_F, phi_F, X_F)
 
-    def reoptimized_leader_policy(
+    def pure_power_reoptimized_leader_policy(
         self,
         X: float,
         x0: np.ndarray | None = None,
@@ -1823,7 +2084,7 @@ class DuopolyModel:
             msg = f"Leader re-optimization failed at X={X:.6g}"
             raise RuntimeError(msg)
         # The fixed point reached from a warm start is cross-checked
-        # against the 16-start solve_follower() at the end of the calling
+        # against the 16-start pure_power_follower() at the end of the calling
         # routine.
         if x0 is None and diagnostics["n_converged"] == 0:
             msg = (
@@ -1838,15 +2099,15 @@ class DuopolyModel:
             float(np.clip(best_x[1], 0.01, 0.99)),
         )
 
-    def solve_preemption_reoptimized_leader(
+    def pure_power_preemption_reoptimized_leader(
         self,
         regime: str = "H",
         n_grid: int = 40,
         x_low_factor: float = 1e-3,
     ) -> dict:
-        """Preemption trigger when the leader re-optimizes scale for entry.
+        """Nested pure-power game with a leader that re-optimizes scale.
 
-        Sensitivity counterpart to solve_preemption_equilibrium(), which
+        Sensitivity counterpart to pure_power_preemption_equilibrium(), which
         holds the leader's (K_L, phi_L) at the monopoly-phase optimum
         (the leader-scale convention). Here the leader chooses (K_L,
         phi_L) to maximize its entry NPV at the entry point itself, and
@@ -1873,8 +2134,8 @@ class DuopolyModel:
         if cache_key in self._cache:
             return self._cache[cache_key]
 
-        X_L_mono, K_mono, phi_mono, lev_L = self.solve_leader_monopolist(regime)
-        baseline = self.solve_preemption_equilibrium(regime)
+        X_L_mono, K_mono, phi_mono, lev_L = self.pure_power_leader_monopolist(regime)
+        baseline = self.pure_power_preemption_equilibrium(regime)
 
         warm: dict[str, np.ndarray | None] = {"x0": None}
 
@@ -1882,7 +2143,7 @@ class DuopolyModel:
         gaps = np.empty(n_grid)
         policies: list[tuple[float, float]] = []
         for i, X in enumerate(grid):
-            L_star, K_L, phi_L = self.reoptimized_leader_policy(
+            L_star, K_L, phi_L = self.pure_power_reoptimized_leader_policy(
                 X, x0=warm["x0"] if i else None
             )
             warm["x0"] = np.array([np.log(K_L), phi_L])
@@ -1901,16 +2162,16 @@ class DuopolyModel:
         warm["x0"] = np.array([np.log(policies[idx][0]), policies[idx][1]])
 
         def gap(X: float) -> float:
-            _, K_L, phi_L = self.reoptimized_leader_policy(X, x0=warm["x0"])
+            _, K_L, phi_L = self.pure_power_reoptimized_leader_policy(X, x0=warm["x0"])
             warm["x0"] = np.array([np.log(K_L), phi_L])
             L_star = self._leader_value_at(X, K_L, phi_L, lev_L)
             return L_star - self.follower_option_value(X, K_L, phi_L, regime)
 
         X_P = float(optimize.brentq(gap, grid[idx], grid[idx + 1], xtol=1e-14))
 
-        _, K_L, phi_L = self.reoptimized_leader_policy(X_P, x0=warm["x0"])
+        _, K_L, phi_L = self.pure_power_reoptimized_leader_policy(X_P, x0=warm["x0"])
         # Cross-check the fixed point with the 16-start follower solver.
-        X_F, K_F, phi_F, lev_F = self.solve_follower(K_L, phi_L, regime)
+        X_F, K_F, phi_F, lev_F = self.pure_power_follower(K_L, phi_L, regime)
 
         result = {
             "X_leader": X_P,
@@ -1958,7 +2219,7 @@ class DuopolyModel:
         values: np.ndarray,
         regime: str = "H",
     ) -> dict[str, np.ndarray]:
-        """Compute equilibrium outcomes over a range of parameter values."""
+        """Nested pure-power equilibrium over a range of parameter values."""
         n = len(values)
         results = {
             "param_values": values,
@@ -1987,7 +2248,7 @@ class DuopolyModel:
                     contest=self.contest,
                     recovery_rule=self.recovery_rule,
                 )
-                eq = m.solve_preemption_equilibrium(regime)
+                eq = m.pure_power_preemption_equilibrium(regime)
                 for key in [
                     "X_leader",
                     "K_leader",
@@ -2013,7 +2274,7 @@ class DuopolyModel:
         leverage_values: np.ndarray,
         regime: str = "H",
     ) -> dict[str, np.ndarray]:
-        """Compute equilibrium outcomes over a range of leverage levels."""
+        """Nested pure-power equilibrium over a range of leverage levels."""
         n = len(leverage_values)
         results = {
             "leverage": leverage_values,
@@ -2038,7 +2299,7 @@ class DuopolyModel:
                     contest=self.contest,
                     recovery_rule=self.recovery_rule,
                 )
-                eq = m.solve_preemption_equilibrium(regime)
+                eq = m.pure_power_preemption_equilibrium(regime)
                 for key in [
                     "X_leader",
                     "K_leader",
@@ -2061,11 +2322,11 @@ class DuopolyModel:
     # ------------------------------------------------------------------
 
     def summary(self, regime: str = "H") -> dict:
-        """Return a summary of the equilibrium solution."""
+        """Summary of the nested pure-power equilibrium (exploratory pipeline)."""
         result = {}
 
         try:
-            eq = self.solve_preemption_equilibrium(regime)
+            eq = self.pure_power_preemption_equilibrium(regime)
             result["equilibrium"] = eq
 
             result["leader_npv"] = self._leader_value_at(

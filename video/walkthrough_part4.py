@@ -898,7 +898,7 @@ class P4S08OneWayCoupling(PaperScene):
 
         p = ModelParameters()
         duo = DuopolyModel(p, leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30)
-        eq_d = duo.solve_preemption_equilibrium("H")
+        eq_d = duo.pure_power_preemption_equilibrium("H")
         args = (
             float(eq_d["phi_follower"]),
             float(eq_d["K_follower"]),
@@ -2057,7 +2057,7 @@ class P4S16BoundariesFigure(PaperScene):
             duo = DuopolyModel(
                 p, leverage=float(lev), coupon_rate=0.05, bankruptcy_cost=0.30
             )
-            eq_d = duo.solve_preemption_equilibrium("H")
+            eq_d = duo.pure_power_preemption_equilibrium("H")
             x_f[i] = eq_d["X_follower"]
             x_p[i] = eq_d["X_leader"]
             x_d[i] = eq_d["X_default_follower"]

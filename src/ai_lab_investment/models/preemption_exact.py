@@ -1,12 +1,22 @@
-"""L-regime preemption game in the exact primitives, at zero leverage.
+"""L-regime preemption game in the exact primitives, without credit.
 
-Diagnostic for the question raised by the 2026-11 review (comment C1, action
-4; issue #173). The single firm of Internet Appendix B prefers to wait for
-the regime switch rather than invest before it. In a duopoly both firms
-cannot wait, so does the threat of preemption restore a finite pre-switch
-trigger once the pure-power (unconditional-A_eff) convention is dropped?
-Verification module: not wired into the pipeline, and it changes no number
-in the paper.
+Written as the diagnostic for the question raised by the 2026-11 review
+(comment C1, action 4; issue #173): the single firm of Internet Appendix B
+prefers to wait for the regime switch rather than invest before it; in a
+duopoly both firms cannot wait, so does the threat of preemption restore a
+finite pre-switch trigger once the pure-power (unconditional-A_eff)
+convention is dropped? Since issue #178 this game is the base of the
+duopoly model of record: `preemption_levered.LeveredPreemptionGame`
+subclasses `ExactPreemptionGame` and adds the option to stop operating and
+debt, and `DuopolyModel.solve()` returns its equilibrium. The game in this
+module, in which firms operate forever and carry no debt, is the nested
+case the levered game is checked against.
+
+What rent equalization does and does not deliver is stated in
+`preemption_levered.leader_assigned_entry`: at baseline the trigger of a
+firm that knows it will lead lies below X_P, so X_P is the demand level
+from which both firms want to lead and not necessarily the date of first
+investment.
 
 Formulation
 -----------
@@ -602,8 +612,51 @@ class ExactPreemptionGame:
         j = np.argmax(coeff, axis=1)
         return coeff[np.arange(len(K)), j], phis[j]
 
+    @staticmethod
+    def _entry_candidate(
+        premium: np.ndarray, ratio: np.ndarray, close: bool
+    ) -> tuple[int, int] | None:
+        """Grid point from which the pre-switch entry search is polished.
+
+        The largest exercise premium when it is positive; when it is not and
+        ``close`` is set, the point at which immediate entry is worth most
+        relative to waiting. A supremum at the top of the demand grid is not
+        an interior trigger.
+        """
+        i, j = np.unravel_index(int(np.argmax(premium)), premium.shape)
+        if premium[i, j] <= 0.0:
+            if not close:
+                return None
+            i, j = np.unravel_index(int(np.argmax(ratio)), ratio.shape)
+        if i == premium.shape[0] - 1:
+            return None
+        return int(i), int(j)
+
+    def _polish_entry(self, claim: ForcedClaim, entry_npv, norm: float, start, options):
+        """Nelder-Mead over (log X, log K, phi) on the exercise premium."""
+
+        def neg(v: np.ndarray) -> float:
+            log_X, log_K, phi = v
+            x = np.exp(log_X)
+            if not (self.x_search[0] < x < self.x_search[1]):
+                return _PENALTY
+            if abs(log_K) > 60.0 or not (1e-4 < phi < 1.0 - 1e-4):
+                return _PENALTY
+            npv = entry_npv(x, np.exp(log_K), phi)
+            if not np.isfinite(npv):
+                return _PENALTY
+            return -(npv - float(claim(x)[0])) * x ** (-self.bp) / norm
+
+        return optimize.minimize(neg, start, method="Nelder-Mead", options=options)
+
     def pre_switch_entry(
-        self, claim: ForcedClaim, N_L: float, T_L: float
+        self,
+        claim: ForcedClaim,
+        N_L: float,
+        T_L: float,
+        cost=None,
+        payoff=None,
+        slack: float = 1.0,
     ) -> PreSwitchEntry:
         """Follower's best pre-switch entry against inference/training rival.
 
@@ -613,46 +666,61 @@ class ExactPreemptionGame:
         the switch dominates entry at every demand level and scale searched
         (demand up to 1e6 X_H*); a trigger above that range is reported as no
         entry.
+
+        `preemption_levered` passes ``cost`` (the cost function of the grid
+        stage), ``payoff(X, K, phi)`` (the exact entry NPV, on which a second
+        polish is run from the optimum of the first) and ``slack``: the polish
+        then runs whenever the grid candidate is worth at least ``slack``
+        times waiting, and the sign of the polished premium decides.
         """
+        if cost is None:
+            cost = self.cost
         X = np.geomspace(self.x_search[0], self.x_search[1], 480)
         K = np.exp(
             np.linspace(np.log(self.K_ref) - 16.0, np.log(self.K_ref) + 26.0, 480)
         )
         coeff, phis = self._best_allocation(K, N_L, T_L)
         wait = claim(X)
-        obstacle = np.outer(X, coeff) - self.cost(K)[None, :]
+        obstacle = np.outer(X, coeff) - cost(K)[None, :]
         best_ratio = float(np.max(obstacle.max(axis=1) / wait))
         premium = (obstacle - wait[:, None]) * X[:, None] ** (-self.bp)
-        i, j = np.unravel_index(int(np.argmax(premium)), premium.shape)
-        # A supremum at the top of the demand grid is not an interior trigger.
-        if premium[i, j] <= 0.0 or i == len(X) - 1:
-            return PreSwitchEntry(
-                0.0, float("inf"), float("nan"), float("nan"), best_ratio
-            )
+        none = PreSwitchEntry(0.0, float("inf"), float("nan"), float("nan"), best_ratio)
+        close = payoff is not None and best_ratio >= slack
+        candidate = self._entry_candidate(premium, obstacle / wait[:, None], close)
+        if candidate is None:
+            return none
+        i, j = candidate
 
-        norm = float(premium[i, j])
+        norm = abs(float(premium[i, j])) or 1.0
         rival_K = N_L + T_L
         rival_phi = T_L / rival_K if rival_K > 0 else 0.0
 
-        def neg(v: np.ndarray) -> float:
-            log_X, log_K, phi = v
-            x = np.exp(log_X)
-            if not (self.x_search[0] < x < self.x_search[1]):
-                return _PENALTY
-            if abs(log_K) > 60.0 or not (1e-4 < phi < 1.0 - 1e-4):
-                return _PENALTY
-            k = np.exp(log_K)
+        def grid_payoff(x: float, k: float, phi: float) -> float:
             a = float(self.revenue_coeff(phi, k, rival_phi, rival_K))
-            payoff = a * x - float(self.cost(k)) - float(claim(x)[0])
-            return -payoff * x ** (-self.bp) / norm
+            return a * x - float(cost(k))
+
+        def polish(entry_npv, start: np.ndarray, options: dict):
+            return self._polish_entry(claim, entry_npv, norm, start, options)
 
         start = np.array([np.log(X[i]), np.log(K[j]), phis[j]])
-        res = optimize.minimize(
-            neg,
-            start,
-            method="Nelder-Mead",
-            options={"maxiter": 4000, "xatol": 1e-10, "fatol": 1e-13},
+        res = polish(
+            grid_payoff, start, {"maxiter": 4000, "xatol": 1e-10, "fatol": 1e-13}
         )
+        if payoff is not None:
+            # Second stage on the exact claim, from the optimum of the first.
+            simplex = res.x + np.vstack([np.zeros(3), 0.01 * np.eye(3)])
+            res = polish(
+                payoff,
+                res.x,
+                {
+                    "maxiter": 1000,
+                    "xatol": 1e-7,
+                    "fatol": 1e-10,
+                    "initial_simplex": simplex,
+                },
+            )
+        if res.fun >= 0.0:
+            return none
         log_X, log_K, phi = res.x
         return PreSwitchEntry(
             premium=float(-res.fun * norm),
@@ -1239,8 +1307,8 @@ def reduced_model_trigger(params: ModelParameters, reoptimized: bool = False) ->
 
     model = DuopolyModel(params)
     if reoptimized:
-        return float(model.solve_preemption_reoptimized_leader()["X_leader"])
-    return float(model.solve_preemption_equilibrium()["X_leader"])
+        return float(model.pure_power_preemption_reoptimized_leader()["X_leader"])
+    return float(model.pure_power_preemption_equilibrium()["X_leader"])
 
 
 def preemption_diagnostic(

@@ -510,7 +510,7 @@ class TestDilemmaAsymmetry:
                 v.dario_dilemma(0.10, 0.02)["value_loss_pct"],
                 v.dario_dilemma(0.10, 0.20)["value_loss_pct"],
             ))
-            eq = DuopolyModel(p, leverage=0.0).solve_preemption_equilibrium("L")
+            eq = DuopolyModel(p, leverage=0.0).pure_power_preemption_equilibrium("L")
             discounts.append(eq["X_leader"] / eq["X_leader_monopolist"])
 
         assert losses[1][0] == pytest.approx(losses[0][0], rel=1e-4)

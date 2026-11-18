@@ -1,0 +1,1492 @@
+"""Preemption game in the exact primitives with shutdown, default and debt.
+
+Model of record for the duopoly (issue #178). `preemption_exact` solves the
+L-regime preemption game in the exact primitives for firms that operate
+forever. This module adds the credit primitives of issue #177 to the same
+game: every installed firm may stop operating (the unlevered firm at a
+shutdown boundary, the levered firm at a default boundary), debt is priced
+with the recovery rule of `DuopolyModel.recovery_value`, and the coupon is
+either the par coupon r_c * l * I(K) or the fair coupon at which the debt
+is worth its proceeds l * I(K) at issuance.
+
+Formulation
+-----------
+Everything in the module docstring of `preemption_exact` carries over (roles,
+the follower's absorbing-H entry problem, the two post-switch scale
+assumptions, the leader's four phases, rent equalization). What changes is
+the claim each firm holds once installed. With fixed claims q = delta K + C_D:
+
+Absorbing regime H, both firms installed. Leland's closed form with the
+H-regime negative root: E^H(X) = a X - q/r + (q/r - a X_D^H) (X / X_D^H)^{b_H^-}
+above X_D^H = [b_H^- / (b_H^- - 1)] (q/r) / a and zero below, with a the
+firm's H-regime revenue coefficient. Debt is (C_D/r) [1 - (X / X_D^H)^{b_H^-}]
+plus the recovery term.
+
+Absorbing regime H, leader installed, follower waiting. The leader's equity
+is R X - q/r + g_1 X^{b_H} + g_2 X^{b_H^-} between its boundary and the
+follower's trigger X_F^H: value matching and smooth pasting at the boundary
+and value matching to the duopoly equity at X_F^H pin (g_1, g_2, boundary).
+
+Regime L. Each claim solves the L-regime ODE with forcing equal to its flow
+plus lambda times its H-regime value, which is zero below the H-regime
+boundary. The forcing is piecewise a sum of powers (plus a table when the
+follower's scale is chosen at the switch), so the bounded particular
+solution P is in closed form (`SegmentClaim`) and
+
+    E(X) = P(X) + C X^{b_L^-} + h X^{b_L^+},
+
+with h = 0 unless the follower enters before the switch. The boundary X_D
+solves b_L^- P(X_D) = X_D P'(X_D) (value matching and smooth pasting), which
+is the coupled regime-switching boundary and not the single-boundary formula
+eq-default-boundary. Debt solves the same ODE with forcing C_D + lambda D^H
+and the Dirichlet condition D(X_D) = R(X_D).
+
+Entry payoffs. A firm entering at X with capacity K receives E(X) - (1 - l)
+I(K), with E evaluated at the par coupon or at the fair coupon for issuance
+at X. Under fair pricing this is firm value less I(K), so leverage enters
+the entry decision only through the difference between the default boundary
+and the shutdown boundary; under par debt at r_c < r it also carries the
+financing subsidy.
+
+Conventions
+-----------
+1. A firm values its claim as if the rival's capacity stayed in the contest
+   forever. What happens to a rival's capacity after its default or shutdown
+   is not modelled, as in the reduced model.
+2. Recovery in regime L is eq-recovery with the exact unlevered asset value.
+   In regime H the inference business has no revenue, so the same rule gives
+   zero recovery.
+3. The coupon is fixed at issuance. The follower's fair coupon is set at the
+   demand at which it enters.
+4. The follower's pre-switch entry candidate is located on the claim without
+   the default option (a grid search) and polished on the exact claim.
+5. The post-switch exercise region of the follower is taken to be an upper
+   set, as in `preemption_exact`.
+
+None of these uses the beta_H discount factor or the unconditional A_eff
+coefficient in regime L. `ExactPreemptionGame` is the nested game in which
+firms operate forever and carry no debt.
+"""
+
+from bisect import bisect_right
+from dataclasses import dataclass
+from itertools import pairwise
+from math import inf, isfinite
+from typing import cast
+
+import numpy as np
+from scipy import interpolate, optimize
+
+from .parameters import ModelParameters
+from .preemption_exact import (
+    ExactPreemptionGame,
+    ForcedClaim,
+    LeaderSubgame,
+    PostSwitchEntry,
+    PreSwitchEntry,
+    contest_revenue,
+)
+
+DEBT_CONVENTIONS: tuple[str, ...] = ("par", "fair")
+
+Terms = tuple[tuple[float, float], ...]
+
+
+class PiecewisePowers:
+    """A function equal to a sum of powers sum_j c_j X^{q_j} on each segment.
+
+    ``breaks`` are the increasing breakpoints and ``terms[k]`` the (c, q)
+    pairs on the k-th segment, the first starting at zero and the last
+    unbounded. An empty tuple of terms is the zero function.
+    """
+
+    def __init__(
+        self, breaks: tuple[float, ...] = (), terms: tuple[Terms, ...] = ((),)
+    ):
+        if len(terms) != len(breaks) + 1:
+            msg = "terms must have one more entry than breaks"
+            raise ValueError(msg)
+        if any(b1 <= b0 for b0, b1 in pairwise(breaks)):
+            msg = f"breaks must be increasing, got {breaks}"
+            raise ValueError(msg)
+        self.breaks = tuple(float(b) for b in breaks)
+        self.terms = tuple(tuple(t) for t in terms)
+
+    @classmethod
+    def everywhere(cls, *terms: tuple[float, float]) -> "PiecewisePowers":
+        return cls((), (tuple(terms),))
+
+    def _segment(self, x: float) -> int:
+        return bisect_right(self.breaks, x)
+
+    def scaled(self, k: float) -> "PiecewisePowers":
+        return PiecewisePowers(
+            self.breaks,
+            tuple(tuple((k * c, q) for c, q in seg) for seg in self.terms),
+        )
+
+    def __add__(self, other: "PiecewisePowers") -> "PiecewisePowers":
+        breaks = tuple(sorted(set(self.breaks) | set(other.breaks)))
+        terms = []
+        for i in range(len(breaks) + 1):
+            if not breaks:
+                rep = 1.0
+            elif i == 0:
+                rep = 0.5 * breaks[0]
+            elif i == len(breaks):
+                rep = 2.0 * breaks[-1]
+            else:
+                rep = float(np.sqrt(breaks[i - 1] * breaks[i]))
+            terms.append(
+                self.terms[self._segment(rep)] + other.terms[other._segment(rep)]
+            )
+        return PiecewisePowers(breaks, tuple(terms))
+
+    def splice(self, x: float, upper: "PiecewisePowers") -> "PiecewisePowers":
+        """This function below x and ``upper`` at and above it."""
+        low = tuple(b for b in self.breaks if b < x)
+        high = tuple(b for b in upper.breaks if b > x)
+        terms = (
+            self.terms[: len(low) + 1] + upper.terms[len(upper.breaks) - len(high) :]
+        )
+        return PiecewisePowers((*low, float(x), *high), terms)
+
+    def __call__(self, X: np.ndarray | float) -> np.ndarray:
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        seg = np.searchsorted(np.asarray(self.breaks), X_arr, side="right")
+        out = np.zeros_like(X_arr)
+        for k in np.unique(seg):
+            mask = seg == k
+            for c, q in self.terms[k]:
+                out[mask] += c * X_arr[mask] ** q
+        return out
+
+
+class SegmentClaim:
+    """Bounded particular solution of the L-regime ODE, piecewise-power forcing.
+
+    P(X) = kappa [X^{b-} int_0^X f y^{-b- - 1} dy + X^{b+} int_X^inf f y^{-b+ - 1} dy],
+    the same Green's-function solution as `ForcedClaim`, with f a
+    `PiecewisePowers` so that both integrals are in closed form on every
+    segment. Also returns X P'(X), which the smooth-pasting conditions need.
+    """
+
+    def __init__(self, bn: float, bp: float, kappa: float, forcing: PiecewisePowers):
+        self.bn, self.bp, self.kappa = bn, bp, kappa
+        self.breaks = np.asarray(forcing.breaks, dtype=float)
+        self.terms = forcing.terms
+        n = len(self.breaks)
+        if any(q <= bn for _, q in self.terms[0]):
+            msg = "Forcing is not integrable at the origin"
+            raise ValueError(msg)
+        if any(q >= bp for _, q in self.terms[-1]):
+            msg = "Forcing is not integrable at infinity"
+            raise ValueError(msg)
+        self.lo = [0.0, *forcing.breaks]
+        self.hi = [*forcing.breaks, inf]
+        minus = [
+            self._integral(self.terms[k], self.lo[k], self.hi[k], bn) for k in range(n)
+        ]
+        plus = [
+            self._integral(self.terms[k], self.lo[k], self.hi[k], bp)
+            for k in range(1, n + 1)
+        ]
+        self.minus_below = np.concatenate([[0.0], np.cumsum(minus)])
+        self.plus_above = np.concatenate([np.cumsum(plus[::-1])[::-1], [0.0]])
+
+    @staticmethod
+    def _power(x: float, e: float) -> float:
+        if x == 0.0:
+            if e <= 0.0:
+                msg = "Forcing is not integrable at the origin"
+                raise ValueError(msg)
+            return 0.0
+        if not isfinite(x):
+            if e >= 0.0:
+                msg = "Forcing is not integrable at infinity"
+                raise ValueError(msg)
+            return 0.0
+        return x**e
+
+    def _integral(self, terms: Terms, a: float, b: float, root: float) -> float:
+        total = 0.0
+        for c, q in terms:
+            e = q - root
+            total += c * (self._power(b, e) - self._power(a, e)) / e
+        return total
+
+    def value_slope(self, X: np.ndarray | float) -> tuple[np.ndarray, np.ndarray]:
+        """(P(X), X P'(X))."""
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        seg = np.searchsorted(self.breaks, X_arr, side="right")
+        low = self.minus_below[seg].copy()
+        high = self.plus_above[seg].copy()
+        for k in np.unique(seg):
+            mask = seg == k
+            x = X_arr[mask]
+            a, b = self.lo[k], self.hi[k]
+            for c, q in self.terms[k]:
+                e = q - self.bn
+                low[mask] += c * (x**e - (a**e if a > 0.0 else 0.0)) / e
+                e = q - self.bp
+                high[mask] += c * ((b**e if isfinite(b) else 0.0) - x**e) / e
+        lower = X_arr**self.bn * low
+        upper = X_arr**self.bp * high
+        return (
+            self.kappa * (lower + upper),
+            self.kappa * (self.bn * lower + self.bp * upper),
+        )
+
+
+class Particular:
+    """Particular solution: a closed-form part plus an optional tabulated part.
+
+    The tabulated part is a `ForcedClaim` whose forcing vanishes below its
+    breakpoint, where it is a multiple of X^{b+}. Slopes are available below
+    that breakpoint only, which is where every boundary of the game lies.
+    """
+
+    def __init__(self, closed: SegmentClaim, table: ForcedClaim | None = None):
+        self.closed = closed
+        self.table = table
+        self.slope_limit = inf if table is None else table.X_b
+
+    def value(self, X: np.ndarray | float) -> np.ndarray:
+        out = self.closed.value_slope(X)[0]
+        if self.table is not None:
+            out = out + self.table(X)
+        return out
+
+    def value_slope(self, X: np.ndarray | float) -> tuple[np.ndarray, np.ndarray]:
+        P, XdP = self.closed.value_slope(X)
+        if self.table is not None:
+            X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+            if np.any(X_arr >= self.table.X_b):
+                msg = "Slope requested above the tabulated breakpoint"
+                raise ValueError(msg)
+            tail = self.table.u * X_arr**self.table.bp
+            P, XdP = P + tail, XdP + self.table.bp * tail
+        return P, XdP
+
+
+@dataclass(frozen=True)
+class InstalledClaims:
+    """Equity and debt of an installed firm in regime L.
+
+    E(X) = P_E(X) + C_E X^{b-} + h_E X^{b+} above ``X_D`` and zero at or
+    below it; D(X) likewise above ``X_D`` and ``recovery`` at or below it.
+    ``X_top`` is the demand at which the claim ends because the follower
+    enters before the switch (inf otherwise).
+    """
+
+    coupon: float
+    X_D: float
+    recovery: float
+    X_top: float
+    bn: float
+    bp: float
+    equity_particular: Particular
+    equity_coefs: tuple[float, float]
+    debt_particular: Particular | None
+    debt_coefs: tuple[float, float]
+
+    def _evaluate(
+        self,
+        X: np.ndarray | float,
+        particular: Particular,
+        coefs: tuple[float, float],
+        floor: float,
+    ) -> np.ndarray:
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        out = np.full_like(X_arr, floor)
+        alive = X_arr > self.X_D
+        if alive.any():
+            x = X_arr[alive]
+            out[alive] = (
+                particular.value(x) + coefs[0] * x**self.bn + coefs[1] * x**self.bp
+            )
+        return out
+
+    def equity(self, X: np.ndarray | float) -> np.ndarray:
+        """Going-concern equity value (before the sunk contribution)."""
+        return self._evaluate(X, self.equity_particular, self.equity_coefs, 0.0)
+
+    def debt(self, X: np.ndarray | float) -> np.ndarray:
+        """Debt value; zero when there is no coupon."""
+        if self.debt_particular is None:
+            return np.zeros_like(np.atleast_1d(np.asarray(X, dtype=float)))
+        return self._evaluate(X, self.debt_particular, self.debt_coefs, self.recovery)
+
+
+class LeveredSubgame(LeaderSubgame):
+    """Exact values after a leader installs (K_L, phi_L) in regime L.
+
+    Counterpart of `preemption_exact.LeaderSubgame` with the option to stop
+    operating and, under leverage, debt. The follower's policies do not
+    depend on the leader's coupon (convention 1 of the module docstring).
+    """
+
+    def __init__(self, game: "LeveredPreemptionGame", K_L: float, phi_L: float):
+        # The base constructor is not called: it would build the claims
+        # without credit, none of which is used here.
+        self.game: LeveredPreemptionGame = game
+        self.K_L = float(K_L)
+        self.phi_L = float(phi_L)
+        self.T_L = self.phi_L * self.K_L
+        self.N_L = (1.0 - self.phi_L) * self.K_L
+        self.sunk = (1.0 - game.leverage) * game.investment_cost(self.K_L)
+        self.post_switch = game.follower_post_switch_entry(self.T_L)
+        self.table = game.follower_table(self.post_switch)
+        self.follower_claim = game.follower_waiting_claim(self.post_switch, self.table)
+        self.pre_switch = game.follower_pre_switch_entry(
+            self.follower_claim, self.N_L, self.T_L
+        )
+        self._claims: dict[float, InstalledClaims] = {}
+        self._fair: dict[float, float] = {}
+
+    # -- domain -----------------------------------------------------------
+
+    def _check_domain(self, X: np.ndarray) -> None:
+        if np.any(self.pre_switch.X_entry <= X):
+            msg = (
+                "Values are defined below the follower's pre-switch entry "
+                f"trigger X_F^L = {self.pre_switch.X_entry:.6g}"
+            )
+            raise ValueError(msg)
+
+    # -- follower ---------------------------------------------------------
+
+    def follower_value(self, X: np.ndarray | float) -> np.ndarray:
+        """Follower's value F(X), for X below its pre-switch trigger."""
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        self._check_domain(X_arr)
+        return (
+            self.follower_claim(X_arr) + self.pre_switch.premium * X_arr**self.game.bp
+        )
+
+    # -- leader -----------------------------------------------------------
+
+    def leader_claims(self, coupon: float) -> InstalledClaims:
+        """Leader's equity and debt before follower entry at a given coupon."""
+        key = float(coupon)
+        if key not in self._claims:
+            if len(self._claims) > 64:
+                self._claims = {k: v for k, v in self._claims.items() if k == 0.0}
+            self._claims[key] = self.game.leader_waiting_claims(self, key)
+        return self._claims[key]
+
+    def leader_coupon(self, X: float) -> float:
+        """Coupon in force for a leader entering at X."""
+        game = self.game
+        proceeds = game.leverage * game.investment_cost(self.K_L)
+        if proceeds <= 0.0:
+            return 0.0
+        if game.debt == "par":
+            return game.coupon_rate * proceeds
+        key = float(X)
+        if key not in self._fair:
+            self._fair[key] = game.solve_fair_coupon(self.leader_claims, key, proceeds)
+        return self._fair[key]
+
+    def leader_value(self, X: np.ndarray | float) -> np.ndarray:
+        """Leader's entry NPV L(X) = E_L(X) - (1 - l) I(K_L)."""
+        X_arr = np.atleast_1d(np.asarray(X, dtype=float))
+        self._check_domain(X_arr)
+        if self.game.debt == "par" or self.game.leverage <= 0.0:
+            claims = self.leader_claims(self.leader_coupon(float(X_arr[0])))
+            return claims.equity(X_arr) - self.sunk
+        out = np.empty_like(X_arr)
+        for i, x in enumerate(X_arr):
+            try:
+                claims = self.leader_claims(self.leader_coupon(float(x)))
+                out[i] = claims.equity(x)[0] - self.sunk
+            except ValueError:
+                # No fair coupon: the proceeds exceed the debt capacity at x.
+                out[i] = -self.game.investment_cost(self.K_L)
+        return out
+
+    def gap(self, X: np.ndarray | float) -> np.ndarray:
+        """Leader-minus-follower gap L(X) - F(X)."""
+        return self.leader_value(X) - self.follower_value(X)
+
+    def leader_credit(self, X: float) -> dict[str, float]:
+        """Leader's credit objects for entry at demand X.
+
+        Returns the coupon, the default (or shutdown) boundary, equity and
+        debt values, recovery, the spread C_D / D - r and the distance to
+        default X / X_D. Without debt the spread is nan.
+        """
+        game = self.game
+        coupon = self.leader_coupon(X)
+        claims = self.leader_claims(coupon)
+        debt = float(claims.debt(X)[0])
+        proceeds = game.leverage * game.investment_cost(self.K_L)
+        return {
+            "coupon": coupon,
+            "coupon_rate": coupon / proceeds if proceeds > 0.0 else float("nan"),
+            "X_default": claims.X_D,
+            "distance_to_default": X / claims.X_D,
+            "equity": float(claims.equity(X)[0]),
+            "debt": debt,
+            "proceeds": proceeds,
+            "recovery": claims.recovery,
+            "spread": coupon / debt - game.params.r if debt > 0.0 else float("nan"),
+        }
+
+
+class LeveredPreemptionGame(ExactPreemptionGame):
+    """L-regime preemption game in the exact primitives with credit.
+
+    Args:
+        params: Model parameters.
+        scale: Post-switch scale assumption, ``"precommitted"`` or
+            ``"envelope"`` (scale chosen at the switch).
+        leverage: Debt proceeds as a fraction of I(K), common to both firms.
+        coupon_rate: Par coupon rate r_c.
+        bankruptcy_cost: Fraction b of the liquidation value lost in default.
+        debt: ``"par"`` (coupon r_c * l * I) or ``"fair"`` (coupon at which
+            debt is worth l * I at issuance).
+        table_density: Points per decade of the quadrature tables.
+    """
+
+    def __init__(
+        self,
+        params: ModelParameters,
+        scale: str = "envelope",
+        leverage: float = 0.0,
+        coupon_rate: float = 0.05,
+        bankruptcy_cost: float = 0.30,
+        debt: str = "par",
+        table_density: int = 150,
+    ):
+        super().__init__(params, scale, table_density)
+        if debt not in DEBT_CONVENTIONS:
+            msg = f"debt must be one of {DEBT_CONVENTIONS}, got {debt!r}"
+            raise ValueError(msg)
+        if not 0.0 <= leverage < 1.0:
+            msg = f"Leverage must be in [0, 1), got {leverage}"
+            raise ValueError(msg)
+        p = params
+        self.leverage = float(leverage)
+        self.coupon_rate = float(coupon_rate)
+        self.bankruptcy_cost = float(bankruptcy_cost)
+        self.debt = debt
+        self.bn_H = self._root(p.mu_H, p.r, -1.0)
+        self.m_H = self.bn_H / (self.bn_H - 1.0)
+        self.m_L = self.bn / (self.bn - 1.0)
+        self.kappa = 2.0 / (p.sigma**2 * (self.bp - self.bn))
+        # Claim without the default option: under par debt the subsidy scales
+        # the capital cost by 1 - l (1 - r_c / r); under fair debt it is the
+        # unlevered claim. Used to start the searches only.
+        scale_c = 1.0
+        if debt == "par":
+            scale_c = 1.0 - self.leverage * (1.0 - self.coupon_rate / p.r)
+        self.proxy = ExactPreemptionGame(
+            p.with_param(c=p.c * scale_c), scale, table_density
+        )
+        self._boundary_grid = np.geomspace(1e-7 * self.X_ref, 1e5 * self.X_ref, 480)
+        self._fair_rate: float | None = None
+
+    def _root(self, mu: float, discount: float, sign: float) -> float:
+        s2 = self.params.sigma**2
+        b = mu - 0.5 * s2
+        return (-b + sign * np.sqrt(b * b + 2.0 * s2 * discount)) / s2
+
+    def _build_subgame(self, K_L: float, phi_L: float) -> LeveredSubgame:
+        return LeveredSubgame(self, K_L, phi_L)
+
+    def subgame(self, K_L: float, phi_L: float) -> LeveredSubgame:
+        """Exact values, with credit, after a leader installs (K_L, phi_L)."""
+        return cast("LeveredSubgame", self._subgame(float(K_L), float(phi_L)))
+
+    def investment_cost(self, K: np.ndarray | float) -> np.ndarray | float:
+        return self.params.c * K**self.params.gamma
+
+    def mutual_waiting_claim(self, leader: str = "paper") -> ForcedClaim:
+        """Mutual-waiting value of the game without credit (supplementary)."""
+        return self.proxy.mutual_waiting_claim(leader)
+
+    # ------------------------------------------------------------------
+    # Absorbing regime H
+    # ------------------------------------------------------------------
+
+    def _h_installed(
+        self, a: float, q: float, coupon: float
+    ) -> tuple[float, PiecewisePowers, PiecewisePowers]:
+        """H-regime boundary, equity and debt of a firm with coefficient a."""
+        r = self.params.r
+        if a <= 0.0:
+            # No H-regime revenue: the firm stops at the switch.
+            return inf, PiecewisePowers(), PiecewisePowers()
+        X_D = self.m_H * (q / r) / a
+        option = (q / r - a * X_D) * X_D ** (-self.bn_H)
+        equity = PiecewisePowers(
+            (X_D,), ((), ((a, 1.0), (-q / r, 0.0), (option, self.bn_H)))
+        )
+        if coupon <= 0.0:
+            return X_D, equity, PiecewisePowers()
+        debt = PiecewisePowers(
+            (X_D,),
+            ((), ((coupon / r, 0.0), (-coupon / r * X_D ** (-self.bn_H), self.bn_H))),
+        )
+        return X_D, equity, debt
+
+    def _h_leader_waiting(
+        self,
+        R: float,
+        q: float,
+        coupon: float,
+        X_F: float,
+        duopoly: tuple[PiecewisePowers, PiecewisePowers],
+        top: tuple[PiecewisePowers, PiecewisePowers],
+    ) -> tuple[float, PiecewisePowers, PiecewisePowers]:
+        """H-regime claims of a leader whose follower has not installed.
+
+        ``duopoly`` holds the leader's claims once the follower has entered
+        at its trigger (the matching values at X_F) and ``top`` the claims
+        to splice in at and above X_F.
+        """
+        r = self.params.r
+        beta, bn = self.params.beta_H, self.bn_H
+        if R <= 0.0:
+            msg = "Leader without training capacity has no H-regime claim"
+            raise ValueError(msg)
+        e_F = float(duopoly[0](X_F)[0])
+        d_F = float(duopoly[1](X_F)[0])
+
+        def coefficients(X_D: float) -> tuple[float, float]:
+            a0 = q / r - R * X_D
+            b0 = -R * X_D
+            g1 = (b0 - bn * a0) / (beta - bn) / X_D**beta
+            g2 = (beta * a0 - b0) / (beta - bn) / X_D**bn
+            return g1, g2
+
+        def residual(X_D: float) -> float:
+            g1, g2 = coefficients(X_D)
+            return R * X_F - q / r + g1 * X_F**beta + g2 * X_F**bn - e_F
+
+        X_mono = self.m_H * (q / r) / R
+        if X_mono >= X_F:
+            msg = "Leader's H-regime boundary lies above the follower's trigger"
+            raise ValueError(msg)
+        grid = np.geomspace(X_mono, X_F * (1.0 - 1e-10), 40)
+        vals = np.array([residual(x) for x in grid])
+        idx = np.flatnonzero((vals[:-1] > 0.0) & (vals[1:] <= 0.0))
+        if idx.size == 0:
+            msg = "No H-regime boundary for the leader before follower entry"
+            raise ValueError(msg)
+        i = int(idx[0])
+        X_D = float(optimize.brentq(residual, grid[i], grid[i + 1], xtol=1e-18))
+        g1, g2 = coefficients(X_D)
+        equity = PiecewisePowers(
+            (X_D,), ((), ((R, 1.0), (-q / r, 0.0), (g1, beta), (g2, bn)))
+        ).splice(X_F, top[0])
+        if coupon <= 0.0:
+            return X_D, equity, PiecewisePowers()
+        # D(X_D) = 0 (no H-regime recovery) and D(X_F) = duopoly debt.
+        lhs = np.array([[X_D**beta, X_D**bn], [X_F**beta, X_F**bn]])
+        d1, d2 = np.linalg.solve(lhs, np.array([-coupon / r, d_F - coupon / r]))
+        debt = PiecewisePowers(
+            (X_D,), ((), ((coupon / r, 0.0), (float(d1), beta), (float(d2), bn)))
+        ).splice(X_F, top[1])
+        return X_D, equity, debt
+
+    # ------------------------------------------------------------------
+    # Regime L: boundaries and claims
+    # ------------------------------------------------------------------
+
+    def _particular(
+        self, forcing: PiecewisePowers, table: ForcedClaim | None = None
+    ) -> Particular:
+        return Particular(SegmentClaim(self.bn, self.bp, self.kappa, forcing), table)
+
+    def _table_claim(self, y: np.ndarray, f: np.ndarray) -> ForcedClaim | None:
+        if not np.any(f > 0.0):
+            return None
+        return ForcedClaim(self.params, float(y[0]), (), table=(y, np.maximum(f, 0.0)))
+
+    def _free_boundary(
+        self,
+        part: Particular,
+        match: tuple[float, float] | None = None,
+        guess: float | None = None,
+    ) -> tuple[float, float, float]:
+        """Boundary and homogeneous coefficients of an equity claim.
+
+        Without ``match`` the claim is P + C X^{b-} and X_D is the first root
+        of b- P(X) - X P'(X) from below, which maximizes the option to stop.
+        With ``match = (X_M, v_M)`` the claim also carries h X^{b+} and is
+        matched to v_M at X_M. ``guess`` is a first estimate of X_D.
+
+        Returns:
+            (X_D, C, h).
+        """
+        bn = self.bn
+        limit = part.slope_limit if match is None else min(part.slope_limit, match[0])
+
+        def condition(x: float) -> float:
+            p_x, xdp_x = part.value_slope(x)
+            return float(bn * p_x[0] - xdp_x[0])
+
+        def first_root(grid: np.ndarray) -> float | None:
+            grid = grid[grid < limit * (1.0 - 1e-9)]
+            if grid.size < 2:
+                return None
+            P, XdP = part.value_slope(grid)
+            S = bn * P - XdP
+            idx = np.flatnonzero((S[:-1] > 0.0) & (S[1:] <= 0.0))
+            if idx.size == 0 or S[0] <= 0.0:
+                return None
+            i = int(idx[0])
+            return float(
+                optimize.brentq(condition, grid[i], grid[i + 1], xtol=1e-20, rtol=1e-13)
+            )
+
+        # Look near the single-boundary estimate first; the full scan is the
+        # fallback and the definition (first root from below).
+        X_0 = None
+        if guess is not None and guess > 0.0:
+            X_0 = first_root(np.geomspace(0.2 * guess, 3.0 * guess, 28))
+        if X_0 is None:
+            X_0 = first_root(self._boundary_grid)
+        if X_0 is None:
+            msg = "No default boundary below the follower's entry"
+            raise ValueError(msg)
+        C_0 = -float(part.value(X_0)[0]) * X_0 ** (-bn)
+        if match is None:
+            return X_0, C_0, 0.0
+        return self._matched_boundary(part, match, X_0, C_0, limit)
+
+    def _matched_boundary(
+        self,
+        part: Particular,
+        match: tuple[float, float],
+        X_0: float,
+        C_0: float,
+        limit: float,
+    ) -> tuple[float, float, float]:
+        """Boundary of a claim that ends at X_M with value v_M.
+
+        Value matching and smooth pasting at X_D give the loadings on the
+        two homogeneous terms as functions of X_D; the value at X_M closes
+        the system.
+        """
+        bn, bp = self.bn, self.bp
+        X_M, v_M = match
+        P_M = float(part.value(X_M)[0])
+
+        def loadings(x: float) -> tuple[float, float]:
+            p_x, xdp_x = part.value_slope(x)
+            w = float(bn * p_x[0] - xdp_x[0]) / (bp - bn)
+            return -float(p_x[0]) - w, w
+
+        def residual(x: float) -> float:
+            u, w = loadings(x)
+            return P_M + u * (X_M / x) ** bn + w * (X_M / x) ** bp - v_M
+
+        hi = limit * (1.0 - 1e-9)
+        if residual(X_0) <= 0.0 or residual(hi) >= 0.0:
+            # Entry does not lower the claim: keep the boundary and match.
+            return X_0, C_0, (v_M - P_M - C_0 * X_M**bn) / X_M**bp
+        X_D = float(optimize.brentq(residual, X_0, hi, xtol=1e-20, rtol=1e-13))
+        u, w = loadings(X_D)
+        return X_D, u * X_D ** (-bn), w * X_D ** (-bp)
+
+    def _debt_coefs(
+        self,
+        part: Particular,
+        X_D: float,
+        recovery: float,
+        match: tuple[float, float] | None,
+    ) -> tuple[float, float]:
+        bn, bp = self.bn, self.bp
+        gap_D = recovery - float(part.value(X_D)[0])
+        if match is None:
+            return gap_D * X_D ** (-bn), 0.0
+        X_M, d_M = match
+        lhs = np.array([[X_D**bn, X_D**bp], [X_M**bn, X_M**bp]])
+        C, h = np.linalg.solve(lhs, np.array([gap_D, d_M - float(part.value(X_M)[0])]))
+        return float(C), float(h)
+
+    def _recovery(
+        self, flow: float, N_i: float, X_D: float, coupon: float, unlevered
+    ) -> float:
+        """eq-recovery at X_D; ``unlevered`` returns the unlevered claims."""
+        p = self.params
+        if coupon <= 0.0:
+            return 0.0
+        liquidation = flow * X_D * self.w_L - p.delta * N_i / p.r
+        if liquidation <= 0.0:
+            return 0.0
+        asset = float(unlevered().equity(X_D)[0])
+        return min((1.0 - self.bankruptcy_cost) * min(liquidation, asset), coupon / p.r)
+
+    def installed_claims(
+        self,
+        K: float,
+        phi: float,
+        N_rival: float,
+        T_rival: float,
+        coupon: float,
+    ) -> InstalledClaims:
+        """Equity and debt in regime L when both firms are installed.
+
+        With no rival capacity (N_rival = T_rival = 0) this is the installed
+        monopolist, whose boundary is the coupled regime-switching boundary.
+        """
+        p = self.params
+        N_i, T_i = (1.0 - phi) * K, phi * K
+        flow = float(contest_revenue(N_i, N_rival, p.alpha))
+        a = p.A_H * float(contest_revenue(T_i, T_rival, p.alpha))
+        q = p.delta * K + coupon
+        _, equity_H, debt_H = self._h_installed(a, q, coupon)
+        forcing = PiecewisePowers.everywhere((flow, 1.0), (-q, 0.0)) + equity_H.scaled(
+            p.lam
+        )
+        part_E = self._particular(forcing)
+        guess = self.m_L * (q / p.r) / (self.w_L * flow + self.w_H * a / p.A_H)
+        X_D, C, _ = self._free_boundary(part_E, guess=guess)
+        if coupon <= 0.0:
+            return InstalledClaims(
+                0.0, X_D, 0.0, inf, self.bn, self.bp, part_E, (C, 0.0), None, (0.0, 0.0)
+            )
+        recovery = self._recovery(
+            flow,
+            N_i,
+            X_D,
+            coupon,
+            lambda: self.installed_claims(K, phi, N_rival, T_rival, 0.0),
+        )
+        part_D = self._particular(
+            PiecewisePowers.everywhere((coupon, 0.0)) + debt_H.scaled(p.lam)
+        )
+        return InstalledClaims(
+            coupon,
+            X_D,
+            recovery,
+            inf,
+            self.bn,
+            self.bp,
+            part_E,
+            (C, 0.0),
+            part_D,
+            self._debt_coefs(part_D, X_D, recovery, None),
+        )
+
+    def _leader_h_duopoly(
+        self, y: np.ndarray, T_L: float, K_F: np.ndarray, q: float, coupon: float
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Leader's H-regime equity and debt against follower capacity K_F(y)."""
+        p = self.params
+        a = p.A_H * contest_revenue(T_L, K_F, p.alpha)
+        X_D = self.m_H * (q / p.r) / a
+        alive = y > X_D
+        ratio = np.where(alive, y / X_D, 1.0) ** self.bn_H
+        equity = np.where(alive, a * y - q / p.r + (q / p.r - a * X_D) * ratio, 0.0)
+        debt = np.where(alive, coupon / p.r * (1.0 - ratio), 0.0)
+        return equity, debt
+
+    def leader_waiting_claims(
+        self, sub: LeveredSubgame, coupon: float
+    ) -> InstalledClaims:
+        """Leader's equity and debt in regime L while the follower waits."""
+        p = self.params
+        K_L, phi_L, T_L, N_L = sub.K_L, sub.phi_L, sub.T_L, sub.N_L
+        entry = sub.post_switch
+        flow = N_L**p.alpha
+        R = p.A_H * T_L**p.alpha
+        q = p.delta * K_L + coupon
+        a_duo = p.A_H * float(contest_revenue(T_L, entry.K_F, p.alpha))
+        _, eq_duo, debt_duo = self._h_installed(a_duo, q, coupon)
+        tables: tuple[ForcedClaim | None, ForcedClaim | None] = (None, None)
+        if self.scale == "precommitted":
+            top = (eq_duo, debt_duo)
+        else:
+            top = (PiecewisePowers(), PiecewisePowers())
+            if sub.table is None:
+                msg = "The envelope scale needs the follower's capacity table"
+                raise ValueError(msg)
+            y, K_env = sub.table["y"], sub.table["K"]
+            eq_y, debt_y = self._leader_h_duopoly(y, T_L, K_env, q, coupon)
+            tables = (
+                self._table_claim(y, p.lam * eq_y),
+                self._table_claim(y, p.lam * debt_y) if coupon > 0.0 else None,
+            )
+        _, equity_H, debt_H = self._h_leader_waiting(
+            R, q, coupon, entry.X_F, (eq_duo, debt_duo), top
+        )
+        part_E = self._particular(
+            PiecewisePowers.everywhere((flow, 1.0), (-q, 0.0)) + equity_H.scaled(p.lam),
+            tables[0],
+        )
+        pre = sub.pre_switch
+        X_top = pre.X_entry
+        match_E = match_D = None
+        if pre.enters:
+            duo = self.installed_claims(
+                K_L, phi_L, (1.0 - pre.phi) * pre.K, pre.phi * pre.K, coupon
+            )
+            match_E = (X_top, float(duo.equity(X_top)[0]))
+            match_D = (X_top, float(duo.debt(X_top)[0]))
+        guess = self.m_L * (q / p.r) / (self.w_L * flow + self.w_H * R / p.A_H)
+        X_D, C, h = self._free_boundary(part_E, match_E, guess)
+        if coupon <= 0.0:
+            return InstalledClaims(
+                0.0, X_D, 0.0, X_top, self.bn, self.bp, part_E, (C, h), None, (0.0, 0.0)
+            )
+        recovery = self._recovery(
+            flow, N_L, X_D, coupon, lambda: sub.leader_claims(0.0)
+        )
+        part_D = self._particular(
+            PiecewisePowers.everywhere((coupon, 0.0)) + debt_H.scaled(p.lam),
+            tables[1],
+        )
+        return InstalledClaims(
+            coupon,
+            X_D,
+            recovery,
+            X_top,
+            self.bn,
+            self.bp,
+            part_E,
+            (C, h),
+            part_D,
+            self._debt_coefs(part_D, X_D, recovery, match_D),
+        )
+
+    def solve_fair_coupon(
+        self, claims_at, X: float, proceeds: float, rate: float | None = None
+    ) -> float:
+        """Smallest coupon at which debt issued at X is worth ``proceeds``.
+
+        ``claims_at(coupon)`` returns the `InstalledClaims` at that coupon.
+        Debt value per unit of coupon falls as the coupon rises (the boundary
+        rises with it), so the map C -> C * proceeds / D(X; C) is increasing
+        and, iterated from the riskless coupon r * proceeds, where risky debt
+        is worth less than its proceeds, climbs to the smallest root.
+        ``rate`` is an optional starting coupon rate from a nearby solve; the
+        iteration then approaches the same root from whichever side it starts
+        on, and falls back to the riskless start if it leaves the feasible
+        range.
+
+        Raises:
+            ValueError: If the proceeds exceed the debt capacity at X.
+        """
+        starts = [self.params.r] if rate is None else [rate, self.params.r]
+        for start in starts:
+            coupon = start * proceeds
+            for _ in range(200):
+                claims = claims_at(coupon)
+                value = float(claims.debt(X)[0]) if claims.X_D < X else 0.0
+                if value <= 0.0:
+                    break
+                if abs(value - proceeds) <= 1e-13 * proceeds:
+                    self._fair_rate = coupon / proceeds
+                    return coupon
+                coupon *= proceeds / value
+        msg = (
+            f"No fair coupon: proceeds {proceeds:.6g} exceed the debt capacity "
+            f"at X = {X:.6g}"
+        )
+        raise ValueError(msg)
+
+    # ------------------------------------------------------------------
+    # Follower: absorbing-H entry
+    # ------------------------------------------------------------------
+
+    def _fair_coupon_H(
+        self, X: np.ndarray, K: np.ndarray, a: np.ndarray, proceeds: np.ndarray
+    ) -> np.ndarray:
+        """Fair coupon of absorbing-H debt issued at X (nan when infeasible).
+
+        (C/r) [1 - z(C)] = proceeds with z = (X_D(C) / X)^{-b_H^-}, iterated
+        as C <- r proceeds / (1 - z(C)) from the riskless coupon, which
+        increases to the smallest root.
+        """
+        p = self.params
+        theta = -self.bn_H
+        riskless = p.r * proceeds
+        coupon = riskless.copy()
+        for _ in range(200):
+            z = (self.m_H * (p.delta * K + coupon) / (p.r * a * X)) ** theta
+            z = np.minimum(z, 1.0 - 1e-12)
+            updated = riskless / (1.0 - z)
+            if np.all(np.abs(updated - coupon) <= 1e-14 * coupon):
+                coupon = updated
+                break
+            coupon = updated
+        z = (self.m_H * (p.delta * K + coupon) / (p.r * a * X)) ** theta
+        return np.where(z < 0.99, coupon, np.nan)
+
+    def follower_h_payoff(
+        self, X: np.ndarray | float, K: np.ndarray | float, T_L: float
+    ) -> np.ndarray:
+        """Follower's entry NPV in the absorbing regime, E^H(X) - (1 - l) I(K).
+
+        All capacity is devoted to training. The coupon is the par coupon or
+        the fair coupon for issuance at X; an infeasible fair issue returns
+        -inf.
+        """
+        p = self.params
+        X_arr, K_arr = np.broadcast_arrays(
+            np.atleast_1d(np.asarray(X, dtype=float)),
+            np.atleast_1d(np.asarray(K, dtype=float)),
+        )
+        a = p.A_H * contest_revenue(K_arr, T_L, p.alpha)
+        outlay = p.c * K_arr**p.gamma
+        proceeds = self.leverage * outlay
+        if self.leverage <= 0.0:
+            coupon = np.zeros_like(K_arr)
+        elif self.debt == "par":
+            coupon = self.coupon_rate * proceeds
+        else:
+            coupon = self._fair_coupon_H(X_arr, K_arr, a, proceeds)
+        feasible = np.isfinite(coupon)
+        coupon = np.where(feasible, coupon, 0.0)
+        q = p.delta * K_arr + coupon
+        X_D = self.m_H * (q / p.r) / a
+        alive = X_arr > X_D
+        ratio = np.where(alive, X_arr / X_D, 1.0) ** self.bn_H
+        equity = np.where(alive, a * X_arr - q / p.r + (q / p.r - a * X_D) * ratio, 0.0)
+        return np.where(feasible, equity - (1.0 - self.leverage) * outlay, -np.inf)
+
+    def follower_post_switch_entry(self, T_L: float) -> PostSwitchEntry:
+        """Follower's absorbing-H trigger and capacity on the levered claim.
+
+        Maximizes the option coefficient [E^H(X) - (1 - l) I(K)] X^{-beta_H}
+        over (X, K), started at the solution without the default option.
+        """
+        beta = self.params.beta_H
+        start = self.proxy.post_switch_entry(T_L)
+        norm = start.B_F
+
+        def neg(v: np.ndarray) -> float:
+            x, k = float(np.exp(v[0])), float(np.exp(v[1]))
+            payoff = float(self.follower_h_payoff(x, k, T_L)[0])
+            if not np.isfinite(payoff):
+                return 1e20
+            return -payoff * x ** (-beta) / norm
+
+        res = optimize.minimize(
+            neg,
+            np.log([start.X_F, start.K_F]),
+            method="Nelder-Mead",
+            options={
+                "maxiter": 2000,
+                "xatol": 1e-10,
+                "fatol": 1e-13,
+                "initial_simplex": np.log([start.X_F, start.K_F])
+                + np.array([[0.0, 0.0], [0.02, 0.0], [0.0, 0.02]]),
+            },
+        )
+        return PostSwitchEntry(
+            X_F=float(np.exp(res.x[0])),
+            K_F=float(np.exp(res.x[1])),
+            B_F=float(-res.fun * norm),
+            T_L=float(T_L),
+        )
+
+    def follower_table(self, entry: PostSwitchEntry) -> dict[str, np.ndarray] | None:
+        """Follower's capacity and payoff when it enters at the switch.
+
+        Tabulated on the quadrature grid above X_F^H: the capacity that
+        maximizes the levered entry NPV at each demand level (``"envelope"``)
+        or K_F^H (``"precommitted"``). Not needed, and None, for the
+        precommitted scale without a demand-dependent coupon.
+        """
+        fair = self.debt == "fair" and self.leverage > 0.0
+        if self.scale == "precommitted" and not fair:
+            return None
+        y = self._table_grid(entry.X_F)
+        if self.scale == "precommitted":
+            K = np.full_like(y, entry.K_F)
+        else:
+            n = max(int(14 * np.log10(y[-1] / y[0])), 24)
+            coarse = np.geomspace(y[0], y[-1], n)
+            log_K = np.log(self.proxy.post_switch_capacity(coarse, entry.T_L))
+            lo, hi = log_K - 1.0, log_K + 1.0
+            ratio = 0.5 * (np.sqrt(5.0) - 1.0)
+            x1, x2 = hi - ratio * (hi - lo), lo + ratio * (hi - lo)
+            f1 = self.follower_h_payoff(coarse, np.exp(x1), entry.T_L)
+            f2 = self.follower_h_payoff(coarse, np.exp(x2), entry.T_L)
+            for _ in range(60):
+                left = f1 > f2
+                hi = np.where(left, x2, hi)
+                lo = np.where(left, lo, x1)
+                x1_new = hi - ratio * (hi - lo)
+                x2_new = lo + ratio * (hi - lo)
+                f1_new = self.follower_h_payoff(coarse, np.exp(x1_new), entry.T_L)
+                f2_new = self.follower_h_payoff(coarse, np.exp(x2_new), entry.T_L)
+                x1, x2, f1, f2 = x1_new, x2_new, f1_new, f2_new
+            best = 0.5 * (lo + hi)
+            # The jointly optimal capacity is the envelope capacity at X_F^H.
+            best[0] = np.log(entry.K_F)
+            K = np.exp(interpolate.CubicSpline(np.log(coarse), best)(np.log(y)))
+        payoff = self.follower_h_payoff(y, K, entry.T_L)
+        if not np.all(np.isfinite(payoff)) or np.any(payoff <= 0.0):
+            msg = "Follower's entry payoff at the switch is not positive"
+            raise ValueError(msg)
+        return {"y": y, "K": K, "payoff": payoff}
+
+    def follower_waiting_claim(
+        self, entry: PostSwitchEntry, table: dict[str, np.ndarray] | None
+    ) -> ForcedClaim:
+        """P_F: value of waiting for the switch and then holding F^H."""
+        p = self.params
+        low = ((p.lam * entry.B_F, p.beta_H),)
+        if table is not None:
+            return ForcedClaim(
+                p, entry.X_F, low, table=(table["y"], p.lam * table["payoff"])
+            )
+        # Precommitted scale, coupon independent of demand: closed form.
+        a = p.A_H * float(contest_revenue(entry.K_F, entry.T_L, p.alpha))
+        outlay = float(self.investment_cost(entry.K_F))
+        coupon = self.coupon_rate * self.leverage * outlay
+        q = p.delta * entry.K_F + coupon
+        X_D = self.m_H * (q / p.r) / a
+        option = (q / p.r - a * X_D) * X_D ** (-self.bn_H)
+        high = (
+            (p.lam * a, 1.0),
+            (-p.lam * (q / p.r + (1.0 - self.leverage) * outlay), 0.0),
+            (p.lam * option, self.bn_H),
+        )
+        return ForcedClaim(p, entry.X_F, low, high)
+
+    def follower_entry_credit(self, entry: PostSwitchEntry) -> dict[str, float]:
+        """Follower's boundary and spread at its post-switch entry.
+
+        The follower enters in the absorbing regime at X_F^H with K_F^H, all
+        capacity in training, so its claims are Leland's closed forms with
+        zero recovery.
+        """
+        p = self.params
+        X_F, K_F = entry.X_F, entry.K_F
+        a = p.A_H * float(contest_revenue(K_F, entry.T_L, p.alpha))
+        proceeds = self.leverage * float(self.investment_cost(K_F))
+        coupon = 0.0
+        if proceeds > 0.0 and self.debt == "par":
+            coupon = self.coupon_rate * proceeds
+        elif proceeds > 0.0:
+            coupon = float(
+                self._fair_coupon_H(
+                    np.array([X_F]),
+                    np.array([K_F]),
+                    np.array([a]),
+                    np.array([proceeds]),
+                )[0]
+            )
+        X_D = self.m_H * ((p.delta * K_F + coupon) / p.r) / a
+        debt = coupon / p.r * (1.0 - (X_F / X_D) ** self.bn_H)
+        return {
+            "X_D_follower": X_D,
+            "follower_distance_to_default": X_F / X_D,
+            "follower_spread": coupon / debt - p.r if debt > 0.0 else float("nan"),
+        }
+
+    # ------------------------------------------------------------------
+    # Follower: pre-switch entry
+    # ------------------------------------------------------------------
+
+    def follower_l_payoff(
+        self, X: float, K: float, phi: float, N_L: float, T_L: float
+    ) -> float:
+        """Follower's NPV of entering at X in regime L with (K, phi)."""
+        proceeds = self.leverage * float(self.investment_cost(K))
+
+        def claims_at(coupon: float) -> InstalledClaims:
+            return self.installed_claims(K, phi, N_L, T_L, coupon)
+
+        if proceeds <= 0.0:
+            coupon = 0.0
+        elif self.debt == "par":
+            coupon = self.coupon_rate * proceeds
+        else:
+            coupon = self.solve_fair_coupon(claims_at, X, proceeds, self._fair_rate)
+        equity = float(claims_at(coupon).equity(X)[0])
+        return equity - (1.0 - self.leverage) * float(self.investment_cost(K))
+
+    def follower_pre_switch_entry(
+        self, claim: ForcedClaim, N_L: float, T_L: float
+    ) -> PreSwitchEntry:
+        """Follower's best pre-switch entry on the levered claim.
+
+        The candidate comes from the grid search of `preemption_exact` on the
+        claim without the default option; whenever that candidate is worth at
+        least 97% of waiting it is polished on the exact claim, which decides
+        whether the follower enters before the switch.
+        """
+
+        def payoff(x: float, k: float, phi: float) -> float:
+            try:
+                return self.follower_l_payoff(x, k, phi, N_L, T_L)
+            except ValueError:
+                return -np.inf
+
+        return self.pre_switch_entry(
+            claim, N_L, T_L, cost=self.proxy.cost, payoff=payoff, slack=0.97
+        )
+
+
+# ----------------------------------------------------------------------
+# Hitting probabilities and times
+# ----------------------------------------------------------------------
+
+
+def hitting_statistics(
+    params: ModelParameters, X_from: float, X_to: float
+) -> dict[str, float]:
+    """First-passage statistics of demand from X_from to the level X_to.
+
+    Demand follows the L-regime GBM until the switch, which arrives at rate
+    lambda, and the H-regime GBM afterwards.
+
+    Returns:
+        Dict with ``before_switch``, the probability of reaching X_to before
+        the switch, (X_to / X_from)^theta with theta the root of
+        (sigma^2/2) theta (theta - 1) + mu_L theta - lambda = 0 of the sign
+        that makes it a probability; ``no_switch``, the probability of ever
+        reaching X_to if the switch never arrived; ``after_switch``, the
+        probability of ever reaching X_to from X_from under the H-regime
+        dynamics; and ``expected_time_after_switch``, the expected first
+        passage time from X_from under the H-regime dynamics (inf when the
+        level is reached with probability below one, zero when X_to has
+        already been passed in the direction of travel).
+    """
+    p = params
+    s2 = p.sigma**2
+    d = float(np.log(X_to / X_from))
+    up = d > 0.0
+    nu_L = p.mu_L - 0.5 * s2
+    nu_H = p.mu_H - 0.5 * s2
+    root = np.sqrt(nu_L**2 + 2.0 * s2 * p.lam)
+    theta = (-nu_L + (root if up else -root)) / s2
+
+    def ever(nu: float) -> float:
+        toward = nu if up else -nu
+        return 1.0 if toward >= 0.0 else float(np.exp(-2.0 * abs(nu) * abs(d) / s2))
+
+    toward_H = nu_H if up else -nu_H
+    return {
+        "before_switch": float(np.exp(-theta * d)),
+        "no_switch": ever(nu_L),
+        "after_switch": ever(nu_H),
+        "expected_time_after_switch": abs(d) / toward_H if toward_H > 0.0 else inf,
+    }
+
+
+def expected_entry_time(params: ModelParameters, X_from: float, X_to: float) -> float:
+    """Expected time until demand first exceeds X_to > X_from after the switch.
+
+    The time to the switch plus the expected H-regime passage time from the
+    demand level at the switch, when the level X_to matters only after the
+    switch (a follower that enters only in regime H). With Y the log demand
+    change by the switch, which is two-sided exponential,
+
+        E[tau] = 1/lambda + E[(d - Y)^+] / nu_H,   d = log(X_to / X_from),
+        E[(d - Y)^+] = d - nu_L/lambda + w exp(-theta_+ d) / theta_+,
+
+    with theta_+ > 0 > theta_- the roots of (sigma^2/2) theta^2 + nu_L theta
+    - lambda = 0 and w = |theta_-| / (theta_+ + |theta_-|). Requires a
+    positive H-regime log drift.
+    """
+    p = params
+    s2 = p.sigma**2
+    nu_L = p.mu_L - 0.5 * s2
+    nu_H = p.mu_H - 0.5 * s2
+    if nu_H <= 0.0:
+        return inf
+    d = float(np.log(X_to / X_from))
+    root = np.sqrt(nu_L**2 + 2.0 * s2 * p.lam)
+    theta_p = (-nu_L + root) / s2
+    theta_n = (nu_L + root) / s2
+    w = theta_n / (theta_p + theta_n)
+    shortfall = d - nu_L / p.lam + w * np.exp(-theta_p * d) / theta_p
+    return float(1.0 / p.lam + shortfall / nu_H)
+
+
+# ----------------------------------------------------------------------
+# The leader's own optimal entry (roles assigned)
+# ----------------------------------------------------------------------
+
+
+def leader_assigned_entry(
+    game: ExactPreemptionGame,
+    X_P: float,
+    start: tuple[float, float],
+    n_scan: int = 13,
+) -> dict[str, float]:
+    """Entry trigger of a firm that knows it will lead (roles assigned).
+
+    Rent equalization says where both firms want to lead; it does not say
+    where a firm that expects its rival to follow would choose to invest.
+    If the rival never invests first, the leader's value before entry at a
+    trigger X_bar is
+
+        W(X) + [L*(X_bar) - W(X_bar)] (X / X_bar)^{beta_L^+},
+
+    with W the mutual-waiting value (neither firm invests before the
+    switch; `mutual_waiting_claim("reoptimized")`), so its best trigger
+    maximizes the coefficient h(X) = [L*(X) - W(X)] X^{-beta_L^+}. When that
+    trigger lies below X_P, the follower is the better-off role there, and
+    for every demand level between the two a firm prefers investing to
+    waiting for X_P (h is decreasing) while preferring that its rival
+    invest: a second-mover advantage, not a race to be first. X_P is then
+    the upper end of that region rather than the date of first investment.
+
+    The mutual-waiting value prices the post-switch game by rent
+    equalization and ignores the option to stop, so this is a diagnostic of
+    the equilibrium concept and not a solved game.
+
+    Args:
+        game: The game (zero leverage).
+        X_P: Rent-equalization trigger.
+        start: Leader's policy (K_L, phi_L) at X_P, to warm-start the search.
+        n_scan: Points of the log scan over [0.05 X_P, 1.5 X_P].
+
+    Returns:
+        Dict with ``X_L`` (the assigned leader's trigger), its policy
+        ``K_L`` and ``phi_L``, ``follower_over_leader`` (F / L* at X_L),
+        ``coefficient_ratio`` (h(X_L) / h(X_P), above one when X_L differs
+        from X_P) and ``below_rent_equalization`` (1.0 when X_L < X_P).
+    """
+    wait = game.mutual_waiting_claim("reoptimized")
+    bp = game.bp
+    policy = {"start": start}
+
+    def coefficient(X: float) -> tuple[float, float, float, float]:
+        K, phi, lead = game.leader_best_policy(X, policy["start"])
+        policy["start"] = (K, phi)
+        return (lead - float(wait(X)[0])) * X ** (-bp), K, phi, lead
+
+    grid = X_P * np.geomspace(1.5, 0.05, n_scan)
+    values = np.array([coefficient(float(x))[0] for x in grid])
+    i = int(np.argmax(values))
+    lo, hi = grid[min(i + 1, n_scan - 1)], grid[max(i - 1, 0)]
+    policy["start"] = start
+    res = optimize.minimize_scalar(
+        lambda z: -coefficient(float(np.exp(z)))[0] / values[i],
+        bounds=(np.log(lo), np.log(hi)),
+        method="bounded",
+        options={"xatol": 1e-4},
+    )
+    X_L = float(np.exp(res.x))
+    h_L, K, phi, lead = coefficient(X_L)
+    follow = float(game.subgame(K, phi).follower_value(X_L)[0])
+    policy["start"] = start
+    h_P = coefficient(X_P)[0]
+    return {
+        "X_L": X_L,
+        "K_L": K,
+        "phi_L": phi,
+        "follower_over_leader": follow / lead,
+        "coefficient_ratio": h_L / h_P,
+        "below_rent_equalization": float(X_L < X_P * (1.0 - 1e-3)),
+    }
+
+
+# ----------------------------------------------------------------------
+# Equilibrium records
+# ----------------------------------------------------------------------
+
+
+def equilibrium_record(
+    params: ModelParameters,
+    scale: str = "envelope",
+    leverage: float = 0.0,
+    debt: str = "par",
+    coupon_rate: float = 0.05,
+    bankruptcy_cost: float = 0.30,
+    n_scan: int = 25,
+    x_range: tuple[float, float] = (0.03, 300.0),
+    assigned: bool = True,
+) -> dict[str, float | str]:
+    """Preemption equilibrium with a re-optimizing leader, as a flat record.
+
+    Solves L*(X_P) = F(X_P) with the leader's (K_L, phi_L) chosen at the
+    entry demand, on the scan grid ``x_range`` (units of X_H*), and reports
+    the equilibrium policies, the values, the leader's credit objects at
+    entry, the follower's boundary at its post-switch entry, and the
+    first-passage statistics of the follower's trigger and of the leader's
+    boundary. At zero leverage and with ``assigned`` it adds the entry
+    trigger of a firm that knows it will lead (`leader_assigned_entry`,
+    keys prefixed ``assigned_``). The record carries the scan it was solved
+    on (``scan_points``, ``scan_low``, ``scan_high``). Missing objects are
+    nan.
+    """
+    game = LeveredPreemptionGame(
+        params, scale, leverage, coupon_rate, bankruptcy_cost, debt
+    )
+    sol = game.rent_equalization_reoptimized(n_scan, x_range)
+    nan = float("nan")
+    out: dict[str, float | str] = {
+        "lam": params.lam,
+        "scale": scale,
+        "leverage": leverage,
+        "debt": debt,
+        "X_H": game.X_ref,
+        "phi_star": game.phi_star,
+        "scan_points": float(n_scan),
+        "scan_low": float(x_range[0]),
+        "scan_high": float(x_range[1]),
+        "exists": sol["exists"],
+        "n_sign_changes": sol["n_sign_changes"],
+        "X_P": sol["X_P"],
+        "K_L": sol["K_L"],
+        "phi_L": sol["phi_L"],
+        "X_F": sol["X_F_post_switch"],
+        "K_F": sol["K_F_post_switch"],
+        "X_F_pre_switch": sol["X_F_pre_switch"],
+        "lead_over_wait": sol["lead_over_wait_at_X_P"] if leverage == 0.0 else nan,
+    }
+    if not sol["exists"]:
+        return out
+    X_P = float(sol["X_P"])
+    sub = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
+    credit = sub.leader_credit(X_P)
+    out.update({
+        "leader_value": float(sub.leader_value(X_P)[0]),
+        "follower_value": float(sub.follower_value(X_P)[0]),
+        "leader_investment": float(game.investment_cost(sub.K_L)),
+        "X_D_leader": credit["X_default"],
+        "distance_to_default": credit["distance_to_default"],
+        "coupon_rate": credit["coupon_rate"],
+        "debt_value": credit["debt"],
+        "debt_proceeds": credit["proceeds"],
+        "recovery": credit["recovery"],
+        "spread": credit["spread"],
+    })
+    out.update(game.follower_entry_credit(sub.post_switch))
+    if assigned and leverage == 0.0:
+        entry = leader_assigned_entry(game, X_P, (sub.K_L, sub.phi_L))
+        out.update({f"assigned_{key}": value for key, value in entry.items()})
+    X_F = sub.post_switch.X_F
+    follower = hitting_statistics(params, X_P, X_F)
+    leader = hitting_statistics(params, X_P, credit["X_default"])
+    out.update({
+        "follower_before_switch": follower["before_switch"],
+        "follower_no_switch": follower["no_switch"],
+        "follower_time_after_switch": follower["expected_time_after_switch"],
+        "follower_expected_entry_time": expected_entry_time(params, X_P, X_F),
+        "leader_default_before_switch": leader["before_switch"],
+        "leader_default_no_switch": leader["no_switch"],
+    })
+    return out
+
+
+# ----------------------------------------------------------------------
+# Cached equilibria behind the paper's duopoly numbers
+# ----------------------------------------------------------------------
+
+#: Arrival rates of the spread-at-entry table (issue #178, comment C23).
+GRID_LAMBDAS: tuple[float, ...] = (0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50)
+#: Leverage levels of that table.
+GRID_LEVERAGES: tuple[float, ...] = (0.40, 0.65)
+
+
+def grid_cells() -> list[tuple[float, str, float, str]]:
+    """(lambda, scale, leverage, debt) cells stored in the cache.
+
+    Zero leverage on the arrival rates of `GRID_LAMBDAS` plus 0.03 and
+    0.075 (for `fig-competition-effect`); the precommitted-scale variant at
+    baseline; leverage 0.20 at baseline; and the spread-at-entry grid under
+    both debt conventions.
+    """
+    cells = [
+        (lam, "envelope", 0.0, "par") for lam in sorted({0.03, 0.075, *GRID_LAMBDAS})
+    ]
+    cells.append((0.10, "precommitted", 0.0, "par"))
+    cells += [(0.10, "envelope", 0.20, debt) for debt in DEBT_CONVENTIONS]
+    cells += [
+        (lam, "envelope", leverage, debt)
+        for leverage in GRID_LEVERAGES
+        for debt in DEBT_CONVENTIONS
+        for lam in GRID_LAMBDAS
+    ]
+    return cells
+
+
+#: Cells solved on a narrower demand scan than the default 25 points over
+#: [0.03, 300] X_H*. Under fair debt at lambda = 0.05 the follower also
+#: enters before the switch, each subgame then needs a fair coupon inside
+#: the follower's search, and the full scan would take about five hours per
+#: cell. The narrow scan brackets the crossing found at zero leverage
+#: (X_P = 0.59 X_H*); it does not show that this crossing is the first one
+#: over the wider range.
+SCAN_OVERRIDES: dict[tuple[float, str, float, str], tuple[int, tuple[float, float]]] = {
+    (0.05, "envelope", leverage, "fair"): (5, (0.3, 1.5)) for leverage in GRID_LEVERAGES
+}
+
+
+def _solve_cell(cell: tuple[float, str, float, str]) -> dict[str, float | str]:
+    lam, scale, leverage, debt = cell
+    n_scan, x_range = SCAN_OVERRIDES.get(cell, (25, (0.03, 300.0)))
+    return equilibrium_record(
+        ModelParameters().with_param(lam=lam),
+        scale,
+        leverage,
+        debt,
+        n_scan=n_scan,
+        x_range=x_range,
+    )
+
+
+def write_equilibrium_grid(path: str, workers: int = 8) -> list[dict]:
+    """Solve every cell of `grid_cells` at baseline and write the cache."""
+    import json
+    from concurrent.futures import ProcessPoolExecutor
+
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        records = list(pool.map(_solve_cell, grid_cells()))
+    with open(path, "w") as handle:
+        json.dump([encode_record(r) for r in records], handle, indent=2)
+        handle.write("\n")
+    return records
+
+
+def encode_record(record: dict) -> dict:
+    """Record with non-finite floats as strings, so the cache is strict JSON."""
+    return {
+        key: repr(value)
+        if isinstance(value, float) and not np.isfinite(value)
+        else value
+        for key, value in record.items()
+    }
+
+
+def decode_record(record: dict) -> dict:
+    """Inverse of `encode_record`."""
+    tokens = {"inf": inf, "-inf": -inf, "nan": float("nan")}
+    return {
+        key: tokens.get(value, value) if isinstance(value, str) else value
+        for key, value in record.items()
+    }
+
+
+def format_spread_table(records: list[dict]) -> str:
+    """Markdown table of the leader's credit objects at entry (C23)."""
+    header = (
+        "| leverage | debt | lambda | X_P | K_L | X_P / X_D | spread (bps) "
+        "| coupon rate | debt / proceeds | K_F | X_F |"
+    )
+    lines = [header, "|" + "---|" * 11]
+    for rec in sorted(
+        records, key=lambda r: (r["scale"], r["leverage"], r["debt"], r["lam"])
+    ):
+        if rec["scale"] != "envelope":
+            continue
+        spread = rec.get("spread", float("nan"))
+        value = rec.get("debt_value", 0.0) / max(rec.get("debt_proceeds", 0.0), 1e-300)
+        lines.append(
+            f"| {rec['leverage']:.2f} | {rec['debt']} | {rec['lam']:.3f} "
+            f"| {rec['X_P']:.6f} | {rec['K_L']:.6f} "
+            f"| {rec['distance_to_default']:.3f} | {1e4 * spread:.1f} "
+            f"| {rec.get('coupon_rate', float('nan')):.4f} | {value:.3f} "
+            f"| {rec['K_F']:.4f} | {rec['X_F']:.5f} |"
+        )
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    from .duopoly import EQUILIBRIUM_GRID_PATH
+
+    print(format_spread_table(write_equilibrium_grid(str(EQUILIBRIUM_GRID_PATH))))

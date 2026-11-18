@@ -1224,7 +1224,7 @@ class ValuationAnalysis:
             recovery_rule=self.recovery_rule,
         )
         try:
-            eq_tullock = duo_tullock.solve_preemption_equilibrium()
+            eq_tullock = duo_tullock.pure_power_preemption_equilibrium()
         except (ValueError, RuntimeError):
             return {"error": "Tullock equilibrium failed"}
 
@@ -1249,7 +1249,7 @@ class ValuationAnalysis:
         )
 
         try:
-            eq_fp = duo_fp.solve_preemption_equilibrium()
+            eq_fp = duo_fp.pure_power_preemption_equilibrium()
         except (ValueError, RuntimeError):
             eq_fp = None
 
