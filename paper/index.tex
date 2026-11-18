@@ -932,16 +932,18 @@ approximations}\label{sec-conventions}
 Two blocks of the model are solved in its exact primitives: the single
 firm of Section~\ref{sec-single-firm} and the entry game of
 Section~\ref{sec-duopoly}. The closed-form default boundary of
-Proposition 2 and the exhibits of Section~\ref{sec-calibration} still
-rest on approximations, the first of which is the pure-power
-approximation of Section~\ref{sec-single-firm}; the credit exhibits and
-Dario's dilemma in Section~\ref{sec-valuation} are evaluated at the
-exact policies, with the claims of the entry game.
-Table~\ref{tbl-domains} collects the model's operating assumptions, the
-domain over which each result is stated, and the approximations whose
-size I have measured, so that a reader can see which objects are exact
-and how large each departure is. The conventions are stated below; their
-magnitudes are in the table.
+Proposition 2 rests on an approximation, the single-boundary reduction
+below; the baseline policies and archetype outputs of
+Section~\ref{sec-calibration} and the credit exhibits and Dario's
+dilemma in Section~\ref{sec-valuation} are evaluated at the exact
+policies, with the claims of the entry game. The pure-power
+approximation of Section~\ref{sec-single-firm} remains in use only in
+the scale-gap diagnostic of Internet Appendix G. Table~\ref{tbl-domains}
+collects the model's operating assumptions, the domain over which each
+result is stated, and the approximations whose size I have measured, so
+that a reader can see which objects are exact and how large each
+departure is. The conventions are stated below; their magnitudes are in
+the table.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1707}}
@@ -1060,12 +1062,12 @@ proportional to \(X^{\beta_H}\), the leader's monopoly-phase value
 discounts follower entry by \((X/X_F^*)^{\beta_H}\), and the leader is
 held at the single firm's pure-power scale. That game is no longer the
 paper's benchmark. It is the nested approximation against which
-Table~\ref{tbl-domains} measures the exact equilibrium, and it remains
-in use in Section~\ref{sec-calibration} and Section~\ref{sec-valuation},
-where the symbols \(X^*\) and \(K^*\) denote the pure-power policy
-\((X^{\text{pp}}, K^{\text{pp}})\) of Equation~\ref{eq-trigger-phi} and
-not the exact policy of Proposition 1(iii). In
-Section~\ref{sec-duopoly}, by contrast, \(X_L\), \(X_P\), \(K_L\),
+Table~\ref{tbl-domains} measures the exact equilibrium. Outside Internet
+Appendix G, where the scale-gap diagnostic is still computed at the
+pure-power policy \((X^{\text{pp}}, K^{\text{pp}})\) of
+Equation~\ref{eq-trigger-phi}, the symbols \(X^*\) and \(K^*\) denote
+the exact policy of Proposition 1(iii) with precommitted post-switch
+scale. In Section~\ref{sec-duopoly}, \(X_L\), \(X_P\), \(K_L\),
 \(\phi_L\), \(X_F^*\) and \(K_F\) denote objects of the exact game, and
 \(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) are evaluated for a leader
 that enters at \(X_L\) unless stated otherwise. The approximation is not
@@ -1514,7 +1516,7 @@ scale, a difference that decides whether a trigger exists
 \textbf{First investment and rent equalization.} Both firms share the
 same \(\lambda\) and the game is symmetric; cross-sectional variation in
 investment behavior (Section~\ref{sec-calibration},
-Section~\ref{sec-valuation}) comes from comparative statics across
+Table~\ref{tbl-archetypes}) comes from comparative statics across
 archetypes, not from interaction among firms with different priors. What
 a firm is worth before either has invested depends on what happens if
 the switch arrives first. Let \(W(X)\) be the value to each firm when
@@ -1817,12 +1819,16 @@ much lower \(\mu_H\). The demand shifter \(X\) is latent, so no
 observable series identifies \(\sigma\); the interior-capacity condition
 (A2) below admits \(\sigma \in (0.19, 0.39)\) at baseline, and
 \(\sigma = 0.25\) sits inside that window. The baseline \(\lambda\) is a
-moderate prior: it is more conservative than the beliefs implied by
-\citet{amodei2024machines} (\(\lambda \approx 0.30\)--\(0.50\)) and sits
-at the lower endpoint of the range implied by Hassabis's public
-statements (\(\lambda \approx 0.10\)--\(0.15\)). That dispersion of
-beliefs is what generates the cross-sectional variation analyzed in
-Section~\ref{sec-valuation}.
+moderate prior, more conservative than the timelines of
+\citet{amodei2024machines} and \citet{amodei2026dwarkesh}. A statement
+that the switch arrives with probability \(p\) within \(T\) years maps
+into a constant arrival rate through \(1 - e^{-\lambda T} = p\), that is
+\(\lambda = -\ln(1-p)/T\), and the probabilities stated in
+\citet{amodei2026dwarkesh} give \(\lambda\) between \(0.23\) and
+\(0.46\) (Table~\ref{tbl-stated-beliefs} in the Internet Appendix). The
+archetypes below differ in the beliefs their assigned allocations imply,
+and Table~\ref{tbl-archetypes} in the Internet Appendix carries those
+beliefs through the model.
 
 The baseline discount rate \(r = 0.12\) is a risk-adjusted WACC chosen
 to represent a frontier AI lab rather than estimated from one firm's
@@ -1846,9 +1852,10 @@ bound of (A2) the firm shrinks toward zero scale, and below the lower
 bound it grows without limit. The capacity problem is well-posed only
 inside that window, and when all nine parameters are drawn jointly
 within \(\pm 25\%\) of the baseline, \(53\%\) of \(4{,}096\) draws fall
-outside it (Internet Appendix E). Every trigger and capacity result is
-therefore computed at the baseline WACC; archetype-specific WACCs enter
-only through the capacity-free inversion
+outside it (Internet Appendix E). Every trigger and capacity result,
+including the archetype outputs below, is therefore computed at the
+baseline WACC; archetype-specific WACCs enter only through the
+capacity-free inversion
 \(\lambda = (\hat{\phi}/(1-\hat{\phi}))^{1-\alpha}(r - \mu_H)\) below
 (Internet Appendix B).
 
@@ -1954,7 +1961,8 @@ Uncertainty band on \(\hat{\phi}\) & \(\pm 0.10\) & \(\pm 0.10\) &
 \(\pm 0.10\) & \(\pm 0.10\) \\
 Implied \(\lambda\) band at \(r = 0.12\) & {[}0.05, 0.09{]} & {[}0.06,
 0.10{]} & {[}0.03, 0.05{]} & {[}0.09, 0.17{]} \\
-Leverage (debt / total capital) & 0.05 & 0.05 & 0.10 & 0.15 \\
+Leverage \(\ell\) (debt / investment outlay) & 0.05 & 0.05 & 0.10 &
+0.15 \\
 WACC (per year) & 0.15 & 0.14 & 0.10 & 0.18 \\
 \end{longtable}
 
@@ -1980,7 +1988,8 @@ Leverage is low by construction: the Anthropic-like and OpenAI-like
 archetypes are effectively all-equity funded (\(\ell = 0.05\)), the
 xAI-like archetype carries \(\ell = 0.15\) on its secured debt, and even
 the hyperscaler carries only modest debt (\(\ell = 0.10\)). These are
-round assumptions rather than measured market-value debt-to-capital
+round assumptions for the model's leverage \(\ell = P/I(K)\), the face
+value of debt over the investment outlay, rather than measured debt
 ratios (Internet Appendix C), meant to capture the venture-backed
 financing of AI labs. Through 2026 the labs continued to fund themselves
 mainly with equity, while much of the sector's new debt was issued by
@@ -1989,48 +1998,103 @@ widened markedly; the labs have begun adding credit facilities and
 project debt, which would move them toward the Leland framework's domain
 (Internet Appendix C).
 
+Table~\ref{tbl-archetypes} in Internet Appendix C carries each
+archetype's implied belief, at \(\hat{\phi}\) and at the ends of its
+band, through the single firm of the model of record at the archetype's
+own leverage, holding \(r\) and every other parameter at the baseline.
+Because the \(\hat{\phi}\) are assigned, the exhibit shows what the
+assigned allocations would imply, not that beliefs explain differences
+across firms. Three patterns follow. First, with scale chosen at the
+switch the single firm waits for it at every belief from \(0.073\) up,
+which covers the xAI-like band, the OpenAI-like \(\hat{\phi}\) and the
+upper end of the Anthropic-like band; below that belief it invests
+before the switch, at a trigger several times the precommitted-scale one
+except at the Google-like \(\hat{\phi}\) and below. Second, the
+precommitted-scale trigger and capacity are hump-shaped in \(\lambda\),
+so they barely separate the three archetypes with the highest implied
+beliefs (\(X^*\) between \(0.0077\) and \(0.0095\) at \(\hat{\phi}\))
+and fall only in the Google-like band (\(0.0034\) at \(\hat{\phi}\),
+\(0.00054\) at its lower end). Third, credit risk and the cost of a
+mistaken belief concentrate at the pessimistic end: the Google-like
+five-year default probability is \(0.5\%\) at \(\hat{\phi}\) and
+\(1.5\%\) at the lower end of its band, against about \(0.2\%\) for the
+other archetypes at their \(\hat{\phi}\), and if the baseline
+\(\lambda\) is the true one, investing on the Google-like belief costs
+\(17\%\) of value, against at most \(1.2\%\) for the others at their
+\(\hat{\phi}\). In the entry game the cached equilibria at the arrival
+rates that fall inside the bands put first investment at
+\(X_L \approx 0.00084\) (\(\lambda = 0.05\), Google-like), \(0.0023\)
+(\(0.075\), Anthropic-like and OpenAI-like) and \(0.0034\) to \(0.0038\)
+(\(0.10\) and \(0.15\), xAI-like).
+
+The implied beliefs lie well below stated ones. Mapped through
+\(\lambda = -\ln(1-p)/T\), the probabilities in
+\citet{amodei2026dwarkesh} (90\% within ten years, a ``strong view'' of
+95\% to 99\%, and a ``hunch'' of an even chance within one to three
+years) give \(\lambda\) between \(0.23\) and \(0.46\), three to seven
+times the \(0.068\) that the Anthropic-like \(\hat{\phi} = 0.55\)
+implies. Read the other way, the allocation rule gives \(\phi^*\)
+between \(0.90\) and \(0.97\) at those beliefs, against the ``roughly
+50/50'' split reported in the same interview, which implies
+\(\lambda = 0.06\) at \(r = 0.12\) (Table~\ref{tbl-stated-beliefs}). The
+comparison does not discriminate among several readings. The static
+allocation may overstate the training share that a firm able to revise
+it would choose before the switch, as the dynamic-reallocation exercise
+of Internet Appendix E suggests; \(\hat{\phi}\) may be mis-assigned; the
+50/50 split may describe a different object, since the interview places
+it in a long-run equilibrium reached after the capabilities in question
+exist, not before the switch; or stated timelines may be cheap talk.
+Evaluating the allocation rule at the Anthropic-like WACC of \(0.15\),
+outside the (A2) window, narrows the gap without closing it (\(\phi^*\)
+between \(0.83\) and \(0.94\)).
+
 \subsection{Baseline Results}\label{baseline-results}
 
-Under the baseline calibration, the single-firm model produces an
-investment trigger \(X^* \approx 0.0047\), capacity
-\(K^* \approx 0.0067\), and training fraction \(\phi^* \approx 0.70\),
-where the effective revenue coefficient \(A_{\text{eff}}\)
-(Equation~\ref{eq-a-eff}) combines L-regime inference value and H-regime
-training value. By the leader-scale convention of
-Section~\ref{sec-conventions}, the duopoly leader's monopoly policy
-coincides with this optimum, so
-\(X_L^{\text{mono}} = X^* \approx 0.0047\); the zero-leverage duopoly
-equilibrium produces a follower policy of \(X_F^* \approx 0.12\),
-\(K_F \approx 0.26\), and \(\phi_F^* \approx 0.70\), with the leader
-preempting at \(X_P \approx 0.0027\) (Section~\ref{sec-duopoly}).
-Because \(c = 1\) fixes the cost scale by normalization, the levels of
-\(K\) and \(X\) are not physical units and the quantitative content
-resides in \emph{ratios} and \emph{percentages}: the trigger ratio
-\(X_P / X_L^{\text{mono}} \approx 0.57\) (conditional on the
-leader-scale convention; Internet Appendix B), \(\phi^* \approx 0.70\),
-the value-loss asymmetry (26\% versus 6\%), and the leverage gradient of
-credit spreads (Section~\ref{sec-valuation}). Mapping to observable
-units means setting \(c\) so that \(I(K) = cK^\gamma\) matches observed
-CapEx: at \(c \approx \$56\text{B}\) the follower's investment cost
-\(I(K_F) = K_F^{1.5} \approx 0.13\) maps to approximately \$7.3B, the
-Anthropic-like archetype's 2025 compute spending. That rescaling is a
-change of units: with \(\kappa = c^{1/(\gamma-1)}\), the optimal policy
-transforms as \(K \to K/\kappa\) and \(X \to X/\kappa^{1-\alpha}\) and
-values scale by \(\kappa\), so every ratio and percentage reported in
-the paper is unchanged, while the credit spreads and default
-probabilities of Section~\ref{sec-valuation} and Internet Appendix H,
-evaluated at a fixed \((X, K)\), are invariant only if that evaluation
-point is rescaled with the units.
+Under the baseline calibration the training fraction is
+\(\phi^* \approx 0.70\), where the effective revenue coefficient
+\(A_{\text{eff}}\) (Equation~\ref{eq-a-eff}) combines L-regime inference
+value and H-regime training value. With its post-switch scale
+precommitted, the single firm invests before the switch at
+\(X^* \approx 0.0093\) with capacity \(K^* \approx 0.0158\); with scale
+chosen at the switch it waits for the switch
+(Section~\ref{sec-single-firm}). In the entry game one firm invests
+first at \(X_L \approx 0.0034\), with \(K_L \approx 0.0042\) and
+\(\phi_L \approx 0.68\), and the other waits for the switch and enters
+at \(X_F^* \approx 0.044\) with \(K_F \approx 0.16\); the
+rent-equalization trigger \(X_P \approx 0.0086\) is an upper bound on
+the date of first investment (Section~\ref{sec-duopoly}). Because
+\(c = 1\) fixes the cost scale by normalization, the levels of \(K\) and
+\(X\) are not physical units and the quantitative content resides in
+ratios and percentages: \(X_L/X^* \approx 0.36\), \(\phi^*\), the losses
+of Numerical Finding 1, and the distances to default, spreads and
+default probabilities of Section~\ref{sec-valuation}, which are
+evaluated at the model's own policies. Two operations should be kept
+apart (Internet Appendix C). A change of the cost scale re-solves the
+model: with \(\kappa = c^{1/(\gamma-1)}\), the optimal policy moves to
+\(K/\kappa\) and \(X/\kappa^{1-\alpha}\), revenue, operating cost and
+investment cost all scale by \(1/\kappa\), and so does every value,
+which leaves every ratio, percentage and credit object above unchanged.
+A monetary unit \(m\), the dollar value of one unit of value in the
+normalized model, re-solves nothing and only converts values: setting
+\(m\) so that the leader's outlay at first investment,
+\(I(K_L) \approx 0.00027\), equals the Anthropic-like archetype's 2025
+compute spending of \$7.3B gives \(m \approx \$27\) trillion, at which
+the follower's post-switch outlay, \(I(K_F) \approx 0.066\), is about
+\$1.8 trillion.
 
 \subsection{Sensitivity Analysis}\label{sensitivity-analysis}
 
 Table~\ref{tbl-elasticities} in the Internet Appendix reports
 elasticities of the optimal policy at the baseline; Internet Appendix D
 develops the comparative statics and Internet Appendix E the
-one-at-a-time and joint \(\pm 25\%\) parameter sweeps. The signs are the
-standard real-options ones: within the model, a higher \(\lambda\)
-lowers the trigger and raises \(\phi^*\), so more optimistic firms
-invest earlier and train more. The elasticities with respect to \(r\)
+one-at-a-time and joint \(\pm 25\%\) parameter sweeps. The signs for
+\(\sigma\) and \(r\) are the standard real-options ones. A higher
+\(\lambda\) raises \(\phi^*\), so within the model more optimistic firms
+train more, but it does not uniformly lower the trigger: the
+precommitted-scale trigger rises with \(\lambda\) up to about \(0.13\)
+and falls beyond, and with scale chosen at the switch a more optimistic
+firm invests later or, from \(\lambda \approx 0.073\), waits for the
+switch (Table~\ref{tbl-beliefs}). The elasticities with respect to \(r\)
 and \(\alpha\) are large, so these comparative statics are read as
 directions rather than magnitudes, inside the admissible (A2) window.
 
@@ -2677,9 +2741,8 @@ The rate parameters \(r\), \(\mu_L\), and \(\mu_H\) are risk-adjusted;
 Section~\ref{sec-model}). \(\phi\) is an endogenous choice variable,
 while \(\ell\) is fixed exogenously and varied as a stress-test
 parameter; ``n.a.'' indicates that the entry does not apply. Status:
-``Inferred'' = backed out from observable proxies; ``Chosen'' = set to
-generate plausible magnitudes without a precise empirical target;
-``Standard'' = standard value from the
+``Chosen'' = set to generate plausible magnitudes without a precise
+empirical target; ``Standard'' = standard value from the
 literature.}\label{tbl-parameters}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\centering
@@ -2719,7 +2782,7 @@ growth projections & Chosen \\
 quarterly revenue volatility of cloud providers; no directly observable
 counterpart to \(X\) & Chosen \\
 \(r\) & Discount rate (WACC, per year) & 0.12 & WACC, representative
-frontier AI lab & Inferred \\
+frontier AI lab & Chosen \\
 \(\lambda\) & Arrival rate (per year) & 0.10 & Regime-switch arrival
 rate (exogenous belief) & Chosen \\
 \(\alpha\) & Revenue elasticity & 0.40 & Concavity motivated by
@@ -2733,11 +2796,12 @@ maintenance (flow cost only); jointly normalized with the capacity unit
 and \(c\) & Chosen \\
 \(\phi\) & Training fraction & n.a. & Endogenous choice variable &
 n.a. \\
-\(\ell\) & Leverage ratio (debt / total capital) & n.a. & Exogenous
-stress-test parameter, varied over \([0, 0.7]\) & n.a. \\
+\(\ell\) & Leverage, \(P/I(K)\) (face value of debt / investment outlay)
+& n.a. & Exogenous stress-test parameter, varied over \([0, 0.7]\) &
+n.a. \\
 \(r_c\) & Coupon rate (per year) & 0.05 & Stylized cost of debt for
 frontier AI labs; below \(r\), so debt is not fairly priced at issuance
-(Section~\ref{sec-model}) & Inferred \\
+(Section~\ref{sec-model}) & Chosen \\
 \(b\) & Bankruptcy cost & 0.30 & Bankruptcy cost fraction & Standard \\
 \end{longtable}
 
@@ -2795,9 +2859,10 @@ H-regime values & Derived (choices) \\
 \(s_i^L, s_i^H\) & Tullock contest shares (L-regime inference, H-regime
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
-\(X^*\) & Investment trigger: exact pre-switch trigger in
-Section~\ref{sec-single-firm}, pure-power trigger in the calibration
-block (Section~\ref{sec-conventions}) & Derived (choices) \\
+\(X^*\) & Investment trigger: exact pre-switch trigger with precommitted
+post-switch scale (Proposition 1(iii)); the pure-power trigger in
+Internet Appendix G only (Section~\ref{sec-conventions}) & Derived
+(choices) \\
 \(X_H^*\), \(K_H^*\) & Post-switch trigger and capacity (Proposition
 1(ii)) & Derived (primitives) \\
 \(X^{\text{pp}}\), \(K^{\text{pp}}\) & Trigger and capacity of the
@@ -5375,18 +5440,18 @@ with probability one if the switch never came.
 \textbf{The nested pure-power game: discounting conventions.} This block
 and the next two describe the reduced-form preemption game of the
 earlier version of the paper, which is kept as the nested approximation
-of the equilibrium of Proposition 3 (Section~\ref{sec-conventions}); its
-numbers are those the calibration and valuation sections still use.
-Consistent with the unconditional \(A_{\text{eff}}\) framework, all
-option-like terms in the L-regime are valued with the H-regime exponent
-\(\beta_H\): the follower's option is \(B_F X^{\beta_H}\), and the
-leader's monopoly-phase value subtracts the present value of the revenue
-drop at follower entry using the factor \((X/X_F^*)^{\beta_H}\). Under
-the pure-power convention adopted in the Proof of Proposition 1 (remark
-on the pure-power form), the pre-switch option value has the pure power
-form \(F_L \propto X^{\beta_H}\), so this convention prices
-state-contingent payoffs consistently with the model's own option
-valuation, rather than with a first-passage factor
+of the equilibrium of Proposition 3 (Section~\ref{sec-conventions}); the
+main text quotes it only as the approximation measured in
+Table~\ref{tbl-domains}. Consistent with the unconditional
+\(A_{\text{eff}}\) framework, all option-like terms in the L-regime are
+valued with the H-regime exponent \(\beta_H\): the follower's option is
+\(B_F X^{\beta_H}\), and the leader's monopoly-phase value subtracts the
+present value of the revenue drop at follower entry using the factor
+\((X/X_F^*)^{\beta_H}\). Under the pure-power convention adopted in the
+Proof of Proposition 1 (remark on the pure-power form), the pre-switch
+option value has the pure power form \(F_L \propto X^{\beta_H}\), so
+this convention prices state-contingent payoffs consistently with the
+model's own option valuation, rather than with a first-passage factor
 \((X/X_F^*)^{\beta_L^+}\) that would condition on no regime switch
 occurring before entry. The levered leader's pre-entry claim carries its
 own default boundary, solved by value matching and smooth pasting on the
@@ -6095,20 +6160,23 @@ equivalent to a rescaling of the capacity unit: replacing
 optimization problem unchanged up to a constant factor, and the
 elasticities of \(+2.2\) (trigger) and \(+2.0\) (capacity) in
 Table~\ref{tbl-elasticities} are exactly the exponents of that rescaling
-rather than a measure of economic sensitivity. Recomputing the model at
-\(\delta = 0.10\) confirms this: the levels move (\(X^*\) from
-\(0.0047\) to \(0.0667\), \(K^*\) from \(0.0067\) to \(0.0747\)), while
-\(\phi^* = 0.70\), the trigger ratio \(X_P/X_L^{\text{mono}} = 0.57\),
-the follower-to-leader capacity ratio, and the Dario's dilemma losses
-(26.2\% conservative versus 5.6\% aggressive, the 26\% and 6\% of
-Section~\ref{sec-valuation} at one decimal) are numerically identical to
-their baseline values. The chosen \(\delta\) is therefore part of the
-cost normalization rather than a separately identified quantity, which
-is also why the operating-cost estimates in Table~\ref{tbl-sources} (an
-annual burden of 30--40\% of hardware capital expenditure) do not
-contradict \(\delta = 0.03\): the model's \(\delta\) is a flow per unit
-of the abstract capacity index \(K\), whose scale is fixed by the
-normalization \(c=1\), not per dollar of installed hardware.
+rather than a measure of economic sensitivity. Recomputing the single
+firm at \(\delta = 0.10\) confirms this: the levels move (\(X^*\) from
+\(0.0093\) to \(0.131\), \(K^*\) from \(0.0158\) to \(0.175\)), while
+\(\phi^* = 0.70\) and the Dario's dilemma losses of Numerical Finding 1
+(\(32.5\%\), \(1.3\%\) and \(13.3\%\) at
+\(\lambda_{\text{invest}} = 0.02\), \(0.18\) and \(0.50\)) are
+numerically identical to their baseline values. The same rescaling
+leaves the entry game unchanged up to units, because the contest shares
+depend only on ratios of capacities, so \(X_L/X^*\) and \(K_F/K_L\) do
+not move either; I have not re-solved the game at \(\delta = 0.10\). The
+chosen \(\delta\) is therefore part of the cost normalization rather
+than a separately identified quantity, which is also why the
+operating-cost estimates in Table~\ref{tbl-sources} (an annual burden of
+30--40\% of hardware capital expenditure) do not contradict
+\(\delta = 0.03\): the model's \(\delta\) is a flow per unit of the
+abstract capacity index \(K\), whose scale is fixed by the normalization
+\(c=1\), not per dollar of installed hardware.
 
 The four archetypes are order-of-magnitude composites: each is anchored
 on the public figures of one firm, and none is a calibration to that
@@ -6143,13 +6211,15 @@ data-center financing vehicles widened to roughly 230 bp over
 Treasuries. The model's Leland channel applies most directly to these
 leveraged partners; for the labs, the large non-cancellable compute
 commitments (more than \$500B reported for Anthropic) are fixed
-obligations that the debt-to-capital ratios in Table~\ref{tbl-firms} do
-not capture. The third is the training fraction, which varies by
+obligations that the leverage values \(\ell\) in Table~\ref{tbl-firms}
+do not capture. The third is the training fraction, which varies by
 approximately a factor of two across archetypes (0.35 to 0.75) and is
 consistent with different business models and different beliefs about
-where the returns to AI compute investment are highest. Dispersion along
-these three dimensions is what drives the heterogeneous investment
-behavior analyzed in Section~\ref{sec-valuation}.
+where the returns to AI compute investment are highest. Of the three,
+only the training fraction enters the model's outputs, through the
+belief it implies, and leverage enters them only through the credit
+objects (Table~\ref{tbl-archetypes} below); investment intensity is not
+a moment the model matches.
 
 \textbf{Archetype-by-archetype sourcing.} Table~\ref{tbl-firms-data}
 reports the revenue and capital-expenditure inputs behind the compact
@@ -6341,6 +6411,243 @@ rather than measured, the inversion is a scenario map from allocations
 to the beliefs that would rationalize them within the model, not
 evidence that beliefs explain observed differences across firms.
 
+\textbf{Archetype outputs under the model of record.}
+Table~\ref{tbl-archetypes} evaluates the model at each archetype's
+implied belief, at \(\hat{\phi}\) and at \(\hat{\phi} \pm 0.10\). Every
+parameter other than \(\lambda\) is at the baseline, the discount rate
+included: three of the four archetype WACCs (0.14, 0.15 and 0.18) lie
+outside the window \(r \in (0.097, 0.135)\) on which (A2) holds, so the
+capacity problem is not well-posed at them, and only the Google-like
+WACC of \(0.10\) lies inside it. The inversion at the archetype's own
+WACC, which needs no capacity, gives the bands of the previous
+paragraph. The credit columns price debt issued at the
+precommitted-scale entry \((X^*, K^*, \phi^*)\) at the archetype's
+leverage, with the exact claims and recovery rule of Internet Appendix
+H, under the archetype's own belief. The loss columns value the
+archetype's policy under the baseline \(\lambda = 0.10\), as in
+Numerical Finding 1. The patterns are those summarized in
+Section~\ref{sec-calibration}: waiting for the switch, with scale chosen
+at it, at every belief from \(0.073\) up; a precommitted-scale trigger
+and capacity that are hump-shaped in \(\lambda\) and fall sharply only
+in the Google-like band; and default probabilities and losses that rise
+toward the pessimistic end. Two features of the low beliefs bear on the
+reading. The precommitted-scale triggers at the lower end of the
+Google-like band and at its \(\hat{\phi}\), \(0.00054\) and \(0.0034\),
+lie below the reference demand \(X_0 = 0.0046\) at which the losses are
+measured, so from \(X_0\) those firms invest at once, at the scale their
+belief prescribes there (the convention of Numerical Finding 1). And at
+those two beliefs the trigger with scale chosen at the switch is close
+to the precommitted-scale one (\(0.00054\) and \(0.0036\)), while from
+\(\lambda \approx 0.05\) up it lies several times above it and diverges
+as \(\lambda\) approaches \(0.073\) (\(1.2\) at the Anthropic-like
+\(\hat{\phi}\)). The duopoly is not re-solved at the archetype beliefs.
+The cached equilibria of the entry game at zero leverage
+(Table~\ref{tbl-duopoly-beliefs}) include five arrival rates that fall
+inside a band: \(0.05\) in the Google-like band, where first investment
+is \(X_L = 0.00084\) with \(K_L = 0.00049\) and \(\phi_L = 0.37\);
+\(0.075\) in the Anthropic-like and OpenAI-like bands (\(X_L = 0.0023\),
+\(K_L = 0.0022\), \(\phi_L = 0.56\)); and \(0.10\) and \(0.15\) in the
+xAI-like band (\(X_L = 0.0034\) and \(0.0038\), \(K_L = 0.0042\) and
+\(0.0056\), \(\phi_L = 0.68\) and \(0.81\)).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.2400}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.0900}}@{}}
+\caption{Archetype outputs at the implied beliefs, single firm in the
+model of record. Each archetype is evaluated at its assigned training
+fraction \(\hat{\phi}\) and at \(\hat{\phi} \pm 0.10\); \(\phi\) is the
+training fraction at which the row is evaluated and \(\lambda\) the
+arrival rate at which the closed-form allocation rule returns it, at
+\(r = 0.12\). All other parameters are at the baseline calibration,
+\(r\) included. Rows are grouped by archetype, with its leverage
+\(\ell\) in the group label. \(X^*\) and \(K^*\) are the
+precommitted-scale trigger and capacity (Proposition 1(iii));
+\(X^{\text{u}}\) is the pre-switch trigger with scale chosen at the
+switch, ``waits'' where the firm has none. The credit columns price debt
+issued at \((X^*, K^*, \phi^*)\) at the archetype's leverage \(\ell\)
+under the row's \(\lambda\), with the exact claims and bankruptcy cost
+\(b = 0.30\) (Table~\ref{tbl-credit-pd}): \(X_D\) is the boundary at
+which the firm stops operating under par debt at coupon rate
+\(r_c = 0.05\), and \(\text{PD}^{\text{par}}\) and
+\(\text{PD}^{\text{fair}}\) are the first-passage probabilities of the
+boundary within five years under par and fairly priced debt, under the
+L-regime drift with the switch omitted. \(\Delta V^{\text{pre}}\) and
+\(\Delta V^{\text{u}}\) are the losses of value, as a share of the
+correctly informed firm's value, of the policy that is optimal under the
+row's \(\lambda\) when \(\lambda_{\text{true}} = 0.10\), at the
+reference demand \(X_0 = 0.0046\), with precommitted post-switch scale
+and with scale chosen at the switch (the two versions of Numerical
+Finding 1). Generated by
+\protect\texttt{calibration/archetypes.py}.}\label{tbl-archetypes}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Archetype, \(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\lambda\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^{\text{u}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*/X_D\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\text{PD}^{\text{par}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\text{PD}^{\text{fair}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\Delta V^{\text{pre}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\Delta V^{\text{u}}\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Archetype, \(\phi\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\lambda\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(K^*\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^{\text{u}}\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X^*/X_D\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\text{PD}^{\text{par}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\text{PD}^{\text{fair}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\Delta V^{\text{pre}}\) (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\Delta V^{\text{u}}\) (\%)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\emph{Anthropic-like, \(\ell = 0.05\)} & & & & & & & & & \\
+0.45 & 0.053 & 0.0060 & 0.0080 & 0.030 & 5.83 & 0.29 & 0.31 & 5.7 &
+1.0 \\
+0.55 & 0.068 & 0.0077 & 0.011 & 1.2 & 6.14 & 0.21 & 0.23 & 1.2 & 0.0 \\
+0.65 & 0.087 & 0.0089 & 0.014 & waits & 6.33 & 0.18 & 0.19 & 0.1 &
+0.0 \\
+\emph{OpenAI-like, \(\ell = 0.05\)} & & & & & & & & & \\
+0.50 & 0.060 & 0.0069 & 0.0098 & 0.11 & 6.00 & 0.24 & 0.26 & 2.7 &
+0.1 \\
+0.60 & 0.077 & 0.0084 & 0.013 & waits & 6.25 & 0.19 & 0.21 & 0.5 &
+0.0 \\
+0.70 & 0.100 & 0.0093 & 0.016 & waits & 6.40 & 0.17 & 0.18 & 0.0 &
+0.0 \\
+\emph{Google-like, \(\ell = 0.10\)} & & & & & & & & & \\
+0.25 & 0.031 & 0.00054 & 0.00024 & 0.00054 & 4.29 & 1.48 & 1.51 & 22.8 &
+32.1 \\
+0.35 & 0.041 & 0.0034 & 0.0036 & 0.0036 & 5.23 & 0.53 & 0.58 & 17.1 &
+27.1 \\
+0.45 & 0.053 & 0.0060 & 0.0080 & 0.030 & 5.79 & 0.30 & 0.34 & 5.7 &
+1.0 \\
+\emph{xAI-like, \(\ell = 0.15\)} & & & & & & & & & \\
+0.65 & 0.087 & 0.0089 & 0.014 & waits & 6.21 & 0.20 & 0.26 & 0.1 &
+0.0 \\
+0.75 & 0.116 & 0.0095 & 0.017 & waits & 6.30 & 0.18 & 0.24 & 0.1 &
+0.0 \\
+0.85 & 0.170 & 0.0092 & 0.018 & waits & 6.27 & 0.19 & 0.25 & 1.1 &
+0.0 \\
+\end{longtable}
+
+\textbf{Stated and implied beliefs.} A statement that the switch arrives
+with probability \(p\) within \(T\) years maps into a constant arrival
+rate through \(P(\tau \leq T) = 1 - e^{-\lambda T}\), so
+\(\lambda = -\ln(1-p)/T\) and the expected waiting time is
+\(1/\lambda\). Table~\ref{tbl-stated-beliefs} applies the mapping to the
+probabilities stated in \citet{amodei2026dwarkesh} and evaluates the
+allocation rule there. The ``hunch'' is an even chance that the
+capabilities arrive in ``one to two, maybe more like one to three''
+years, which I read as \(p = 0.5\) at the upper end of each range;
+reading it at one year would give \(\lambda = 0.69\). The same interview
+gives the ``roughly 50/50'' split of compute between training and
+inference quoted above, which inverts to \(\lambda = 0.06\) at
+\(r = 0.12\), against the \(0.23\) to \(0.46\) of the timelines.
+Section~\ref{sec-calibration} discusses the readings of this gap.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.3800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0700}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1100}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1300}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1300}}@{}}
+\caption{Stated timelines and the allocation they imply. Each row is a
+probability \(p\) of the arrival of the capabilities discussed within
+\(T\) years from the interview in \citet{amodei2026dwarkesh} (February
+2026), mapped into \(\lambda = -\ln(1-p)/T\); \(1/\lambda\) is the
+expected time to the switch, and \(\phi^*(\lambda)\) the closed-form
+allocation rule of Proposition 1 at the baseline \(r = 0.12\) and at the
+Anthropic-like archetype's WACC of \(0.15\), which lies outside the (A2)
+window; all other parameters are at the baseline. Generated by
+\protect\texttt{calibration/archetypes.py}.}\label{tbl-stated-beliefs}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Statement
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(p\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(T\) (years)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\lambda\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(1/\lambda\) (years)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*(\lambda)\), \(r = 0.12\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*(\lambda)\), \(r = 0.15\)
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Statement
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(p\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(T\) (years)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\lambda\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(1/\lambda\) (years)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*(\lambda)\), \(r = 0.12\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(\phi^*(\lambda)\), \(r = 0.15\)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ten-year timeline: ``I'm at 90\%'' & 0.90 & 10 & 0.230 & 4.3 & 0.904 &
+0.827 \\
+``Strong view'' of ten years: 95\% & 0.95 & 10 & 0.300 & 3.3 & 0.936 &
+0.881 \\
+``Strong view'' of ten years: 99\% & 0.99 & 10 & 0.461 & 2.2 & 0.968 &
+0.938 \\
+``Hunch'', 50/50: one to three years & 0.50 & 3 & 0.231 & 4.3 & 0.904 &
+0.828 \\
+``Hunch'', 50/50: one to two years & 0.50 & 2 & 0.347 & 2.9 & 0.949 &
+0.904 \\
+\end{longtable}
+
 \textbf{Training-inference boundary.} The boundary between ``training''
 and ``inference'' is also blurring. Inference-time scaling
 (chain-of-thought reasoning, search-augmented generation, and agentic
@@ -6360,60 +6667,77 @@ single-firm problem of Proposition 1 gives the training fraction
 \(\phi^* \approx 0.70\) and, with the post-switch scale precommitted,
 the trigger \(X^* \approx 0.0093\) and capacity \(K^* \approx 0.0158\);
 with scale chosen at the switch the single firm waits for it
-(Table~\ref{tbl-baseline-results}). The pure-power approximation, which
-the duopoly uses, gives \(X^{\text{pp}} \approx 0.0047\) and
-\(K^{\text{pp}} \approx 0.0067\) with the same \(\phi^*\). By the
-leader-scale convention of Section~\ref{sec-conventions}, the duopoly
-leader's unconstrained (monopoly) policy coincides with this pure-power
-policy, so \(X_L^{\text{mono}} = X^{\text{pp}} \approx 0.0047\). The
-duopoly equilibrium with zero leverage produces a follower policy of
-\(X_F^* \approx 0.12\), \(K_F \approx 0.26\), and
-\(\phi_F^* \approx 0.70\), with the leader preempting at
-\(X_P \approx 0.0027\). Internet Appendix B (``Separable reduction of
-the follower problem'') derives the large leader-follower scale gap
-analytically.
+(Table~\ref{tbl-baseline-results}). The pure-power approximation gives
+\(X^{\text{pp}} \approx 0.0047\) and \(K^{\text{pp}} \approx 0.0067\)
+with the same \(\phi^*\). In the entry game at zero leverage one firm
+invests first at \(X_L \approx 0.0034\), with \(K_L \approx 0.0042\) and
+\(\phi_L \approx 0.68\), \(64\%\) below the precommitted-scale single
+firm's trigger, and the other waits for the switch and enters at
+\(X_F^* \approx 0.044\) with \(K_F \approx 0.16\), all of it in
+training; the rent-equalization trigger \(X_P \approx 0.0086\) is an
+upper bound on the date of first investment
+(Table~\ref{tbl-duopoly-beliefs}). Proposition 3(i) characterizes the
+follower's post-switch scale, which is what makes the follower \(39\)
+times larger than the leader.
 
 \textbf{Normalization.} Because \(c = 1\) fixes the cost scale by
 normalization (the same rescaling argument that makes the chosen
 \(\delta\) part of the normalization rather than a separately identified
 quantity), the levels of \(K\) and \(X\) are not interpretable as
 physical units, and the quantitative content resides in ratios and
-percentages. To map to observable units one would set \(c\) so that
-\(I(K) = cK^\gamma\) matches observed CapEx for a given archetype;
-setting \(c \approx \$56\)B, for example, maps the duopoly follower's
-investment cost to approximately \$7.3B, the Anthropic-like archetype's
-2025 compute spending. Rescaling \(c\) in this way is a change of units:
-with \(\kappa = c^{1/(\gamma-1)}\), the optimal policy transforms as
-\(K \to K/\kappa\) and \(X \to X/\kappa^{1-\alpha}\) and values scale by
-\(\kappa\), so every ratio and percentage reported in the paper is
-unchanged. The credit spreads and default probabilities of
-Section~\ref{sec-valuation} and Internet Appendix H are evaluated at a
-fixed \((X, K)\) and are invariant only if that evaluation point is
-rescaled with the units.
+percentages. Two operations that both bear on units should be kept
+apart. The first is a change of the cost scale, which re-solves the
+model. With \(\kappa = c^{1/(\gamma-1)}\), substitute
+\(K = \tilde{K}/\kappa\) and \(X = \tilde{X}/\kappa^{1-\alpha}\):
+revenue \(X K^\alpha\) becomes \(\tilde{X}\tilde{K}^\alpha/\kappa\), the
+investment cost \(cK^\gamma\) becomes
+\(c^{1-\gamma/(\gamma-1)}\tilde{K}^\gamma = \tilde{K}^\gamma/\kappa\),
+and the operating cost \(\delta K/r\) becomes
+\(\delta\tilde{K}/(r\kappa)\), so the problem at cost \(c\) is the
+problem at \(c = 1\) with every payoff divided by \(\kappa\). The
+optimal policy therefore transforms as \(K \to K/\kappa\) and
+\(X \to X/\kappa^{1-\alpha}\), and values scale by \(1/\kappa\). The
+argument uses only the primitives, so it holds in the exact problem and
+in the entry game, whose contest shares depend on ratios of capacities.
+Every ratio and percentage reported in the paper is unchanged, and so
+are the credit objects of Section~\ref{sec-valuation} and Internet
+Appendix H, because they are evaluated at the model's own policies,
+which transform with the units; re-solving the single firm at \(c = 4\)
+reproduces the transformation, the distance to the boundary, the spread
+and the default probability to six digits. The second operation is a
+monetary unit \(m\), the dollar value of one unit of value in the
+normalized model. It re-solves nothing and converts values only. Setting
+\(m\) so that the leader's outlay at first investment,
+\(I(K_L) = K_L^{1.5} \approx 0.00027\), equals the Anthropic-like
+archetype's 2025 compute spending of \$7.3B gives \(m \approx \$27\)
+trillion; at that unit the follower's post-switch outlay,
+\(I(K_F) \approx 0.066\), is about \$1.8 trillion, and matching the
+precommitted-scale single firm's outlay, \(I(K^*) \approx 0.0020\),
+instead would give \(m \approx \$3.7\) trillion.
 
-\textbf{Comparative statics.} Higher volatility \(\sigma\) increases the
-option value of waiting and raises the investment trigger, the standard
-real-options result that uncertainty raises the value of flexibility. A
-higher discount rate \(r\) reduces the present value of future cash
-flows through \(A_{\text{eff}}\) but also raises the characteristic root
-\(\beta_H\), lowering the option premium ratio
+\textbf{Comparative statics.} The statements here are for the
+precommitted-scale policy of the model of record
+(Table~\ref{tbl-elasticities}). Higher volatility \(\sigma\) increases
+the option value of waiting and raises the investment trigger, the
+standard real-options result that uncertainty raises the value of
+flexibility. A higher discount rate \(r\) reduces the present value of
+future cash flows through \(A_{\text{eff}}\) but also raises the
+characteristic root \(\beta_H\), lowering the option premium ratio
 \(\beta_H/(\beta_H - 1)\); at baseline the second effect dominates, so a
 higher \(r\) lowers both the trigger and optimal capacity. Higher
 \(\lambda\) increases the weight on H-regime revenue in
-\(A_{\text{eff}}\), lowering the investment trigger and shifting
-\(\phi^*\) upward, so more optimistic firms invest earlier and allocate
-more compute to frontier model development. Lower revenue elasticity
-\(\alpha\) (stronger diminishing returns) reduces optimal capacity
-sharply and, because the smaller installation is cheaper to build and
-operate, lowers the trigger as well: at \(\alpha = 0.38\) the trigger
-falls to \(X^* \approx 0.0015\), and at \(\alpha = 0.45\) it rises to
-\(X^* \approx 0.038\), against the baseline \(0.0047\). This parameter
-also shapes the contest function: over the admissible range at and below
-the baseline, lower \(\alpha\) weakens the preemption incentive, with
-the trigger ratio \(X_P/X_L^{\text{mono}}\) rising from \(0.57\) at
-\(\alpha = 0.40\) to \(0.60\) at \(\alpha = 0.37\).
-Table~\ref{tbl-elasticities} and Internet Appendices D and E report
-these magnitudes at the baseline and their robustness to joint
+\(A_{\text{eff}}\) and shifts \(\phi^*\) upward, so more optimistic
+firms allocate more compute to frontier model development; its effect on
+timing is not monotone, since the trigger rises with \(\lambda\) up to
+about \(0.13\) and falls beyond (Table~\ref{tbl-beliefs}). Lower revenue
+elasticity \(\alpha\) (stronger diminishing returns) reduces optimal
+capacity sharply and, because the smaller installation is cheaper to
+build and operate, lowers the trigger as well: at \(\alpha = 0.38\) the
+trigger falls to \(X^* \approx 0.0028\), and at \(\alpha = 0.45\) it
+rises to \(X^* \approx 0.083\), against the baseline \(0.0093\).
+Internet Appendix E reports how the duopoly objects move across the
+joint sweep. Table~\ref{tbl-elasticities} and Internet Appendices D and
+E report these magnitudes at the baseline and their robustness to joint
 perturbation; the signs, not the levels, are the model's disciplined
 prediction.
 

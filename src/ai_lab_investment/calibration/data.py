@@ -25,7 +25,9 @@ class FirmData:
         revenue_2025: Estimated 2025 revenue ($B).
         capex_2024: Capital expenditure 2024 ($B).
         capex_2025: Estimated capital expenditure 2025 ($B).
-        leverage_ratio: Debt-to-total-capital ratio.
+        leverage_ratio: Leverage of the model, ell = P / I(K), face value of
+            debt over the investment outlay (a round assumption, not a
+            measured debt-to-capital ratio).
         wacc: Weighted average cost of capital estimate.
         training_fraction: Estimated fraction of compute allocated to
             training (vs inference). 0.0 = unknown/not estimated.
