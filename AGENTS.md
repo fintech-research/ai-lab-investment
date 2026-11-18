@@ -65,6 +65,6 @@ All figure logic lives in `src/ai_lab_investment/figures/paper.py` (11 `create_*
 
 ## Other directories
 
-- `notebooks/model_derivation.ipynb` — SymPy derivations backing the propositions (8 sections + summary + completeness audit)
+- `notebooks/model_derivation.ipynb` — SymPy checks of the identities behind Propositions 1 to 3, the piecewise L-regime solution, φ̃ and the recovery rule, with numerical cross-checks against the model code (10 sections + summary + completeness audit). Symbolic identities only: no equilibrium levels of Proposition 3 and no optimality arguments; residuals are asserted in `tests/test_symbolic_duopoly.py`
 - `references/` — literature review, data compendium, and background notes used for calibration
 - `docs/` — MkDocs site (`just docs`); `ai_workflow.md` — description of AI use in the project
