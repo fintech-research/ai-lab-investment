@@ -984,14 +984,22 @@ the switch, when that business has no revenue \\
 Domain & Unlevered firm & Shutdown boundary:
 Equation~\ref{eq-default-boundary} at \(C_D = 0\); \(X_D\), equity and
 the default probability continuous at \(\ell = 0\) \\
-Domain & Proposition 3(iii), existence of \(X_P\) & Numerical: first
-up-crossing of \(L^* - F\) on a demand scan, at each of ten arrival
-rates in \([0.03, 0.50]\); no uniqueness or subgame-perfection claim \\
-Domain & Proposition 3(iii), date of first investment & Between \(X_L\)
-and \(X_P\), with \(X_L < X_P\) on the whole grid: a second-mover
-advantage, not a race; the symmetric equilibrium is not solved \\
+Domain & Proposition 3(iii), first investment \(X_L\) & Numerical: one
+firm leads at \(X_L\) and the other follows; the no-deviation conditions
+hold on a demand scan from \(0.03\) to \(10\) times \(X_P\) at each of
+ten arrival rates in \([0.03, 0.50]\), and under leverage; uniqueness,
+the symmetric mixed equilibrium and the assignment of roles are not
+established \\
+Domain & Proposition 3(iii), rent-equalization trigger \(X_P\) &
+Numerical: first up-crossing of \(L^* - F\) on a demand scan; an upper
+bound on the date of first investment, with \(X_L < X_P\) on the whole
+grid \\
+Assumption & A switch with neither firm installed & The post-switch game
+is a race and each firm is worth the follower's value in it; a firm
+assured of leading after the switch would not invest before it, and its
+rival then would, at \(X_L\) \\
 Domain & Leader's scale & Chosen at the entry demand; held at the
-pure-power scale, no trigger exists at baseline \\
+pure-power scale, leading is never as good as following at baseline \\
 Assumption & Rival's exit & Each firm values its claim as if the rival's
 capacity stayed in the contest \\
 Domain & Boundaries in the equilibrium & Coupled regime-switching
@@ -1005,16 +1013,18 @@ Approximation & Pure power: belief-invariant capacity, trigger falling
 in \(\lambda\) & Properties of the approximation; in the exact problem
 \(K^*\) varies with \(\lambda\) and \(X^*\) rises with \(\lambda\) up to
 \(0.13\) \\
-Approximation & Pure power, against the exact preemption game & \(X_P\)
-69\% and \(K_L\) 52\% below; follower's trigger 38\% above and capacity
-18\% below \\
+Approximation & Pure power, against the exact game & Its leader's
+trigger is 22\% below \(X_L\) and 69\% below \(X_P\), its leader's
+capacity 62\% above the capacity at \(X_L\) and 52\% below that at
+\(X_P\); its follower's trigger is 2.7 times, and its follower's
+capacity 1.6 times, those against a leader that enters at \(X_L\) \\
 Approximation & Single-boundary default (Proposition 2) & Overstates
 \(X_D\) by about 3\%, against faith-based survival, with or without
 debt \\
 Approximation & Par debt at \(r_c < r\) & Subsidy about 23\% of \(I\) at
 \(\ell = 0.40\); a fairly priced coupon is 2.5 times the par coupon;
-raises \(X_P\) by 36\% at \(\ell = 0.40\), where fairly priced debt
-lowers it by 0.3\% \\
+raises \(X_L\) by 37\% at \(\ell = 0.40\), where fairly priced debt
+lowers it by 0.4\% \\
 \end{longtable}
 
 \textbf{Unconditional-\(A_{\text{eff}}\) discounting.} The pure-power
@@ -1032,12 +1042,14 @@ in use in Section~\ref{sec-calibration} and Section~\ref{sec-valuation},
 where the symbols \(X^*\) and \(K^*\) denote the pure-power policy
 \((X^{\text{pp}}, K^{\text{pp}})\) of Equation~\ref{eq-trigger-phi} and
 not the exact policy of Proposition 1(iii). In
-Section~\ref{sec-duopoly}, by contrast, \(X_P\), \(K_L\), \(\phi_L\),
-\(X_F^*\) and \(K_F\) denote the equilibrium of the exact game. The
-approximation is not a small signed error around the exact problem: its
-triggers and capacities are objects of the model it defines, while
-\(\phi^*\) carries over exactly to the single firm, because it maximizes
-\(A_{\text{eff}}\) at every scale.
+Section~\ref{sec-duopoly}, by contrast, \(X_L\), \(X_P\), \(K_L\),
+\(\phi_L\), \(X_F^*\) and \(K_F\) denote objects of the exact game, and
+\(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) are evaluated for a leader
+that enters at \(X_L\) unless stated otherwise. The approximation is not
+a small signed error around the exact problem: its triggers and
+capacities are objects of the model it defines, while \(\phi^*\) carries
+over exactly to the single firm, because it maximizes \(A_{\text{eff}}\)
+at every scale.
 
 \textbf{Leader's scale in the duopoly.} The leader chooses its capacity
 and training fraction at the demand at which it enters, with the
@@ -1046,10 +1058,10 @@ game and not the single firm's policy. The choice matters for existence
 and not only for levels. With the leader held at the single firm's
 pure-power policy \((K^{\text{pp}}, \phi^*)\), leading is never better
 than following at baseline (the leader's value stays at least 5.4\%
-below the follower's) and no pre-switch trigger exists. With the leader
-held at the single firm's precommitted-scale policy a trigger exists,
-but only barely, and leading is then worth less than mutual waiting
-(Internet Appendix B).
+below the follower's) and no rent-equalization trigger exists. With the
+leader held at the single firm's precommitted-scale policy such a
+trigger exists, but only barely, and leading is then worth less than
+mutual waiting (Internet Appendix B).
 
 \textbf{Single-boundary default.} The default boundary
 Equation~\ref{eq-default-boundary} replaces the H-regime equity value by
@@ -1059,9 +1071,9 @@ quantified in Table~\ref{tbl-domains}: it overstates \(X_D\) and so errs
 against faith-based survival. The same reduction gives the unlevered
 firm's shutdown boundary, which is Equation~\ref{eq-default-boundary} at
 a zero coupon. Proposition 2 and the credit exhibits of
-Section~\ref{sec-valuation} use it. The preemption equilibrium does not:
-each claim in the game carries the boundary of the coupled problem
-(Internet Appendix B).
+Section~\ref{sec-valuation} use it. The entry equilibrium does not: each
+claim in the game carries the boundary of the coupled problem (Internet
+Appendix B).
 
 \textbf{Par debt issuance at an exogenous coupon.} Leverage \(\ell\) and
 the coupon rate \(r_c\) are exogenous, and debt is issued at par: the
@@ -1075,9 +1087,9 @@ results. The fairly priced alternative sets the coupon so that the debt
 is worth its proceeds \(\ell I(K)\) at issuance; it requires a coupon
 rate above \(r\) on those proceeds, \(12.3\%\) at \(\ell = 0.40\) for
 debt issued at the single-firm trigger, about two and a half times the
-par coupon (Internet Appendix A). The preemption equilibrium is solved
-under both conventions, and Remark 4 reports which effects of leverage
-are artifacts of the subsidy.
+par coupon (Internet Appendix A). The entry equilibrium is solved under
+both conventions, and Remark 4 reports which effects of leverage are
+artifacts of the subsidy.
 
 Proposition 1 and the equilibrium of Proposition 3 are statements about
 the exact problem, the second a numerical one; Proposition 2 is an exact
@@ -1319,9 +1331,9 @@ levels are those of the approximation: there \(X_F^*\) rises from about
 \(0.12\) at \(\ell = 0.05\) to \(0.21\) at \(\ell = 0.65\), while
 \(X_F^*/X_{D,F}\) falls from about \(12\) to \(6\). The direction
 carries over to the exact game under par debt, in which the follower's
-trigger rises from \(0.086\) without debt to \(0.117\) at
-\(\ell = 0.40\) and its distance to default at entry falls from \(12.8\)
-to \(8.6\). It does not survive fairly priced debt (Remark 4).
+trigger rises from \(0.044\) without debt to \(0.061\) at
+\(\ell = 0.40\) and its distance to default at entry falls from \(10.3\)
+to \(7.6\). It does not survive fairly priced debt (Remark 4).
 
 \begin{figure}[!htb]
 
@@ -1418,7 +1430,7 @@ policies at every leverage, debt is risky from the first unit, and the
 allocation changes the loss given default only away from them (Internet
 Appendix A).
 
-\subsubsection{Preemption equilibrium}\label{preemption-equilibrium}
+\subsubsection{Entry equilibrium}\label{entry-equilibrium}
 
 I solve the timing game in the primitives of Section~\ref{sec-model},
 without the pure-power form. Demand is in regime \(L\) until the switch
@@ -1426,16 +1438,20 @@ and in regime \(H\) after it, either firm may invest before or after the
 switch, and every claim held before the switch solves the L-regime
 equation Equation~\ref{eq-hjb-L} with its own flow, and its own value at
 the switch, as forcing (Internet Appendix B). Investment is publicly
-observed. I follow the preemption construction of
-\citet{fudenberg1985preemption}, extended to capacity choice by
-\citet{huisman2015strategic} and \citet{pawlina2006real}: one firm, the
-leader, installs first, the other best-responds, and rent equalization
-identifies the lowest demand level at which leading is no worse than
-following. I characterize that level and, beside it, the trigger of a
-firm that knows it will lead. Neither has a closed form, and I do not
-solve for the subgame-perfect equilibria of the timing game; Proposition
-3 and Table~\ref{tbl-domains} state what is established numerically, and
-on what grid.
+observed. One firm, the leader, installs first and the other
+best-responds, as in the timing game of \citet{fudenberg1985preemption},
+extended to capacity choice by \citet{huisman2015strategic} and
+\citet{pawlina2006real}. Two demand levels organize entry: the trigger
+\(X_L\) that a firm chooses when it knows that its rival will follow,
+and the rent-equalization trigger \(X_P\) of the preemption
+construction, the lowest demand level at which leading is no worse than
+following. The benchmark is the equilibrium in which one firm leads at
+\(X_L\) and the other follows, and \(X_P\) is an upper bound on the date
+of first investment. Neither trigger has a closed form. I verify the
+no-deviation conditions of the benchmark numerically and do not
+characterize the full set of equilibria of the timing game; Proposition
+3 and Table~\ref{tbl-domains} state what is established, and on what
+grid.
 
 \textbf{Follower's problem.} The follower observes \((K_L, \phi_L)\). If
 the switch arrives before it has invested, it holds an option in the
@@ -1459,23 +1475,40 @@ therefore a best response at the entry demand and not the single firm's
 scale, a difference that decides whether a trigger exists
 (Section~\ref{sec-conventions}).
 
-\textbf{Rent equalization and the order of moves.} Both firms share the
+\textbf{First investment and rent equalization.} Both firms share the
 same \(\lambda\) and the game is symmetric; cross-sectional variation in
 investment behavior (Section~\ref{sec-calibration},
 Section~\ref{sec-valuation}) comes from comparative statics across
-archetypes, not from interaction among firms with different priors. Two
-demand levels organize entry. The first is the \emph{rent-equalization
-trigger} \(X_P\), the lowest demand level at which \(L^*(X) = F(X)\),
-with \(F\) the follower's value against the policy the leader chooses at
-\(X\). Above it each firm would rather lead than follow, so the first
-investment cannot come later. The second is the trigger \(X_L\) that a
-firm would choose if it knew that its rival would follow; it maximizes
-the value of the option to lead over the value of mutual waiting
-(Internet Appendix B). In the standard preemption game \(X_P < X_L\):
-leading is the better role at the leader's own trigger, the two firms
-race, and entry is brought forward to \(X_P\), where the rent from
-leading is dissipated. Proposition 3(iii) reports that at baseline the
-order is the reverse.
+archetypes, not from interaction among firms with different priors. What
+a firm is worth before either has invested depends on what happens if
+the switch arrives first. Let \(W(X)\) be the value to each firm when
+neither invests before the switch. At the switch the two firms play the
+entry game of the absorbing regime, which is a preemption race, so that
+each is worth the follower's value in it (Internet Appendix B). A firm
+that leads at a trigger \(\bar{X}\), its rival never investing first, is
+worth \(W(X) + [L^*(\bar{X}) - W(\bar{X})](X/\bar{X})^{\beta_L^+}\)
+below it, and \(X_L\) is the trigger that maximizes this value:
+\begin{equation}\protect\phantomsection\label{eq-first-investment}{
+X_L = \arg\max_{X}\; \bigl[L^*(X) - W(X)\bigr]\,X^{-\beta_L^+}.
+}\end{equation} The rent-equalization trigger \(X_P\) is the lowest
+demand level at which \(L^*(X) = F(X)\), with \(F\) the follower's value
+against the policy the leader chooses at \(X\). Above it each firm would
+rather lead than follow, so the first investment cannot come later. In
+the standard preemption game \(X_P < X_L\): leading is the better role
+at the leader's own trigger, the two firms race, and entry is brought
+forward to \(X_P\), where the rent from leading is dissipated. When
+instead \(X_L < X_P\), following is the better role at \(X_L\), and a
+firm gains nothing by investing ahead of a rival that will lead there.
+The strategies in which one firm leads at \(X_L\) and the other follows
+then form an equilibrium if two conditions hold. The leader must prefer
+\(X_L\) to every other stopping rule, given that its rival never invests
+first. The follower must prefer waiting to investing first at every
+demand level below \(X_L\), where its value is that of waiting for the
+leader's entry or for the switch,
+\(W(X) + [F(X_L) - W(X_L)](X/X_L)^{\beta_L^+}\), and not \(F(X)\). That
+value exceeds the leader's whenever \(F(X_L) \geq L^*(X_L)\), so the
+second condition follows from the first whenever \(X_L \leq X_P\).
+Proposition 3(iii) reports that this is the case on the whole grid.
 
 \textbf{Default, entry, and what the equilibrium does not cover.} Each
 installed firm may stop: equity holders abandon the firm at a boundary,
@@ -1522,7 +1555,7 @@ the two regimes and the allocation first-order condition is that of the
 single firm, whatever the two capacities: a common allocation is a
 critical point of its allocation problem if and only if it is \(\phi^*\)
 of Proposition 1. In equilibrium the leader is not at \(\phi^*\). It
-chooses \(\phi_L < \phi^*\), by \(1.9\%\) at baseline and by \(19\%\) at
+chooses \(\phi_L < \phi^*\), by \(3.1\%\) at baseline and by \(14\%\) at
 \(\lambda = 0.03\), the gap closing as \(\lambda\) rises (\(0.2\%\) at
 \(\lambda = 0.50\)), because its post-switch training revenue is diluted
 by a follower that trains with all its capacity while its pre-switch
@@ -1530,75 +1563,103 @@ inference revenue is a monopoly. Role invariance of the training
 fraction is thus approximate for the leader and does not apply to a
 follower that enters after the switch.}
 
-\emph{(iii) (Numerical finding; existence on a demand scan, no
-uniqueness claim) A finite pre-switch rent-equalization trigger exists
-at baseline and at every arrival rate on the grid
+\emph{(iii) (Numerical finding; an equilibrium verified on a demand
+scan, no uniqueness claim) At baseline and at every arrival rate on the
+grid
 \(\lambda \in \{0.03, 0.05, 0.075, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50\}\),
-including those at which the single firm that chooses its scale freely
-never invests before the switch (\(\lambda \geq 0.073\)). At baseline
-and zero leverage, \(X_P = 0.0086\), \(K_L = 0.0141\) and
-\(\phi_L = 0.688\); the follower waits for the switch at every demand
-level and then enters at \(X_F^* = 0.086\) with \(K_F = 0.32\); and
-leading at \(X_P\) is worth \(1.22\) times the value of mutual waiting.
-On the scan the gap \(L^* - F\) changes sign once at each of these
-arrival rates. The trigger a firm would choose if it knew that its rival
-would follow is lower at every arrival rate on the grid:
-\(X_L = 0.0034\) at baseline, \(0.40\) of \(X_P\), with capacity
-\(0.0042\). Between \(X_L\) and \(X_P\) following is the better role (at
-\(X_L\) the follower's value exceeds the leader's by \(10\%\)), yet each
-firm prefers investing to waiting for \(X_P\). Over that range the game
-has a second-mover advantage and is not a race to be first: \(X_L\) is
-the date of first investment when the roles are assigned, \(X_P\) is an
-upper bound on that date, and the date in a symmetric equilibrium, which
-lies between the two, is not solved here.}
+the trigger \(X_L\) of Equation~\ref{eq-first-investment} is finite and
+lies below the rent-equalization trigger \(X_P\), which also exists, and
+the strategies in which one firm invests first at \(X_L\) and the other
+follows satisfy the no-deviation conditions on the scanned range of
+demand, from \(0.03\) to \(10\) times \(X_P\): the leader's stopping
+problem, solved without restricting it to a trigger, has \(X_L\) as the
+lower end of its investment region; the follower's value of waiting
+exceeds the value of investing first at every demand level up to
+\(X_L\), by at least \(6.8\%\) at baseline and \(0.4\%\) at
+\(\lambda = 0.50\); and the follower's entry policy after the leader's
+is its best response. The arrival rates include those at which the
+single firm that chooses its scale freely never invests before the
+switch (\(\lambda \geq 0.073\)). At baseline and zero leverage,
+\(X_L = 0.0034\), \(K_L = 0.0042\) and \(\phi_L = 0.679\); the follower
+waits for the switch at every demand level and then enters at
+\(X_F^* = 0.044\) with \(K_F = 0.16\); leading at \(X_L\) is worth
+\(1.09\) times the value of mutual waiting, and following is worth
+\(1.10\) times leading. The rent-equalization trigger is
+\(X_P = 0.0086\), and \(X_L/X_P\) is \(0.31\) at \(\lambda = 0.03\),
+\(0.39\) at baseline and \(0.97\) at \(\lambda = 0.50\). Between \(X_L\)
+and \(X_P\) following is the better role, yet a firm prefers investing
+to waiting for \(X_P\): a second-mover advantage, not a race to be
+first. This equilibrium and its mirror image, in which the roles are
+exchanged, are the ones characterized. Whether other asymmetric
+equilibria exist is not established, and the symmetric equilibrium in
+mixed strategies, which would involve randomized delay between \(X_L\)
+and \(X_P\), is not solved.}
 
 \emph{(iv) (Numerical finding) The trigger and the leader's capacity are
-hump-shaped in the arrival rate, with a maximum near \(\lambda = 0.10\)
-on the grid: \(X_P\) rises from \(0.000135\) at \(\lambda = 0.03\) to
-\(0.0086\) at \(0.10\) and falls to \(0.0014\) at \(0.50\), and \(K_L\)
-from \(0.0000281\) to \(0.0141\) and \(0.0021\). More optimistic leaders
-invest earlier only above \(\lambda \approx 0.10\), and the leader's
-capacity is not invariant to beliefs.}
+hump-shaped in the arrival rate, with a maximum near \(\lambda = 0.15\)
+on the grid: \(X_L\) rises from \(0.000042\) at \(\lambda = 0.03\) to
+\(0.0034\) at \(0.10\) and \(0.0038\) at \(0.15\) and falls to
+\(0.0014\) at \(0.50\), and \(K_L\) from \(0.0000043\) to \(0.0042\),
+\(0.0056\) and \(0.0020\). More optimistic leaders invest earlier only
+above \(\lambda \approx 0.15\), and the leader's capacity is not
+invariant to beliefs.}
 
 \emph{(v) (Numerical finding) The leader's distance to its boundary at
-entry, \(X_P/X_D\), is \(5.9\) at baseline without debt. It is
-hump-shaped in \(\lambda\) with a maximum near \(0.10\) and falls to
-\(4.1\) at \(\lambda = 0.50\), so that above \(\lambda \approx 0.10\)
-more optimistic leaders enter closer to the boundary. The credit spread
-at entry does not follow the distance: under par debt at \(\ell = 0.40\)
-it is U-shaped in \(\lambda\) on the grid, \(85\) basis points at
-\(\lambda = 0.05\), a minimum of \(29\) near \(\lambda = 0.20\) and
-\(34\) at \(0.50\); under fairly priced debt it is U-shaped as well and
-higher, \(89\) basis points at \(\lambda = 0.05\), \(34\) near
-\(\lambda = 0.20\) and \(37\) at \(0.50\) (Internet Appendix B).}
+entry, \(X_L/X_D\), is \(4.8\) at baseline without debt. It is
+hump-shaped in \(\lambda\) with a maximum of \(4.9\) near \(0.15\) and
+falls to \(4.1\) at \(\lambda = 0.50\), so that above
+\(\lambda \approx 0.15\) more optimistic leaders enter closer to the
+boundary. The credit spread at entry does not follow the distance: under
+par debt at \(\ell = 0.40\) it is U-shaped in \(\lambda\) on the grid,
+\(96\) basis points at \(\lambda = 0.05\), a minimum of \(32\) near
+\(\lambda = 0.30\) and \(34\) at \(0.50\); under fairly priced debt it
+is U-shaped as well and higher, \(99\) basis points at
+\(\lambda = 0.05\), \(36\) near \(\lambda = 0.30\) and \(37\) at
+\(0.50\) (Internet Appendix B).}
 
 Parts (iii) to (v) are statements about computed objects. The
+no-deviation conditions are checked at the demand levels of a scan and
+by a linear complementarity solve between them, not proved, and the
 rent-equalization trigger is the first up-crossing found on a
-logarithmic demand scan, refined by root-finding; I do not show that it
-is unique, and with the leader's scale held fixed the gap does cross
-more than once. The comparison of \(X_L\) with \(X_P\) rests on a value
-of mutual waiting that prices the game after the switch by rent
-equalization (Internet Appendix B). Unless stated otherwise the
-quantities below are evaluated at \(X_P\), the benchmark trigger; a
-leader that entered at \(X_L\) would be smaller and its follower's entry
-more remote still.
+logarithmic demand scan; I do not show that it is unique, and with the
+leader's scale held fixed the gap does cross more than once. Three
+things lie outside what is established. The first is uniqueness: the
+equilibrium is one in pure strategies in which the firms know their
+roles, and nothing here says how the roles are assigned. The second is
+the symmetric equilibrium. Between \(X_L\) and \(X_P\) each firm would
+rather that the other invest. These are the payoffs of a war of
+attrition, not those of the preemption race of
+\citet{fudenberg1985preemption}, and a symmetric equilibrium there would
+have each firm delay at random. I do not solve it; since both firms want
+to lead above \(X_P\), I report \(X_P\) as an upper bound on the date of
+first investment. The third is the continuation after a switch that
+finds neither firm installed, for which \(W\) takes the symmetric
+outcome of the post-switch race. A firm assured of leading that race
+would prefer to wait for the switch at every arrival rate on the grid
+from \(0.075\) up; its rival would then be the one to invest before the
+switch, at the same \(X_L\) (Internet Appendix A). The date \(X_L\)
+therefore requires that the firm that invests first not be assured of
+leading after the switch. Unless stated otherwise the quantities below
+are evaluated for a leader that enters at \(X_L\).
 
 \textbf{Remark 4} (Leverage in the equilibrium). \emph{Under par debt at
 \(r_c < r\), higher leverage raises both capacities, both triggers and
 the leader's boundary: at \(\ell = 0.40\) against \(\ell = 0\), \(K_L\)
-rises by \(68\%\), \(K_F\) by \(69\%\), \(X_P\) by \(36\%\), \(X_F^*\)
-by \(36\%\) and the leader's boundary by \(52\%\), and the distance to
-default at entry falls from \(5.9\) to \(5.3\). These effects are the
+rises by \(70\%\), \(K_F\) by \(70\%\), \(X_L\) by \(37\%\), \(X_F^*\)
+by \(37\%\) and the leader's boundary by \(46\%\), and the distance to
+default at entry falls from \(4.8\) to \(4.5\). These effects are the
 financing subsidy. With the coupon set so that debt is worth its
-proceeds at issuance, the same leverage lowers \(K_L\) by \(0.6\%\),
-\(K_F\) by \(0.4\%\), \(X_P\) by \(0.3\%\) and \(X_F^*\) by \(0.1\%\),
-while the leader's boundary still rises, by \(20\%\), and the distance
-to default at entry falls to \(4.9\).} The reason is that under fair
+proceeds at issuance, the same leverage lowers \(K_L\) by \(0.7\%\),
+\(K_F\) by \(0.5\%\), \(X_L\) by \(0.4\%\) and \(X_F^*\) by \(0.2\%\),
+while the leader's boundary still rises, by \(11\%\), and the distance
+to default at entry falls to \(4.3\).} The reason is that under fair
 pricing the entry value is firm value less \(I(K)\), which leverage
 changes only through the gap between the default boundary and the
 shutdown boundary. What survives fair pricing is therefore the effect of
 leverage on the boundary and on the distance to default, not its effect
-on scale or timing.
+on scale or timing. The ratio \(X_L/X_P\) stays between \(0.39\) and
+\(0.40\) at each leverage and under both conventions, and the
+no-deviation conditions hold in every leveraged cell solved.
 
 The allocation result has a straightforward reading. Both contests run
 over the same installed capacity, scaled by \(\phi\) after the switch
@@ -1616,20 +1677,23 @@ chooses its scale whenever it invests has a finite pre-switch trigger
 only for \(\lambda < 0.073\), and that trigger rises without bound as
 \(\lambda\) approaches the threshold; above it the firm waits for the
 switch (Section~\ref{sec-single-firm}). In the duopoly a firm invests
-before the switch at every arrival rate on the grid, no later than
-\(X_P\) and, when the roles are assigned, at \(X_L\); the shaded band
-between the two is where the first investment occurs. Competition is
-thus what brings investment forward of the switch at baseline, and the
-comparison with the single firm is one of existence, not of a percentage
-discount. The force at work is the race that follows the switch more
-than a race before it: a firm that waits for the switch enters a
-post-switch game in which the rent from leading is competed away, and
-installing before the switch secures a position ahead of it, which is
-why leading is worth more than mutual waiting. Against the single firm
-with a precommitted post-switch scale, whose trigger is always finite,
-the leader's trigger is \(7.4\%\) lower at baseline. The pure-power
-approximation reported a discount of 44\% from a trigger of \(0.0026\);
-in the exact game that trigger is \(0.0086\), about 3.3 times as large.
+before the switch at every arrival rate on the grid, at \(X_L\) in the
+equilibrium of Proposition 3(iii), with \(X_P\) as an upper bound; the
+shaded band between the two is the range in which each firm would rather
+that the other invest. Competition is thus what brings investment
+forward of the switch at baseline, and the comparison with the single
+firm is one of existence, not of a percentage discount. The force at
+work is the race that follows the switch and not a race before it: a
+firm that waits for the switch enters a post-switch game in which the
+rent from leading is competed away, and installing before the switch
+secures a position ahead of it, which is why leading at \(X_L\) is worth
+more than mutual waiting although following would be better still.
+Against the single firm with a precommitted post-switch scale, whose
+trigger is always finite, the first investment comes at a demand level
+\(64\%\) lower at baseline, and the rent-equalization trigger is
+\(7.4\%\) lower. The pure-power approximation reported a discount of
+44\% from a trigger of \(0.0026\); in the exact game the first
+investment is at \(0.0034\) and rent equalization at \(0.0086\).
 
 \begin{figure}[!htb]
 
@@ -1641,52 +1705,53 @@ in the exact game that trigger is \(0.0086\), about 3.3 times as large.
 
 \caption{\label{fig-competition-effect}Pre-switch investment triggers of
 the single firm and of the duopoly leader as a function of the arrival
-rate \(\lambda\), in the exact problem. The solid line is the trigger of
-a single firm that chooses its scale whenever it invests, which is
-finite only for \(\lambda < 0.073\); in the shaded region that firm
-waits for the switch. The dotted line is the trigger of a single firm
-whose post-switch scale is precommitted (Proposition 1(iii)). The dashed
-line with circles is the rent-equalization trigger \(X_P\) and the
-dash-dotted line with squares the trigger \(X_L\) of a firm that knows
-it will lead, both solved at ten arrival rates with the leader's
-capacity and training fraction chosen at the entry demand (Proposition
-3); the first investment in the duopoly occurs in the band between them.
-Both axes are logarithmic. Zero leverage, with the option to stop
-operating; all other parameters at baseline values.}
+rate \(\lambda\), in the exact problem. The solid black line is the
+trigger of a single firm that chooses its scale whenever it invests,
+which is finite only for \(\lambda < 0.073\); in the shaded region that
+firm waits for the switch. The dotted line is the trigger of a single
+firm whose post-switch scale is precommitted (Proposition 1(iii)). The
+solid line with squares is the first investment \(X_L\) of the duopoly
+equilibrium in which one firm leads and the other follows, and the
+dashed line with circles the rent-equalization trigger \(X_P\), an upper
+bound on the date of first investment; both are solved at ten arrival
+rates with the leader's capacity and training fraction chosen at the
+entry demand (Proposition 3). Both axes are logarithmic. Zero leverage,
+with the option to stop operating; all other parameters at baseline
+values.}
 
 \end{figure}%
 
 \textbf{The leader--follower scale asymmetry.} The equilibrium is
 asymmetric in scale as well as timing: at baseline the follower installs
-\(K_F \approx 0.317\) against the leader's \(K_L \approx 0.0141\), a
-ratio of \(23\), and enters at \(X_F^* \approx 0.086\) against
-\(X_P \approx 0.0086\), a ratio of \(10\). The direction follows from
+\(K_F \approx 0.163\) against the leader's \(K_L \approx 0.0042\), a
+ratio of \(39\), and enters at \(X_F^* \approx 0.044\) against
+\(X_L \approx 0.0034\), a ratio of \(13\). The direction follows from
 the elasticity wedge of part (i), which the capacity first-order
 condition amplifies near the (A2) boundary; the magnitude is a joint
 property of the contest and of the baseline calibration, not a robust
 prediction (Internet Appendix B). The follower's trigger is also remote
-in time. Demand reaches it before the switch with probability \(0.7\%\);
-it would be reached with probability \(21\%\) if the switch never came,
+in time. Demand reaches it before the switch with probability \(0.4\%\);
+it would be reached with probability \(17\%\) if the switch never came,
 because the L-regime log drift is negative; and after the switch the
-expected passage from \(X_P\) takes \(80\) years, so that the follower's
-expected entry date is about \(98\) years after the leader's. The
+expected passage from \(X_L\) takes \(90\) years, so that the follower's
+expected entry date is about \(107\) years after the leader's. The
 ``leader'' here is therefore not the dominant incumbent of the
 AI-rivalry narrative but a small, early commitment, the ``follower'' is
 a large entrant whose arrival is a distant event at the horizon of any
 investment decision, and the paper's claims about leadership concern the
 \emph{timing} margin only. The firm exposed to default in the model is
-the leader. At entry its demand is \(5.9\) times its boundary without
-debt and \(5.3\) times at \(\ell = 0.40\) under par debt, and it reaches
-the boundary before the switch with probability \(7.2\%\) and \(8.5\%\).
-This is the exposure Amodei describes, a firm that has committed to
-compute ahead of revenue and fails if revenue falls short
+the leader. At entry its demand is \(4.8\) times its boundary without
+debt and \(4.5\) times at \(\ell = 0.40\) under par debt, and it reaches
+the boundary before the switch with probability \(9.8\%\) and
+\(10.7\%\). This is the exposure Amodei describes, a firm that has
+committed to compute ahead of revenue and fails if revenue falls short
 \citep{amodei2026dwarkesh}, though at baseline the shortfall required is
 large, not modest.
 
 Propositions 1 and 2 are analytical. Proposition 3 combines an
 analytical characterization of the follower and of the allocation
-condition with numerical findings on the equilibrium itself, existence
-included (Table~\ref{tbl-result-taxonomy}).
+condition with numerical findings on the equilibrium itself, the
+no-deviation conditions included (Table~\ref{tbl-result-taxonomy}).
 
 \section{Quantitative Calibration}\label{sec-calibration}
 
@@ -2566,12 +2631,19 @@ pure-power approximation (Equation~\ref{eq-trigger-phi}) & Derived
 (choices) \\
 \(X_L^{\text{mono}}\) & Single-firm trigger of the nested pure-power
 game (Internet Appendix B) & Derived (choices) \\
-\(X_P\) & Preemption trigger: lowest demand at which \(L^*(X) = F(X)\) &
+\(X_L\) & Date of first investment: trigger of the firm that leads when
+its rival follows (Equation~\ref{eq-first-investment}) & Derived
+(choices) \\
+\(X_P\) & Rent-equalization trigger: lowest demand at which
+\(L^*(X) = F(X)\); an upper bound on the date of first investment &
+Derived (choices) \\
+\(W(X)\) & Value to each firm when neither invests before the switch &
 Derived (choices) \\
 \(X_F^*\), \(K_F\) & Follower's post-switch trigger and capacity &
 Derived (choices) \\
 \(K_L\), \(\phi_L\) & Leader's capacity and training fraction, chosen at
-the entry demand & Derived (choices) \\
+the entry demand (\(X_L\) unless stated otherwise) & Derived
+(choices) \\
 \(L^*(X)\), \(F(X)\) & Leader's entry value at its best policy;
 follower's value & Derived (choices) \\
 \(\Delta V\) & Value loss from belief mismatch (Numerical Finding 1) &
@@ -2618,8 +2690,8 @@ capacity in training. It also contains generic intermediate-value
 existence and strict-concavity single-crossing lemmas. Those two were
 written for the preemption trigger of the nested pure-power game without
 the shutdown option (Internet Appendix B) and say nothing about the
-trigger of Proposition 3(iii), whose existence is a numerical finding.
-Each theorem is proved in full, depends only on the proof assistant's
+triggers of Proposition 3(iii), which are numerical findings. Each
+theorem is proved in full, depends only on the proof assistant's
 standard logical axioms, and is stated for arbitrary admissible
 parameters rather than the baseline calibration alone.
 
@@ -2637,8 +2709,8 @@ optimal, are not formalized; nor is the two-region system of Proposition
 approximation rather than a theorem (the remark on the pure-power form
 after the Proof of Proposition 1 below, and
 Section~\ref{sec-conventions}). Results that are numerical in nature,
-the magnitude of \(\tilde{\phi}\), the preemption equilibrium of
-Proposition 3(iii) to (v), and the coupled-ODE, piecewise-stopping, and
+the magnitude of \(\tilde{\phi}\), the entry equilibrium of Proposition
+3(iii) to (v), and the coupled-ODE, piecewise-stopping, and
 Dario's-dilemma computations (Internet Appendix B), are likewise not
 formalized. The Lean proof package accompanies the submission; the code
 reproducing the numerical results (Python source, locked environment,
@@ -3264,24 +3336,137 @@ revenue is a monopoly until the follower enters, while its training
 revenue is shared once the follower has entered, so the marginal value
 of training relative to inference is lower than the single firm's. The
 leader's allocation is accordingly below \(\phi^*\) at every arrival
-rate on the grid (Table~\ref{tbl-duopoly-beliefs}): by \(1.9\%\) at
-baseline, by \(19\%\) at \(\lambda = 0.03\) and by \(0.2\%\) at
+rate on the grid (Table~\ref{tbl-duopoly-beliefs}): by \(3.1\%\) at
+baseline, by \(14\%\) at \(\lambda = 0.03\) and by \(0.2\%\) at
 \(\lambda = 0.50\). The sign is argued, not proved; the magnitudes are
 computed.
 
-\emph{Part (iii): existence of \(X_P\) (numerical finding).} The
-leader's best entry value \(L^*(X) = \max_{K,\phi} L(X; K, \phi)\) and
-the follower's value against the maximizing policy are computed on a
-logarithmic grid of 25 demand levels spanning four decades, from
-\(0.03\) to \(300\) times the single firm's post-switch trigger
-\(X_H^*\), and the first change of sign of \(L^* - F\) from negative to
-positive is refined by Brent's method (Internet Appendix B). A trigger
-is found at each of the ten arrival rates of the statement at zero
-leverage, and at each of the eight arrival rates from \(0.05\) to
-\(0.50\) at \(\ell = 0.40\) and \(\ell = 0.65\) under both debt
-conventions (on a narrower scan for the two fairly priced cells at
-\(\lambda = 0.05\); Table~\ref{tbl-spread-entry}). In every cell solved
-the gap changes sign once on the scan.
+\emph{Part (iii): the equilibrium in which one firm leads at \(X_L\)
+(numerical finding).} \emph{Strategies.} One firm is designated the
+leader and the other the follower. The leader invests the first time
+demand is at or above \(X_L\) before the switch, with the policy
+\((K_L, \phi_L)\) that maximizes its entry value at that demand. The
+follower does not invest before the leader has; once the leader is
+installed it plays its best response (Internet Appendix B): it enters
+before the switch where that is worth more than waiting, and otherwise
+after the switch, at \(X_F^*\) or at once if the switch finds demand
+above \(X_F^*\). If the switch arrives while neither firm is installed,
+the two play the entry game of the absorbing regime, in which each is
+worth the follower's value, and \(W(X)\) is the value before the switch
+of the claim on that outcome. If the designated follower invests first,
+the other firm responds as a follower.
+
+\emph{Values before the first investment.} Until the leader invests
+nothing is paid, so for \(X < X_L\) both values solve the L-regime
+equation with \(\lambda\) times the post-switch value as forcing. They
+are therefore \(W\) plus a multiple of \(X^{\beta_L^+}\), pinned by the
+payoffs at \(X_L\):
+\begin{equation}\protect\phantomsection\label{eq-values-before-entry}{
+V_{\text{lead}}(X) = W(X) + \bigl[L^*(X_L) - W(X_L)\bigr]\Bigl(\frac{X}{X_L}\Bigr)^{\beta_L^+}, \qquad V_{\text{follow}}(X) = W(X) + \bigl[F(X_L) - W(X_L)\bigr]\Bigl(\frac{X}{X_L}\Bigr)^{\beta_L^+},
+}\end{equation} with \(F(X_L)\) the follower's value against the policy
+the leader installs at \(X_L\). The follower's value before the leader's
+entry is \(V_{\text{follow}}\), the value of waiting for that entry or
+for the switch. It is not \(F(X)\), which is what the follower would be
+worth if the leader invested at \(X\).
+
+\emph{The leader's deviations.} Given that the follower never invests
+first, the leader faces a stopping problem with payoff \(L^*(X)\) and
+waiting value \(W\). Investing at a trigger \(\bar{X}\) is worth
+\(W(X) + h(\bar{X})X^{\beta_L^+}\) below it, with
+\(h(X) = [L^*(X) - W(X)]X^{-\beta_L^+}\), so among triggers the best is
+the maximizer of \(h\), which is Equation~\ref{eq-first-investment}. I
+compute \(h\) on a logarithmic scan of 26 demand levels from \(0.03\) to
+\(10\) times \(X_P\) and refine its maximum by a bounded search. At each
+arrival rate \(h\) is negative at the bottom of the scan, where leading
+is worth less than mutual waiting, rises to a single peak at \(X_L\) and
+falls beyond it. A best trigger need not be a best stopping rule, so I
+also solve the leader's problem without restricting it: with
+\(u = V - W\) and \(\mathcal{A}\) the operator of
+Equation~\ref{eq-hjb-L}, the linear complementarity problem
+\(\min\{-\mathcal{A}u,\; u - (L^* - W)\} = 0\) is solved by policy
+iteration on \(4{,}001\) log-spaced demand levels over the scanned
+range, with \(L^* - W\) interpolated from the scan and no assumption on
+the shape of the investment region. In every cell the leader invests at
+every scanned demand level above a boundary and at none below it, the
+boundary agrees with \(X_L\) to within \(0.14\%\), and the value below
+it agrees with Equation~\ref{eq-values-before-entry} to within
+\(3 \times 10^{-4}\) in relative terms.
+
+\emph{The follower's deviations.} Investing first at \(X < X_L\) pays
+the designated follower at most \(L^*(X)\), because the other firm then
+follows. From Equation~\ref{eq-values-before-entry},
+\(V_{\text{follow}}(X) - V_{\text{lead}}(X) = [F(X_L) - L^*(X_L)](X/X_L)^{\beta_L^+}\),
+and \(V_{\text{lead}}(X) \geq L^*(X)\) for \(X \leq X_L\) is the
+leader's condition just verified. The follower's condition therefore
+holds at every demand level up to \(X_L\) whenever
+\(F(X_L) \geq L^*(X_L)\), that is, whenever \(X_L \leq X_P\). On the
+grid \(F/L^*\) at \(X_L\) is \(1.104\) at baseline and lies between
+\(1.004\), at \(\lambda = 0.50\), and \(1.140\), at \(\lambda = 0.03\)
+(Table~\ref{tbl-duopoly-order}). Evaluated directly at the scan points,
+the follower's value of waiting exceeds the value of investing first by
+at least \(6.8\%\) of the former at baseline and by at least \(0.3\%\)
+in every cell. After the leader has invested, the follower's policy
+solves its own stopping problem, which is checked against a linear
+complementarity solve (Internet Appendix B). Off the equilibrium path,
+if the leader has not invested at a demand level between \(X_L\) and
+\(X_P\), the follower still prefers that the leader invest, because
+\(L^* < F\) below \(X_P\). Above \(X_P\) both firms want to lead and the
+strategies are not an equilibrium of the subgames that start there; when
+the game starts below \(X_L\), demand cannot reach them before the
+leader has invested.
+
+\emph{What is and is not established.} The strategies are mutual best
+responses, on the scan, in each of the \(45\) cells solved: the ten
+arrival rates of the statement at zero leverage; the baseline arrival
+rate at \(\ell = 0.20\) and the eight arrival rates from \(0.05\) to
+\(0.50\) at \(\ell = 0.40\) and \(\ell = 0.65\), each under both debt
+conventions; and the baseline with the follower's post-switch scale
+precommitted. For the two fairly priced cells at \(\lambda = 0.05\) the
+scan is narrower, seven demand levels from \(0.2\) to \(1.6\) times
+\(X_P\), and the conditions are verified on that range only. The
+conditions are checked at scan points and, between them, on an
+interpolant, over a bounded range of demand; they are not proved. Four
+further things are not established. First, uniqueness: I do not show
+that no other asymmetric equilibrium exists. Second, the symmetric
+equilibrium. Between \(X_L\) and \(X_P\) each firm prefers investing to
+waiting for \(X_P\) and prefers that its rival invest, so a symmetric
+equilibrium would involve randomized delay there, as in a war of
+attrition; it is not solved, and where it would place the first
+investment is not known beyond the bound \(X_P\). Third, coordination:
+the model does not say which firm leads. Fourth, the continuation after
+a switch that finds neither firm installed is a selection. \(W\) takes
+the symmetric outcome of the post-switch race, in which each firm
+expects the follower's value. If instead the firm that leads before the
+switch were also the one to lead after it, its waiting value would be
+higher, and at each arrival rate from \(0.075\) to \(0.50\) it would not
+invest before the switch at any scanned demand level (at
+\(\lambda = 0.05\) it would do so only at about ten times \(X_L\), above
+\(X_P\); at \(\lambda = 0.03\), where \(X_L\) lies far below the
+post-switch rent-equalization trigger and the two waiting values nearly
+coincide, at the same \(X_L\)). Its rival, whose waiting value is \(W\),
+would then be the firm that invests before the switch, at the same
+\(X_L\), and the firm assured of leading after the switch would not gain
+by investing ahead of it (on the scan its value of waiting exceeds the
+value of investing first by at least \(0.3\%\) in every cell). The date
+\(X_L\) thus requires only that the firm that invests before the switch
+not be assured of leading after it. Simultaneous investment is not
+priced, and leader policies that would make the follower enter at once
+are excluded.
+
+\emph{Part (iii), continued: the rent-equalization trigger \(X_P\)
+(numerical finding).} The leader's best entry value
+\(L^*(X) = \max_{K,\phi} L(X; K, \phi)\) and the follower's value
+against the maximizing policy are computed on a logarithmic grid of 25
+demand levels spanning four decades, from \(0.03\) to \(300\) times the
+single firm's post-switch trigger \(X_H^*\), and the first change of
+sign of \(L^* - F\) from negative to positive is refined by Brent's
+method (Internet Appendix B). A trigger is found at each of the ten
+arrival rates of the statement at zero leverage, and at each of the
+eight arrival rates from \(0.05\) to \(0.50\) at \(\ell = 0.40\) and
+\(\ell = 0.65\) under both debt conventions (on a narrower scan for the
+two fairly priced cells at \(\lambda = 0.05\);
+Table~\ref{tbl-spread-entry}). In every cell solved the gap changes sign
+once on the scan, and \(X_L < X_P\).
 
 The existence argument available for the nested pure-power game does not
 carry over, and I have no analytical substitute. There the leader's
@@ -3299,56 +3484,23 @@ and the diagnostic computation of this game without the option to stop
 found more than one at \(\gamma = 1.9\) for \(\lambda \geq 0.10\). The
 trigger reported is the first up-crossing.
 
-Three further facts bear on reading \(X_P\) as an equilibrium outcome.
-First, leading at \(X_P\) is worth more than mutual waiting, by a factor
-between \(1.05\) and \(1.28\) across the grid (\(1.22\) at baseline), so
-the outcome in which neither firm invests before the switch is not
-sustained; this comparison prices the post-switch game by rent
-equalization and is supporting evidence, not a solution of that game.
-Second, of the two conditions under which \citet{huisman2015strategic}
-show the sequential outcome to be the equilibrium of the timing game,
-one holds at every cell: the follower's entry, before or after the
-switch, lies above \(X_P\), and at baseline the follower never enters
-before the switch. The other, that leading at \(X_P\) is worth more than
-investing simultaneously with the rival there, is not checked in the
-exact game, in which simultaneous installation is not priced. Third, the
-result depends on the leader's scale being a best response: with the
-leader held at the pure-power policy the gap is negative at every demand
-level at baseline, and with the leader held at the single firm's
-precommitted-scale policy a trigger exists at \(0.0077\), where leading
-is worth \(0.94\) of mutual waiting (Internet Appendix B).
-
-\emph{Part (iii), continued: the order of moves (numerical finding).}
-Rent equalization says from which demand level both firms want to lead.
-It does not say when a firm that expects its rival to follow would
-invest. If the rival never invests first, the value of a leader that
-will enter at a trigger \(\bar{X}\) is
-\(W(X) + [L^*(\bar{X}) - W(\bar{X})](X/\bar{X})^{\beta_L^+}\) below it,
-with \(W\) the value to each firm when neither invests before the
-switch, so its best trigger \(X_L\) maximizes
-\(h(X) = [L^*(X) - W(X)]\,X^{-\beta_L^+}\). By the same formula, at a
-demand level \(X < X_P\) investing at once is worth more than waiting
-for \(X_P\) exactly when \(h(X) > h(X_P)\). At baseline \(h\) peaks at
-\(X_L = 0.0034\), where it is \(1.86\) times \(h(X_P)\), and it is
-decreasing from there to \(X_P\). The same order holds at each of the
-ten arrival rates, the two triggers nearly coinciding at
-\(\lambda = 0.50\) (Table~\ref{tbl-duopoly-order}). Since \(L^* < F\)
-below \(X_P\) by the definition of \(X_P\), between \(X_L\) and \(X_P\)
-a firm prefers investing to waiting and prefers that its rival invest:
-the payoffs of a war of attrition, not of a race to be first. Under
-these values the strategies in which one firm invests as soon as demand
-is at or above \(X_L\) and the other invests first only from \(X_P\) on
-are best responses to each other; a symmetric equilibrium would involve
-randomization between \(X_L\) and \(X_P\) and is not solved. Two caveats
-apply. The value \(W\) prices the game after the switch by rent
-equalization, with the post-switch leader's scale chosen at its entry
-and without the option to stop, and is not a full solution of that game.
-That game does have the standard order: after the switch the trigger of
-an assigned leader lies above the rent-equalization trigger, by a factor
-of about four at baseline, and leading is the better role between them,
-so the game after the switch is a race and its rent-equalization value
-is the appropriate one. And \(h\) is evaluated on a 13-point logarithmic
-scan from \(0.05\,X_P\) to \(1.5\,X_P\) and refined by a bounded search.
+Three further facts bear on the role of \(X_P\). First, it is an upper
+bound on the date of first investment and not that date: above it each
+firm would rather lead than follow, so no equilibrium has both firms
+waiting there, while at \(X_L\), below it, a firm that knows its rival
+will follow already prefers to invest. Second, of the two conditions
+under which \citet{huisman2015strategic} show the sequential outcome to
+be the equilibrium of the preemption game, one holds at every cell: the
+follower's entry, before or after the switch, lies above \(X_P\), and at
+baseline the follower never enters before the switch. The other, that
+leading is worth more than investing simultaneously with the rival, is
+not checked in the exact game, in which simultaneous installation is not
+priced. Third, the result depends on the leader's scale being a best
+response: with the leader held at the pure-power policy the gap is
+negative at every demand level at baseline, and with the leader held at
+the single firm's precommitted-scale policy a trigger exists at
+\(0.0077\), where leading is worth \(0.94\) of mutual waiting (Internet
+Appendix B).
 
 \emph{Parts (iv) and (v) and Remark 4 (numerical findings).} These have
 no analytical derivation. The shapes in \(\lambda\) of the trigger, the
@@ -3358,7 +3510,7 @@ Table~\ref{tbl-duopoly-beliefs} and Table~\ref{tbl-spread-entry}, and
 the effects of leverage under the two debt conventions off
 Table~\ref{tbl-duopoly-leverage}. The mechanism behind the spread in
 part (v) is that two things move with \(\lambda\) besides the distance
-\(X_P/X_D\): the root \(\beta_L^-\), which becomes more negative as
+\(X_L/X_D\): the root \(\beta_L^-\), which becomes more negative as
 \(\lambda\) rises and so lowers the value of the default claim at a
 given distance, and the level of the boundary relative to the coupon.
 The earlier statement that the spread at entry is weakly increasing in
@@ -3626,18 +3778,20 @@ critical point for a pre-switch entrant & Analytical critical point
 (exact factorization) & Assumption 1; any capacities \\
 Proposition 3(ii) & Leader's \(\phi_L\) below \(\phi^*\) & Numerical &
 Baseline at ten arrival rates \\
-Proposition 3(iii) & Existence of \(X_P\) with the leader's scale chosen
-at entry & Numerical (first up-crossing on a demand scan) & Baseline at
-ten arrival rates; leverage \(0.40\) and \(0.65\) under both debt
-conventions at eight \\
-Proposition 3(iii) & \(X_L < X_P\): a second-mover advantage between the
-two & Numerical; rests on a mutual-waiting value that prices the
-post-switch game by rent equalization & Baseline at ten arrival rates,
-zero leverage \\
-Proposition 3(iii) & Uniqueness of \(X_P\); date of first investment in
-a symmetric equilibrium; subgame perfection & Not established & n.a. \\
-Proposition 3(iv)--(v) & Shapes in \(\lambda\) of \(X_P\), \(K_L\),
-\(X_P/X_D\) and the spread at entry & Numerical & Same grid \\
+Proposition 3(iii) & First investment at \(X_L\): one firm leads, the
+other follows, and neither deviates & Numerical (no-deviation conditions
+on a demand scan and a linear complementarity solve of the leader's
+problem) & Baseline at ten arrival rates; leverage \(0.20\) at baseline;
+leverage \(0.40\) and \(0.65\) under both debt conventions at eight \\
+Proposition 3(iii) & Existence of \(X_P\), an upper bound on the date of
+first investment; \(X_L < X_P\) & Numerical (first up-crossing on a
+demand scan) & Same grid \\
+Proposition 3(iii) & Uniqueness among asymmetric equilibria; the
+symmetric mixed equilibrium; the assignment of roles; the continuation
+after a switch with neither firm installed; uniqueness of \(X_P\) & Not
+established & n.a. \\
+Proposition 3(iv)--(v) & Shapes in \(\lambda\) of \(X_L\), \(K_L\),
+\(X_L/X_D\) and the spread at entry & Numerical & Same grid \\
 Remark 4 & Effects of leverage under par and fairly priced debt &
 Numerical & Baseline; leverage \(0.20\), \(0.40\), \(0.65\) \\
 Numerical Finding 1 & Dario's dilemma & Numerical & All
@@ -3725,8 +3879,8 @@ in place of \(A_H(\phi K)^\alpha\), give the pure-power trigger
 Equation~\ref{eq-trigger-phi} by the identical algebra, which is why the
 two triggers share the option-premium factor \(\beta_H/(\beta_H-1)\).
 
-\emph{The preemption game in full.} Section~\ref{sec-duopoly} states the
-equilibrium concept in one sentence; the full game has four primitives.
+\emph{The entry game in full.} Section~\ref{sec-duopoly} states the
+equilibrium concept in one paragraph; the full game has four primitives.
 Timing is continuous, and each firm chooses a stopping time (its
 investment trigger) rather than acting at exogenously given dates. The
 strategy space of firm \(i\) is the triple \((X_i^*, K_i, \phi_i)\): a
@@ -3737,39 +3891,43 @@ switch. Information is closed-loop: investment is immediately and
 publicly observed, so whichever firm invests second (the follower)
 conditions its own choice of \((X_F^*, K_F, \phi_F)\) on the realized
 \((K_L, \phi_L)\) of the firm that moved first, rather than on a prior
-belief about it. The solution concept is the preemption equilibrium of
-\citet{fudenberg1985preemption}, extended to a continuous capacity and
-allocation choice by \citet{huisman2015strategic} and
-\citet{pawlina2006real}: the follower's best response is derived first,
-for every possible leader policy, and the leader's own trigger is then
-pinned down by the requirement that the rent from leading is fully
-competed away, which is the rent-equalization condition
-\(L(X_P) = F(X_P)\) of Section~\ref{sec-duopoly}. The richer strategy
-space relative to the textbook preemption game, in which firms choose
-only a trigger, does not alter this sequential structure; it enlarges
-the payoff functions \(L(\cdot)\) and \(F(\cdot)\) that enter the same
-rent-equalization logic.
+belief about it. The follower's best response is derived first, for
+every possible leader policy, as in the preemption game of
+\citet{fudenberg1985preemption} and its extension to a continuous
+capacity and allocation choice by \citet{huisman2015strategic} and
+\citet{pawlina2006real}. Two triggers are then computed for the firm
+that moves first. The rent-equalization trigger of that literature, at
+which the rent from leading is fully competed away, solves
+\(L^*(X_P) = F(X_P)\). The trigger \(X_L\) of
+Equation~\ref{eq-first-investment} is the one a firm chooses when its
+rival will follow. Where \(X_L < X_P\), as on the whole grid here, the
+first is the equilibrium date of first investment when one firm leads
+and the other follows, and the second is an upper bound on that date
+(Proof of Proposition 3). The richer strategy space relative to the
+textbook timing game, in which firms choose only a trigger, does not
+alter this sequential structure; it enlarges the payoff functions
+\(L(\cdot)\) and \(F(\cdot)\) that enter it.
 
 \emph{The two conditions underwriting the preemption construction.}
 Following \citet{huisman2015strategic}, the sequential (leader-follower)
-outcome that Section~\ref{sec-duopoly} characterizes is the equilibrium
-of the timing game only if two conditions hold at the computed
-preemption trigger \(X_P\). First, the value of investing as leader at
-\(X_P\) must exceed the value of investing simultaneously with the rival
-at that same trigger: if it did not, a firm would prefer to wait for its
-rival to move first rather than preempt, and the preemption logic that
-pins down \(X_P\) by rent equalization would not apply. Second, the
+outcome at the rent-equalization trigger is the equilibrium of a
+preemption game only if two conditions hold at \(X_P\). First, the value
+of investing as leader at \(X_P\) must exceed the value of investing
+simultaneously with the rival at that same trigger. Second, the
 follower's optimal trigger, computed taking the leader's realized
 \((K_L, \phi_L)\) as given, must exceed \(X_P\) itself; otherwise the
 ``follower'' would want to invest before the leader has moved, and the
 leader-follower labeling would not describe the equilibrium path. Both
 are properties of computed objects rather than assumptions on
-parameters. In the exact game the second holds at every cell solved: the
-follower's pre-switch entry trigger, where it exists, and its
-post-switch trigger both lie above \(X_P\). The first is not checked in
-the exact game, in which simultaneous installation is not priced; it was
-checked, and held, in the nested pure-power game at every
-parameterization swept there.
+parameters. In the exact game the second holds at every cell solved, at
+\(X_P\) and at \(X_L\): the follower's pre-switch entry trigger, where
+it exists, and its post-switch trigger both lie above the leader's
+entry. The first is not checked in the exact game, in which simultaneous
+installation is not priced; it was checked, and held, in the nested
+pure-power game at every parameterization swept there. In the exact game
+these conditions bear on \(X_P\) as an upper bound only, because the
+first investment comes at \(X_L\), below the range in which firms would
+race.
 
 \emph{The par-debt financing subsidy in full.} The claim a bondholder
 receives against a coupon \(C_D = r_c \cdot \ell \cdot I(K)\), absent
@@ -3924,9 +4082,9 @@ measures.
 All numerical results are computed using SciPy 1.17 optimization
 routines in Python 3.13. The exact single-firm problem of Proposition 1
 is solved as described in the two blocks on that problem below. The
-preemption game of Proposition 3 is solved as described in the block on
-that game below. The pure-power single-firm policy and the optimizations
-of the nested pure-power duopoly use Nelder--Mead over
+entry game of Proposition 3 is solved as described in the block on that
+game below. The pure-power single-firm policy and the optimizations of
+the nested pure-power duopoly use Nelder--Mead over
 \((\log K, \phi) \in \mathbb{R} \times [0.01, 0.99]\), with leverage
 fixed at its exogenous value and the trigger \(X^*\) recomputed from the
 smooth-pasting condition at each function evaluation. The log-transform
@@ -3961,8 +4119,8 @@ all starts converge to the same solution. That is evidence that the
 optimizer is not stopping at distinct local optima; it is not a proof
 that the equilibrium is unique.
 
-\textbf{The preemption game in the exact primitives.} This block states
-the game solved in Section~\ref{sec-duopoly}, how it is solved, how the
+\textbf{The entry game in the exact primitives.} This block states the
+game solved in Section~\ref{sec-duopoly}, how it is solved, how the
 solution was checked, and what it does not establish. The code is in the
 repository (modules \texttt{preemption\_exact.py} and
 \texttt{preemption\_levered.py}, entry point
@@ -4022,18 +4180,49 @@ The entry value is \(L(X; K_L, \phi_L) = E_L(X) - (1-\ell)I(K_L)\), at
 the par coupon \(r_c\ell I(K_L)\) or at the coupon that makes debt worth
 \(\ell I(K_L)\) at the entry demand.
 
+\emph{Mutual waiting.} If neither firm is installed when the switch
+arrives, the two play an entry game in the absorbing regime. A firm that
+enters first at demand \(X\) chooses its capacity, all of it in
+training, to maximize its entry value against the follower's best
+response, with the option to stop and, under leverage, the par or the
+fair coupon; its rival holds the follower's option of the
+\emph{Follower} paragraph above. That game has the order of a preemption
+race. The trigger that a post-switch leader would choose if its rival
+never led, which maximizes its entry value times \(X^{-\beta_H}\), is
+\(0.0016\) without debt, more than four times the post-switch
+rent-equalization trigger \(X_P^H = 0.00037\), and leading is the better
+role above \(X_P^H\) (by more than \(10\%\) from \(2X_P^H\) on). Each
+firm is therefore valued at the follower's value in it, the payoff of
+the symmetric equilibrium of a preemption race
+\citep{fudenberg1985preemption}: the follower's option against a leader
+that enters at \(X_P^H\) when the switch finds demand below \(X_P^H\),
+and the follower's value against a leader that enters at once when it
+finds demand above. The post-switch game does not involve \(\lambda\),
+so that it is a race is one computation for each leverage and debt
+convention, seven in all, and it holds in each. The value of mutual
+waiting \(W\) is Equation~\ref{eq-green} with \(\lambda\) times that
+value as forcing. An earlier version of the computation left the option
+to stop and the default option out of \(W\). Doing so changes \(W\) at
+the demand level \(X_L\) by at most \(0.36\%\) over the cells solved,
+and would move \(X_L\) by between \(-3.7\%\), at \(\lambda = 0.03\), and
+\(+2.7\%\) (\(+0.9\%\) at baseline, \(0.00340\) against \(0.00336\)).
+
 \emph{Solution.} For each candidate leader policy the follower's
 post-switch problem is solved first, then its pre-switch problem (a grid
 search on the claim without the option to stop, polished on the exact
 claim), then the leader's claims. The leader's policy at a demand level
 maximizes \(L\) by Nelder--Mead over \((\ln K, \phi)\), warm-started
 along the demand scan and started cold from four scales at its first
-point. The trigger is found on a 25-point logarithmic scan as described
-in the Proof of Proposition 3. When the follower's scale is chosen at
-the switch the forcing above \(X_F^*\) is tabulated on a logarithmic
-grid of 150 points per decade and integrated by Simpson's rule with a
-power-law tail; elsewhere the forcing is piecewise a sum of powers and
-Equation~\ref{eq-green} is in closed form.
+point. The rent-equalization trigger is found on a 25-point logarithmic
+scan and the first investment \(X_L\) on a 26-point scan from \(0.03\)
+to \(10\) times \(X_P\), as described in the Proof of Proposition 3.
+When the follower's scale is chosen at the switch the forcing above
+\(X_F^*\) is tabulated on a logarithmic grid of 150 points per decade
+and integrated by Simpson's rule with a power-law tail; elsewhere the
+forcing is piecewise a sum of powers and Equation~\ref{eq-green} is in
+closed form. In the post-switch game with neither firm installed the
+follower's response to the leader's capacity is tabulated on 153
+capacities and interpolated, with a relative error below \(10^{-6}\).
 
 \emph{Checks.} (a) The follower's stopping problem (in the game without
 the option to stop) and the leader's equity (with it) are re-solved by
@@ -4044,18 +4233,32 @@ values agree to the resolution of the grid (relative differences of
 problem is the single firm's problem above, and the code reproduces its
 triggers, capacities and waiting value. (c) For an installed monopolist
 the boundary equals that of the coupled scalar equation of this appendix
-to ten digits. (d) At the baseline trigger the leader's policy is
-confirmed by a brute-force grid over \((K, \phi)\). (e) Under fairly
-priced debt the debt is worth its proceeds at issuance, and as
-\(\ell \to 0\) the boundary and both values converge linearly to those
-of the unlevered game. Each check is in the repository's test suite.
+to ten digits. (d) At the baseline rent-equalization trigger the
+leader's policy is confirmed by a brute-force grid over \((K, \phi)\).
+(e) Under fairly priced debt the debt is worth its proceeds at issuance,
+and as \(\ell \to 0\) the boundary and both values converge linearly to
+those of the unlevered game. (f) The no-deviation conditions of the
+Proof of Proposition 3 are asserted for every cell, and at baseline the
+leader's and the follower's conditions are recomputed from the game at
+demand levels below, at and above \(X_L\). (g) The complementarity
+solver used for the leader's stopping problem recovers the closed-form
+trigger of a linear payoff, and reports a disconnected investment region
+when given a payoff that has one. (h) At baseline, against the policy
+the leader installs at \(X_L\), a complementarity solve of the
+follower's pre-switch problem (in the game without the option to stop,
+as in (a)) finds no entry before the switch and reproduces its value to
+\(10^{-5}\); the option to stop changes that value by less than
+\(0.2\%\). Each check is in the repository's test suite.
 
-\emph{What is not established.} Existence of \(X_P\) rests on a finite
-scan and uniqueness is not claimed (Proof of Proposition 3). The date of
-first investment is bracketed by \(X_L\) and \(X_P\) and not determined:
-the symmetric equilibrium of the war of attrition between them is not
-solved. The value of waiting below \(X_P\) involves the post-switch game
-with neither firm installed, which is not solved in full. Simultaneous
+\emph{What is not established.} The no-deviation conditions behind
+\(X_L\) and the existence of \(X_P\) rest on finite scans, and
+uniqueness is claimed for neither (Proof of Proposition 3). The
+equilibrium characterized is the one in which the firms know their
+roles; other asymmetric equilibria are not ruled out, the symmetric
+equilibrium in mixed strategies between \(X_L\) and \(X_P\) is not
+solved, and the assignment of roles is not modeled. The game after a
+switch with neither firm installed is valued at its symmetric
+rent-equalization outcome and not solved in full. Simultaneous
 installation and coordination failures are not priced. Leader policies
 that would make the follower enter at once are excluded. A firm values
 its claim as if the rival's capacity stayed in the contest after the
@@ -4065,33 +4268,37 @@ not been re-derived independently.
 
 \emph{Equilibrium across beliefs.} Table~\ref{tbl-duopoly-beliefs}
 reports the equilibrium at zero leverage at ten arrival rates, and
-Table~\ref{tbl-duopoly-order} the order of moves and the comparison with
-the single firm.
+Table~\ref{tbl-duopoly-order} the no-deviation margins and the
+comparison with the single firm.
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}@{}}
-\caption{Rent-equalization equilibrium of the exact game across arrival
-rates, at zero leverage with the option to stop operating and the
-follower's scale chosen at the switch. \(X_P\), \(K_L\) and \(\phi_L\)
-are the leader's trigger, capacity and training fraction; \(\phi^*\) is
-the single firm's training fraction; \(X_F^*\) and \(K_F\) are the
-follower's post-switch trigger and capacity; \(X_D\) is the leader's
-shutdown boundary. Each row is one solve of the game on a 25-point
-demand scan; all other parameters at baseline
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 18\tabcolsep) * \real{0.1000}}@{}}
+\caption{Equilibrium of the exact game across arrival rates, at zero
+leverage with the option to stop operating and the follower's scale
+chosen at the switch. \(X_L\), \(K_L\) and \(\phi_L\) are the trigger,
+capacity and training fraction of the firm that invests first;
+\(\phi^*\) is the single firm's training fraction; \(X_F^*\) and \(K_F\)
+are the follower's post-switch trigger and capacity against that leader;
+\(X_L/X_D\) is demand at entry over the leader's shutdown boundary;
+\(X_P\) is the rent-equalization trigger, an upper bound on the date of
+first investment. Each row is one solve of the game: a 25-point demand
+scan for \(X_P\) and a 26-point scan from \(0.03\) to \(10\) times
+\(X_P\) for \(X_L\); all other parameters at baseline
 values.}\label{tbl-duopoly-beliefs}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P\)
+\(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4103,9 +4310,11 @@ values.}\label{tbl-duopoly-beliefs}\tabularnewline
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_F\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_D\)
+\(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P/X_D\)
+\(X_P\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X_L/X_P\)
 \end{minipage} \\
 \midrule\noalign{}
 \endfirsthead
@@ -4113,7 +4322,7 @@ values.}\label{tbl-duopoly-beliefs}\tabularnewline
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P\)
+\(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4125,62 +4334,70 @@ values.}\label{tbl-duopoly-beliefs}\tabularnewline
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_F\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_D\)
+\(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P/X_D\)
+\(X_P\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X_L/X_P\)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.030 & 0.000135 & 0.0000281 & 0.1949 & 0.2395 & 0.0054 & 0.016 &
-0.0000353 & 3.83 \\
-0.050 & 0.00164 & 0.00131 & 0.3754 & 0.4246 & 0.0202 & 0.071 & 0.000368
-& 4.46 \\
-0.075 & 0.00578 & 0.00789 & 0.5664 & 0.5919 & 0.0560 & 0.207 & 0.00107 &
-5.42 \\
-0.100 & 0.00857 & 0.0141 & 0.6879 & 0.7009 & 0.0859 & 0.317 & 0.00146 &
-5.89 \\
-0.150 & 0.00738 & 0.0132 & 0.8147 & 0.8216 & 0.0913 & 0.337 & 0.00131 &
-5.65 \\
-0.200 & 0.00505 & 0.00890 & 0.8761 & 0.8815 & 0.0759 & 0.281 & 0.000976
-& 5.17 \\
-0.250 & 0.00362 & 0.00615 & 0.9106 & 0.9152 & 0.0632 & 0.233 & 0.000750
-& 4.83 \\
-0.300 & 0.00277 & 0.00453 & 0.9321 & 0.9360 & 0.0544 & 0.200 & 0.000604
-& 4.59 \\
-0.400 & 0.00188 & 0.00286 & 0.9566 & 0.9594 & 0.0436 & 0.160 & 0.000437
-& 4.30 \\
-0.500 & 0.00144 & 0.00208 & 0.9695 & 0.9716 & 0.0376 & 0.137 & 0.000349
-& 4.13 \\
+0.030 & 0.000042 & 0.0000043 & 0.2060 & 0.2395 & 0.00403 & 0.0109 & 3.74
+& 0.000135 & 0.31 \\
+0.050 & 0.000841 & 0.000490 & 0.3732 & 0.4246 & 0.0139 & 0.0472 & 4.15 &
+0.00164 & 0.51 \\
+0.075 & 0.00225 & 0.00221 & 0.5572 & 0.5919 & 0.0299 & 0.108 & 4.55 &
+0.00578 & 0.39 \\
+0.100 & 0.00336 & 0.00416 & 0.6791 & 0.7009 & 0.0443 & 0.163 & 4.81 &
+0.00857 & 0.39 \\
+0.150 & 0.00383 & 0.00563 & 0.8106 & 0.8216 & 0.0567 & 0.209 & 4.88 &
+0.00738 & 0.52 \\
+0.200 & 0.00331 & 0.00509 & 0.8743 & 0.8815 & 0.0559 & 0.206 & 4.74 &
+0.00505 & 0.66 \\
+0.250 & 0.00275 & 0.00424 & 0.9098 & 0.9152 & 0.0519 & 0.191 & 4.58 &
+0.00362 & 0.76 \\
+0.300 & 0.00231 & 0.00352 & 0.9317 & 0.9360 & 0.0478 & 0.176 & 4.44 &
+0.00277 & 0.83 \\
+0.400 & 0.00174 & 0.00256 & 0.9565 & 0.9594 & 0.0413 & 0.151 & 4.25 &
+0.00188 & 0.92 \\
+0.500 & 0.00141 & 0.00201 & 0.9695 & 0.9716 & 0.0369 & 0.135 & 4.12 &
+0.00144 & 0.97 \\
 \end{longtable}
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}@{}}
-\caption{Order of moves in the exact game and the single firm's
-triggers, at zero leverage. \(X_L\) is the trigger of a firm that knows
-it will lead, the maximizer of \([L^*(X) - W(X)]X^{-\beta_L^+}\) with
-\(W\) the value of mutual waiting; \(F/L^*\) is the follower's value
-over the leader's at that trigger; \(L^*/W\) is the leader's value at
-\(X_P\) over the value of mutual waiting. The last two columns are the
-single firm's pre-switch trigger with scale chosen whenever it invests
-(``waits'' when it has none) and with precommitted post-switch
-scale.}\label{tbl-duopoly-order}\tabularnewline
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\caption{No-deviation margins of the equilibrium in which one firm leads
+at \(X_L\), and the single firm's triggers, at zero leverage. \(L^*/W\)
+is the leader's entry value over the value of mutual waiting; \(F/L^*\)
+is the follower's value over the leader's at \(X_L\); the follower's
+margin is the smallest excess, over the scan points up to \(X_L\), of
+its value of waiting over the value of investing first, as a fraction of
+the former; the LCP boundary is the lower end of the investment region
+of the leader's stopping problem, solved as a linear complementarity
+problem with no shape assumed, and is reported over \(X_L\). The last
+two columns are the single firm's pre-switch trigger with scale chosen
+whenever it invests (``waits'' when it has none) and with precommitted
+post-switch scale.}\label{tbl-duopoly-order}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_L\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_L/X_P\)
+\(L^*/W\) at \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(F/L^*\) at \(X_L\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower's margin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+LCP boundary over \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(L^*/W\) at \(X_P\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4194,11 +4411,13 @@ Single firm, precommitted scale
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_L\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_L/X_P\)
+\(L^*/W\) at \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(F/L^*\) at \(X_L\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Follower's margin
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+LCP boundary over \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(L^*/W\) at \(X_P\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4210,47 +4429,50 @@ Single firm, precommitted scale
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.030 & 0.0000409 & 0.30 & 1.145 & 1.25 & 0.000439 & 0.000439 \\
-0.050 & 0.000850 & 0.52 & 1.084 & 1.28 & 0.0173 & 0.00552 \\
-0.075 & 0.00228 & 0.39 & 1.110 & 1.27 & waits & 0.00826 \\
-0.100 & 0.00339 & 0.40 & 1.103 & 1.22 & waits & 0.00926 \\
-0.150 & 0.00386 & 0.52 & 1.073 & 1.16 & waits & 0.00940 \\
-0.200 & 0.00334 & 0.66 & 1.050 & 1.12 & waits & 0.00890 \\
-0.250 & 0.00278 & 0.77 & 1.034 & 1.10 & waits & 0.00835 \\
-0.300 & 0.00233 & 0.84 & 1.023 & 1.08 & waits & 0.00786 \\
-0.400 & 0.00176 & 0.94 & 1.009 & 1.06 & waits & 0.00710 \\
-0.500 & 0.00143 & 0.99 & 1.002 & 1.05 & waits & 0.00655 \\
+0.030 & 1.110 & 1.140 & 8.5\% & 0.9998 & 1.25 & 0.000439 & 0.000439 \\
+0.050 & 1.151 & 1.085 & 6.4\% & 1.0005 & 1.29 & 0.0173 & 0.00552 \\
+0.075 & 1.113 & 1.111 & 7.4\% & 1.0002 & 1.27 & waits & 0.00826 \\
+0.100 & 1.091 & 1.104 & 6.8\% & 1.0005 & 1.22 & waits & 0.00926 \\
+0.150 & 1.073 & 1.074 & 5.1\% & 1.0008 & 1.16 & waits & 0.00940 \\
+0.200 & 1.065 & 1.051 & 3.8\% & 1.0006 & 1.12 & waits & 0.00890 \\
+0.250 & 1.060 & 1.035 & 2.7\% & 0.9988 & 1.10 & waits & 0.00835 \\
+0.300 & 1.056 & 1.024 & 2.1\% & 1.0008 & 1.08 & waits & 0.00786 \\
+0.400 & 1.050 & 1.011 & 1.1\% & 1.0000 & 1.06 & waits & 0.00710 \\
+0.500 & 1.045 & 1.004 & 0.4\% & 0.9990 & 1.05 & waits & 0.00655 \\
 \end{longtable}
 
-At baseline the leader's trigger is \(7.4\%\) below the single firm's
-precommitted-scale trigger and the leader's capacity \(11\%\) below that
-firm's. With the follower's post-switch scale precommitted instead of
-chosen at the switch, the trigger is \(0.0084\) and the leader's
-capacity \(0.0137\); in that variant the follower would also enter
-before the switch, at a demand level of \(0.31\), far above the trigger.
-The order of moves is the same in that variant (\(X_L = 0.0034\)).
-Without the option to stop operating the trigger is \(0.0090\) and the
-leader's capacity \(0.0147\): the option raises the leader's entry value
-most at low demand and so lowers the trigger by \(4.3\%\). The nested
-pure-power game gives \(X_P = 0.0026\), \(K_L = 0.0067\),
-\(X_F^* = 0.119\) and \(K_F = 0.259\).
+At baseline the first investment comes at a demand level \(64\%\) below
+the single firm's precommitted-scale trigger, with a capacity \(74\%\)
+below that firm's; the rent-equalization trigger is \(7.4\%\) below the
+same trigger. With the follower's post-switch scale precommitted instead
+of chosen at the switch, \(X_L\) and the leader's capacity differ by
+less than \(0.1\%\) (\(0.003366\) and \(0.004166\) against \(0.003364\)
+and \(0.004163\)), the rent-equalization trigger is \(0.0084\), and the
+follower would also enter before the switch, at a demand level of
+\(0.16\) against a leader that entered at \(X_L\), far above it. Without
+the option to stop operating the rent-equalization trigger is \(0.0090\)
+and the leader's capacity there \(0.0147\): the option raises the
+leader's entry value most at low demand and so lowers that trigger by
+\(4.3\%\). The nested pure-power game gives a leader's trigger of
+\(0.0026\) with \(K_L = 0.0067\), \(X_F^* = 0.119\) and \(K_F = 0.259\).
 
 \emph{Leader's scale held fixed.} With \((K_L, \phi_L)\) held at the
 single firm's pure-power policy \((0.0067, \phi^*)\), the gap \(L - F\)
 is negative at each of 600 demand levels at baseline and peaks at
-\(-5.4\%\) of the follower's value: there is no trigger. With the leader
-held at the single firm's precommitted-scale policy
-\((0.0158, \phi^*)\), a trigger exists at \(0.0077\), the leader's
-advantage peaks at \(1.2\%\) of the follower's value, the gap changes
-sign twice on the scan, and leading at the trigger is worth \(0.94\) of
-mutual waiting. Only the leader that chooses its scale at entry both has
-a trigger and prefers leading to mutual waiting.
+\(-5.4\%\) of the follower's value: there is no rent-equalization
+trigger. With the leader held at the single firm's precommitted-scale
+policy \((0.0158, \phi^*)\), such a trigger exists at \(0.0077\), the
+leader's advantage peaks at \(1.2\%\) of the follower's value, the gap
+changes sign twice on the scan, and leading at the trigger is worth
+\(0.94\) of mutual waiting. Only the leader that chooses its scale at
+entry prefers leading to mutual waiting.
 
 \emph{Spread and distance to default at entry.}
-Table~\ref{tbl-spread-entry} reports the leader's credit objects at the
-trigger across arrival rates, leverage and the two debt conventions.
-Under par debt the spread is the coupon over the value of the debt less
-\(r\); under fairly priced debt it is the fair coupon rate less \(r\).
+Table~\ref{tbl-spread-entry} reports the leader's credit objects at its
+entry \(X_L\) across arrival rates, leverage and the two debt
+conventions. Under par debt the spread is the coupon over the value of
+the debt less \(r\); under fairly priced debt it is the fair coupon rate
+less \(r\).
 
 \begin{longtable}[]{@{}
   >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
@@ -4262,35 +4484,37 @@ Under par debt the spread is the coupon over the value of the debt less
   >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
   >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}
   >{\raggedleft\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.1111}}@{}}
-\caption{Leader's distance to default and credit spread at entry in the
-exact game. \(X_P/X_D\) is demand at entry over the leader's default
-boundary; spreads are over \(r\). Par: coupon \(r_c\ell I(K_L)\) with
-\(r_c = 0.05\), so that the debt is worth less than half of its
-proceeds. Fair: coupon at which the debt is worth \(\ell I(K_L)\) at the
-entry demand. Bankruptcy cost \(b = 0.30\); recovery is zero in every
-cell. Each cell is one solve of the game on the 25-point scan, except
-the two fairly priced cells at \(\lambda = 0.05\), which are solved on a
-five-point scan between \(0.3\) and \(1.5\) times \(X_H^*\) that
-brackets the crossing found without debt: there the follower also enters
-before the switch, and the full scan is prohibitively
-slow.}\label{tbl-spread-entry}\tabularnewline
+\caption{Leader's distance to default and credit spread at its entry
+\(X_L\) in the exact game. \(X_L/X_D\) is demand at entry over the
+leader's default boundary; spreads are over \(r\). Par: coupon
+\(r_c\ell I(K_L)\) with \(r_c = 0.05\), so that the debt is worth less
+than half of its proceeds. Fair: coupon at which the debt is worth
+\(\ell I(K_L)\) at the entry demand. Bankruptcy cost \(b = 0.30\);
+recovery is zero in every cell. Each cell is one solve of the game on
+the scans of Table~\ref{tbl-duopoly-beliefs}, except the two fairly
+priced cells at \(\lambda = 0.05\): there the follower also enters
+before the switch and one evaluation of the leader's policy takes
+minutes, so \(X_P\) is solved on a five-point scan between \(0.3\) and
+\(1.5\) times \(X_H^*\) that brackets the crossing found without debt,
+and \(X_L\) on a seven-point scan between \(0.2\) and \(1.6\) times
+\(X_P\).}\label{tbl-spread-entry}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Par, \(\ell = 0.40\): \(X_P/X_D\)
+Par, \(\ell = 0.40\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Fair, \(\ell = 0.40\): \(X_P/X_D\)
+Fair, \(\ell = 0.40\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Par, \(\ell = 0.65\): \(X_P/X_D\)
+Par, \(\ell = 0.65\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Fair, \(\ell = 0.65\): \(X_P/X_D\)
+Fair, \(\ell = 0.65\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} \\
@@ -4300,19 +4524,19 @@ spread (bps)
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\lambda\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Par, \(\ell = 0.40\): \(X_P/X_D\)
+Par, \(\ell = 0.40\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Fair, \(\ell = 0.40\): \(X_P/X_D\)
+Fair, \(\ell = 0.40\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Par, \(\ell = 0.65\): \(X_P/X_D\)
+Par, \(\ell = 0.65\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-Fair, \(\ell = 0.65\): \(X_P/X_D\)
+Fair, \(\ell = 0.65\): \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 spread (bps)
 \end{minipage} \\
@@ -4320,14 +4544,14 @@ spread (bps)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.05 & 4.30 & 84.9 & 4.20 & 89.3 & 4.14 & 91.7 & 4.04 & 96.5 \\
-0.10 & 5.28 & 35.2 & 4.88 & 41.9 & 4.76 & 44.3 & 4.41 & 52.8 \\
-0.15 & 5.08 & 28.9 & 4.71 & 34.7 & 4.61 & 36.6 & 4.26 & 44.2 \\
-0.20 & 4.74 & 28.7 & 4.45 & 33.7 & 4.36 & 35.2 & 4.08 & 41.6 \\
-0.25 & 4.49 & 29.4 & 4.25 & 33.8 & 4.18 & 35.1 & 3.95 & 40.7 \\
-0.30 & 4.31 & 30.4 & 4.11 & 34.3 & 4.05 & 35.5 & 3.85 & 40.4 \\
-0.40 & 4.09 & 32.2 & 3.93 & 35.5 & 3.89 & 36.5 & 3.73 & 40.6 \\
-0.50 & 3.96 & 33.8 & 3.83 & 36.7 & 3.79 & 37.7 & 3.66 & 41.3 \\
+0.05 & 4.05 & 95.8 & 3.99 & 98.9 & 3.96 & 100.6 & 3.90 & 103.9 \\
+0.10 & 4.51 & 50.2 & 4.32 & 55.6 & 4.25 & 57.6 & 4.06 & 64.0 \\
+0.15 & 4.55 & 37.9 & 4.32 & 43.0 & 4.25 & 44.7 & 4.02 & 50.9 \\
+0.20 & 4.43 & 34.0 & 4.22 & 38.5 & 4.15 & 40.0 & 3.94 & 45.5 \\
+0.25 & 4.31 & 32.7 & 4.11 & 36.7 & 4.06 & 38.0 & 3.87 & 43.0 \\
+0.30 & 4.20 & 32.4 & 4.03 & 36.1 & 3.98 & 37.3 & 3.80 & 41.8 \\
+0.40 & 4.05 & 33.0 & 3.90 & 36.2 & 3.86 & 37.2 & 3.71 & 41.1 \\
+0.50 & 3.95 & 34.0 & 3.82 & 37.0 & 3.79 & 37.9 & 3.66 & 41.4 \\
 \end{longtable}
 
 Four features of Table~\ref{tbl-spread-entry} bear on the earlier
@@ -4341,49 +4565,58 @@ pattern a reviewer reported for the nested game (zero up to
 \(\lambda \approx 0.15\) at \(\ell = 0.40\), then a hump); that pattern
 reproduces in the nested game under that rule and is not a property of
 the model of record. Second, the distance to default is hump-shaped in
-\(\lambda\) with a maximum at \(0.10\) in every column, and falls from
-\(0.10\) on (from \(5.28\) to \(3.96\) at \(\ell = 0.40\) under par
-debt). Third, the spread does not follow the distance. It is U-shaped in
-every column, with its minimum between \(\lambda = 0.20\) and \(0.30\):
-from \(\lambda = 0.05\) to \(0.10\) the distance to default rises and
-the spread falls; between \(0.10\) and the minimum the distance falls
+\(\lambda\), with a maximum at \(0.10\) or \(0.15\) in every column, and
+falls from \(0.15\) on (from \(4.55\) to \(3.95\) at \(\ell = 0.40\)
+under par debt). Third, the spread does not follow the distance. It is
+U-shaped in every column, with its minimum at \(\lambda = 0.30\) or
+\(0.40\): at low arrival rates the distance to default rises and the
+spread falls; from \(\lambda = 0.15\) to the minimum the distance falls
 and the spread falls nonetheless, because a higher arrival rate makes
 \(\beta_L^-\) more negative and the default claim cheaper at a given
 distance; beyond the minimum the falling distance dominates. Fourth,
-fairly priced debt carries the higher spread, by \(3\) to \(9\) basis
+fairly priced debt carries the higher spread, by \(3\) to \(7\) basis
 points, because its coupon is about two and a half times the par coupon
-and raises the boundary. The levels are small because the leader enters
-at about four to five times its boundary; they are spreads over the
-discount rate \(r\) of a risk-adjusted model and not market spreads.
+and raises the boundary. Spreads are up to \(15\) basis points higher
+than at the rent-equalization trigger at the same arrival rate, the
+difference being largest at low arrival rates and under one basis point
+at \(\lambda = 0.50\), where the two triggers nearly coincide, because a
+leader that enters at \(X_L\) is closer to its boundary than one that
+enters at \(X_P\) (\(4.51\) against \(5.28\) times at baseline,
+\(\ell = 0.40\) and par debt). The levels are small because the leader
+enters at about four to four and a half times its boundary; they are
+spreads over the discount rate \(r\) of a risk-adjusted model and not
+market spreads.
 
 \emph{Leverage under the two debt conventions.}
 Table~\ref{tbl-duopoly-leverage} reports the baseline equilibrium at
 four leverage levels.
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0909}}@{}}
-\caption{Baseline rent-equalization equilibrium of the exact game by
-leverage and debt convention. \(X_{D}\) is the leader's boundary and
-\(X_P/X_D\) its distance to default at entry; \(X_F^*/X_{D,F}\) is the
-follower's distance to default at its post-switch
-entry.}\label{tbl-duopoly-leverage}\tabularnewline
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0833}}@{}}
+\caption{Baseline equilibrium of the exact game by leverage and debt
+convention, for a leader that enters at \(X_L\). \(X_{D}\) is the
+leader's boundary and \(X_L/X_D\) its distance to default at entry;
+\(X_F^*/X_{D,F}\) is the follower's distance to default at its
+post-switch entry; \(X_P\) is the rent-equalization
+trigger.}\label{tbl-duopoly-leverage}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
 \(\ell\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P\)
+\(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4393,13 +4626,15 @@ Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P/X_D\)
+\(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_F^*/X_{D,F}\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 Spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 Coupon rate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X_P\)
 \end{minipage} \\
 \midrule\noalign{}
 \endfirsthead
@@ -4409,7 +4644,7 @@ Coupon rate
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P\)
+\(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4419,69 +4654,74 @@ Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_P/X_D\)
+\(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_F^*/X_{D,F}\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 Spread (bps)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 Coupon rate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+\(X_P\)
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.00 & none & 0.00857 & 0.01409 & 0.0859 & 0.317 & 0.00146 & 5.89 & 12.8
-& n.a. & n.a. \\
-0.20 & par & 0.00989 & 0.01797 & 0.0993 & 0.405 & 0.00176 & 5.61 & 10.6
-& 30.7 & 5.00\% \\
-0.20 & fair & 0.00857 & 0.01407 & 0.0859 & 0.317 & 0.00160 & 5.34 & 8.8
-& 34.2 & 12.34\% \\
-0.40 & par & 0.01164 & 0.02373 & 0.1171 & 0.536 & 0.00221 & 5.28 & 8.6 &
-35.2 & 5.00\% \\
-0.40 & fair & 0.00855 & 0.01400 & 0.0858 & 0.316 & 0.00175 & 4.88 & 6.7
-& 41.9 & 12.42\% \\
-0.65 & par & 0.01483 & 0.03595 & 0.1496 & 0.813 & 0.00311 & 4.76 & 6.4 &
-44.3 & 5.00\% \\
-0.65 & fair & 0.00846 & 0.01374 & 0.0852 & 0.311 & 0.00192 & 4.41 & 5.2
-& 52.8 & 12.53\% \\
+0.00 & none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.000700 & 4.81 &
+10.3 & n.a. & n.a. & 0.00857 \\
+0.20 & par & 0.00390 & 0.00533 & 0.0513 & 0.208 & 0.000833 & 4.68 & 8.9
+& 46.4 & 5.00\% & 0.00989 \\
+0.20 & fair & 0.00336 & 0.00416 & 0.0443 & 0.162 & 0.000739 & 4.55 & 7.8
+& 49.4 & 12.49\% & 0.00857 \\
+0.40 & par & 0.00461 & 0.00708 & 0.0607 & 0.276 & 0.001020 & 4.51 & 7.6
+& 50.2 & 5.00\% & 0.01164 \\
+0.40 & fair & 0.00335 & 0.00414 & 0.0442 & 0.162 & 0.000777 & 4.32 & 6.2
+& 55.6 & 12.56\% & 0.00855 \\
+0.65 & par & 0.00592 & 0.01084 & 0.0780 & 0.421 & 0.001392 & 4.25 & 6.0
+& 57.6 & 5.00\% & 0.01483 \\
+0.65 & fair & 0.00332 & 0.00408 & 0.0440 & 0.160 & 0.000819 & 4.06 & 5.0
+& 64.0 & 12.64\% & 0.00846 \\
 \end{longtable}
 
 Under par debt every object rises with leverage: at \(\ell = 0.65\) the
 leader's capacity is \(2.6\) times and the follower's \(2.6\) times its
-unlevered value, and both triggers are \(73\%\) higher. This is the
+unlevered value, and both triggers are \(76\%\) higher. This is the
 financing subsidy acting as a lower cost of capacity. Under fairly
-priced debt the same leverage lowers the leader's capacity by \(2.4\%\),
-the follower's by \(1.9\%\), the leader's trigger by \(1.3\%\) and the
-follower's by \(0.8\%\): the direction is reversed and the size is one
-to two and a half percent. What leverage does under either convention is
-raise the boundary and shorten the distance to default, for the leader
-from \(5.89\) to \(4.76\) under par debt and \(4.41\) under fairly
-priced debt at \(\ell = 0.65\), and for the follower at its entry from
-\(12.8\) to \(6.4\) and \(5.2\). The fairly priced firm sits closer to
-default than the par-financed one at the same leverage, since it pays
-the higher coupon.
+priced debt the same leverage lowers the leader's capacity by \(2.1\%\),
+the follower's by \(1.7\%\), the leader's trigger by \(1.2\%\) and the
+follower's by \(0.6\%\): the direction is reversed and the size is at
+most two percent. What leverage does under either convention is raise
+the boundary and shorten the distance to default, for the leader from
+\(4.81\) to \(4.25\) under par debt and \(4.06\) under fairly priced
+debt at \(\ell = 0.65\), and for the follower at its entry from \(10.3\)
+to \(6.0\) and \(5.0\). The fairly priced firm sits closer to default
+than the par-financed one at the same leverage, since it pays the higher
+coupon. The ratio \(X_L/X_P\) is between \(0.39\) and \(0.40\) in every
+row: leverage moves the two triggers together.
 
 \emph{Hitting probabilities and times.} With
 \(\nu_s = \mu_s - \sigma^2/2\) the log drift in regime \(s\), demand
-starting at \(X_P\) reaches a higher level \(X_F^*\) before the switch
-with probability \((X_P/X_F^*)^{\theta_+}\), where \(\theta_+\) is the
-positive root of
+starting at the leader's entry \(X_L\) reaches a higher level \(X_F^*\)
+before the switch with probability \((X_L/X_F^*)^{\theta_+}\), where
+\(\theta_+\) is the positive root of
 \(\tfrac{1}{2}\sigma^2\theta(\theta - 1) + \mu_L\theta - \lambda = 0\);
 it would ever reach it without a switch with probability
-\((X_P/X_F^*)^{-2\nu_L/\sigma^2}\), since \(\nu_L < 0\) at baseline; and
+\((X_L/X_F^*)^{-2\nu_L/\sigma^2}\), since \(\nu_L < 0\) at baseline; and
 after the switch it reaches it almost surely, since \(\nu_H > 0\), in an
 expected time of \(\ln(X_F^*/X)/\nu_H\) from demand \(X\). In the nested
 pure-power game \(X_F^*/X_P \approx 45\), and these three numbers are
-\(0.03\%\), \(7.5\%\) and \(133\) years. In the exact game the ratio is
-\(10\) at baseline and they are \(0.7\%\), \(21\%\) and \(80\) years.
-Averaging over the date of the switch and the demand level at that date,
-the follower's expected entry date is \(98\) years after the leader's,
-and it is between \(98\) and \(186\) years across the grid of
+\(0.03\%\), \(7.5\%\) and \(133\) years. In the exact game \(X_F^*/X_L\)
+is \(13\) at baseline and they are \(0.4\%\), \(17\%\) and \(90\) years
+(for a leader that entered at \(X_P\) the ratio would be \(10\) and the
+numbers \(0.7\%\), \(21\%\) and \(80\) years). Averaging over the date
+of the switch and the demand level at that date, the follower's expected
+entry date is \(107\) years after the leader's, and it is between
+\(105\) and \(216\) years across the grid of
 Table~\ref{tbl-duopoly-beliefs}, the longest at \(\lambda = 0.03\). The
 same calculation for the leader's boundary gives a probability of
-\(7.2\%\) of reaching it before the switch at baseline without debt,
-between \(0.5\%\) and \(39\%\) across the grid, and it would be reached
+\(9.8\%\) of reaching it before the switch at baseline without debt,
+between \(0.6\%\) and \(40\%\) across the grid, and it would be reached
 with probability one if the switch never came.
 
 \textbf{The nested pure-power game: discounting conventions.} This block
@@ -4566,14 +4806,18 @@ volatility range, \(\sigma = 0.20\), where
 the capacity first-order condition is nearly degenerate, the
 re-optimized leader collapses to \(1.0\%\) of the convention's capacity
 and the discount reaches \(94.7\%\). None of this carries over to the
-exact game, and the direction reverses. There the leader that chooses
-its scale at entry is larger than the single firm's pure-power scale,
-not smaller (\(K_L = 0.0141\) against \(0.00673\)), it enters later, not
-earlier (\(X_P = 0.0086\) against \(0.00262\)), and its allocation is
-not exactly \(\phi^*\). The small early leader of the nested game is a
-consequence of pricing the follower's option and the dilution with the
-exponent \(\beta_H\), which understates what a firm gives up by entering
-before the switch.
+exact game. At rent equalization, the like-for-like comparison, the
+direction reverses: the leader that chooses its scale at entry is larger
+than the single firm's pure-power scale, not smaller (\(0.0141\) at
+\(X_P\) against \(0.00673\)), rent equalization comes later, not earlier
+(\(X_P = 0.0086\) against \(0.00262\)), and the leader's allocation is
+not exactly \(\phi^*\). The first investment of the exact game, at
+\(X_L = 0.0034\) with \(K_L = 0.0042\), is also later than the nested
+game's trigger, and its leader is smaller than the pure-power scale by
+\(38\%\), not by a factor of twenty. The small early leader of the
+nested game is a consequence of pricing the follower's option and the
+dilution with the exponent \(\beta_H\), which understates what a firm
+gives up by entering before the switch.
 
 \textbf{Coupled default boundary.} The single-boundary default formula
 (Equation~\ref{eq-default-boundary}), which Proposition 2 and the credit

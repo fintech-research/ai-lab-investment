@@ -13,10 +13,11 @@ module, in which firms operate forever and carry no debt, is the nested
 case the levered game is checked against.
 
 What rent equalization does and does not deliver is stated in
-`preemption_levered.leader_assigned_entry`: at baseline the trigger of a
-firm that knows it will lead lies below X_P, so X_P is the demand level
-from which both firms want to lead and not necessarily the date of first
-investment.
+`preemption_levered.assigned_leader_equilibrium`: at baseline the trigger
+X_L of a firm that knows it will lead lies below X_P, so X_P is the demand
+level from which both firms want to lead and an upper bound on the date of
+first investment. Since issue #200 the benchmark date is X_L, the first
+investment of the equilibrium with assigned roles.
 
 Formulation
 -----------
@@ -114,9 +115,12 @@ Simplifications
    invests before the switch. It assumes rent equalization in the post-switch
    game, so each firm is worth the value of a follower facing an H-regime
    leader, whose scale follows the same convention as the L-regime leader's
-   (K_H*, or re-optimized at its entry demand). It is a supplementary check
-   on whether leading at X_P beats mutual waiting, not a full solution of
-   the post-switch game.
+   (K_H*, or re-optimized at its entry demand). It is not a full solution
+   of the post-switch game: it takes the symmetric outcome of a preemption
+   race, in which each firm expects the follower's value, and
+   `post_switch_assigned_trigger` records whether that game is a race.
+   `post_switch_leading_claim` is the same claim for a firm that would be
+   the one to lead after the switch.
 6. Existence of X_P is established on a finite demand grid and the first
    up-crossing is reported. No uniqueness or equilibrium-selection argument
    is made.
@@ -413,6 +417,7 @@ class ExactPreemptionGame:
         self._waiting: dict[str, ForcedClaim] = {}
         self.post_switch_trigger = float("nan")
         self.post_switch_leader_capacity = float("nan")
+        self.post_switch_assigned_trigger = float("nan")
         self.post_switch_single_crossing = True
 
     # ------------------------------------------------------------------
@@ -754,6 +759,16 @@ class ExactPreemptionGame:
     # Post-switch game and the value of mutual waiting
     # ------------------------------------------------------------------
 
+    def _post_switch_leader_npv(self, X: float, K: float) -> float:
+        """NPV of entering first at X after the switch with capacity K."""
+        entry = self.post_switch_entry(K)
+        revenue = self.leader_post_switch_revenue(np.array([X]), K, 1.0, entry)[0]
+        return float(revenue) - float(self.cost(K))
+
+    def _post_switch_follow_value(self, X: np.ndarray, K: float) -> np.ndarray:
+        """Value after the switch of the firm facing an installed leader K."""
+        return self.post_switch_value(X, self.post_switch_entry(K))
+
     def post_switch_leader_policy(self, X: float) -> tuple[float, float, float]:
         """H-regime leader's capacity maximizing its own entry NPV at X.
 
@@ -765,13 +780,10 @@ class ExactPreemptionGame:
         Returns:
             (K, leader NPV, follower value) at the leader's best capacity.
         """
-        x = np.array([X])
 
         def neg(log_K: float) -> float:
-            K = float(np.exp(log_K))
-            entry = self.post_switch_entry(K)
-            revenue = self.leader_post_switch_revenue(x, K, 1.0, entry)[0]
-            return -(float(revenue) - float(self.cost(K)))
+            value = self._post_switch_leader_npv(X, float(np.exp(log_K)))
+            return -value if np.isfinite(value) else _PENALTY
 
         coarse = np.log(self.K_ref) + np.linspace(-14.0, 22.0, 73)
         vals = np.array([neg(v) for v in coarse])
@@ -783,7 +795,7 @@ class ExactPreemptionGame:
             options={"xatol": 1e-10},
         )
         K = float(np.exp(res.x))
-        follow = float(self.post_switch_value(x, self.post_switch_entry(K))[0])
+        follow = float(self._post_switch_follow_value(np.array([X]), K)[0])
         return K, float(-res.fun), follow
 
     def _post_switch_game_claim(self) -> ForcedClaim:
@@ -793,6 +805,13 @@ class ExactPreemptionGame:
         H-regime preemption trigger X_P^H each firm is worth the follower's
         option against the leader that enters at X_P^H; at a switch above it
         each is worth the follower's value against a leader entering at once.
+        That is the payoff of the symmetric equilibrium of a preemption race
+        (Fudenberg and Tirole, 1985): where leading beats following, the
+        rent of the first mover is dissipated and each firm expects the
+        follower's value. `post_switch_assigned_trigger` records the trigger
+        an H-regime leader would choose if its rival never led (the
+        maximizer of L^H*(X) X^{-beta_H} on the scan); it lies above X_P^H
+        exactly when the post-switch game is such a race.
         """
         p = self.params
         grid = np.geomspace(1e-3 * self.X_ref, 1e5 * self.X_ref, 97)
@@ -813,6 +832,10 @@ class ExactPreemptionGame:
         K_P, _, follow_P = self.post_switch_leader_policy(X_PH)
         self.post_switch_trigger = X_PH
         self.post_switch_leader_capacity = K_P
+        leads = np.array([lead for _, lead, _ in policies])
+        coefficient = leads * grid ** (-p.beta_H)
+        self.post_switch_assigned_trigger = float(grid[int(np.argmax(coefficient))])
+        self._post_switch_scan = (grid, leads, X_PH, follow_P)
 
         y = self._table_grid(X_PH)
         log_K = np.log(np.array([k for k, _, _ in policies]))
@@ -827,11 +850,44 @@ class ExactPreemptionGame:
             )
         )
         values = np.array([
-            self.post_switch_value(np.array([x]), self.post_switch_entry(float(k)))[0]
+            self._post_switch_follow_value(np.array([x]), float(k))[0]
             for x, k in zip(y, K_y, strict=True)
         ])
         low = ((p.lam * follow_P / X_PH**p.beta_H, p.beta_H),)
         return ForcedClaim(p, X_PH, low, table=(y, p.lam * values))
+
+    def post_switch_leading_claim(self) -> ForcedClaim:
+        """Value of waiting for the switch and then being the first to enter.
+
+        The claim that pays, at the switch, the value of the firm that leads
+        the post-switch game: the leader's entry NPV at a switch above
+        X_P^H, and the common value at a switch below it. It is what the
+        mutual-waiting value becomes for a firm whose role as leader is
+        kept through the switch, and is used only to report how much the
+        date of first investment depends on that selection.
+        """
+        if "leading" not in self._waiting:
+            self.mutual_waiting_claim("reoptimized")
+            p = self.params
+            grid, leads, X_PH, follow_P = self._post_switch_scan
+            above = grid > X_PH
+            log_x = np.log(np.concatenate([[X_PH], grid[above]]))
+            log_v = np.log(np.concatenate([[follow_P], leads[above]]))
+            y = self._table_grid(X_PH)
+            log_y = np.log(y)
+            slope = (log_v[-1] - log_v[-2]) / (log_x[-1] - log_x[-2])
+            values = np.exp(
+                np.where(
+                    log_y <= log_x[-1],
+                    interpolate.CubicSpline(log_x, log_v)(np.minimum(log_y, log_x[-1])),
+                    log_v[-1] + slope * (log_y - log_x[-1]),
+                )
+            )
+            low = ((p.lam * follow_P / X_PH**p.beta_H, p.beta_H),)
+            self._waiting["leading"] = ForcedClaim(
+                p, X_PH, low, table=(y, p.lam * values)
+            )
+        return self._waiting["leading"]
 
     def mutual_waiting_claim(self, leader: str = "paper") -> ForcedClaim:
         """Value to each firm when neither invests before the switch.

@@ -2,18 +2,21 @@
 
 Two layers live here.
 
-Model of record (issue #178). `DuopolyModel.solve()` returns the preemption
-equilibrium of the game in the exact piecewise primitives: demand is in
+Model of record (issues #178, #200). `DuopolyModel.solve()` returns the
+equilibrium of the entry game in the exact piecewise primitives: demand is in
 regime L until a switch at rate lambda and in regime H afterwards, each firm
 may invest before or after the switch, the leader chooses its capacity and
 training fraction at the demand at which it enters, and every installed
 firm may stop operating (a shutdown boundary without debt, a default
 boundary with it). The game is solved in `preemption_levered` on top of
 `preemption_exact`; nothing in it is priced with the pure-power form or the
-unconditional A_eff coefficient. `DuopolySolution` reports the benchmark
-together with the fixed-scale leader variants and the nested approximation
-below. A solve takes one to two minutes, so the equilibria behind the paper
-are cached in `duopoly_equilibria.json` (`load_equilibrium_grid`).
+unconditional A_eff coefficient. The benchmark date of first investment is
+X_L, the trigger of the leader in the equilibrium with assigned roles
+(issue #200); the rent-equalization trigger X_P is reported as an upper
+bound on it. `DuopolySolution` reports both together with the fixed-scale
+leader variants and the nested approximation below. A solve takes a few
+minutes, so the equilibria behind the paper are cached in
+`duopoly_equilibria.json` (`load_equilibrium_grid`).
 
 Nested approximation (the earlier draft's model). The `pure_power_*`
 methods solve the reduced-form game: the follower's option and the
@@ -68,38 +71,47 @@ EQUILIBRIUM_GRID_PATH = Path(__file__).with_name("duopoly_equilibria.json")
 
 @dataclass(frozen=True)
 class DuopolySolution:
-    """Preemption equilibrium of the duopoly model of record.
+    """Equilibrium of the duopoly model of record.
 
-    The benchmark is the game in the exact primitives with a leader that
-    chooses (K_L, phi_L) at the demand at which it enters. Existence of the
-    trigger is a numerical finding on a finite demand scan; the trigger is
-    the first up-crossing of L*(X) - F(X) and no uniqueness or
-    subgame-perfection claim is attached to it.
+    The game is solved in the exact primitives with a leader that chooses
+    (K_L, phi_L) at the demand at which it enters. Two demand levels are
+    reported and must not be confused.
 
-    X_P is the rent-equalization trigger: the lowest demand at which
-    leading is as good as following. It need not be the date of first
-    investment. At zero leverage the record also carries the trigger a firm
-    would choose if it knew its rival would follow (``assigned_X_L``); when
-    that trigger is below X_P (`second_mover_advantage`), following is the
-    better role between the two and the first investment falls somewhere in
-    [assigned_X_L, X_P].
+    ``X_L`` is the benchmark date of first investment (issue #200): the
+    trigger of the firm that leads in the equilibrium with assigned roles,
+    in which one firm invests at X_L and the other follows. It is the
+    trigger a firm prefers when it knows that its rival will follow, and
+    the no-deviation conditions of that profile are checked numerically
+    (`equilibrium_verified`; see
+    `preemption_levered.assigned_leader_equilibrium` for the statement and
+    for what is not established). Every key of the record without a prefix
+    is evaluated there.
+
+    ``X_P`` is the rent-equalization trigger, the lowest demand at which
+    leading is as good as following (first up-crossing of L*(X) - F(X) on
+    a finite demand scan; no uniqueness claim). When X_L < X_P
+    (`second_mover_advantage`) following is the better role between the
+    two, X_P is an upper bound on the date of first investment, and the
+    objects evaluated there carry the prefix ``rent_eq_``.
 
     Attributes:
         record: Flat record of `preemption_levered.equilibrium_record`. Its
-            keys are also readable as attributes: ``X_P``, ``K_L``,
-            ``phi_L``, ``phi_star``, ``X_F`` and ``K_F`` (the follower's
-            post-switch trigger and capacity), ``X_F_pre_switch`` (inf when
-            the follower never enters before the switch),
-            ``leader_value``, ``follower_value``, ``lead_over_wait`` (zero
-            leverage only), the leader's credit objects at entry
+            keys are also readable as attributes. At X_L: ``X_L``,
+            ``K_L``, ``phi_L``, ``X_F`` and ``K_F`` (the follower's
+            post-switch trigger and capacity against that leader),
+            ``X_F_pre_switch`` (inf when the follower never enters before
+            the switch), ``leader_value``, ``follower_value``,
+            ``waiting_value``, ``lead_over_wait``,
+            ``follower_over_leader``, the leader's credit objects at entry
             (``X_D_leader``, ``distance_to_default``, ``coupon_rate``,
             ``spread``, ``debt_value``, ``debt_proceeds``, ``recovery``),
-            the follower's boundary at its entry, and the first-passage
-            statistics. At zero leverage also ``assigned_X_L``,
-            ``assigned_K_L``, ``assigned_phi_L``,
-            ``assigned_follower_over_leader`` and
-            ``assigned_coefficient_ratio``
-            (`preemption_levered.leader_assigned_entry`).
+            the follower's boundary at its entry, the first-passage
+            statistics from X_L, and the no-deviation checks
+            (``equilibrium``, ``leader_best_other_trigger``,
+            ``lcp_trigger``, ``follower_margin``, ...). At X_P: ``X_P``
+            and the same objects under ``rent_eq_`` (``rent_eq_K_L``,
+            ``rent_eq_spread``, ...). ``phi_star`` is the single firm's
+            training fraction.
         single_firm: The monopoly case: ``invests_before_switch`` (scale
             chosen whenever the firm invests) and the precommitted-scale
             policy ``X_star``, ``K_star``.
@@ -107,7 +119,8 @@ class DuopolySolution:
             keyed ``"pure_power"`` (the pure-power (K, phi*), the earlier
             draft's convention) and ``"monopoly"`` (the precommitted-scale
             single-firm optimum).
-        pure_power: Equilibrium of the nested approximation.
+        pure_power: Equilibrium of the nested approximation, a
+            rent-equalization equilibrium.
     """
 
     record: dict[str, Any]
@@ -123,47 +136,67 @@ class DuopolySolution:
 
     @property
     def exists(self) -> bool:
-        """True when a finite pre-switch preemption trigger was found."""
+        """True when a finite pre-switch rent-equalization trigger was found."""
         return bool(self.record["exists"])
 
     @property
-    def second_mover_advantage(self) -> bool:
-        """True when the assigned leader's trigger lies below X_P.
+    def equilibrium_verified(self) -> bool:
+        """True when every no-deviation check of the X_L profile holds.
 
-        False when the record carries no assigned-leader trigger (leverage
-        above zero).
+        The checks are numerical and cover the demand scan stored in the
+        record (``entry_scan_low`` to ``entry_scan_high``, in units of X_P).
         """
-        return bool(self.record.get("assigned_below_rent_equalization", 0.0))
+        return bool(self.record.get("equilibrium", 0.0))
+
+    @property
+    def second_mover_advantage(self) -> bool:
+        """True when the first investment X_L lies below X_P."""
+        return bool(self.record["X_L"] < self.record["X_P"] * (1.0 - 1e-3))
 
     @property
     def allocation_gap(self) -> float:
-        """phi_L / phi* - 1: how far the leader is from role invariance."""
+        """phi_L / phi* - 1 at X_L: the leader's distance from role invariance."""
         return self.record["phi_L"] / self.record["phi_star"] - 1.0
 
     @property
     def scale_ratio(self) -> float:
-        """K_F / K_L."""
+        """K_F / K_L for a leader that enters at X_L."""
         return self.record["K_F"] / self.record["K_L"]
 
     @property
     def trigger_ratio(self) -> float:
-        """X_F / X_P, the follower's post-switch trigger over the leader's."""
-        return self.record["X_F"] / self.record["X_P"]
+        """X_F / X_L, the follower's post-switch trigger over the leader's."""
+        return self.record["X_F"] / self.record["X_L"]
 
     @property
-    def preemption_ratio(self) -> float:
+    def entry_ratio(self) -> float:
+        """X_L over the precommitted-scale single-firm trigger (nan if unknown)."""
+        if "X_star" not in self.single_firm:
+            return float("nan")
+        return self.record["X_L"] / self.single_firm["X_star"]
+
+    @property
+    def rent_equalization_ratio(self) -> float:
         """X_P over the precommitted-scale single-firm trigger (nan if unknown)."""
         if "X_star" not in self.single_firm:
             return float("nan")
         return self.record["X_P"] / self.single_firm["X_star"]
 
     def pure_power_error(self) -> dict[str, float]:
-        """Relative error of the nested approximation against the benchmark."""
-        pairs = {"X_P": "X_leader", "K_L": "K_leader", "X_F": "X_follower"}
-        pairs["K_F"] = "K_follower"
+        """Relative error of the nested approximation, at rent equalization.
+
+        The nested game is a rent-equalization equilibrium, so it is
+        compared with the objects of the exact game at X_P.
+        """
+        pairs = {
+            "X_P": ("X_P", "X_leader"),
+            "K_L": ("rent_eq_K_L", "K_leader"),
+            "X_F": ("rent_eq_X_F", "X_follower"),
+            "K_F": ("rent_eq_K_F", "K_follower"),
+        }
         return {
-            key: self.pure_power[other] / self.record[key] - 1.0
-            for key, other in pairs.items()
+            key: self.pure_power[other] / self.record[own] - 1.0
+            for key, (own, other) in pairs.items()
             if other in self.pure_power
         }
 
@@ -319,15 +352,17 @@ class DuopolyModel:
         debt: str = "par",
         variants: bool = True,
     ) -> DuopolySolution:
-        """Preemption equilibrium of the model of record.
+        """Equilibrium of the model of record.
 
-        The leader re-optimizes capacity and training fraction at the demand
-        at which it enters; the follower best-responds, before or after the
-        switch. With ``variants`` the solution also carries the fixed-scale
-        leader variants, the single-firm benchmark and the equilibrium of
-        the nested approximation (`pure_power_preemption_equilibrium`).
-        Takes one to two minutes; `cached_equilibrium` returns the stored
-        baseline records.
+        The leader chooses capacity and training fraction at the demand at
+        which it enters; the follower best-responds, before or after the
+        switch. The solution reports the first investment X_L of the
+        equilibrium with assigned roles and the rent-equalization trigger
+        X_P above it (see `DuopolySolution`). With ``variants`` it also
+        carries the fixed-scale leader variants, the single-firm benchmark
+        and the equilibrium of the nested approximation
+        (`pure_power_preemption_equilibrium`). Takes three to four minutes;
+        `cached_equilibrium` returns the stored baseline records.
         """
         from .base_model import SingleFirmModel
         from .preemption_levered import equilibrium_record

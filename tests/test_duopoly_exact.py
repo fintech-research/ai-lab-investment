@@ -25,10 +25,14 @@ from ai_lab_investment.models.preemption_exact import (
     solve_forced_ode,
 )
 from ai_lab_investment.models.preemption_levered import (
+    DEVIATION_TOLERANCE,
     GRID_LAMBDAS,
+    RENT_EQUALIZATION_PREFIX,
     LeveredPreemptionGame,
     PiecewisePowers,
     SegmentClaim,
+    _stopping_check,
+    assigned_leader_equilibrium,
     equilibrium_record,
     expected_entry_time,
     hitting_statistics,
@@ -509,7 +513,20 @@ GRID = load_equilibrium_grid()
 
 
 def _record(lam=0.10, leverage=0.0, debt="par", scale="envelope"):
+    """Cached record: keys without a prefix are evaluated at X_L."""
     return cached_equilibrium(lam, scale, leverage, debt)
+
+
+def _at_X_P(record):
+    """The record's objects at the rent-equalization trigger, without prefix."""
+    n = len(RENT_EQUALIZATION_PREFIX)
+    out = {k: v for k, v in record.items() if not k.startswith("rent_eq_")}
+    out.update({k[n:]: v for k, v in record.items() if k.startswith("rent_eq_")})
+    return out
+
+
+def _rent(lam=0.10, leverage=0.0, debt="par", scale="envelope"):
+    return _at_X_P(_record(lam, leverage, debt, scale))
 
 
 def _game(record) -> LeveredPreemptionGame:
@@ -563,7 +580,7 @@ class TestCachedEquilibria:
             assert low * r["X_H"] < r["X_P"] < high * r["X_H"]
 
     def test_lookup(self):
-        assert _record()["X_P"] == pytest.approx(0.008570, rel=1e-3)
+        assert _rent()["X_P"] == pytest.approx(0.008570, rel=1e-3)
         with pytest.raises(KeyError, match="No cached equilibrium"):
             cached_equilibrium(lam=0.123)
 
@@ -574,6 +591,7 @@ class TestCachedEquilibria:
     )
     def test_rent_equalization_and_leader_optimality(self, record):
         game = _game(record)
+        record = _at_X_P(record)
         X_P, K, phi = record["X_P"], record["K_L"], record["phi_L"]
         sub = game.subgame(K, phi)
         lead = float(sub.leader_value(X_P)[0])
@@ -589,7 +607,7 @@ class TestCachedEquilibria:
         assert record["X_F_pre_switch"] > X_P
 
     def test_brute_force_leader_policy_at_baseline(self, games):
-        record = _record()
+        record = _rent()
         game = games[("envelope", 0.0, "par")]
         K_grid = record["K_L"] * np.geomspace(1 / 6, 6, 25)
         phi_grid = np.linspace(0.3, 0.95, 27)
@@ -609,29 +627,73 @@ class TestCachedEquilibria:
     def test_resolve_baseline(self, leverage, debt):
         cached = _record(leverage=leverage, debt=debt)
         fresh = equilibrium_record(P, "envelope", leverage, debt)
-        for key in ("X_P", "K_L", "phi_L", "X_F", "K_F", "X_D_leader", "spread"):
+        keys = ("X_P", "X_L", "K_L", "phi_L", "X_F", "K_F", "X_D_leader", "spread")
+        rent = ("K_L", "phi_L", "X_F", "K_F", "X_D_leader", "spread")
+        for key in (*keys, *(RENT_EQUALIZATION_PREFIX + k for k in rent)):
             if np.isnan(cached[key]):
                 continue
-            # Nelder-Mead tolerances make a solve reproducible to about 1e-4.
-            assert fresh[key] == pytest.approx(cached[key], rel=5e-4), key
+            # Nelder-Mead tolerances make a solve reproducible to about 1e-4
+            # at X_P; X_L is the maximizer of a flat function and is
+            # reproducible to about 1e-3.
+            tolerance = 5e-4 if key.startswith(("X_P", "rent_eq_")) else 3e-3
+            assert fresh[key] == pytest.approx(cached[key], rel=tolerance), key
+        assert fresh["equilibrium"] == 1.0
+
+    @pytest.mark.slow
+    def test_reusing_the_rent_equalization_solve(self):
+        """What `write_equilibrium_grid` does unless told to start afresh."""
+        cached = _record()
+        fresh = equilibrium_record(P, "envelope", rent_equalization=cached)
+        assert fresh["X_P"] == cached["X_P"]
+        assert fresh["scan_points"] == cached["scan_points"]
+        for key in ("X_L", "K_L", "follower_margin", "lcp_trigger", "rent_eq_spread"):
+            if np.isnan(cached[key]):
+                continue
+            assert fresh[key] == pytest.approx(cached[key], rel=3e-3), key
+
+    @pytest.mark.slow
+    def test_grid_writer_reuses_the_cache(self, tmp_path):
+        """`just duopoly-grid` on one cell, written to a scratch file."""
+        import shutil
+
+        from ai_lab_investment.models.duopoly import EQUILIBRIUM_GRID_PATH
+        from ai_lab_investment.models.preemption_levered import (
+            write_equilibrium_grid,
+        )
+
+        path = tmp_path / "grid.json"
+        shutil.copy(EQUILIBRIUM_GRID_PATH, path)
+        cell = (0.10, "envelope", 0.0, "par")
+        (fresh,) = write_equilibrium_grid(str(path), workers=1, cells=[cell])
+        cached = _record()
+        assert fresh["X_P"] == cached["X_P"]
+        assert fresh["X_L"] == pytest.approx(cached["X_L"], rel=3e-3)
+        assert fresh["equilibrium"] == 1.0
 
     @pytest.mark.slow
     def test_model_solve_reports_the_variants(self):
         solution = DuopolyModel(P).solve()
         assert isinstance(solution, DuopolySolution)
         assert pytest.approx(_record()["X_P"], rel=1e-4) == solution.X_P
+        assert pytest.approx(_record()["X_L"], rel=3e-3) == solution.X_L
+        assert solution.equilibrium_verified
         assert not solution.single_firm["invests_before_switch"]
         assert not solution.fixed_scale["pure_power"]["exists"]
         assert solution.fixed_scale["monopoly"]["exists"]
         assert solution.pure_power["X_leader"] == pytest.approx(0.002621, rel=1e-3)
-        assert solution.preemption_ratio == pytest.approx(0.926, abs=0.002)
+        assert solution.rent_equalization_ratio == pytest.approx(0.926, abs=0.002)
+        assert solution.entry_ratio == pytest.approx(0.363, abs=0.003)
 
 
 class TestBenchmarkEquilibrium:
-    """Baseline numbers quoted in Section 2.5 and Internet Appendix B."""
+    """Baseline numbers at the rent-equalization trigger X_P (Internet Appendix B).
+
+    X_P is the upper bound on the date of first investment; the benchmark
+    numbers at X_L are in `TestFirstInvestment`.
+    """
 
     def test_baseline_policies(self):
-        r = _record()
+        r = _rent()
         assert r["X_P"] == pytest.approx(0.008570, rel=1e-3)
         assert r["K_L"] == pytest.approx(0.014087, rel=1e-3)
         assert r["phi_L"] == pytest.approx(0.68785, abs=1e-4)
@@ -644,32 +706,23 @@ class TestBenchmarkEquilibrium:
         assert r["X_D_leader"] == pytest.approx(0.0014558, rel=1e-3)
         assert r["distance_to_default"] == pytest.approx(5.887, abs=0.005)
 
-    def test_solution_object(self):
-        solution = DuopolySolution(_record(), {"X_star": 0.009258})
-        assert solution.exists
-        assert solution.allocation_gap == pytest.approx(-0.0186, abs=2e-4)
-        assert solution.scale_ratio == pytest.approx(22.5, abs=0.1)
-        assert solution.trigger_ratio == pytest.approx(10.02, abs=0.02)
-        assert solution.preemption_ratio == pytest.approx(0.926, abs=0.001)
-        assert np.isnan(DuopolySolution(_record()).preemption_ratio)
-        with pytest.raises(AttributeError):
-            _ = solution.no_such_field
-
     def test_shutdown_option_lowers_the_trigger(self):
         """Against the game without the option (tests/test_preemption_exact.py)."""
-        r = _record()
+        r = _rent()
         assert r["X_P"] / 0.00896 - 1.0 == pytest.approx(-0.043, abs=0.003)
         assert r["K_L"] / 0.01471 - 1.0 == pytest.approx(-0.042, abs=0.003)
 
     def test_precommitted_scale_variant(self):
-        pre = _record(scale="precommitted")
+        pre = _rent(scale="precommitted")
         assert pre["X_P"] == pytest.approx(0.008395, rel=1e-3)
         assert pre["K_L"] == pytest.approx(0.01375, rel=3e-3)
         # The follower would also enter before the switch, far above X_P.
         assert pre["X_F_pre_switch"] == pytest.approx(0.314, abs=0.002)
-        # The order of moves does not depend on the scale assumption.
-        assert pre["assigned_X_L"] == pytest.approx(0.003396, rel=5e-3)
-        assert pre["assigned_follower_over_leader"] == pytest.approx(1.101, abs=0.003)
+        # The first investment does not depend on the scale assumption.
+        pre = _record(scale="precommitted")
+        assert pre["X_L"] == pytest.approx(0.003366, rel=5e-3)
+        assert pre["follower_over_leader"] == pytest.approx(1.102, abs=0.003)
+        assert pre["equilibrium"] == 1.0
 
     def test_distance_from_the_nested_approximation(self):
         r = _record()
@@ -684,14 +737,14 @@ class TestBenchmarkEquilibrium:
         assert error["K_F"] == pytest.approx(-0.185, abs=0.002)
 
     def test_leader_boundary_above_installed_monopolist(self, games):
-        r = _record()
+        r = _rent()
         alone = games[("envelope", 0.0, "par")].installed_claims(
             r["K_L"], r["phi_L"], 0.0, 0.0, 0.0
         )
         assert r["X_D_leader"] / alone.X_D - 1.0 == pytest.approx(0.089, abs=0.003)
 
     def test_follower_option_to_stop_moves_its_policy_little(self, games):
-        r = _record()
+        r = _rent()
         option = games[("envelope", 0.0, "par")].subgame(r["K_L"], r["phi_L"])
         plain = ExactPreemptionGame(P, "envelope").subgame(r["K_L"], r["phi_L"])
         assert 0 < 1 - option.post_switch.X_F / plain.post_switch.X_F < 0.002
@@ -699,7 +752,7 @@ class TestBenchmarkEquilibrium:
 
     def test_follower_capacity_condition_of_proposition_3(self):
         """Without the option to stop, K_F solves the scalar condition."""
-        r = _record()
+        r = _rent()
         plain = ExactPreemptionGame(P, "envelope")
         entry = plain.post_switch_entry(r["phi_L"] * r["K_L"])
         K, T = entry.K_F, entry.T_L
@@ -718,12 +771,15 @@ class TestBenchmarkEquilibrium:
 
 
 class TestBeliefs:
-    """Proposition 3(ii), (iv), (v) across arrival rates (C20 for the duopoly)."""
+    """Rent equalization across arrival rates (C20 for the duopoly).
+
+    The same shapes at the benchmark trigger X_L are in `TestFirstInvestment`.
+    """
 
     LAMS = (0.03, 0.05, 0.075, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50)
 
     def _column(self, key):
-        return np.array([_record(lam)[key] for lam in self.LAMS])
+        return np.array([_rent(lam)[key] for lam in self.LAMS])
 
     def test_trigger_exists_where_the_single_firm_waits(self):
         from ai_lab_investment.models.base_model import SingleFirmModel
@@ -731,8 +787,8 @@ class TestBeliefs:
         for lam in self.LAMS:
             single = SingleFirmModel(P.with_param(lam=lam)).solve()
             assert single.invests_before_switch == (lam < 0.0729)
-            assert _record(lam)["exists"] == 1.0
-            assert _record(lam)["n_sign_changes"] == 1.0
+            assert _rent(lam)["exists"] == 1.0
+            assert _rent(lam)["n_sign_changes"] == 1.0
 
     def test_trigger_and_capacity_hump_shaped(self):
         for key in ("X_P", "K_L"):
@@ -741,10 +797,10 @@ class TestBeliefs:
             assert self.LAMS[peak] == 0.10
             assert np.all(np.diff(values[: peak + 1]) > 0)
             assert np.all(np.diff(values[peak:]) < 0)
-        assert _record(0.03)["X_P"] == pytest.approx(0.0001354, rel=2e-3)
-        assert _record(0.50)["X_P"] == pytest.approx(0.0014439, rel=2e-3)
-        assert _record(0.03)["K_L"] == pytest.approx(2.81e-5, rel=0.01)
-        assert _record(0.50)["K_L"] == pytest.approx(0.002082, rel=2e-3)
+        assert _rent(0.03)["X_P"] == pytest.approx(0.0001354, rel=2e-3)
+        assert _rent(0.50)["X_P"] == pytest.approx(0.0014439, rel=2e-3)
+        assert _rent(0.03)["K_L"] == pytest.approx(2.81e-5, rel=0.01)
+        assert _rent(0.50)["K_L"] == pytest.approx(0.002082, rel=2e-3)
 
     def test_leader_allocation_below_phi_star_and_converging(self):
         gap = 1.0 - self._column("phi_L") / self._column("phi_star")
@@ -766,110 +822,382 @@ class TestBeliefs:
         assert ratio.max() == pytest.approx(1.28, abs=0.01)
 
 
-class TestOrderOfMoves:
-    """X_P is where both firms want to lead, not the date of first investment.
+class TestFirstInvestment:
+    """The benchmark of issue #200: one firm leads at X_L, the other follows.
 
-    The trigger of a firm that knows it will lead (`leader_assigned_entry`)
-    lies below the rent-equalization trigger at every arrival rate, so the
-    game has a second-mover advantage between the two.
+    X_L is the trigger a firm chooses when it knows that its rival will
+    follow; the rent-equalization trigger X_P lies above it at every cell
+    of the grid and is an upper bound on the date of first investment.
     """
-
-    def test_assigned_leader_enters_below_rent_equalization(self):
-        ratios, advantage = [], []
-        for lam in TestBeliefs.LAMS:
-            r = _record(lam)
-            assert r["assigned_below_rent_equalization"] == 1.0
-            assert r["assigned_coefficient_ratio"] > 1.0
-            assert r["assigned_follower_over_leader"] > 1.0
-            ratios.append(r["assigned_X_L"] / r["X_P"])
-            advantage.append(r["assigned_follower_over_leader"])
-        # The two triggers converge as the switch is believed to be nearer.
-        assert np.all(np.diff(ratios[3:]) > 0)
-        assert ratios[-1] == pytest.approx(0.988, abs=0.004)
-        assert np.all(np.diff(advantage[3:]) < 0)
 
     def test_baseline(self):
         r = _record()
-        assert r["assigned_X_L"] == pytest.approx(0.003394, rel=5e-3)
-        assert r["assigned_X_L"] / r["X_P"] == pytest.approx(0.396, abs=0.003)
-        assert r["assigned_K_L"] == pytest.approx(0.004213, rel=0.01)
-        assert r["assigned_follower_over_leader"] == pytest.approx(1.103, abs=0.003)
-        assert r["assigned_coefficient_ratio"] == pytest.approx(1.858, abs=0.01)
-        solution = DuopolySolution(r)
-        assert solution.second_mover_advantage
-        assert not DuopolySolution(
-            _record(leverage=0.40, debt="par")
-        ).second_mover_advantage
+        assert r["X_L"] == pytest.approx(0.003364, rel=3e-3)
+        assert r["X_L_over_X_P"] == pytest.approx(0.393, abs=0.002)
+        assert r["K_L"] == pytest.approx(0.004163, rel=5e-3)
+        assert r["phi_L"] == pytest.approx(0.6791, abs=3e-4)
+        assert r["X_F"] == pytest.approx(0.04429, rel=3e-3)
+        assert r["K_F"] == pytest.approx(0.1626, rel=3e-3)
+        assert np.isinf(r["X_F_pre_switch"])
+        assert r["lead_over_wait"] == pytest.approx(1.091, abs=0.002)
+        assert r["follower_over_leader"] == pytest.approx(1.104, abs=0.002)
+        assert r["coefficient_ratio"] == pytest.approx(1.83, abs=0.02)
+        assert r["X_D_leader"] == pytest.approx(0.000700, rel=3e-3)
+        assert r["distance_to_default"] == pytest.approx(4.805, abs=0.01)
 
-    def test_leading_below_x_p_beats_waiting_for_it(self, games):
-        """Direct check at 0.8 X_P: h(X) = [L*(X) - W(X)] X^{-beta_L^+}."""
+    def test_solution_object(self):
+        solution = DuopolySolution(_record(), {"X_star": 0.009258})
+        assert solution.exists
+        assert solution.equilibrium_verified
+        assert solution.second_mover_advantage
+        assert pytest.approx(_record()["X_L"]) == solution.X_L
+        assert pytest.approx(_record()["rent_eq_K_L"]) == solution.rent_eq_K_L
+        assert solution.allocation_gap == pytest.approx(-0.0311, abs=5e-4)
+        assert solution.scale_ratio == pytest.approx(39.05, abs=0.2)
+        assert solution.trigger_ratio == pytest.approx(13.16, abs=0.05)
+        assert solution.entry_ratio == pytest.approx(0.363, abs=0.002)
+        assert solution.rent_equalization_ratio == pytest.approx(0.926, abs=0.001)
+        assert np.isnan(DuopolySolution(_record()).entry_ratio)
+        assert np.isnan(DuopolySolution(_record()).rent_equalization_ratio)
+        with pytest.raises(AttributeError):
+            _ = solution.no_such_field
+
+    def test_below_rent_equalization_in_every_cell(self):
+        for r in GRID:
+            assert r["X_L"] < r["X_P"]
+            assert r["follower_over_leader"] > 1.0
+            assert r["lead_over_wait"] > 1.0
+            assert r["coefficient_ratio"] > 1.0
+            assert DuopolySolution(r).second_mover_advantage == (
+                r["X_L_over_X_P"] < 0.999
+            )
+        # The two triggers converge as the switch is believed to be nearer.
+        ratios = [_record(lam)["X_L_over_X_P"] for lam in TestBeliefs.LAMS]
+        advantage = [_record(lam)["follower_over_leader"] for lam in TestBeliefs.LAMS]
+        assert np.all(np.diff(ratios[3:]) > 0)
+        assert ratios[-1] == pytest.approx(0.975, abs=0.004)
+        assert np.all(np.diff(advantage[3:]) < 0)
+
+    def test_records_carry_the_entry_scan(self):
+        from ai_lab_investment.models.preemption_levered import (
+            ENTRY_SCAN,
+            ENTRY_SCAN_OVERRIDES,
+            SCAN_OVERRIDES,
+        )
+
+        assert set(ENTRY_SCAN_OVERRIDES) == set(SCAN_OVERRIDES)
+        for r in GRID:
+            cell = (r["lam"], r["scale"], r["leverage"], r["debt"])
+            points, (low, high), _ = ENTRY_SCAN_OVERRIDES.get(cell, ENTRY_SCAN)
+            assert r["entry_scan_points"] == points
+            assert r["entry_scan_low"] == pytest.approx(low)
+            # The scan may stop early where no leader policy keeps the
+            # follower out; X_L is interior to what was scanned.
+            assert r["entry_scan_high"] <= high * (1 + 1e-9)
+            assert r["entry_scan_low"] < r["X_L_over_X_P"] < r["entry_scan_high"]
+
+    def test_trigger_and_capacity_hump_shaped(self):
+        """Proposition 3(iv) at the benchmark: the peak is at lambda = 0.15."""
+        lams = TestBeliefs.LAMS
+        for key in ("X_L", "K_L"):
+            values = np.array([_record(lam)[key] for lam in lams])
+            peak = int(np.argmax(values))
+            assert lams[peak] == 0.15
+            assert np.all(np.diff(values[: peak + 1]) > 0)
+            assert np.all(np.diff(values[peak:]) < 0)
+        assert _record(0.15)["X_L"] == pytest.approx(0.003826, rel=3e-3)
+        assert _record(0.50)["X_L"] == pytest.approx(0.001407, rel=3e-3)
+        assert _record(0.15)["K_L"] == pytest.approx(0.005635, rel=5e-3)
+        assert _record(0.50)["K_L"] == pytest.approx(0.002006, rel=5e-3)
+
+    def test_leader_allocation_below_phi_star_and_converging(self):
+        lams = TestBeliefs.LAMS
+        gap = np.array([
+            1.0 - _record(lam)["phi_L"] / _record(lam)["phi_star"] for lam in lams
+        ])
+        assert np.all(gap > 0)
+        assert np.all(np.diff(gap) < 0)
+        assert gap[3] == pytest.approx(0.0311, abs=0.0005)
+        assert gap[-1] == pytest.approx(0.0022, abs=0.0003)
+        assert gap[0] == pytest.approx(0.140, abs=0.003)
+        # Further from phi* than at X_P at every belief but the lowest.
+        at_X_P = np.array([
+            1.0 - _rent(lam)["phi_L"] / _rent(lam)["phi_star"] for lam in lams
+        ])
+        assert np.all(gap[1:] > at_X_P[1:])
+        assert gap[0] < at_X_P[0]
+
+    def test_distance_to_boundary_hump_shaped(self):
+        lams = TestBeliefs.LAMS
+        distance = np.array([_record(lam)["distance_to_default"] for lam in lams])
+        assert lams[int(np.argmax(distance))] == 0.15
+        assert np.all(np.diff(distance[4:]) < 0)
+        assert distance.max() == pytest.approx(4.88, abs=0.01)
+        assert distance[-1] == pytest.approx(4.12, abs=0.01)
+
+
+class TestNoDeviation:
+    """No-deviation conditions of the equilibrium with assigned roles.
+
+    The cached records carry the checks of `assigned_leader_equilibrium`
+    for every cell; the tests below assert them, re-derive the main ones
+    at baseline from the game, and test the tools they rely on.
+    """
+
+    def test_every_cell_passes(self):
+        for r in GRID:
+            cell = (r["lam"], r["scale"], r["leverage"], r["debt"])
+            assert r["equilibrium"] == 1.0, cell
+            # Leader: no other trigger on the scan does better, and the
+            # coefficient has a single peak.
+            assert r["leader_best_other_trigger"] <= 1.0 + DEVIATION_TOLERANCE, cell
+            assert r["coefficient_single_peaked"] == 1.0, cell
+            # Leader: the stopping problem solved without a shape
+            # assumption invests exactly from X_L up.
+            assert r["lcp_upper_set"] == 1.0, cell
+            assert r["lcp_trigger"] == pytest.approx(r["X_L"], rel=3e-3), cell
+            assert r["lcp_coefficient_error"] < 1e-3, cell
+            # Follower: waiting for the leader's entry (or the switch)
+            # beats investing first, below X_L and between X_L and X_P.
+            assert r["follower_margin"] > 0.0, cell
+            assert not r["follower_margin_to_X_P"] < 0.0, cell
+            # The game after a switch with neither firm installed is a race.
+            assert r["post_switch_race"] == 1.0, cell
+            assert r["post_switch_assigned_trigger"] > 3 * r["post_switch_trigger"]
+
+    def test_follower_margin_bounded_by_the_role_advantage(self):
+        """V_follow - L* = [F(X_L) - L*(X_L)] (X / X_L)^b + (V_lead - L*).
+
+        The follower's condition is implied by the leader's whenever the
+        follower is the better-off role at X_L; relative to its value the
+        margin on the scan is at most the role advantage 1 - L*/F there.
+        """
+        for r in GRID:
+            advantage = 1.0 - 1.0 / r["follower_over_leader"]
+            assert 0.0 < r["follower_margin"] <= advantage + 2e-6
+        margins = [_record(lam)["follower_margin"] for lam in TestBeliefs.LAMS]
+        assert _record()["follower_margin"] == pytest.approx(0.068, abs=0.002)
+        assert min(margins) == pytest.approx(0.0037, abs=0.0005)
+
+    def test_baseline_conditions_from_the_game(self, games):
+        """Leader and follower checked directly, not read from the cache."""
         r = _record()
         game = games[("envelope", 0.0, "par")]
         wait = game.mutual_waiting_claim("reoptimized")
-        start = (r["K_L"], r["phi_L"])
+        X_L, bp = r["X_L"], game.bp
+        policy = (r["K_L"], r["phi_L"])
+        h = {}
+        lead = {}
+        for m in (0.6, 1.0, 1.4):
+            X = m * X_L
+            _, _, lead[m] = game.leader_best_policy(X, policy)
+            h[m] = (lead[m] - float(wait(X)[0])) * X ** (-bp)
+        assert lead[1.0] == pytest.approx(r["leader_value"], rel=1e-6)
+        # Leader: X_L beats the lower and the higher trigger.
+        assert h[1.0] > h[0.6]
+        assert h[1.0] > h[1.4]
+        follow_L = float(game.subgame(*policy).follower_value(X_L)[0])
+        wait_L = float(wait(X_L)[0])
+        assert follow_L == pytest.approx(r["follower_value"], rel=1e-6)
+        assert follow_L > lead[1.0] > wait_L
+        for m in (0.6, 1.0):
+            X = m * X_L
+            # The follower's value before the leader's entry is the value of
+            # waiting for it or for the switch ...
+            waiting = float(wait(X)[0]) + (follow_L - wait_L) * m**bp
+            # ... the leader's is the same with L* in place of F ...
+            leading = float(wait(X)[0]) + (lead[1.0] - wait_L) * m**bp
+            # ... and neither is improved on by investing at once.
+            assert waiting > leading >= lead[m]
+            assert waiting > 1.05 * lead[m]
 
-        def coefficient(X):
-            _, _, lead = game.leader_best_policy(X, start)
-            return (lead - float(wait(X)[0])) * X ** (-game.bp), lead
-
-        h_P, lead_P = coefficient(r["X_P"])
-        assert lead_P == pytest.approx(r["leader_value"], rel=1e-6)
-        X = 0.8 * r["X_P"]
-        h, lead = coefficient(X)
-        # Investing at X is worth more than waiting for X_P ...
-        waiting_for_X_P = float(wait(X)[0]) + h_P * X**game.bp
-        assert lead > 1.01 * waiting_for_X_P
-        assert h / h_P == pytest.approx(1.245, abs=0.01)
-        # ... although following is the better role there.
-        K, phi, _ = game.leader_best_policy(X, start)
-        assert float(game.subgame(K, phi).follower_value(X)[0]) > 1.01 * lead
-
-    def test_post_switch_game_is_a_race(self):
-        """After the switch the order is the standard one.
-
-        The mutual-waiting value prices the post-switch game by rent
-        equalization. There the trigger of an assigned leader, which
-        maximizes L*(X) X^{-beta_H}, lies above the rent-equalization trigger
-        and leading is the better role between the two, so that game is a
-        preemption race and the value used for it is the right one.
-        """
+    def test_follower_policy_is_a_best_response_at_the_benchmark(self):
+        """Linear complementarity solve of the follower's problem at X_L."""
+        r = _record()
         game = ExactPreemptionGame(P, "envelope")
-        game.mutual_waiting_claim("reoptimized")
-        X_PH = game.post_switch_trigger
-        assert pytest.approx(0.000387, rel=5e-3) == X_PH
-        multiples = np.array([0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0])
-        coefficient, advantage = [], []
-        for m in multiples:
-            _, lead, follow = game.post_switch_leader_policy(float(m * X_PH))
-            coefficient.append(lead * (m * X_PH) ** (-P.beta_H))
-            advantage.append(lead / follow)
-        peak = int(np.argmax(coefficient))
-        assert multiples[peak] in (3.0, 5.0)
-        assert np.all(np.diff(coefficient[: peak + 1]) > 0)
-        assert advantage[1] == pytest.approx(1.0, abs=1e-6)
-        assert np.all(np.array(advantage[2:]) > 1.1)
+        fd = game.finite_difference_subgame(r["K_L"], r["phi_L"])
+        # No shape assumed: the follower never enters before the switch.
+        assert np.isinf(fd["boundary"])
+        grid, follower = np.asarray(fd["X"]), np.asarray(fd["follower"])
+        i = int(np.argmin(np.abs(grid - r["X_L"])))
+        exact = float(game.subgame(r["K_L"], r["phi_L"]).follower_value(grid[i])[0])
+        assert follower[i] == pytest.approx(exact, rel=1e-5)
+        # The option to stop adds little to the follower's value.
+        assert r["follower_value"] == pytest.approx(exact, rel=2e-3)
+
+    def test_stopping_check_recovers_a_known_trigger(self, games):
+        """Obstacle a X - c with no forcing: trigger [b/(b-1)] c/a."""
+        game = games[("envelope", 0.0, "par")]
+        bp = game.bp
+        X = np.geomspace(0.2, 20.0, 30)
+        trigger, upper_set, coefficient = _stopping_check(
+            game, X, (X - 1.0) * X ** (-bp)
+        )
+        exact = bp / (bp - 1.0)
+        assert trigger == pytest.approx(exact, rel=2e-3)
+        assert upper_set == 1.0
+        assert coefficient == pytest.approx((exact - 1.0) * exact ** (-bp), rel=1e-3)
+
+    def test_stopping_check_detects_an_interval(self, games):
+        """A two-humped obstacle: the investment region is not an upper set."""
+        game = games[("envelope", 0.0, "par")]
+        X = np.geomspace(0.1, 100.0, 60)
+        y = np.log(X)
+        h = np.exp(-((y + 1.0) ** 2) / 0.05) + 0.02 * np.exp(-((y - 3.0) ** 2) / 4.0)
+        trigger, upper_set, _ = _stopping_check(game, X, h)
+        assert trigger == pytest.approx(np.exp(-1.0), rel=0.05)
+        assert upper_set == 0.0
 
     @pytest.mark.slow
-    def test_resolve_assigned_trigger(self, games):
-        from ai_lab_investment.models.preemption_levered import leader_assigned_entry
+    def test_narrow_scan_reproduces_the_trigger(self, games):
+        """The scan of `ENTRY_SCAN_OVERRIDES`, applied where the answer is known."""
+        from ai_lab_investment.models.preemption_levered import ENTRY_SCAN_OVERRIDES
 
+        points, span, xatol = next(iter(ENTRY_SCAN_OVERRIDES.values()))
         r = _record()
-        out = leader_assigned_entry(
-            games[("envelope", 0.0, "par")], r["X_P"], (r["K_L"], r["phi_L"])
+        out = assigned_leader_equilibrium(
+            games[("envelope", 0.0, "par")],
+            r["X_P"],
+            (r["rent_eq_K_L"], r["rent_eq_phi_L"]),
+            points,
+            span,
+            xatol,
         )
-        assert out["X_L"] == pytest.approx(r["assigned_X_L"], rel=2e-3)
-        assert out["follower_over_leader"] == pytest.approx(
-            r["assigned_follower_over_leader"], abs=1e-3
+        assert out["X_L"] == pytest.approx(r["X_L"], rel=2e-3)
+        assert out["lcp_trigger"] == pytest.approx(out["X_L"], rel=5e-3)
+        assert out["equilibrium"] == 1.0
+
+    @pytest.mark.slow
+    def test_rejected_when_the_follower_would_preempt(self):
+        """With L* raised above F at X_L the profile is not an equilibrium."""
+        r = _record()
+        out = assigned_leader_equilibrium(
+            _InflatedGame(P, "envelope"),
+            r["X_P"],
+            (r["K_L"], r["phi_L"]),
+            5,
+            (0.25, 1.0),
+            5e-2,
         )
+        assert out["follower_over_leader"] < 1.0
+        assert out["follower_margin"] < 0.0
+        assert out["equilibrium"] == 0.0
+
+
+class _InflatedGame(LeveredPreemptionGame):
+    """A game whose leader values are scaled up, to exercise a failed check."""
+
+    def leader_best_policy(self, X, start=None):
+        K, phi, lead = super().leader_best_policy(X, start)
+        return K, phi, 1.2 * lead
+
+
+class TestMutualWaiting:
+    """The value of mutual waiting with the option to stop and with debt."""
+
+    def test_follower_response_interpolation(self, games):
+        for key in (("envelope", 0.0, "par"), ("envelope", 0.4, "fair")):
+            game = games[key]
+            for T in (1e-4, 3.3e-3, 0.07, 2.0):
+                entry = game.follower_post_switch_entry(T)
+                X_F, K_F, B_F = game._follower_response(T)
+                assert pytest.approx(entry.X_F, rel=1e-6) == X_F
+                assert pytest.approx(entry.K_F, rel=1e-6) == K_F
+                assert pytest.approx(entry.B_F, rel=1e-7) == B_F
+
+    def test_post_switch_game_with_the_option_to_stop(self, games):
+        game = games[("envelope", 0.0, "par")]
+        wait = game.mutual_waiting_claim("reoptimized")
+        no_stop = game.mutual_waiting_claim("no_stop")
+        # The option lowers the post-switch rent-equalization trigger ...
+        assert game.post_switch_trigger == pytest.approx(0.0003664, rel=3e-3)
+        assert game.proxy.post_switch_trigger == pytest.approx(0.0003874, rel=3e-3)
+        # ... and that game is a race: an assigned leader would wait longer.
+        assert game.post_switch_assigned_trigger > 3 * game.post_switch_trigger
+        assert game.post_switch_single_crossing
+        _, lead, follow = game.post_switch_leader_policy(game.post_switch_trigger)
+        assert lead == pytest.approx(follow, rel=1e-6)
+        for multiple in (2.0, 4.0, 8.0):
+            _, lead, follow = game.post_switch_leader_policy(
+                multiple * game.post_switch_trigger
+            )
+            assert lead > 1.1 * follow
+        # Error of the value without the option: a few tenths of a percent.
+        X = _record()["X_P"] * np.geomspace(0.03, 10.0, 12)
+        error = no_stop(X) / wait(X) - 1.0
+        assert np.max(np.abs(error)) < 2.5e-3
+        assert float(no_stop(_record()["X_L"])[0]) / float(
+            wait(_record()["X_L"])[0]
+        ) - 1.0 == pytest.approx(_record()["wait_no_stop_ratio"], abs=1e-6)
+
+    def test_post_switch_values_join_at_the_follower_trigger(self, games):
+        for key in (("envelope", 0.0, "par"), ("envelope", 0.4, "par")):
+            game = games[key]
+            K = 0.01
+            X_F, _, _ = game._follower_response(K)
+            below, above = game._post_switch_follow_value(
+                np.array([X_F * (1 - 1e-7), X_F * (1 + 1e-7)]), K
+            )
+            assert below == pytest.approx(above, rel=1e-5)
+            # The leader's value is continuous there as well.
+            lead = [
+                game._post_switch_leader_npv(X_F * (1 + s), K) for s in (-1e-6, 1e-6)
+            ]
+            assert lead[0] == pytest.approx(lead[1], rel=1e-4)
+
+    def test_fair_debt_is_priced_at_par_for_the_post_switch_leader(self, games):
+        par = games[("envelope", 0.4, "par")]
+        fair = games[("envelope", 0.4, "fair")]
+        zero = games[("envelope", 0.0, "par")]
+        X, K = 0.002, 0.004
+        # Fair pricing removes the subsidy: close to the unlevered value,
+        # and below the par-financed one.
+        unlevered = zero._post_switch_leader_npv(X, K)
+        assert fair._post_switch_leader_npv(X, K) == pytest.approx(unlevered, rel=0.02)
+        assert par._post_switch_leader_npv(X, K) > 1.02 * unlevered
+        # An issue that cannot be placed has no value.
+        assert fair._post_switch_leader_npv(1e-6, 1.0) == -np.inf
+
+    def test_effect_of_the_option_on_the_trigger_in_every_cell(self):
+        shift = np.array([r["X_L_no_stop"] / r["X_L"] - 1.0 for r in GRID])
+        error = np.array([r["wait_no_stop_ratio"] for r in GRID])
+        # Without the option in W the trigger would be about 1% higher,
+        # except at lambda = 0.03, where it would be lower.
+        assert np.median(shift) == pytest.approx(0.011, abs=0.004)
+        assert -0.05 < shift.min() < shift.max() < 0.03
+        assert np.all(np.abs(error) < 5e-3)
+
+    def test_leader_kept_through_the_switch_would_wait(self):
+        """Selection of the continuation: see `assigned_leader_equilibrium`."""
+        for lam in TestBeliefs.LAMS[2:]:
+            r = _record(lam)
+            assert np.isinf(r["X_L_roles_kept"])
+            # The profile in which the pre-switch follower is the firm that
+            # leads after the switch passes the follower's check as well.
+            assert r["follower_margin_if_leading_after_switch"] > 0.0
+
+    def test_arguments(self, games):
+        game = games[("envelope", 0.0, "par")]
+        with pytest.raises(ValueError, match="leader must be"):
+            game.mutual_waiting_claim("other")
+        assert game.mutual_waiting_claim("paper") is game.proxy.mutual_waiting_claim(
+            "paper"
+        )
+        leading = game.post_switch_leading_claim()
+        wait = game.mutual_waiting_claim("reoptimized")
+        X = np.array([1e-4, 3e-3, 0.05])
+        # Leading after the switch is worth more, except below X_P^H.
+        assert leading(X)[0] == pytest.approx(wait(X)[0], rel=0.05)
+        assert np.all(leading(X)[1:] > 1.05 * wait(X)[1:])
 
 
 class TestSpreadAtEntry:
-    """C23: the leader's spread and distance to default at X_P across lambda."""
+    """C23 at the rent-equalization trigger X_P (the values of issue #178)."""
 
     @pytest.mark.parametrize("leverage", [0.40, 0.65])
     @pytest.mark.parametrize("debt", ["par", "fair"])
     def test_shape(self, leverage, debt):
-        records = [_record(lam, leverage, debt) for lam in GRID_LAMBDAS]
+        records = [_rent(lam, leverage, debt) for lam in GRID_LAMBDAS]
         spread = np.array([1e4 * r["spread"] for r in records])
         distance = np.array([r["distance_to_default"] for r in records])
         # Risky from the first unit: recovery is zero in every cell.
@@ -887,25 +1215,25 @@ class TestSpreadAtEntry:
     def test_levels(self):
         def spreads(leverage, debt):
             return [
-                round(1e4 * _record(lam, leverage, debt)["spread"], 1)
+                round(1e4 * _rent(lam, leverage, debt)["spread"], 1)
                 for lam in (0.10, 0.20, 0.50)
             ]
 
         assert spreads(0.40, "par") == pytest.approx([35.2, 28.7, 33.8], abs=0.15)
         assert spreads(0.40, "fair") == pytest.approx([41.9, 33.7, 36.7], abs=0.15)
         assert spreads(0.65, "par") == pytest.approx([44.3, 35.2, 37.7], abs=0.15)
-        assert _record(0.10, 0.40, "par")["distance_to_default"] == pytest.approx(
+        assert _rent(0.10, 0.40, "par")["distance_to_default"] == pytest.approx(
             5.28, abs=0.01
         )
-        assert _record(0.10, 0.40, "fair")["distance_to_default"] == pytest.approx(
+        assert _rent(0.10, 0.40, "fair")["distance_to_default"] == pytest.approx(
             4.88, abs=0.01
         )
 
     def test_conventions(self):
         for lam in GRID_LAMBDAS:
             for leverage in (0.40, 0.65):
-                par = _record(lam, leverage, "par")
-                fair = _record(lam, leverage, "fair")
+                par = _rent(lam, leverage, "par")
+                fair = _rent(lam, leverage, "fair")
                 assert par["coupon_rate"] == pytest.approx(0.05)
                 assert par["debt_value"] < 0.45 * par["debt_proceeds"]
                 assert fair["debt_value"] == pytest.approx(
@@ -917,14 +1245,12 @@ class TestSpreadAtEntry:
 
 
 class TestLeverageEffects:
-    """C15: which effects of leverage survive fairly priced debt (Remark 4)."""
+    """C15 at the rent-equalization trigger X_P (the values of issue #178)."""
 
     LEVERAGES = (0.0, 0.20, 0.40, 0.65)
 
     def _path(self, debt, key):
-        return np.array([
-            _record(leverage=lev, debt=debt)[key] for lev in self.LEVERAGES
-        ])
+        return np.array([_rent(leverage=lev, debt=debt)[key] for lev in self.LEVERAGES])
 
     def test_par_debt_raises_scale_triggers_and_boundary(self):
         for key in ("K_L", "K_F", "X_P", "X_F", "X_D_leader"):
@@ -964,10 +1290,10 @@ class TestLeverageEffects:
 
 
 class TestFollowerHittingTimes:
-    """C24 in the equilibrium of record."""
+    """C24 from the rent-equalization trigger X_P (the values of issue #178)."""
 
     def test_baseline(self):
-        r = _record()
+        r = _rent()
         out = hitting_statistics(P, r["X_P"], r["X_F"])
         assert out["before_switch"] == pytest.approx(r["follower_before_switch"])
         assert r["follower_before_switch"] == pytest.approx(0.0069, abs=0.0002)
@@ -979,18 +1305,163 @@ class TestFollowerHittingTimes:
         )
 
     def test_leader_boundary(self):
-        r = _record()
+        r = _rent()
         assert r["leader_default_before_switch"] == pytest.approx(0.0724, abs=0.001)
         assert r["leader_default_no_switch"] == 1.0
-        par = _record(leverage=0.40, debt="par")
+        par = _rent(leverage=0.40, debt="par")
         assert par["leader_default_before_switch"] == pytest.approx(0.085, abs=0.001)
+
+    def test_follower_entry_is_remote_at_every_belief(self):
+        times = [_rent(lam)["follower_expected_entry_time"] for lam in TestBeliefs.LAMS]
+        assert min(times) == pytest.approx(97.6, abs=0.3)
+        assert max(times) == pytest.approx(186.3, abs=0.5)
+
+
+class TestCreditAtFirstInvestment:
+    """C23, C15 and C24 at the benchmark: a leader that enters at X_L."""
+
+    LEVERAGES = (0.0, 0.20, 0.40, 0.65)
+
+    def _path(self, debt, key):
+        return np.array([
+            _record(leverage=lev, debt=debt)[key] for lev in self.LEVERAGES
+        ])
+
+    @pytest.mark.parametrize("leverage", [0.40, 0.65])
+    @pytest.mark.parametrize("debt", ["par", "fair"])
+    def test_spread_is_u_shaped_in_lambda(self, leverage, debt):
+        """C23: not weakly increasing at X_L either."""
+        records = [_record(lam, leverage, debt) for lam in GRID_LAMBDAS]
+        spread = np.array([1e4 * r["spread"] for r in records])
+        distance = np.array([r["distance_to_default"] for r in records])
+        assert np.all(spread > 30)
+        assert all(r["recovery"] == 0.0 for r in records)
+        low = int(np.argmin(spread))
+        assert GRID_LAMBDAS[low] in (0.30, 0.40)
+        assert np.all(np.diff(spread[: low + 1]) < 0)
+        assert np.all(np.diff(spread[low:]) > 0)
+        # The distance to default peaks at 0.10 or 0.15 and falls from there.
+        assert GRID_LAMBDAS[int(np.argmax(distance))] in (0.10, 0.15)
+        assert np.all(np.diff(distance[2:]) < 0)
+        # Closer to the boundary, and a higher spread, than at X_P.
+        at_X_P = [_at_X_P(r) for r in records]
+        assert all(
+            r["distance_to_default"] < p["distance_to_default"]
+            for r, p in zip(records, at_X_P, strict=True)
+        )
+        assert all(
+            r["spread"] > p["spread"] for r, p in zip(records, at_X_P, strict=True)
+        )
+
+    def test_spread_levels(self):
+        def spreads(leverage, debt):
+            return [
+                round(1e4 * _record(lam, leverage, debt)["spread"], 1)
+                for lam in (0.10, 0.30, 0.50)
+            ]
+
+        assert spreads(0.40, "par") == pytest.approx([50.2, 32.4, 34.0], abs=0.2)
+        assert spreads(0.40, "fair") == pytest.approx([55.6, 36.1, 37.0], abs=0.2)
+        assert spreads(0.65, "par") == pytest.approx([57.6, 37.3, 37.9], abs=0.2)
+        assert spreads(0.65, "fair") == pytest.approx([64.0, 41.8, 41.4], abs=0.2)
+        low = 1e4 * _record(0.05, 0.40, "par")["spread"]
+        assert low == pytest.approx(95.8, abs=0.3)
+        distance = _record(0.10, 0.40, "par")["distance_to_default"]
+        assert distance == pytest.approx(4.515, abs=0.01)
+        distance = _record(0.10, 0.40, "fair")["distance_to_default"]
+        assert distance == pytest.approx(4.316, abs=0.01)
+
+    def test_debt_conventions(self):
+        for lam in GRID_LAMBDAS:
+            for leverage in (0.40, 0.65):
+                par = _record(lam, leverage, "par")
+                fair = _record(lam, leverage, "fair")
+                assert par["coupon_rate"] == pytest.approx(0.05)
+                assert par["debt_value"] < 0.45 * par["debt_proceeds"]
+                assert fair["debt_value"] == pytest.approx(
+                    fair["debt_proceeds"], rel=1e-9
+                )
+                assert fair["spread"] == pytest.approx(fair["coupon_rate"] - P.r)
+                assert fair["spread"] > par["spread"]
+                assert fair["distance_to_default"] < par["distance_to_default"]
+
+    def test_par_debt_raises_scale_triggers_and_boundary(self):
+        """C15, Remark 4: the subsidy."""
+        keys = ("K_L", "K_F", "X_L", "X_F", "X_D_leader")
+        for key in keys:
+            assert np.all(np.diff(self._path("par", key)) > 0), key
+        change = {
+            key: self._path("par", key)[2] / self._path("par", key)[0] - 1
+            for key in keys
+        }
+        assert change["K_L"] == pytest.approx(0.70, abs=0.01)
+        assert change["K_F"] == pytest.approx(0.70, abs=0.01)
+        assert change["X_L"] == pytest.approx(0.37, abs=0.01)
+        assert change["X_F"] == pytest.approx(0.37, abs=0.01)
+        assert change["X_D_leader"] == pytest.approx(0.46, abs=0.01)
+
+    def test_fair_debt_leaves_scale_and_triggers_almost_unchanged(self):
+        for key in ("K_L", "K_F", "X_L", "X_F"):
+            path = self._path("fair", key)
+            change = path / path[0] - 1.0
+            # X_L is located to about 1e-3, so the change at leverage 0.20
+            # is within the precision of a solve.
+            assert abs(change[1]) < 3e-3, key
+            assert -0.01 < change[2] < 0.0, key
+            assert -0.03 < change[3] < change[2], key
+        x_l = self._path("fair", "X_L")
+        assert x_l[2] / x_l[0] - 1 == pytest.approx(-0.004, abs=0.002)
+
+    def test_boundary_and_distance_survive_fair_pricing(self):
+        boundary = self._path("fair", "X_D_leader")
+        assert np.all(np.diff(boundary) > 0)
+        assert boundary[2] / boundary[0] - 1 == pytest.approx(0.11, abs=0.01)
+        for debt in ("par", "fair"):
+            assert np.all(np.diff(self._path(debt, "distance_to_default")) < 0)
+            assert np.all(np.diff(self._path(debt, "follower_distance_to_default")) < 0)
+        assert self._path("par", "distance_to_default")[2] == pytest.approx(
+            4.515, abs=0.01
+        )
+
+    def test_leverage_moves_both_triggers_together(self):
+        for debt in ("par", "fair"):
+            ratio = self._path(debt, "X_L_over_X_P")
+            assert np.all((ratio > 0.39) & (ratio < 0.40))
+
+    def test_follower_hitting_times_at_baseline(self):
+        """C24: the follower's trigger is remote from X_L as well."""
+        r = _record()
+        out = hitting_statistics(P, r["X_L"], r["X_F"])
+        assert out["before_switch"] == pytest.approx(r["follower_before_switch"])
+        assert r["follower_before_switch"] == pytest.approx(0.0038, abs=0.0002)
+        assert r["follower_no_switch"] == pytest.approx(0.173, abs=0.002)
+        assert r["follower_time_after_switch"] == pytest.approx(89.7, abs=0.3)
+        assert r["follower_expected_entry_time"] == pytest.approx(107.1, abs=0.3)
+        assert r["follower_expected_entry_time"] == pytest.approx(
+            expected_entry_time(P, r["X_L"], r["X_F"])
+        )
+
+    def test_leader_boundary_hitting_probability(self):
+        r = _record()
+        assert r["leader_default_before_switch"] == pytest.approx(0.098, abs=0.001)
+        assert r["leader_default_no_switch"] == 1.0
+        par = _record(leverage=0.40, debt="par")
+        assert par["leader_default_before_switch"] == pytest.approx(0.107, abs=0.001)
+        fair = _record(leverage=0.40, debt="fair")
+        assert fair["leader_default_before_switch"] == pytest.approx(0.115, abs=0.001)
 
     def test_follower_entry_is_remote_at_every_belief(self):
         times = [
             _record(lam)["follower_expected_entry_time"] for lam in TestBeliefs.LAMS
         ]
-        assert min(times) == pytest.approx(97.6, abs=0.3)
-        assert max(times) == pytest.approx(186.3, abs=0.5)
+        assert min(times) == pytest.approx(105.4, abs=0.5)
+        assert max(times) == pytest.approx(216.3, abs=0.5)
+        # Later than from X_P at every belief.
+        for lam in TestBeliefs.LAMS:
+            assert (
+                _record(lam)["follower_expected_entry_time"]
+                > _rent(lam)["follower_expected_entry_time"]
+            )
 
 
 class TestDuopolyModelEntryPoints:
