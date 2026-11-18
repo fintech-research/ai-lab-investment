@@ -153,7 +153,7 @@ render-walkthrough quality="h":
     @echo "🚀 Rendering walkthrough series"
     uv run python video/render.py walkthrough_part1 walkthrough_part2 walkthrough_part3 walkthrough_part4 walkthrough_part5 walkthrough_part6 --quality {{quality}}
 
-# Build the referee-facing replication package (Lean proofs + equations listing)
+# Build the referee-facing replication package (Lean proofs, equations listing, cached numerical solutions)
 build-replication-package:
     @echo "🚀 Building replication package"
     uv run python submission/replication/extract_equations.py
@@ -163,6 +163,9 @@ build-replication-package:
     cp submission/replication/README.md submission/replication/equations.tex submission/replication/equations.pdf submission/replication/_stage/
     cp submission/replication/Dockerfile submission/replication/verify.sh submission/replication/.dockerignore submission/replication/_stage/
     rsync -a --exclude '.lake' lean submission/replication/_stage/
-    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf Dockerfile verify.sh .dockerignore lean
+    mkdir -p submission/replication/_stage/numerics
+    cp src/ai_lab_investment/models/duopoly_equilibria.json src/ai_lab_investment/models/duopoly_dilemma.json src/ai_lab_investment/models/robustness_duopoly.json src/ai_lab_investment/models/robustness_joint.csv submission/replication/_stage/numerics/
+    rm -f submission/replication/replication-package.zip
+    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf Dockerfile verify.sh .dockerignore lean numerics
     rm -rf submission/replication/_stage
     @echo "✅ wrote submission/replication/replication-package.zip"

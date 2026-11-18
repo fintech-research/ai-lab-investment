@@ -4,7 +4,7 @@ Documents supporting journal submission of *Investing in Artificial General Inte
 
 - `cover-letter.md` — letter to the editor, currently targeted at Management Science (addressed generically to "Dear Editor"), with the abstract included; swap the journal name and fit paragraph to retarget. `cover-letter-notes.md` holds the editorial notes and the record of what was changed or deliberately kept.
 - `ai-disclosure.md` — declaration of generative AI use: a short-form Elsevier-style statement (to be inserted in the manuscript before the references for Elsevier targets) and a detailed long-form disclosure.
-- `replication/` — referee-facing machine-checked proof package (issue #108): a README for referees, `extract_equations.py` (generates `equations.tex`, the complete labeled equation listing, from the paper sources), and `just build-replication-package` to assemble the zip (Lean project + README + equations listing).
+- `replication/` — referee-facing machine-checked proof package (issue #108): a README for referees, `extract_equations.py` (generates `equations.tex`, the complete labeled equation listing, from the paper sources), and `just build-replication-package` to assemble the zip (Lean project + README + equations listing + the four cached numerical solutions in `numerics/`: `duopoly_equilibria.json`, `duopoly_dilemma.json`, `robustness_duopoly.json`, `robustness_joint.csv`).
 
 ## Building the submission PDFs
 
