@@ -1,8 +1,8 @@
 ## Discussion {#sec-discussion}
 
-I take up the welfare consequences of preemption, the model's testable predictions, its policy implications, and its limitations.
+I take up the welfare consequences of competition, the model's testable predictions, its policy implications, and its limitations.
 
-### Welfare and Overinvestment
+### Welfare and the Timing of Investment
 
 I do not solve a planner's problem, so the model characterizes no social optimum; the benchmark it computes is the monopolist's policy. Against that benchmark competition brings investment forward. At baseline a monopolist that chooses its scale when the switch arrives waits for it, whereas in the entry game one firm invests before the switch, at $X_L$, and the other waits for the switch and enters after it (Proposition 3, @fig-competition-effect). Whether industry capacity exceeds what two firms would install cooperatively, and so whether competition dissipates rents on net, requires a benchmark I do not compute.
 
@@ -27,7 +27,7 @@ The static training fraction is the model's sharpest simplification, and a two-p
 
 The training technology is stylized in four further respects. Training earns no revenue in regime $L$ and post-switch revenue requires no inference capacity, a knife-edge that sharpens the allocation trade-off; in practice inference demand likely remains large after the switch and training raises pre-AGI revenue, which would attenuate it. Training is a flow allocation of installed capacity rather than an accumulated stock of capability, so there is no learning curve. Capacity is installed once, as a single irreversible lump. Inference-time scaling also blurs the training-inference boundary the model treats as sharp.
 
-The arrival rate $\lambda$ is exogenous. A natural extension would make it a function of aggregate training compute. I do not solve it, and what follows is a conjecture rather than a result: a decentralized equilibrium would plausibly leave that spillover partly uninternalized, so equilibrium training could fall short of what a coordinating industry would choose, and the two forces would then run in opposite directions, preemption toward overinvestment in capacity and the spillover toward underinvestment in training.
+The arrival rate $\lambda$ is exogenous. A natural extension would make it a function of aggregate training compute. I do not solve it, and what follows is a conjecture rather than a result: a decentralized equilibrium would plausibly leave that spillover partly uninternalized, so equilibrium training could fall short of what a coordinating industry would choose, and the two forces would then run in opposite directions, competition toward earlier investment in capacity and the spillover toward too little training.
 
 Leverage is a stress-test parameter rather than an equilibrium financing choice. @leland1994corporate assumes publicly traded equity and continuously tradeable debt, whereas frontier AI labs reportedly finance themselves with SAFE notes, convertible debt, and multi-class equity. The mechanism is best read as a tractable approximation to the distress risk these firms face: $X_D$ is the demand level at which the firm can no longer sustain operations, whether the binding constraint is a missed coupon, a failed funding round, or a covenant violation. Par issuance at $r_c < r$ also implies a financing subsidy the model does not endogenize.
 
