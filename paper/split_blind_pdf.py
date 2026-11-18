@@ -36,7 +36,7 @@ ECOMPANION_PDF = HERE / "_output" / "ai_lab_investment_blind_ecompanion.pdf"
 TITLE = "Investing in Artificial General Intelligence"
 KEYWORDS = (
     "real options, irreversible capacity investment, artificial intelligence, "
-    "duopoly preemption, default risk"
+    "duopoly entry timing, default risk"
 )
 
 # \newlabel{ia-cover}{{<label>}{<page>}{<title>}{<anchor>}{}} under hyperref.

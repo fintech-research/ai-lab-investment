@@ -238,7 +238,7 @@ which is \texttt{eq-trigger-H} with the H-regime revenue coefficient replaced by
 
 
 
-\subsection*{Solution conventions and approximations}
+\subsection*{Approximations and operating assumptions}
 
 \subsection*{Duopoly with Default Risk}
 
@@ -299,7 +299,7 @@ where $\beta_L^-$ is the negative root of the L-regime characteristic equation, 
 
 
 
-*(ii) $X_D$ is decreasing in $\lambda$ precisely when the training allocation is sufficiently high, and the characterization is fully closed-form in the symmetric-shares case ($s_i^L = s_i^H$, as under symmetric capacities\emph{ and }allocations, or monopoly). Two channels operate. The $A_{\text{eff}}$ channel (higher $\lambda$ raises the weight on the H-regime continuation value, lowering $X_D$) is positive if and only if $\phi_i$ exceeds*
+*(ii) $X_D$ is decreasing in $\lambda$ precisely when the training allocation is sufficiently high, and the characterization is in closed form in the symmetric-shares case ($s_i^L = s_i^H$, as under symmetric capacities\emph{ and }allocations, or monopoly). Two channels operate. The $A_{\text{eff}}$ channel (higher $\lambda$ raises the weight on the H-regime continuation value, lowering $X_D$) is positive if and only if $\phi_i$ exceeds*
 
 \begin{equation*}
 \tag*{[\texttt{eq-phi-underbar}]}
@@ -385,7 +385,7 @@ The rent-equalization trigger $X_P$ is the lowest demand level at which $L^*(X) 
 
 \section*{Quantitative Implications}
 
-\subsection*{Credit Risk Analysis}
+\subsection*{Allocation and Its Thresholds}
 
 \subsection*{Dario's Dilemma}
 
@@ -701,7 +701,7 @@ with the follower best-responding to the chosen $(K, \phi)$, and the trigger sol
 
 
 
-\textbf{Coupled default boundary.} The single-boundary default formula (\texttt{eq-default-boundary}), which Proposition 2 and the credit exhibits use, is compared with the fully coupled regime-switching system, which the preemption game of Proposition 3 uses: the H-regime equity has the closed Leland form $E_H(X) = A_H(\phi K)^\alpha s^H X - (C_D + \delta K)/r + D_H X^{\beta_H^-}$, whose default-option term forces an additional particular solution $C_2 X^{\beta_H^-}$ in the L-regime equity ODE; value matching and smooth pasting at the boundary then determine $X_D$ jointly with the homogeneous coefficient $A_-$. Because $A_-$ enters both boundary conditions linearly, the combination $\beta_L^- E(X_D) - X_D E'(X_D) = 0$ eliminates it exactly, reducing the coupled system to a single equation,
+\textbf{Coupled default boundary.} The single-boundary default formula (\texttt{eq-default-boundary}), which Proposition 2 and the credit exhibits use, is compared with the fully coupled regime-switching system, which the entry game of Proposition 3 uses: the H-regime equity has the closed Leland form $E_H(X) = A_H(\phi K)^\alpha s^H X - (C_D + \delta K)/r + D_H X^{\beta_H^-}$, whose default-option term forces an additional particular solution $C_2 X^{\beta_H^-}$ in the L-regime equity ODE; value matching and smooth pasting at the boundary then determine $X_D$ jointly with the homogeneous coefficient $A_-$. Because $A_-$ enters both boundary conditions linearly, the combination $\beta_L^- E(X_D) - X_D E'(X_D) = 0$ eliminates it exactly, reducing the coupled system to a single equation,
 
 \begin{equation*}
 A_{\text{eff}}\,(\beta_L^- - 1)\,X_D - \beta_L^- N + C_2\,(\beta_L^- - \beta_H^-)\,X_D^{\beta_H^-} = 0, \qquad N = \frac{C_D + \delta K}{r},
@@ -715,7 +715,7 @@ whose economically relevant root (the continuation of the single-boundary root a
 \frac{X_D^0 - X_D}{X_D^0} \;\approx\; \eta = \frac{C_2\,(\beta_L^- - \beta_H^-)\,(X_D^0)^{\beta_H^- - 1}}{A_{\text{eff}}\,(\beta_L^- - 1)} > 0,
 \end{equation*}
 
-positive because $C_2 < 0$ at calibration values. The expansion therefore gives a closed-form explanation of the direction of the bias, namely that the single-boundary formula overstates default risk, with the sign of $C_2$ evaluated at calibration values rather than signed in general. At baseline the exact relative bias is 3.1\\% and the first-order $\eta$ is 2.9\\%, uniform across leverage levels; the closed-form boundary exceeds the coupled-system boundary by approximately 3\\% throughout, in the conservative direction. The scalar equation presumes that the claim held after the switch is alive at the L-regime boundary, that is $X_D^L \geq X_D^H$. That holds for an installed monopolist and fails for a small firm facing a large rival, which survives before the switch only on the prospect of the switch: for the baseline leader against the baseline follower's capacity the post-switch boundary is the higher of the two. The preemption game therefore solves the boundary from the piecewise forcing, in which the post-switch claim is zero below its own boundary, and reproduces the scalar equation to ten digits where its premise holds.
+positive because $C_2 < 0$ at calibration values. The expansion therefore gives a closed-form explanation of the direction of the bias, namely that the single-boundary formula overstates default risk, with the sign of $C_2$ evaluated at calibration values rather than signed in general. At baseline the exact relative bias is 3.1\\% and the first-order $\eta$ is 2.9\\%, uniform across leverage levels; the closed-form boundary exceeds the coupled-system boundary by approximately 3\\% throughout, in the conservative direction. The scalar equation presumes that the claim held after the switch is alive at the L-regime boundary, that is $X_D^L \geq X_D^H$. That holds for an installed monopolist and fails for a small firm facing a large rival, which survives before the switch only on the prospect of the switch: for the baseline leader against the baseline follower's capacity the post-switch boundary is the higher of the two. The entry game therefore solves the boundary from the piecewise forcing, in which the post-switch claim is zero below its own boundary, and reproduces the scalar equation to ten digits where its premise holds.
 
 
 
