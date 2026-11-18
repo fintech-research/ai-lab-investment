@@ -61,8 +61,16 @@ _KPHI_STARTS: tuple[tuple[float, float], ...] = tuple(
 )
 """Deterministic (log K, phi) multistart grid shared by both roles."""
 
-RECOVERY_RULES: tuple[str, ...] = ("net", "net_until_switch", "gross")
+RECOVERY_RULES: tuple[str, ...] = (
+    "net_with_shutdown",
+    "net",
+    "net_until_switch",
+    "gross",
+)
 """Recovery rules accepted by DuopolyModel (see `recovery_value`)."""
+
+DEFAULT_RECOVERY_RULE = "net_with_shutdown"
+"""Recovery rule of the model of record (issue #179)."""
 
 
 EQUILIBRIUM_GRID_PATH = Path(__file__).with_name("duopoly_equilibria.json")
@@ -260,7 +268,7 @@ class DuopolyModel:
         coupon_rate: float = 0.05,
         bankruptcy_cost: float = 0.30,
         contest: str = "tullock",
-        recovery_rule: str = "net",
+        recovery_rule: str = DEFAULT_RECOVERY_RULE,
     ):
         """Initialize the duopoly model.
 
@@ -275,12 +283,14 @@ class DuopolyModel:
                 under asymmetry).
             recovery_rule: What creditors seize in default, before the
                 bankruptcy cost and the caps (see `recovery_value`):
-                "net" (default) is the inference business net of the
-                operating cost of its capacity, floored at zero;
-                "net_until_switch" nets that cost only until the regime
-                switch; "gross" is the pre-#177 rule, inference revenue
-                gross of operating costs, kept so the earlier draft's
-                credit numbers stay reproducible.
+                "net_with_shutdown" (default, issue #179) is the inference
+                business net of the operating cost of its capacity, with
+                the owner's option to shut it down; "net" is the same
+                business without that option, floored at zero (the #177
+                rule); "net_until_switch" nets the cost only until the
+                regime switch; "gross" is the pre-#177 rule, inference
+                revenue gross of operating costs, kept so the earlier
+                draft's credit numbers stay reproducible.
         """
         if contest not in ("tullock", "fixed_pie"):
             msg = f"Unknown contest specification: {contest!r}"
@@ -324,17 +334,20 @@ class DuopolyModel:
         Raises:
             ValueError: For specifications the exact game does not cover
                 (endogenous arrival rate, the arithmetic-mean contest, a
-                recovery rule other than "net").
+                recovery rule other than "net_with_shutdown" or "net").
         """
         from .preemption_levered import LeveredPreemptionGame
 
         if self.params.xi != 0.0:
             msg = "The exact game requires an exogenous arrival rate (xi = 0)"
             raise ValueError(msg)
-        if self.contest != "tullock" or self.recovery_rule != "net":
+        if self.contest != "tullock" or self.recovery_rule not in (
+            "net_with_shutdown",
+            "net",
+        ):
             msg = (
                 "The exact game is solved for the Tullock contest and the "
-                '"net" recovery rule only'
+                '"net_with_shutdown" and "net" recovery rules only'
             )
             raise ValueError(msg)
         return LeveredPreemptionGame(
@@ -344,6 +357,7 @@ class DuopolyModel:
             self.coupon_rate,
             self.bankruptcy_cost,
             debt,
+            recovery_rule=self.recovery_rule,
         )
 
     def solve(
@@ -375,6 +389,7 @@ class DuopolyModel:
             debt,
             self.coupon_rate,
             self.bankruptcy_cost,
+            recovery_rule=self.recovery_rule,
         )
         if not variants:
             return DuopolySolution(record)
@@ -1129,21 +1144,26 @@ class DuopolyModel:
         A_eff (the speculative post-AGI payoff requires the going concern
         -- its researchers, models, and training program -- and does not
         survive liquidation), so creditors seize the inference business
-        only. Under the default rule ("net") recovery is
+        only. Recovery is
 
-            (1 - alpha_bc) * min{ max(Lambda_net(X_D), 0), U(X_D) },
+            (1 - alpha_bc) * min{ max(Lambda(X_D), 0), U(X_D) },
 
         capped at the default-free value of the claim c_D/r, where
-        Lambda_net is `liquidation_value`, the inference business net of
-        the operating cost of its capacity, and U is
-        `unlevered_asset_value`. The cap at U keeps recovery inside the
-        value of the assets the creditors take over: inference capacity
-        alone can be worth more than the whole firm when its revenue
-        share exceeds its capacity share, and the firm of the model
-        cannot shed training capacity either. "net_until_switch" differs
-        only in `liquidation_value`. "gross" is the pre-#177 rule,
-        (1 - alpha_bc) times inference revenue gross of operating costs,
-        capped at c_D/r only.
+        Lambda is `liquidation_value` and U is `unlevered_asset_value`.
+        Under the default rule ("net_with_shutdown") Lambda is the value
+        of the inference business net of the operating cost of its
+        capacity to an owner who may shut it down, at its own shutdown
+        boundary (`inference_shutdown_boundary`), so it is never
+        negative; under "net" (the #177 rule) the owner cannot shut it
+        down and the floor at zero binds wherever the business is worth
+        less than its cost. The cap at U keeps recovery inside the value
+        of the assets the creditors take over: inference capacity alone
+        can be worth more than the whole firm when its revenue share
+        exceeds its capacity share, and the firm of the model cannot
+        shed training capacity either. "net_until_switch" differs from
+        "net" only in the horizon of the cost. "gross" is the pre-#177
+        rule, (1 - alpha_bc) times inference revenue gross of operating
+        costs, capped at c_D/r only.
         """
         self._check_phi(phi_i, phi_j)
         lev = leverage if leverage is not None else self.leverage
@@ -1255,7 +1275,20 @@ class DuopolyModel:
         "net_until_switch" the buyer stops paying at the switch, when
         the inference stream ends: delta (1 - phi) K / (r + lambda).
         Under "gross" (the pre-#177 rule) no operating cost is netted.
-        The value can be negative; `recovery_value` applies the floor.
+        Under "net" and "net_until_switch" the value can be negative;
+        `recovery_value` applies the floor.
+
+        Under "net_with_shutdown" (the default) the cost is the perpetual
+        commitment of "net" and the owner may shut the business down: the
+        value is the "net" value plus the option to stop at
+        `inference_shutdown_boundary` X_I,
+
+            a X - c + (c - a X_I) (X / X_I)^beta_neg   above X_I,
+
+        and zero at or below it, with a the inference revenue coefficient
+        and c = delta (1 - phi) K / r. This is the inference business
+        valued as `unlevered_asset_value` values the whole firm, with the
+        same single-boundary reduction.
         """
         self._check_phi(phi_i, phi_j)
         p = self.params
@@ -1265,11 +1298,51 @@ class DuopolyModel:
             return 0.0
         inf_cap = (1.0 - phi_i) * K_i
         s_L = 1.0 if K_j <= 0 else self.contest_share_L(phi_i, K_i, phi_j, K_j)
-        revenue = inf_cap**p.alpha * s_L * X / denom_L
+        coeff = inf_cap**p.alpha * s_L / denom_L
+        revenue = coeff * X
         if self.recovery_rule == "gross":
             return revenue
-        horizon_rate = p.r if self.recovery_rule == "net" else p.r + lam_tilde
-        return revenue - p.delta * inf_cap / horizon_rate
+        horizon_rate = (
+            p.r + lam_tilde if self.recovery_rule == "net_until_switch" else p.r
+        )
+        cost = p.delta * inf_cap / horizon_rate
+        if self.recovery_rule != "net_with_shutdown" or cost <= 0:
+            return revenue - cost
+        X_I = self.inference_shutdown_boundary(phi_i, K_i, phi_j, K_j)
+        if X <= X_I:
+            return 0.0
+        beta_neg = self._negative_root("L", lam_tilde)
+        return revenue - cost + (cost - coeff * X_I) * (X / X_I) ** beta_neg
+
+    def inference_shutdown_boundary(
+        self,
+        phi_i: float,
+        K_i: float,
+        phi_j: float = 0.0,
+        K_j: float = 0.0,
+    ) -> float:
+        """Shutdown boundary of the inference business on its own.
+
+        X_I = [beta_neg / (beta_neg - 1)] [delta (1 - phi) K / r] / a, with
+        a = [(1 - phi) K]^alpha s_L / (r - mu_L + lambda) the inference
+        revenue coefficient: `shutdown_boundary` with the firm's revenue
+        coefficient and operating cost replaced by those of its inference
+        capacity. At the allocation that maximizes A_eff the two
+        businesses earn the same revenue per unit of capacity, so X_I
+        equals the firm's shutdown boundary there; it lies above it for
+        less training and below it for more. Infinite without inference
+        capacity.
+        """
+        self._check_phi(phi_i, phi_j)
+        p = self.params
+        lam_tilde = self.endogenous_lambda(phi_i, K_i, phi_j, K_j)
+        inf_cap = (1.0 - phi_i) * K_i
+        if inf_cap <= 0:
+            return np.inf
+        s_L = 1.0 if K_j <= 0 else self.contest_share_L(phi_i, K_i, phi_j, K_j)
+        coeff = inf_cap**p.alpha * s_L / (p.r - p.mu_L + lam_tilde)
+        beta_neg = self._negative_root("L", lam_tilde)
+        return (beta_neg / (beta_neg - 1.0)) * (p.delta * inf_cap / p.r) / coeff
 
     def firm_value(
         self,

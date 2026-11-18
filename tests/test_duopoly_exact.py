@@ -214,24 +214,44 @@ class TestInstalledClaims:
         claims = g.installed_claims(K, phi, 0.0, 0.0, coupon)
         x = np.geomspace(claims.X_D, 1.0, 100)
         assert np.all(claims.debt(x) <= coupon / P.r + 1e-15)
-        # eq-recovery: (1 - b) min{Lambda+, U}, capped at the default-free claim.
+        # eq-recovery: (1 - b) min{Lambda+, U}, capped at the default-free claim,
+        # with Lambda the inference business and its owner's option to stop.
         flow = ((1 - phi) * K) ** P.alpha
-        liquidation = flow * claims.X_D * g.w_L - P.delta * (1 - phi) * K / P.r
+        a, c = flow * g.w_L, P.delta * (1 - phi) * K / P.r
+        X_I = g.m_L * c / a
+        X_D = claims.X_D
+        liquidation = a * X_D - c + (c - a * X_I) * (X_D / X_I) ** g.bn
         unlevered = g.installed_claims(K, phi, 0.0, 0.0, 0.0)
-        asset = float(unlevered.equity(claims.X_D)[0])
-        assert liquidation > 0
+        asset = float(unlevered.equity(X_D)[0])
+        assert liquidation > a * X_D - c > 0
         assert claims.recovery == pytest.approx(
             min(0.7 * min(liquidation, asset), coupon / P.r)
         )
         assert claims.recovery <= asset
 
-    def test_recovery_is_zero_at_the_optimal_allocation(self, games):
+    def test_net_rule_omits_the_option_to_stop(self):
+        g = LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="net")
+        K, phi = 0.0158, 0.30
+        flow = ((1 - phi) * K) ** P.alpha
+        X = 0.002
+        assert g.liquidation_value(flow, (1 - phi) * K, X) == pytest.approx(
+            flow * X * g.w_L - P.delta * (1 - phi) * K / P.r, rel=1e-12
+        )
+        with pytest.raises(ValueError, match="recovery_rule"):
+            LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="gross")
+
+    def test_recovery_at_the_optimal_allocation(self, games):
+        """Zero under the #177 rule; under the default rule the liquidator
+        can shut the inference business down and recovers a small positive
+        amount once the coupon pushes X_D above that business's own
+        shutdown boundary."""
         g = games[("envelope", 0.4, "par")]
         K = 0.0158
-        claims = g.installed_claims(
-            K, g.phi_star, 0.0, 0.0, 0.05 * 0.4 * P.c * K**P.gamma
-        )
-        assert claims.recovery == 0.0
+        coupon = 0.05 * 0.4 * P.c * K**P.gamma
+        net = LeveredPreemptionGame(P, "envelope", 0.4, recovery_rule="net")
+        assert net.installed_claims(K, g.phi_star, 0.0, 0.0, coupon).recovery == 0.0
+        claims = g.installed_claims(K, g.phi_star, 0.0, 0.0, coupon)
+        assert 0.0 < claims.recovery < 0.01 * coupon / P.r
 
 
 class TestLeaderClaims:

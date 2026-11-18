@@ -13,6 +13,7 @@ import pytest
 from ai_lab_investment.models.base_model import SingleFirmModel
 from ai_lab_investment.models.duopoly import DuopolyModel
 from ai_lab_investment.models.parameters import ModelParameters
+from ai_lab_investment.models.valuation import ValuationAnalysis
 
 
 @pytest.fixture
@@ -1301,10 +1302,14 @@ class TestDebtBelowDefault:
 
     def test_zero_recovery_debt_is_worthless_at_the_boundary(self):
         """At leverage 0.40 the netted inference business is under water
-        at X_D, so creditors recover nothing and debt is worth zero at
-        and below the boundary."""
+        at X_D under the #177 rule ("net"), so creditors recover nothing
+        and debt is worth zero at and below the boundary."""
         model = DuopolyModel(
-            ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+            ModelParameters(),
+            leverage=0.40,
+            coupon_rate=0.05,
+            bankruptcy_cost=0.30,
+            recovery_rule="net",
         )
         phi, K = 0.5, 1.0
         X_D = model.default_boundary(phi, K, 0.0, 0.0)
@@ -1312,6 +1317,20 @@ class TestDebtBelowDefault:
         assert model.debt_value(X_D, phi, K, 0.0, 0.0) == 0.0
         assert model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0) == 0.0
         assert model.debt_value(1.5 * X_D, phi, K, 0.0, 0.0) > 0.0
+
+    def test_debt_equals_recovery_at_the_boundary(self):
+        """Under the default rule the liquidator's option to shut the
+        inference business down gives creditors a positive recovery at the
+        same point, and debt is worth exactly that at and below X_D."""
+        model = DuopolyModel(
+            ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi, K = 0.5, 1.0
+        X_D = model.default_boundary(phi, K, 0.0, 0.0)
+        recovery = model.recovery_value(phi, K, 0.0, 0.0)
+        assert recovery > 0.0
+        assert model.debt_value(X_D, phi, K, 0.0, 0.0) == recovery
+        assert model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0) == recovery
 
 
 class TestSingleCrossingEnforced:
@@ -1488,6 +1507,91 @@ class TestUnleveredFirm:
         # Under the pre-#177 gross rule the limit is default-free debt.
         gross = ValuationAnalysis(ModelParameters(), recovery_rule="gross")
         assert gross.credit_spread(leverage=0.0) == 0.0
+
+
+class TestRecoveryWithShutdown:
+    """The default rule since issue #179: the inference business with its
+    owner's option to shut it down ("net_with_shutdown")."""
+
+    def test_is_the_default(self):
+        from ai_lab_investment.models.duopoly import DEFAULT_RECOVERY_RULE
+
+        assert DEFAULT_RECOVERY_RULE == "net_with_shutdown"
+        assert DuopolyModel(ModelParameters()).recovery_rule == "net_with_shutdown"
+        assert ValuationAnalysis(ModelParameters()).recovery_rule == "net_with_shutdown"
+
+    @pytest.mark.parametrize("phi", [0.3, 0.6, 0.7009, 0.85])
+    def test_dominates_the_net_rule(self, phi):
+        """The option is worth something: the value is at least the larger
+        of the net value and zero, and equals the net value far above X_I."""
+        with_option = credit_model(recovery_rule="net_with_shutdown")
+        net = credit_model()
+        K = 0.0158
+        X_I = with_option.inference_shutdown_boundary(phi, K)
+        for X in X_I * np.array([0.5, 1.0, 1.01, 1.5, 3.0]):
+            v = with_option.liquidation_value(X, phi, K, 0.0, 0.0)
+            assert v >= max(net.liquidation_value(X, phi, K, 0.0, 0.0), 0.0) - 1e-15
+        far = 1e4 * X_I
+        assert with_option.liquidation_value(far, phi, K, 0, 0) == pytest.approx(
+            net.liquidation_value(far, phi, K, 0, 0), rel=1e-6
+        )
+        assert with_option.liquidation_value(X_I, phi, K, 0, 0) == 0.0
+
+    def test_value_matching_and_smooth_pasting_at_its_boundary(self):
+        m = credit_model(recovery_rule="net_with_shutdown")
+        phi, K = 0.6, 0.0158
+        X_I = m.inference_shutdown_boundary(phi, K)
+        h = 1e-6 * X_I
+        v = m.liquidation_value(X_I + h, phi, K, 0, 0)
+        assert v / h < 1e-5 * m.liquidation_value(2 * X_I, phi, K, 0, 0) / X_I
+
+    def test_boundary_equals_the_firms_at_the_optimal_allocation(self):
+        """At phi* the two businesses earn the same revenue per unit of
+        capacity, so X_I is the firm's shutdown boundary and the inference
+        business is the fraction 1 - phi* of the unlevered asset value."""
+        m = credit_model(recovery_rule="net_with_shutdown")
+        K = RECORD_POLICY[1]
+        phi = float(SingleFirmModel(ModelParameters()).solve().phi_star)
+        assert m.inference_shutdown_boundary(phi, K) == pytest.approx(
+            m.shutdown_boundary(phi, K), rel=1e-9
+        )
+        X = 3.0 * m.shutdown_boundary(phi, K)
+        assert m.liquidation_value(X, phi, K, 0, 0) == pytest.approx(
+            (1.0 - phi) * m.unlevered_asset_value(X, phi, K), rel=1e-9
+        )
+        # Less training puts X_I above the firm's boundary, more below it.
+        assert m.inference_shutdown_boundary(0.5, K) > m.shutdown_boundary(0.5, K)
+        assert m.inference_shutdown_boundary(0.85, K) < m.shutdown_boundary(0.85, K)
+
+    def test_recovery_at_the_precommitted_scale_policy(self):
+        """The scope note on issue #179: 1.0%, 1.8%, 3.0% and 3.8% of the
+        coupon claim at leverage 0.20, 0.40, 0.70 and 0.95 (closed forms,
+        par debt), tending to zero with leverage."""
+        _, K, phi = RECORD_POLICY
+        rates = {}
+        for lev in (0.01, 0.20, 0.40, 0.70, 0.95):
+            m = credit_model(lev, "net_with_shutdown")
+            rates[lev] = m.recovery_rate(phi, K, 0.0, 0.0)
+        assert 100 * rates[0.01] == pytest.approx(0.05, abs=0.01)
+        assert 100 * rates[0.20] == pytest.approx(0.97, abs=0.01)
+        assert 100 * rates[0.40] == pytest.approx(1.82, abs=0.01)
+        assert 100 * rates[0.70] == pytest.approx(2.95, abs=0.01)
+        assert 100 * rates[0.95] == pytest.approx(3.76, abs=0.01)
+        # Under the #177 rule the same recoveries are zero.
+        assert credit_model(0.40).recovery_rate(phi, K, 0.0, 0.0) == 0.0
+
+    def test_recovery_weakly_increasing_in_training_near_the_optimum(self):
+        """Opposite of "training raises the loss given default": at the
+        precommitted-scale capacity, leverage 0.40, recovery is zero below
+        phi = 0.65 and rises through phi* to the cap at the unlevered asset
+        value."""
+        _, K, _ = RECORD_POLICY
+        m = credit_model(0.40, "net_with_shutdown")
+        phis = np.linspace(0.30, 0.90, 25)
+        rates = np.array([m.recovery_rate(f, K, 0.0, 0.0) for f in phis])
+        assert np.all(np.diff(rates) >= -1e-12)
+        assert np.all(rates[phis <= 0.65] == 0.0)
+        assert rates[-1] > 0.05
 
 
 class TestRecoveryRule:

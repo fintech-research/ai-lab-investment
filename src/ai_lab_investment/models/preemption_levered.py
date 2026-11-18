@@ -53,9 +53,15 @@ Conventions
 1. A firm values its claim as if the rival's capacity stayed in the contest
    forever. What happens to a rival's capacity after its default or shutdown
    is not modelled, as in the reduced model.
-2. Recovery in regime L is eq-recovery with the exact unlevered asset value.
-   In regime H the inference business has no revenue, so the same rule gives
-   zero recovery.
+2. Recovery in regime L is eq-recovery with the exact unlevered asset value:
+   (1 - b) times the inference business net of its perpetual operating cost,
+   valued with the option to shut it down at its own boundary (the default
+   rule "net_with_shutdown", issue #179; "net" omits that option), at most
+   the unlevered asset value and the default-free claim. The inference
+   business is valued in the single-boundary form of `DuopolyModel`
+   (`liquidation_value`), on the flow the leader earns before the follower
+   enters. In regime H the inference business has no revenue, so the same
+   rule gives zero recovery.
 3. The coupon is fixed at issuance. The follower's fair coupon is set at the
    demand at which it enters.
 4. The follower's pre-switch entry candidate is located on the claim without
@@ -101,6 +107,9 @@ from .preemption_exact import (
 )
 
 DEBT_CONVENTIONS: tuple[str, ...] = ("par", "fair")
+
+#: Recovery rules of the exact game (see `DuopolyModel.recovery_value`).
+RECOVERY_RULES: tuple[str, ...] = ("net_with_shutdown", "net")
 
 Terms = tuple[tuple[float, float], ...]
 
@@ -460,6 +469,8 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         debt: ``"par"`` (coupon r_c * l * I) or ``"fair"`` (coupon at which
             debt is worth l * I at issuance).
         table_density: Points per decade of the quadrature tables.
+        recovery_rule: ``"net_with_shutdown"`` (default) or ``"net"``; see
+            convention 2 of the module docstring.
     """
 
     def __init__(
@@ -471,11 +482,18 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         bankruptcy_cost: float = 0.30,
         debt: str = "par",
         table_density: int = 150,
+        recovery_rule: str = "net_with_shutdown",
     ):
         super().__init__(params, scale, table_density)
         if debt not in DEBT_CONVENTIONS:
             msg = f"debt must be one of {DEBT_CONVENTIONS}, got {debt!r}"
             raise ValueError(msg)
+        if recovery_rule not in RECOVERY_RULES:
+            msg = (
+                f"recovery_rule must be one of {RECOVERY_RULES}, got {recovery_rule!r}"
+            )
+            raise ValueError(msg)
+        self.recovery_rule = recovery_rule
         if not 0.0 <= leverage < 1.0:
             msg = f"Leverage must be in [0, 1), got {leverage}"
             raise ValueError(msg)
@@ -850,11 +868,33 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         p = self.params
         if coupon <= 0.0:
             return 0.0
-        liquidation = flow * X_D * self.w_L - p.delta * N_i / p.r
+        liquidation = self.liquidation_value(flow, N_i, X_D)
         if liquidation <= 0.0:
             return 0.0
         asset = float(unlevered().equity(X_D)[0])
         return min((1.0 - self.bankruptcy_cost) * min(liquidation, asset), coupon / p.r)
+
+    def liquidation_value(self, flow: float, N_i: float, X: float) -> float:
+        """Inference business at X under the game's recovery rule.
+
+        ``flow`` is the inference revenue per unit of demand and ``N_i`` the
+        inference capacity. Under "net" the business is a X - c with
+        a = flow / (r - mu_L + lambda) and c = delta N_i / r (it can be
+        negative); under "net_with_shutdown" its owner may stop at
+        X_I = m_L c / a, which adds (c - a X_I) (X / X_I)^{b_L^-} above X_I
+        and makes it zero at or below X_I.
+        """
+        p = self.params
+        a = flow * self.w_L
+        c = p.delta * N_i / p.r
+        if self.recovery_rule == "net" or c <= 0.0:
+            return a * X - c
+        if a <= 0.0:
+            return 0.0
+        X_I = self.m_L * c / a
+        if X <= X_I:
+            return 0.0
+        return a * X - c + (c - a * X_I) * (X / X_I) ** self.bn
 
     def installed_claims(
         self,
@@ -907,6 +947,39 @@ class LeveredPreemptionGame(ExactPreemptionGame):
             part_D,
             self._debt_coefs(part_D, X_D, recovery, None),
         )
+
+    def installed_credit(self, K: float, phi: float, X: float) -> dict[str, float]:
+        """Credit objects of an installed monopolist that issues debt at X.
+
+        The single firm of the model of record once it has invested: the
+        claims of `installed_claims` without a rival (coupled boundary,
+        default possible after the switch), under the game's leverage, debt
+        convention and recovery rule. Keys as in `LeveredSubgame.leader_credit`.
+        """
+        proceeds = self.leverage * float(self.investment_cost(K))
+
+        def claims_at(coupon: float) -> InstalledClaims:
+            return self.installed_claims(K, phi, 0.0, 0.0, coupon)
+
+        if proceeds <= 0.0:
+            coupon = 0.0
+        elif self.debt == "par":
+            coupon = self.coupon_rate * proceeds
+        else:
+            coupon = self.solve_fair_coupon(claims_at, X, proceeds)
+        claims = claims_at(coupon)
+        debt = float(claims.debt(X)[0])
+        return {
+            "coupon": coupon,
+            "coupon_rate": coupon / proceeds if proceeds > 0.0 else float("nan"),
+            "X_default": claims.X_D,
+            "distance_to_default": X / claims.X_D,
+            "equity": float(claims.equity(X)[0]),
+            "debt": debt,
+            "proceeds": proceeds,
+            "recovery": claims.recovery,
+            "spread": coupon / debt - self.params.r if debt > 0.0 else float("nan"),
+        }
 
     def _leader_h_duopoly(
         self, y: np.ndarray, T_L: float, K_F: np.ndarray, q: float, coupon: float
@@ -1739,6 +1812,7 @@ def equilibrium_record(
     x_range: tuple[float, float] = (0.03, 300.0),
     entry_scan: tuple[int, tuple[float, float], float] | None = None,
     rent_equalization: dict | None = None,
+    recovery_rule: str = "net_with_shutdown",
 ) -> dict[str, float | str]:
     """Duopoly equilibrium with a re-optimizing leader, as a flat record.
 
@@ -1766,12 +1840,20 @@ def equilibrium_record(
             Its ``X_P``, the leader's policy there and the description of
             its scan are then reused instead of re-solved (the X_P solve
             does not depend on the mutual-waiting value); everything else
-            is recomputed.
+            is recomputed. Reuse it across recovery rules only under par
+            debt, where the equilibrium does not depend on recovery.
+        recovery_rule: Recovery rule of the game (`RECOVERY_RULES`).
 
     Missing objects are nan.
     """
     game = LeveredPreemptionGame(
-        params, scale, leverage, coupon_rate, bankruptcy_cost, debt
+        params,
+        scale,
+        leverage,
+        coupon_rate,
+        bankruptcy_cost,
+        debt,
+        recovery_rule=recovery_rule,
     )
     prefix = RENT_EQUALIZATION_PREFIX
     if rent_equalization is None:
@@ -1792,6 +1874,7 @@ def equilibrium_record(
         "scale": scale,
         "leverage": leverage,
         "debt": debt,
+        "recovery_rule": recovery_rule,
         "X_H": game.X_ref,
         "phi_star": game.phi_star,
         "scan_points": scan[0],
