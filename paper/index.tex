@@ -162,8 +162,8 @@
 \hypersetup{
   pdftitle={Investing in Artificial General Intelligence},
   pdfkeywords={\xmpquote{real options}, \xmpquote{irreversible capacity
-investment}, \xmpquote{artificial intelligence}, \xmpquote{duopoly
-preemption}, \xmpquote{default risk}},
+investment}, \xmpquote{artificial intelligence}, \xmpquote{duopoly entry
+timing}, \xmpquote{default risk}},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -186,24 +186,29 @@ Grégoire: HEC Montréal (vincent.gregoire@hec.ca).}}
 \begin{document}
 \maketitle
 \begin{abstract}
-Frontier AI laboratories must decide how much irreversible capacity to
-build under uncertain arrival of Artificial General Intelligence (AGI),
-and how to split it between inference (current revenue) and training
-(future capability). I develop a real-options model with regime
-switching, duopoly competition, endogenous default, and diminishing
-returns to capacity whose curvature is motivated by AI scaling laws.
-Under a stated pricing convention the model yields analytical investment
-triggers and a semi-analytical preemption equilibrium in which
-competition compresses investment timing, while beliefs about AI
-timelines, not competitive position, pin down the training fraction. It
-also produces ``faith-based survival'': at the optimal allocation,
-optimism about the switch raises the post-AGI continuation value and
-lowers the default boundary, though creditors cannot recover that value
-in bankruptcy. Calibration to four AI lab archetypes shows how
-heterogeneous beliefs about AI timelines can generate cross-sectional
-differences in investment. In the calibrated model, conservative
-underinvestment is costlier in expected value, but aggressive
-overinvestment carries higher tail default risk.
+Frontier AI laboratories must decide when to build irreversible compute
+capacity, how much, and how to split it between inference, which earns
+revenue now, and training, which pays off only if Artificial General
+Intelligence (AGI) arrives. I develop a real-options model with
+regime-switching demand, a duopoly entry game, and endogenous default.
+The optimal training fraction has a closed form that rises with the
+switch's arrival rate and does not depend on scale. At baseline a
+monopolist that can choose its scale when the switch arrives waits for
+it, while in the duopoly one firm invests before the switch, because
+waiting leads to a post-switch race that competes away the rent from
+leading; that equilibrium is verified numerically, with no uniqueness
+claim. Operating costs create a boundary at which a firm stops operating
+even without debt, and when it trains enough, optimism about the switch
+lowers it (``faith-based survival''). A mistaken belief costs value
+mainly through the training allocation. For a single firm with
+precommitted post-switch scale, believing the arrival rate is 0.02 when
+it is 0.10 costs 32\% of value, against 1.3\% for an optimistic error of
+the same size and 13\% for one of the same proportion. In expected years
+to the switch the two errors cost about the same, and the far optimist
+is eleven times as likely as an informed firm to reach its shutdown
+boundary within five years. A stylized calibration maps training
+allocations assigned to four AI lab archetypes into implied beliefs and
+their consequences.
 \end{abstract}
 
 % Keywords and JEL classification, displayed on the title page below the abstract.
@@ -213,7 +218,7 @@ overinvestment carries higher tail default risk.
 \begin{center}
 \begin{minipage}{0.85\textwidth}
 \small
-\noindent\textbf{Keywords:} real options; irreversible capacity investment; artificial intelligence; duopoly preemption; default risk\par
+\noindent\textbf{Keywords:} real options; irreversible capacity investment; artificial intelligence; duopoly entry timing; default risk\par
 \medskip
 \noindent\textbf{JEL classification:} C73, D25, G31, G32, G33, L13, O33\par
 \end{minipage}
@@ -253,12 +258,11 @@ model whose quality scales as a power law of compute invested
 compute}, which runs the trained model to serve predictions and generate
 revenue. The same asset can either produce revenue now or build the
 capability that determines the firm's position in a future that may not
-arrive. Allocating capacity toward future capability can support
-continuation value while eroding the liquidation collateral creditors
-can seize, and that distinction disciplines how timeline beliefs affect
-distress. A firm that bets on the future by allocating capacity to
-training weakens its ability to survive to that future, so the option to
-grow and the risk of failure are linked through a single decision.
+arrive. Capacity devoted to training earns nothing until that future
+arrives, while its operating cost is paid from the start. The split
+therefore sets both what the firm is worth if the switch comes and how
+far demand can fall before the firm stops operating, so the option to
+grow and the risk of failure run through a single decision.
 
 Firms must commit this capital under widely different priors about the
 same event. The prize is Artificial General Intelligence (AGI): a step
@@ -286,7 +290,7 @@ option as exogenous rather than as a capacity-allocation choice.
 I therefore develop a model in which a firm chooses when to invest, how
 much capacity to install, and what fraction \(\phi\) to devote to
 training versus inference, facing regime-switching demand
-\citep{guo2005investment}, duopoly preemption
+\citep{guo2005investment}, a rival in a duopoly timing game
 \citep{grenadier2002option, huisman2015strategic}, endogenous default
 \citep{leland1994corporate}, and diminishing returns to capacity, with
 the curvature parameter motivated by empirical scaling laws
@@ -295,54 +299,92 @@ current low-demand regime, revenue depends on inference capacity through
 a Tullock contest, in which a firm's contest share is its inference
 capacity's share of the industry total, each raised to the power
 \(\alpha\); in regime \(H\), the post-AGI regime, it depends on training
-quality. Duopoly is the minimal setting that captures preemption,
-allocation incentives, and leverage.
+compute. A firm may invest before or after the switch, and I solve its
+problem in these primitives: the allocation and the post-switch policy
+in closed form, the pre-switch policy and the duopoly equilibrium
+numerically. Duopoly is the minimal setting in which entry timing, the
+allocation, and leverage interact with a rival's capacity.
 
-The paper makes three contributions. First, I characterize the optimal
-training fraction, investment trigger, and capacity analytically, under
-a pricing convention for the pre-investment option that
-Section~\ref{sec-model} states and Internet Appendix B benchmarks
-against the unrestricted stopping problem. Preemption operates on the
-timing margin: at baseline volatility, and conditional on the convention
-that the leader installs the monopoly-phase optimal scale, the leader
-invests at a trigger roughly 43\% below the monopoly benchmark. It does
-not operate on the allocation margin: the contest shares cancel from the
-allocation first-order condition, so leader, follower, and monopolist
-choose the same training fraction.
+The paper makes three contributions. First, I show that competition, and
+not the single firm's own option, is what brings investment forward of
+the switch. The optimal training fraction has a closed form that rises
+with the arrival rate of the switch and does not depend on scale, so it
+is the allocation of any investment made before the switch (Proposition
+1). Timing and scale have no such property. At the baseline calibration
+a single firm that can choose its scale when the switch arrives waits
+for it, because investing earlier buys only pre-switch inference revenue
+while the post-switch prize is obtained at least as cheaply by waiting;
+a finite pre-switch trigger exists only for arrival rates below about
+\(0.073\). In the duopoly one firm invests before the switch at every
+arrival rate examined (Proposition 3). The force at work is the race
+that follows the switch and not a race before it: a firm that waits
+enters a post-switch contest in which the rent from leading is competed
+away, and installing early secures a position ahead of it. At the date
+of first investment following is the better role, so the pre-switch game
+has a second-mover advantage, and the demand level at which leading and
+following are worth the same is an upper bound on that date. Against a
+single firm whose post-switch scale is precommitted, which always has a
+finite trigger, first investment comes at a demand level \(64\%\) lower
+at baseline. Competitive position moves the allocation only modestly:
+against a rival with the same training fraction the contest shares drop
+out of the allocation condition, and in equilibrium the leader's
+training fraction lies \(3.1\%\) below the single firm's at baseline,
+while a follower that enters after the switch trains with all its
+capacity. The equilibrium is verified numerically on a grid of demand
+levels and arrival rates; I do not establish uniqueness or solve the
+symmetric equilibrium in mixed strategies.
 
-Second, I identify \emph{faith-based survival}, an
-optimism-through-allocation channel: over the arrival rates the
-calibration considers, a firm that expects the switch sooner trains
-more, and at its optimal allocation the higher arrival rate raises the
-effective revenue coefficient \(A_{\text{eff}}\) through the expected
-post-AGI continuation value, lowering the default boundary (at a fixed
-belief, the boundary is U-shaped in the training fraction, so training
-beyond the optimum raises it). The same allocation raises the loss given
-default, because a larger training fraction shrinks the inference
-business creditors can liquidate, and creditors cannot recover the
-continuation value in bankruptcy. The survival channel operates only
-where it dominates current cash-flow weakness, a condition I
-characterize in closed form for the symmetric duopoly.
+Second, I identify \emph{faith-based survival}, a channel from beliefs
+to solvency that runs through the allocation. Installed capacity carries
+a perpetual operating cost, so the firm's owners stop operating at a
+boundary that exists without any debt and that leverage shifts. A higher
+arrival rate raises the weight on the post-AGI continuation value and,
+when the firm trains enough, lowers that boundary. I characterize the
+threshold on the training fraction in closed form for a single-boundary
+reduction of the default problem (Proposition 2), and the optimal
+allocation exceeds it for arrival rates above about \(0.034\) at
+baseline. At a fixed belief the boundary is U-shaped in the training
+fraction, so training beyond the optimum raises it. The continuation
+value is lost in default, yet a larger training fraction does not lower
+what creditors recover where the model's firms operate: recovery is at
+most \(5\%\) of the claim at the model's policies and rises with the
+training fraction there, so credit risk is the risk of reaching the
+boundary, and the spread on debt issued at entry falls as the training
+fraction rises over the range examined (Section~\ref{sec-valuation}).
 
 Third, I quantify \emph{Dario's dilemma}, the loss a firm incurs by
-investing on a belief about the AGI arrival intensity \(\lambda\) that
-differs from its true value. In the single-firm reduced model, capacity
-does not depend on the belief, so the mistakes run through timing and
-allocation: a pessimistic firm invests too late, under-allocates to
-training, and forgoes much of the post-AGI option value, while an
-optimistic firm invests too early, over-allocates, and sacrifices the
-inference revenue it needs to survive. Anthropic CEO Dario Amodei
-describes the overbuilding side: ``I could buy \$1 trillion of compute
-that starts at the end of 2027\ldots{} there's no hedge on Earth that
-could stop me from going bankrupt'' \citep{amodei2026dwarkesh}. In a
-stylized calibration to four AI lab archetypes, the asymmetry can be
-substantial (Numerical Finding 1): investing as though
-\(\lambda = 0.02\) when the true intensity is \(0.10\) costs roughly
-26\% of firm value, against about 6\% for \(\lambda = 0.20\). The
-dilemma is nonetheless two-sided, because overinvestment concentrates
-risk in the tail: at \(\lambda_{\text{invest}} = 0.50\) and leverage
-\(\ell = 0.40\), the five-year default probability (a no-switch upper
-bound) is nearly eight times its value under correct beliefs.
+investing on a belief about the AGI arrival rate \(\lambda\) that
+differs from its true value (Numerical Finding 1). Anthropic CEO Dario
+Amodei describes the optimistic side: ``I could buy \$1 trillion of
+compute that starts at the end of 2027\ldots{} there's no hedge on Earth
+that could stop me from going bankrupt'' \citep{amodei2026dwarkesh}. A
+mistaken belief changes the date, the scale, and the training allocation
+of the investment, and the allocation is the largest component of the
+loss on both sides. For a single firm with precommitted post-switch
+scale, with values measured at half the informed firm's trigger,
+investing as though \(\lambda = 0.02\) when the true rate is \(0.10\)
+costs \(32\%\) of firm value, against \(1.3\%\) for investing as though
+\(\lambda = 0.18\), an error of the same size in \(\lambda\). The
+comparison depends on how the two errors are matched. For equal
+proportional errors the pessimistic error still costs more, by a smaller
+factor (\(32\%\) against \(13\%\) at a factor of five,
+\(\lambda = 0.02\) and \(0.50\)), and for equal errors in the expected
+time to the switch the ranking reverses (\(1.0\%\) against \(1.3\%\) at
+\(4.4\) years). The pessimistic firm does not invest late in this
+problem: it invests early and small, with too little training. Tail risk
+comes from operating costs more than from debt. Each mistaken firm
+enters closer than the informed firm to the boundary at which it stops
+operating, and the far optimist (\(\lambda = 0.50\)) reaches it within
+five years with probability \(1.8\%\) without any debt, about eleven
+times the informed firm's \(0.16\%\), and \(4.3\%\) against \(0.47\%\)
+at leverage \(\ell = 0.40\) under fairly priced debt (no-switch upper
+bounds). In the duopoly a mistaken leader loses more on both sides,
+\(48\%\), \(1.7\%\) and \(32\%\) at the same three beliefs. A stylized
+calibration maps the training allocations assigned to four AI lab
+archetypes into implied beliefs and carries them through these objects
+(Section~\ref{sec-calibration}); because the allocations are assigned,
+the exercise shows what they would imply and is not evidence that
+beliefs explain differences across firms.
 
 \subsection{Related literature}\label{sec-literature}
 
@@ -389,15 +431,18 @@ The paper also connects to patent races and R\&D competition.
 choosing R\&D intensity to accelerate a stochastic Poisson breakthrough,
 and \citet{harris1987racing} derive a discouragement effect for lagging
 firms that echoes the follower's delayed entry in the duopoly
-equilibrium; in the present model the \emph{allocation} margin is immune
-to this discouragement (Proposition 3(ii)), so position affects when
-firms invest, not how they split capacity. \citet{weeds2002strategic}
-places a winner-take-all patent race in a real-options duopoly with
-irreversible investment and shows that competition can delay rather than
-hasten investment. The key departure is the dual role of capacity: in
-standard races, investment during the race is pure cost, whereas here
-installed capacity generates inference revenue before AGI arrives and
-training quality determines position afterwards.
+equilibrium; in the present model position affects the allocation only
+modestly, since the leader's training fraction lies \(3.1\%\) below the
+single firm's at baseline (Proposition 3(ii)).
+\citet{weeds2002strategic} places a winner-take-all patent race in a
+real-options duopoly with irreversible investment and shows that
+competition can delay rather than hasten investment; the entry game here
+has a related feature, a second-mover advantage at the date of first
+investment, although competition still brings that date forward of the
+switch. The key departure is the dual role of capacity: in standard
+races, investment during the race is pure cost, whereas here installed
+capacity generates inference revenue before AGI arrives and training
+quality determines position afterwards.
 
 The firm's default decision follows the structural credit-risk tradition
 of \citet{merton1974pricing} and \citet{leland1994corporate}, a
@@ -411,10 +456,12 @@ regime-switching environment; those papers in fact solve the fully
 coupled system with regime-contingent boundaries, whereas
 Equation~\ref{eq-default-boundary} uses a single boundary that embeds
 the switch in unconditional expectation (Section~\ref{sec-model}
-documents the resulting approximation error). The Leland framework suits
-public-debt issuers; for the VC-backed archetypes in the calibration,
-``default'' should be read broadly as financial distress (failed funding
-round, liquidity crisis), consistent with \citet{gornall2020squaring}.
+documents the resulting approximation error; the entry equilibrium and
+the credit exhibits use the coupled boundaries). The Leland framework
+suits public-debt issuers; for the VC-backed archetypes in the
+calibration, ``default'' should be read broadly as financial distress
+(failed funding round, liquidity crisis), consistent with
+\citet{gornall2020squaring}.
 
 The model's technology assumptions come from the economics of AI.
 Training exhibits power-law scaling
@@ -430,46 +477,57 @@ itself, the closest analog is \citet{akcigit2018growth} on exploitation
 versus exploration R\&D, set in a multi-product firm rather than in a
 compute allocation problem.
 
-The marginal contribution is a result the closest models do not
+The marginal contribution is a set of results the closest models do not
 generate. In the papers that combine irreversible investment with
 endogenous default
 \citep{mauer2005real, hackbarth2014capital, sundaresan2015dynamic, kumar2018optimal},
-installed capital is homogeneous, so no single decision variable moves
-the default boundary and the liquidation collateral in opposite
-directions. The training fraction \(\phi\) does exactly that here: below
-the allocation optimum, raising it lowers the default boundary through
-the expected post-AGI continuation value (\emph{faith-based survival},
-whose belief-side thresholds are Equation~\ref{eq-phi-underbar} and
-Equation~\ref{eq-phi-tilde}), while shrinking the inference business
-creditors can liquidate, so the value that keeps the firm alive is
-worthless in bankruptcy. That opposition is what makes belief errors
-asymmetric in \emph{Dario's dilemma}, with optimism acting through the
-training allocation to lower the default boundary while leverage
-concentrates tail risk on the aggressive side. The regime-switching
-credit models take the size of the growth option as exogenous, so the
-firm cannot buy survival by sacrificing current revenue, and the
-allocation problems closest in structure
-\citep{akcigit2018growth, chod2005resource} are solved for firms whose
-survival is not at stake. The investment-financing framework follows
-\citet{hackbarth2012corporate}.
+installed capital is homogeneous, so the firm has no decision that
+trades current revenue against the value of surviving to a later regime.
+The training fraction \(\phi\) is that decision here. Its optimum has a
+closed form that rises with the arrival rate and does not depend on
+scale (Proposition 1), and it governs how the default boundary responds
+to beliefs: above a closed-form threshold, a higher arrival rate lowers
+the boundary through the expected post-AGI continuation value
+(\emph{faith-based survival}, whose thresholds are
+Equation~\ref{eq-phi-underbar} and Equation~\ref{eq-phi-tilde}). The
+same margin carries the expected-value cost of a mistaken belief in
+\emph{Dario's dilemma}. The allocation is the largest component of the
+loss on both sides, and it is the main reason a pessimistic error costs
+more than an optimistic one of the same size in \(\lambda\) (Numerical
+Finding 1). Default and recovery shape where the tail risk falls, and
+less than one might expect: the boundary that matters is created by
+operating costs without any debt, leverage shifts it, and recovery is
+small and weakly increasing in the training fraction at the model's
+policies, so the continuation value that keeps the firm alive adds
+nothing to what creditors recover and takes nothing from it. On timing,
+the strategic real-options models above obtain early investment from a
+race to be first. Here a single firm that chooses its scale at the
+switch waits for it at baseline, competition is what brings investment
+forward of the switch, and at the date of first investment following is
+the better role (Proposition 3). The regime-switching credit models take
+the size of the growth option as exogenous, so the firm cannot buy
+survival by sacrificing current revenue, and the allocation problems
+closest in structure \citep{akcigit2018growth, chod2005resource} are
+solved for firms whose survival is not at stake. The
+investment-financing framework follows \citet{hackbarth2012corporate}.
 
 The paper proceeds as follows. Section~\ref{sec-model} presents the
-model environment, the single-firm benchmark, and the duopoly
-equilibrium with default risk, and contains the analytical and
-semi-analytical results. Section~\ref{sec-calibration} describes the
-stylized calibration to frontier AI lab archetypes.
-Section~\ref{sec-valuation} develops credit risk and Dario's dilemma,
-Section~\ref{sec-discussion} considers policy implications, testable
-predictions, and limitations, and Section~\ref{sec-conclusion}
-concludes. The Internet Appendix collects the proofs, numerical
-verification methods, calibration sources, robustness exercises, and
-supporting figures.
+environment, the single-firm benchmark, and the duopoly entry game with
+default risk, and contains Propositions 1 to 3.
+Section~\ref{sec-calibration} describes the stylized calibration to
+frontier AI lab archetypes. Section~\ref{sec-valuation} reports the
+quantitative implications: the allocation thresholds, Dario's dilemma,
+and credit risk at the model's policies. Section~\ref{sec-discussion}
+considers testable predictions, policy implications, and limitations,
+and Section~\ref{sec-conclusion} concludes. The Internet Appendix
+collects the proofs, numerical verification methods, calibration
+sources, robustness exercises, and supporting figures.
 
 \section{The Model}\label{sec-model}
 
 The model has four stages: the demand environment and technology, the
-single-firm benchmark, the solution conventions on which the closed
-forms rest, and the duopoly with default risk.
+single-firm benchmark, the approximations and operating assumptions that
+remain, and the duopoly with default risk.
 
 \subsection{Environment}\label{environment}
 
@@ -926,24 +984,25 @@ holding all other parameters at the baseline calibration.}
 
 \end{figure}%
 
-\subsection{Solution conventions and
-approximations}\label{sec-conventions}
+\subsection{Approximations and operating
+assumptions}\label{sec-conventions}
 
-Two blocks of the model are solved in its exact primitives: the single
-firm of Section~\ref{sec-single-firm} and the entry game of
-Section~\ref{sec-duopoly}. The closed-form default boundary of
-Proposition 2 rests on an approximation, the single-boundary reduction
-below; the baseline policies and archetype outputs of
-Section~\ref{sec-calibration} and the credit exhibits and Dario's
-dilemma in Section~\ref{sec-valuation} are evaluated at the exact
-policies, with the claims of the entry game. The pure-power
-approximation of Section~\ref{sec-single-firm} enters no reported object
-except where it is labelled as the approximation and set beside the
-exact one. Table~\ref{tbl-domains} collects the model's operating
-assumptions, the domain over which each result is stated, and the
-approximations whose size I have measured, so that a reader can see
-which objects are exact and how large each departure is. The conventions
-are stated below; their magnitudes are in the table.
+The single firm of Section~\ref{sec-single-firm} and the entry game of
+Section~\ref{sec-duopoly} are solved in the model's primitives, and the
+baseline policies and archetype outputs of
+Section~\ref{sec-calibration}, the credit exhibits and Dario's dilemma
+of Section~\ref{sec-valuation} are evaluated at those solutions. Two
+approximations remain in reported objects: the closed-form default
+boundary of Proposition 2 rests on a single-boundary reduction, and debt
+is issued at par at an exogenous coupon wherever fairly priced debt is
+not reported beside it. The pure-power approximation of
+Section~\ref{sec-single-firm} enters no reported object except where it
+is labelled as the approximation and set beside the exact one.
+Table~\ref{tbl-domains} collects the model's operating assumptions, the
+domain over which each result is stated, and the measured size of each
+approximation, so that a reader can see which objects are exact and how
+large each departure is. The paragraphs after the table state the
+approximations.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1707}}
@@ -983,6 +1042,11 @@ fixed at installation \\
 Domain & Proposition 1 & Requires \(\delta > 0\) and (A2); (i)--(ii)
 closed form, (iii) solved numerically with the post-switch scale
 precommitted \\
+Domain & Interior capacity, (A2) & At baseline \(r \in (0.097, 0.135)\),
+\(\mu_H \in (0.051, 0.077)\), \(\sigma \in (0.190, 0.392)\),
+\(\alpha \in (0.356, 0.534)\), \(\gamma > 1.124\); every trigger and
+capacity needs it, and \(\phi^*\), \(\underline{\phi}\) and
+\(\tilde{\phi}\) do not \\
 Domain & Single firm, scale chosen at the switch & Waits for the switch
 at baseline; a finite pre-switch trigger only for \(\lambda < 0.073\) \\
 Domain & Proposition 2(ii) & Fixed policy; closed form under symmetric
@@ -1053,29 +1117,28 @@ raises \(X_L\) by 37\% at \(\ell = 0.40\), where fairly priced debt
 lowers it by 0.4\% \\
 \end{longtable}
 
-\textbf{Unconditional-\(A_{\text{eff}}\) discounting.} The pure-power
-approximation of Section~\ref{sec-single-firm} values every option-like
-L-regime payoff with the H-regime exponent \(\beta_H\) and the
-unconditional coefficient \(A_{\text{eff}}\) (Equation~\ref{eq-a-eff})
-in place of regime-contingent value functions. Applied to the duopoly it
-gives a reduced-form preemption game, in which the follower's option is
+\textbf{The pure-power approximation in the duopoly, and notation.}
+Applied to the duopoly, the pure-power approximation of
+Section~\ref{sec-single-firm} values every option-like L-regime payoff
+with the H-regime exponent \(\beta_H\) and the unconditional coefficient
+\(A_{\text{eff}}\) (Equation~\ref{eq-a-eff}): the follower's option is
 proportional to \(X^{\beta_H}\), the leader's monopoly-phase value
 discounts follower entry by \((X/X_F^*)^{\beta_H}\), and the leader is
-held at the single firm's pure-power scale. That game is no longer the
-paper's benchmark. It is the nested approximation against which
-Table~\ref{tbl-domains} measures the exact equilibrium. Throughout the
-paper, the scale-gap diagnostic of Internet Appendix G included, the
-symbols \(X^*\) and \(K^*\) denote the exact policy of Proposition
-1(iii) with precommitted post-switch scale, and
+held at the single firm's pure-power scale. I call the result the nested
+pure-power game. It is not the paper's benchmark, and it appears only as
+the approximation against which Table~\ref{tbl-domains} measures the
+exact equilibrium (Internet Appendix B). The approximation is not a
+small signed error around the exact problem: its triggers and capacities
+are objects of the model it defines, while \(\phi^*\) carries over
+exactly to the single firm, because it maximizes \(A_{\text{eff}}\) at
+every scale. Throughout the paper, the scale-gap diagnostic of Internet
+Appendix G included, the symbols \(X^*\) and \(K^*\) denote the exact
+policy of Proposition 1(iii) with precommitted post-switch scale, and
 \((X^{\text{pp}}, K^{\text{pp}})\) the pure-power policy of
 Equation~\ref{eq-trigger-phi}. In Section~\ref{sec-duopoly}, \(X_L\),
 \(X_P\), \(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) denote objects of
 the exact game, and \(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) are
 evaluated for a leader that enters at \(X_L\) unless stated otherwise.
-The approximation is not a small signed error around the exact problem:
-its triggers and capacities are objects of the model it defines, while
-\(\phi^*\) carries over exactly to the single firm, because it maximizes
-\(A_{\text{eff}}\) at every scale.
 
 \textbf{Leader's scale in the duopoly.} The leader chooses its capacity
 and training fraction at the demand at which it enters, with the
@@ -1167,16 +1230,17 @@ expansion (Internet Appendix E bounds its contribution with the
 arithmetic-mean industry-revenue benchmark).
 
 Revenue expansion means that the leader's gain from capacity dominance
-partly reflects pie expansion, not just share theft, which could amplify
-preemption incentives. Internet Appendix E evaluates an arithmetic-mean
-industry-revenue benchmark in which a firm's revenue does not depend on
-its rival's capacity (Table~\ref{tbl-fixedpie}). There the follower's
-capacity is \(1.6\) times the leader's instead of \(39\) times, and the
-game after the switch is no longer a race, so the equilibrium of
-Proposition 3(iii), with its large follower, is specific to a contest in
-which capacity takes revenue from the rival; the survival threshold
-\(\underline{\phi}\) does not involve the contest. The Cournot
-alternative is discussed there qualitatively and is not solved.
+partly reflects pie expansion, not just share theft, which could
+strengthen the incentive to invest first. Internet Appendix E evaluates
+an arithmetic-mean industry-revenue benchmark in which a firm's revenue
+does not depend on its rival's capacity (Table~\ref{tbl-fixedpie}).
+There the follower's capacity is \(1.6\) times the leader's instead of
+\(39\) times, and the game after the switch is no longer a race, so the
+equilibrium of Proposition 3(iii), with its large follower, is specific
+to a contest in which capacity takes revenue from the rival; the
+survival threshold \(\underline{\phi}\) does not involve the contest.
+The Cournot alternative is discussed there qualitatively and is not
+solved.
 
 The training fraction enters both contests and moves a firm's position
 in opposite directions across regimes: a higher \(\phi_i\) raises the
@@ -1275,12 +1339,12 @@ has the following properties:}
 \(\ell > 0\), in the coupon rate \(r_c\).}
 
 \emph{(ii) \(X_D\) is decreasing in \(\lambda\) precisely when the
-training allocation is sufficiently high, and the characterization is
-fully closed-form in the symmetric-shares case (\(s_i^L = s_i^H\), as
-under symmetric capacities} and \emph{allocations, or monopoly). Two
-channels operate. The \(A_{\text{eff}}\) channel (higher \(\lambda\)
-raises the weight on the H-regime continuation value, lowering \(X_D\))
-is positive if and only if \(\phi_i\) exceeds}
+training allocation is sufficiently high, and the characterization is in
+closed form in the symmetric-shares case (\(s_i^L = s_i^H\), as under
+symmetric capacities} and \emph{allocations, or monopoly). Two channels
+operate. The \(A_{\text{eff}}\) channel (higher \(\lambda\) raises the
+weight on the H-regime continuation value, lowering \(X_D\)) is positive
+if and only if \(\phi_i\) exceeds}
 \begin{equation}\protect\phantomsection\label{eq-phi-underbar}{
 \underline{\phi} = \frac{\Omega}{1 + \Omega}, \quad \Omega \equiv \left(\frac{r - \mu_H}{r - \mu_L}\right)^{1/\alpha}.
 }\end{equation} \emph{An opposing markup channel operates through the
@@ -1886,7 +1950,7 @@ maintaining installed capacity (power, cooling, maintenance, personnel),
 distinct from depreciation of GPU hardware, whose capital cost sits in
 \(cK^\gamma\). It is likewise chosen, and nothing substantive turns on
 it: \(\delta\) enters only through the total cost
-\(b(K) = \delta K/r + cK^\gamma\), so a change in \(\delta\) is
+\(\Theta(K) = \delta K/r + cK^\gamma\), so a change in \(\delta\) is
 equivalent to a rescaling of the capacity unit and leaves \(\phi^*\),
 the trigger ratio, and the Dario's dilemma losses unchanged (Internet
 Appendix C). Table~\ref{tbl-parameters} in the Internet Appendix records
@@ -2103,9 +2167,14 @@ directions rather than magnitudes, inside the admissible (A2) window.
 
 \section{Quantitative Implications}\label{sec-valuation}
 
-Three quantitative implications follow from the model: a scale-gap
-diagnostic, endogenous credit risk, and Dario's dilemma, the asymmetric
-cost of investing on a mistaken belief about \(\lambda\). All results
+The quantitative implications come in three layers, ordered by how
+little they depend on the calibration. The first is the allocation and
+its thresholds, closed forms that require neither the interior-capacity
+condition (A2) nor any approximation. The second is Dario's dilemma, the
+cost of investing on a mistaken belief about \(\lambda\), whose largest
+component is the allocation. The third is credit risk at the model's
+policies, which inherits the triggers and capacities of the baseline and
+is an illustration of the mechanism at those magnitudes. All results
 here are numerical, computed under the stylized calibration of
 Section~\ref{sec-calibration}, and illustrate the model's mechanisms
 rather than delivering point estimates. Motivated by
@@ -2115,50 +2184,34 @@ base and the model's optimal scale; because the model does not identify
 levels, its content is the shape of the curve rather than any firm's
 position along it (Figure~\ref{fig-growth-decomposition}).
 
-\subsection{Credit Risk Analysis}\label{credit-risk-analysis}
+\subsection{Allocation and Its
+Thresholds}\label{allocation-and-its-thresholds}
 
-Credit risk is evaluated where the model's firms invest: debt is issued
-at the single firm's precommitted-scale entry \((X^*, K^*, \phi^*)\) of
-Proposition 1(iii), at the duopoly's first investment
-\((X_L, K_L, \phi_L)\), with the leader's policy held at its unlevered
-equilibrium value, and at the follower's post-switch entry, and it is
-priced with the exact claims of Section~\ref{sec-duopoly} under par and
-fairly priced debt (Internet Appendix H, Table~\ref{tbl-credit-spread},
-Table~\ref{tbl-credit-pd}, Figure~\ref{fig-credit-risk}). The single
-firm is the monopoly case with its post-switch scale precommitted: with
-scale chosen at the switch it waits for the switch at baseline and
-issues no debt before it. Three findings follow, all numerical. First,
-at these policies credit risk is the risk of reaching a boundary that
-operating costs create without any debt, and leverage shifts that
-boundary. The operating-cost claim \(\delta K/r\) is twelve times the
-par coupon claim at \(\ell = 0.40\) for the single firm and twenty-three
-times for the leader, so the spread on an infinitesimal issue is already
-\(22\) basis points for the single firm and \(44\) for the leader, and
-leverage of \(0.40\) adds about \(4\) basis points to each under par
-debt and about \(11\) under fairly priced debt. The five-year default
-probabilities are \(0.16\%\) and \(0.84\%\) without debt and \(0.25\%\)
-and \(1.04\%\) at \(\ell = 0.40\) under par debt (\(0.47\%\) and
-\(1.45\%\) under fairly priced debt). Second, the firm exposed to
-default is the leader, which enters at \(4.8\) times its shutdown
-boundary against \(6.5\) for the single firm; the follower enters after
-the switch at ten times its boundary, under the H-regime drift, and its
-debt carries \(4\) basis points and a five-year default probability of
-\(0.001\%\) without leverage. Third, recovery plays almost no part.
-Under Equation~\ref{eq-recovery} it is at most \(5\%\) of the coupon
-claim at these policies for \(\ell \leq 0.70\), so the loss given
-default is \(95\%\) or more. Varying the training fraction at a fixed
-scale, more training raises recovery rather than lowering it: the
-inference business is worth nothing at the boundary for \(\phi\) up to
-about \(0.6\), and recovery rises through both policies
-(Figure~\ref{fig-credit-risk}, panel c). Over \(\phi \in [0.30, 0.75]\)
-the spread falls as \(\phi\) rises, for both firms and both debt
-conventions, so the default-probability and loss-given-default channels
-move together there rather than against each other. Spreads and default
-probabilities are \emph{model-implied risk-adjusted} objects rather than
-risk-neutral quantities, and because \(\ell\) and \(r_c\) are exogenous
-stress-test parameters (Section~\ref{sec-model}), the leverage gradients
-describe the response to an imposed debt burden at a fixed policy rather
-than an optimally chosen capital structure.
+Three objects are available in closed form and do not require (A2): the
+optimal training fraction \(\phi^*\) of Proposition 1(i), the threshold
+\(\underline{\phi}\) above which the \(A_{\text{eff}}\) channel makes a
+higher arrival rate lower the default boundary, and the exact net
+threshold \(\tilde{\phi}\) of Proposition 2(ii). At baseline they are
+\(0.70\), \(0.18\) and \(0.32\). Perturbing each of the nine calibrated
+parameters by \(\pm 25\%\), one at a time, moves them within
+\(\phi^* \in [0.59, 0.79]\), \(\underline{\phi} \in [0.10, 0.23]\) and
+\(\tilde{\phi} \in [0.19, 0.37]\) over the twelve draws that are solved,
+and the ordering \(\underline{\phi} < \tilde{\phi} < \phi^*\), under
+which faith-based survival holds at the optimal allocation, holds in
+each of them. In a joint sweep of \(4{,}096\) draws in the same box it
+holds in \(99.2\%\) of the \(1{,}910\) draws that are solved (Internet
+Appendix E, Table~\ref{tbl-joint-sweep}). Triggers and capacities are
+objects of a different kind. They exist only under (A2), which at
+baseline admits \(r \in (0.097, 0.135)\) and
+\(\alpha \in (0.356, 0.534)\) and excludes \(53\%\) of the joint draws,
+and inside that window they are steep: the elasticities of the trigger
+and of capacity with respect to \(r\) and \(\alpha\) are between \(20\)
+and \(28\) in absolute value (Table~\ref{tbl-elasticities}), and \(K^*\)
+covers almost thirteen orders of magnitude across the solved joint
+draws. I therefore report the levels of \(X^*\), \(K^*\), \(X_L\) and
+\(K_L\) as illustrations of the baseline, and rest the quantitative
+claims below on shares, ratios and rankings, with the number of draws in
+which each holds reported in Internet Appendix E.
 
 \subsection{Dario's Dilemma}\label{darios-dilemma}
 
@@ -2189,12 +2242,12 @@ With the post-switch scale precommitted (Proposition 1(iii)) every
 belief has a finite pre-switch trigger, so an error in either direction
 is an investment error; I take this version as the main one, because it
 is the one in which the single firm invests before the switch at every
-belief and the one at which its debt is priced above. With scale chosen
-at the switch, a firm that believes \(\lambda \geq 0.073\) waits for the
-switch, as the correctly informed firm does at baseline. I report both,
-and then the same exercise inside the entry equilibrium of
-Section~\ref{sec-duopoly}, in which a firm does invest before the
-switch.
+belief and the one at which its debt is priced in the credit analysis
+below. With scale chosen at the switch, a firm that believes
+\(\lambda \geq 0.073\) waits for the switch, as the correctly informed
+firm does at baseline. I report both, and then the same exercise inside
+the entry equilibrium of Section~\ref{sec-duopoly}, in which a firm does
+invest before the switch.
 
 \subsubsection{Value Loss}\label{value-loss}
 
@@ -2297,24 +2350,24 @@ rises to \(35\%\) at \(\ell = 0.40\) and the optimists' fall slightly.
 Expected value is not the only margin. Each mistaken firm enters closer
 than the informed firm to the boundary at which it stops operating, a
 boundary that operating costs create without any debt and that leverage
-shifts (Credit Risk Analysis above). The informed single firm enters at
-\(6.5\) times that boundary; the pessimist at \(0.02\) and the optimist
-at \(0.18\) enter at \(5.6\) and \(5.7\), and the optimist at \(0.50\)
-at \(4.1\), because it enters at a lower trigger while its allocation
-depresses the pre-switch revenue that covers operating costs. The
-five-year probability of reaching the boundary, under the convention of
-Table~\ref{tbl-credit-pd} (a first passage under the L-regime drift that
-omits the switch, and therefore an upper bound on the pre-switch
-probability), is \(0.16\%\) for the informed firm without debt,
-\(0.37\%\) and \(0.34\%\) at \(\lambda_{\text{invest}} = 0.02\) and
-\(0.18\), and \(1.8\%\) at \(0.50\). Under fairly priced debt these
-become \(0.18\%\), \(0.40\%\), \(0.40\%\) and \(2.0\%\) at
-\(\ell = 0.05\), \(0.24\%\), \(0.48\%\), \(0.54\%\) and \(2.6\%\) at
-\(\ell = 0.15\), the range of the archetypes in
-Section~\ref{sec-calibration}, and \(0.47\%\), \(0.71\%\), \(1.0\%\) and
-\(4.3\%\) at \(\ell = 0.40\) (Table~\ref{tbl-dilemma-tail}). The tail
-exposure is therefore set mainly by the belief and not by leverage: the
-far optimist's probability is about eleven times the informed firm's
+shifts (Section~\ref{sec-duopoly} and the credit analysis below). The
+informed single firm enters at \(6.5\) times that boundary; the
+pessimist at \(0.02\) and the optimist at \(0.18\) enter at \(5.6\) and
+\(5.7\), and the optimist at \(0.50\) at \(4.1\), because it enters at a
+lower trigger while its allocation depresses the pre-switch revenue that
+covers operating costs. The five-year probability of reaching the
+boundary, under the convention of Table~\ref{tbl-credit-pd} (a first
+passage under the L-regime drift that omits the switch, and therefore an
+upper bound on the pre-switch probability), is \(0.16\%\) for the
+informed firm without debt, \(0.37\%\) and \(0.34\%\) at
+\(\lambda_{\text{invest}} = 0.02\) and \(0.18\), and \(1.8\%\) at
+\(0.50\). Under fairly priced debt these become \(0.18\%\), \(0.40\%\),
+\(0.40\%\) and \(2.0\%\) at \(\ell = 0.05\), \(0.24\%\), \(0.48\%\),
+\(0.54\%\) and \(2.6\%\) at \(\ell = 0.15\), the range of the archetypes
+in Section~\ref{sec-calibration}, and \(0.47\%\), \(0.71\%\), \(1.0\%\)
+and \(4.3\%\) at \(\ell = 0.40\) (Table~\ref{tbl-dilemma-tail}). The
+tail exposure is therefore set mainly by the belief and not by leverage:
+the far optimist's probability is about eleven times the informed firm's
 without any debt and nine times at \(\ell = 0.40\). It is also
 asymmetric in the opposite direction to the expected-value loss only for
 proportional errors: errors of \(0.08\) in either direction leave the
@@ -2398,13 +2451,59 @@ probability is \(0.84\%\) for the informed leader without debt,
 \(8.7\%\) at \(0.50\), and \(1.0\%\), \(1.9\%\), \(2.1\%\) and \(9.9\%\)
 at \(\ell = 0.15\) under fairly priced debt.
 
+\subsection{Credit Risk at the Model's
+Policies}\label{credit-risk-at-the-models-policies}
+
+Credit risk is evaluated where the model's firms invest: debt is issued
+at the single firm's precommitted-scale entry \((X^*, K^*, \phi^*)\) of
+Proposition 1(iii), at the duopoly's first investment
+\((X_L, K_L, \phi_L)\), with the leader's policy held at its unlevered
+equilibrium value, and at the follower's post-switch entry, and it is
+priced with the exact claims of Section~\ref{sec-duopoly} under par and
+fairly priced debt (Internet Appendix H, Table~\ref{tbl-credit-spread},
+Table~\ref{tbl-credit-pd}, Figure~\ref{fig-credit-risk}). The single
+firm is the monopoly case with its post-switch scale precommitted: with
+scale chosen at the switch it waits for the switch at baseline and
+issues no debt before it. Three findings follow, all numerical. First,
+at these policies credit risk is the risk of reaching a boundary that
+operating costs create without any debt, and leverage shifts that
+boundary. The operating-cost claim \(\delta K/r\) is twelve times the
+par coupon claim at \(\ell = 0.40\) for the single firm and twenty-three
+times for the leader, so the spread on an infinitesimal issue is already
+\(22\) basis points for the single firm and \(44\) for the leader, and
+leverage of \(0.40\) adds about \(4\) basis points to each under par
+debt and about \(11\) under fairly priced debt. The five-year default
+probabilities are \(0.16\%\) and \(0.84\%\) without debt and \(0.25\%\)
+and \(1.04\%\) at \(\ell = 0.40\) under par debt (\(0.47\%\) and
+\(1.45\%\) under fairly priced debt). Second, the firm exposed to
+default is the leader, which enters at \(4.8\) times its shutdown
+boundary against \(6.5\) for the single firm; the follower enters after
+the switch at ten times its boundary, under the H-regime drift, and its
+debt carries \(4\) basis points and a five-year default probability of
+\(0.001\%\) without leverage. Third, recovery plays almost no part.
+Under Equation~\ref{eq-recovery} it is at most \(5\%\) of the coupon
+claim at these policies for \(\ell \leq 0.70\), so the loss given
+default is \(95\%\) or more. Varying the training fraction at a fixed
+scale, more training raises recovery rather than lowering it: the
+inference business is worth nothing at the boundary for \(\phi\) up to
+about \(0.6\), and recovery rises through both policies
+(Figure~\ref{fig-credit-risk}, panel c). Over \(\phi \in [0.30, 0.75]\)
+the spread falls as \(\phi\) rises, for both firms and both debt
+conventions, so the default-probability and loss-given-default channels
+move together there rather than against each other. Spreads and default
+probabilities are \emph{model-implied risk-adjusted} objects rather than
+risk-neutral quantities, and because \(\ell\) and \(r_c\) are exogenous
+stress-test parameters (Section~\ref{sec-model}), the leverage gradients
+describe the response to an imposed debt burden at a fixed policy rather
+than an optimally chosen capital structure.
+
 \section{Discussion}\label{sec-discussion}
 
-I take up the welfare consequences of preemption, the model's testable
+I take up the welfare consequences of competition, the model's testable
 predictions, its policy implications, and its limitations.
 
-\subsection{Welfare and
-Overinvestment}\label{welfare-and-overinvestment}
+\subsection{Welfare and the Timing of
+Investment}\label{welfare-and-the-timing-of-investment}
 
 I do not solve a planner's problem, so the model characterizes no social
 optimum; the benchmark it computes is the monopolist's policy. Against
@@ -2576,8 +2675,8 @@ what follows is a conjecture rather than a result: a decentralized
 equilibrium would plausibly leave that spillover partly uninternalized,
 so equilibrium training could fall short of what a coordinating industry
 would choose, and the two forces would then run in opposite directions,
-preemption toward overinvestment in capacity and the spillover toward
-underinvestment in training.
+competition toward earlier investment in capacity and the spillover
+toward too little training.
 
 Leverage is a stress-test parameter rather than an equilibrium financing
 choice. \citet{leland1994corporate} assumes publicly traded equity and
@@ -2603,25 +2702,29 @@ probabilities would be lower.
 
 \section{Conclusion}\label{sec-conclusion}
 
-In this model of AI compute investment, capacity, timing, and the
-training-inference split respond to different forces. In the single-firm
-reduced model, optimal capacity is pinned down by the revenue and cost
-technology and is invariant to beliefs about when AGI arrives, while the
-training fraction is governed by beliefs about the arrival rate
-\(\lambda\) (Proposition 1); under competition, the entry trigger is
-compressed further by the threat of preemption (Proposition 3). That
-separation is what makes belief errors asymmetric: a firm with the wrong
-timeline installs the same capacity, and carries the same coupon, as a
-firm with the right one, so the entire cost of the error runs through
-the entry trigger and the training allocation.
+In this model of AI compute investment, the training-inference split,
+the timing of investment, and its scale respond to beliefs about the
+arrival of AGI in different ways. The training fraction has a closed
+form that rises with the arrival rate \(\lambda\) and does not depend on
+scale (Proposition 1). Timing and scale are not monotone in beliefs:
+with the post-switch scale precommitted the single firm's trigger and
+capacity are hump-shaped in \(\lambda\), and at baseline a single firm
+that chooses its scale when the switch arrives does not invest before
+it. Under competition one firm does, at every arrival rate examined,
+because waiting leads to a post-switch race in which the rent from
+leading is competed away (Proposition 3). At the date of first
+investment following is the better role, so competition brings
+investment forward of the switch without a race to be first, in an
+equilibrium that I verify numerically and do not show to be unique.
 
 Three tensions drive the results. The first is current cash flow against
 future capability: firms balance inference revenue in regime \(L\),
 which funds operations and services debt, against training whose payoff
 arrives only in regime \(H\). The optimal training fraction \(\phi^*\)
-increases in \(\lambda\), so more optimistic firms train more,
-consistent with the archetypes in Section~\ref{sec-calibration}. The
-second is growth-option upside against leverage and default risk. The
+increases in \(\lambda\), so a firm that expects the switch sooner
+trains more. The second is the continuation value against the risk of
+stopping. Operating costs create a boundary at which the firm stops
+operating whether or not it has debt, and leverage shifts it. The
 \emph{faith-based survival} channel holds at the calibrated optimum but
 not throughout the parameter space: its \(A_{\text{eff}}\)-channel
 threshold \(\underline{\phi} \approx 0.18\) lies well below
@@ -2630,31 +2733,39 @@ it expects the switch sooner sits further from default (Proposition 2).
 At a fixed belief, by contrast, the boundary is U-shaped in the training
 fraction with its minimum at \(\phi^*\), so training beyond the optimum
 raises it, and the channel reverses for beliefs below
-\(\lambda \approx 0.034\).
+\(\lambda \approx 0.034\). Creditors gain little on either side of the
+split: recovery is at most \(5\%\) of the claim at the model's policies,
+so credit risk there is the risk of reaching the boundary
+(Section~\ref{sec-valuation}).
 
-The third is the asymmetric cost of belief mismatches
-(Section~\ref{sec-valuation}). Numerical Finding 1 shows that in this
-calibration conservative underinvestment costs more in expected value
-than aggressive overinvestment for the same belief error, because
-under-allocating to training forfeits the option value of regime \(H\)
-that dominates firm value. Overinvestment instead carries the higher
-tail exposure: an aggressive firm enters at a lower trigger while
-over-training depresses the regime-\(L\) revenue that services its debt,
-leaving it closer to its default boundary at entry, with a five-year
-default probability at \(\ell = 0.40\) of 5.04\% against 0.64\% at
-correct beliefs (both no-switch upper bounds on the pre-switch
-probability). This is not a general case for building more. Moderate
-overinvestment is cheap, about 6\% of unlevered value at
-\(\lambda_{\text{invest}} = 0.20\) against roughly 23\% at
-\(\lambda_{\text{invest}} = 0.50\)
-(Figure~\ref{fig-investment-dilemma}), and both percentages are those of
-the reduced model: re-solving the piecewise stopping problem, with the
-post-switch scale precommitted or unrestricted, preserves the ranking
-but moves the magnitudes (Internet Appendix B). Commitments at the
-extreme end are therefore more readily reconciled with genuinely
-optimistic beliefs than with a low-cost posture, though the model
-separates neither beliefs from signaling nor either from agency motives,
-and the calibration is stylized.
+The third is the cost of belief mismatches
+(Section~\ref{sec-valuation}). In Numerical Finding 1, for a single firm
+with precommitted post-switch scale and values measured at half the
+informed firm's trigger, a pessimistic error costs more in expected
+value than an optimistic error of the same size in \(\lambda\), \(32\%\)
+against \(1.3\%\) around a true rate of \(0.10\), mainly because
+under-allocating to training gives up the post-switch claim that makes
+up most of an installed firm's value. The ranking depends on how the
+errors are matched: at a factor of five in either direction the losses
+are \(32\%\) and \(13\%\), and for equal errors in the expected time to
+the switch they are about equal, the optimist's being slightly larger.
+Tail exposure runs the other way for proportional errors. The far
+optimist enters at a lower trigger with an allocation that depresses
+pre-switch revenue, which leaves it closer to the boundary at which it
+stops operating: its five-year probability of reaching that boundary is
+\(1.8\%\) without debt against \(0.16\%\) at correct beliefs, and
+\(4.3\%\) against \(0.47\%\) at \(\ell = 0.40\) under fairly priced debt
+(no-switch upper bounds on the pre-switch probability). The belief sets
+most of this exposure, and leverage adds to it. This is not a general
+case for building more. Moderate optimism is cheap, \(1.3\%\) of value
+at \(\lambda_{\text{invest}} = 0.18\), and extreme optimism is not,
+\(13\%\) at \(\lambda_{\text{invest}} = 0.50\)
+(Figure~\ref{fig-investment-dilemma}); with scale chosen at the switch,
+every belief from \(0.073\) up prescribes waiting and costs nothing.
+Aggressive commitments are therefore compatible with a moderately
+optimistic belief at small cost, though the model separates neither
+beliefs from signaling nor either from agency motives, and the
+calibration is stylized.
 
 The model abstracts from talent constraints, alignment objectives,
 geopolitical competition, entrants such as DeepSeek
@@ -2663,12 +2774,13 @@ infrastructure spending and current AI revenue \citep{cahn2024gap} that
 may discipline the race through financial markets before any of these
 other forces do. Three extensions follow directly: dynamic learning
 about \(\lambda\), dynamic reallocation, and financial frictions. The
-central point is simpler than any of them. Training capacity buys a
-continuation value that creditors cannot seize, so a firm that bets on
-the switch survives on the strength of its belief and pays for it in
-what it can pledge. That is why a wrong timeline belief is punished in
-expected value when the firm is too cautious and in default risk when it
-is too bold.
+central point is simpler than any of them. The split between training
+and inference is the decision through which a belief about the switch
+becomes a position: it sets what the firm is worth if the switch comes
+and how far demand can fall before the firm stops operating. In this
+model a firm that is too cautious about the timeline pays mostly in
+expected value, and one that is far too bold pays in the risk of
+stopping.
 
 \newpage
 \clearpage
@@ -2888,9 +3000,16 @@ the entry demand (\(X_L\) unless stated otherwise) & Derived
 (choices) \\
 \(L^*(X)\), \(F(X)\) & Leader's entry value at its best policy;
 follower's value & Derived (choices) \\
+\(\Theta(K)\) & Total cost of capacity \(K\): \(\delta K/r + I(K)\) &
+Derived (choices) \\
+\(\Delta\) & Hazard-adjusted L-regime discount rate
+\(r - \mu_L + \lambda\) (Proposition 2) & Derived (primitives) \\
 \(\Delta V\) & Value loss from belief mismatch (Numerical Finding 1) &
 Derived (choices) \\
-\(g\) & Scale-gap index (Internet Appendix G) & Derived (choices) \\
+\(g(\phi)\); \(g\) & Allocation factor of the revenue coefficient,
+\(A_{\text{eff}} = g(\phi) K^\alpha\) (Proposition 1); without an
+argument, the scale-gap index of Internet Appendix G & Derived
+(choices) \\
 \end{longtable}
 
 \newpage
@@ -3583,10 +3702,10 @@ so the loss from bad news is \(X G h/[\Delta(\Delta - h)]\) and the gain
 from good news \(X G h/[\Delta(\Delta + h)]\); their difference is the
 stated expression. For (iii),
 \(\partial G/\partial \phi = \alpha[\Pi_H(r - \mu_L)/\phi + \Pi_L/(1-\phi)] > 0\),
-and with \(\rho = \Pi_H/\Pi_L\), which increases in \(\phi\), the
+and with \(\zeta = \Pi_H/\Pi_L\), which increases in \(\phi\), the
 semi-elasticity is
-\(\partial \ln A_{\text{eff}}/\partial \lambda = (\rho(r - \mu_L) - 1)/[(1 + \lambda\rho)\Delta]\),
-whose derivative in \(\rho\) is \(1/(1 + \lambda\rho)^2 > 0\).
+\(\partial \ln A_{\text{eff}}/\partial \lambda = (\zeta(r - \mu_L) - 1)/[(1 + \lambda\zeta)\Delta]\),
+whose derivative in \(\zeta\) is \(1/(1 + \lambda\zeta)^2 > 0\).
 \(\square\)
 
 The identities in Equation~\ref{eq-installed-lambda}, in (ii) and in
@@ -4510,7 +4629,7 @@ derivations and discussions for which the main text gives a stated
 result and a pointer here: the installed-value formulas of
 Section~\ref{sec-single-firm} and Section~\ref{sec-duopoly}, which the
 main text writes down without deriving; the smooth-pasting derivation of
-the H-regime trigger Equation~\ref{eq-trigger-H}; the preemption game's
+the H-regime trigger Equation~\ref{eq-trigger-H}; the entry game's
 primitives and the two conditions from \citet{huisman2015strategic} and
 \citet{pawlina2006real} that underwrite the preemption construction of
 Section~\ref{sec-duopoly}, which the main text reports as verified
@@ -5556,8 +5675,8 @@ gives up by entering before the switch.
 \textbf{Coupled default boundary.} The single-boundary default formula
 (Equation~\ref{eq-default-boundary}), which Proposition 2 and the credit
 exhibits use, is compared with the fully coupled regime-switching
-system, which the preemption game of Proposition 3 uses: the H-regime
-equity has the closed Leland form
+system, which the entry game of Proposition 3 uses: the H-regime equity
+has the closed Leland form
 \(E_H(X) = A_H(\phi K)^\alpha s^H X - (C_D + \delta K)/r + D_H X^{\beta_H^-}\),
 whose default-option term forces an additional particular solution
 \(C_2 X^{\beta_H^-}\) in the L-regime equity ODE; value matching and
@@ -5585,10 +5704,10 @@ L-regime boundary, that is \(X_D^L \geq X_D^H\). That holds for an
 installed monopolist and fails for a small firm facing a large rival,
 which survives before the switch only on the prospect of the switch: for
 the baseline leader against the baseline follower's capacity the
-post-switch boundary is the higher of the two. The preemption game
-therefore solves the boundary from the piecewise forcing, in which the
-post-switch claim is zero below its own boundary, and reproduces the
-scalar equation to ten digits where its premise holds.
+post-switch boundary is the higher of the two. The entry game therefore
+solves the boundary from the piecewise forcing, in which the post-switch
+claim is zero below its own boundary, and reproduces the scalar equation
+to ten digits where its premise holds.
 
 \textbf{The single firm's exact problem, precommitted post-switch
 scale.} This block and the next document how the single-firm problem of
@@ -5626,7 +5745,7 @@ boundary to a relative error of \(10^{-4}\) and the value function to a
 relative error of \(10^{-9}\) at a fixed capacity; against a
 two-dimensional Nelder--Mead search over \((K, \phi)\) at a fixed
 evaluation demand below the trigger; and against the Green's-function
-solution used for the preemption diagnostics. That check verifies the
+solution used for the entry-game diagnostics. That check verifies the
 solution of the stated obstacle problem; it does not by itself establish
 that the obstacle is the unrestricted one, which is the subject of the
 next block.
@@ -6174,7 +6293,7 @@ maintaining installed capacity (power, cooling, maintenance, and
 personnel), distinct from accounting depreciation of GPU hardware
 (typically 20--33\% per year over a 3--5 year useful life) and from
 hyperscale power costs (\$0.05--0.10/kWh). Because \(\delta\) enters
-only through the total cost \(b(K) = \delta K/r + cK^\gamma\) and
+only through the total cost \(\Theta(K) = \delta K/r + cK^\gamma\) and
 revenue is a pure power of capacity, a change in \(\delta\) is exactly
 equivalent to a rescaling of the capacity unit: replacing
 \((\delta, K)\) with \((\delta s^{1-\gamma}, K/s)\) leaves the
@@ -6879,11 +6998,11 @@ qualitative, as is the Cournot discussion inside the second.
 a pure-power revenue, proportional to \(K^\alpha\), against a cost
 \(\delta K/r + cK^\gamma\) that is linear at small scale and a power at
 large scale. After the switch the firm maximizes
-\(a(K)^{\beta_H}/b(K)^{\beta_H - 1}\) with \(a \propto K^\alpha\) and
-\(b\) that cost, so an interior capacity exists if and only if the
-option-adjusted revenue elasticity \(\alpha\beta_H/(\beta_H-1)\) lies
-strictly between the elasticities of the cost at its two ends, \(1\) and
-\(\gamma\), which is condition (A2),
+\(a(K)^{\beta_H}/\Theta(K)^{\beta_H - 1}\) with \(a \propto K^\alpha\)
+and \(\Theta\) that cost, so an interior capacity exists if and only if
+the option-adjusted revenue elasticity \(\alpha\beta_H/(\beta_H-1)\)
+lies strictly between the elasticities of the cost at its two ends,
+\(1\) and \(\gamma\), which is condition (A2),
 \(1/\gamma < (\beta_H-1)/(\alpha\beta_H) < 1\). When the upper bound of
 (A2) fails the linear term is too weak to stop the firm shrinking toward
 zero scale, and when the lower bound fails the convex term is too weak
@@ -7273,9 +7392,9 @@ with \(\partial A_{\text{eff},i}/\partial \lambda > 0\) for
 \(\phi_i > \underline{\phi}\), conditions that do not reference how
 revenue shares are determined; and the Dario's dilemma asymmetry
 operates through the single-firm training allocation channel, which
-involves no contest at all. The preemption incentive is likely weaker
-under a Cournot specification, in which firms choose quantities and
-price clears the market, because capacity differences translate less
+involves no contest at all. The incentive to invest first is likely
+weaker under a Cournot specification, in which firms choose quantities
+and price clears the market, because capacity differences translate less
 directly into revenue differences: under Tullock, a capacity advantage
 maps directly to a larger revenue share (\(s_i \propto K_i^\alpha\)),
 whereas under Cournot, additional capacity lowers the equilibrium price,
@@ -7414,28 +7533,29 @@ forever, so each branch continues with the corresponding perpetuity.
 Capacity is held at \(K^* = 0.0158\), the capacity of the single firm's
 precommitted-scale policy in the model of record, which isolates the
 allocation margin, and reallocation incurs a quadratic adjustment cost
-\(\kappa \cdot (\Delta\phi)^2\) charged in the branch in which it
-occurs. All values in the exercise, including \(\kappa\), are measured
-per unit of demand \(X_0\) at the fixed capacity \(K^*\), in the same
-units as the revenue coefficients; the static revenue value is \(1.87\)
-per unit of \(X_0\), so on the grid \(\kappa \in \{0.5, 2, 10\}\) a full
-reversal of the baseline allocation (\(\Delta\phi \approx 0.4\) at
+\(\kappa \cdot (\phi' - \phi_1)^2\), with \(\phi'\) the revised
+allocation, charged in the branch in which it occurs. All values in the
+exercise, including \(\kappa\), are measured per unit of demand \(X_0\)
+at the fixed capacity \(K^*\), in the same units as the revenue
+coefficients; the static revenue value is \(1.87\) per unit of \(X_0\),
+so on the grid \(\kappa \in \{0.5, 2, 10\}\) a full reversal of the
+baseline allocation (\(|\phi' - \phi_1| \approx 0.4\) at
 \(\kappa = 0.5\)) costs about \(4\%\) of that value at the cheapest
 setting and \(\kappa = 10\) makes any revision larger than a few points
 prohibitive, which spans the range from nearly free to effectively
-static. Writing \(\rho = r - \mu_L + \lambda\) for the hazard-adjusted
-net discount rate of the L-regime (written \(\Delta\) in the proof of
-Proposition 2), the value per unit of \(X_0\) decomposes into the
-survival-adjusted L-regime flow over the first period (weight
-\((1 - e^{-\rho \, dt})/\rho\)), the H-regime flow earned between an
-in-period switch and the revision date at the \emph{pre-switch}
-allocation, the H perpetuity at the readjusted allocation in the
-switched state, and the L perpetuity at the readjusted allocation in the
-no-switch state (weight \(e^{-\rho \, dt}\)). The decomposition is exact
-rather than approximate: at \(\phi_1 = \phi_H = \phi_{L2}\) the four
-terms collapse to the perpetual \(A_{\text{eff}}\) of
-Equation~\ref{eq-a-eff}, so the \(\kappa = \infty\) row is the static
-model itself and the value gains are measured against it.
+static. With \(\Delta = r - \mu_L + \lambda\) the hazard-adjusted net
+discount rate of the L-regime, as in Proposition 2, the value per unit
+of \(X_0\) decomposes into the survival-adjusted L-regime flow over the
+first period (weight \((1 - e^{-\Delta \, dt})/\Delta\)), the H-regime
+flow earned between an in-period switch and the revision date at the
+\emph{pre-switch} allocation, the H perpetuity at the readjusted
+allocation in the switched state, and the L perpetuity at the readjusted
+allocation in the no-switch state (weight \(e^{-\Delta \, dt}\)). The
+decomposition is exact rather than approximate: at
+\(\phi_1 = \phi_H = \phi_{L2}\) the four terms collapse to the perpetual
+\(A_{\text{eff}}\) of Equation~\ref{eq-a-eff}, so the
+\(\kappa = \infty\) row is the static model itself and the value gains
+are measured against it.
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}
@@ -7445,8 +7565,8 @@ model itself and the value gains are measured against it.
   >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1500}}@{}}
 \caption{Two-period dynamic reallocation at baseline
 (\(\lambda = 0.10\), \(dt = 1\) year). \(\kappa\) is the quadratic
-reallocation cost parameter, charged as \(\kappa (\Delta\phi)^2\) in the
-branch in which the revision occurs, so \(\kappa = 0\) is free
+reallocation cost parameter, charged as \(\kappa (\phi' - \phi_1)^2\) in
+the branch in which the revision occurs, so \(\kappa = 0\) is free
 reallocation and \(\kappa = \infty\) is the static model. \(\phi_1\) is
 the training fraction chosen at investment, \(\phi_H\) the fraction
 after a switch to regime \(H\), and \(\phi_{L2}\) the fraction after a
@@ -8035,8 +8155,8 @@ training would contribute to a common arrival rate, and a decentralized
 equilibrium would plausibly leave that spillover partly uninternalized,
 so equilibrium training could fall short of the level a coordinating
 industry would choose. If so, the two forces run in opposite directions:
-preemption pushes toward overinvestment in capacity, while the training
-spillover pushes toward underinvestment in training.
+competition pushes toward earlier investment in capacity, while the
+training spillover pushes toward too little training.
 
 \textbf{Testable predictions.} The testable predictions of
 Section~\ref{sec-discussion} could be assessed more fully as the
@@ -8053,32 +8173,6 @@ could test whether training shares rise with belief proxies while
 capital expenditure does not move monotonically with them. These
 exercises require data that are currently scarce but becoming available
 as AI firms go public and disclosure norms develop.
-
-\textbf{Policy implications.} On policy, the faith-based survival
-mechanism (Proposition 2) sharpens the familiar concern about
-optimism-supported valuations without endorsing its usual framing.
-Inside the model nothing is masked: the H-regime option value genuinely
-raises equity value and genuinely lowers the default boundary, and a
-firm sustained by that option is correctly valued given its belief. What
-the mechanism does imply is that solvency depends on a belief parameter,
-so a downward revision in \(\lambda\) would raise the default boundary
-and cut equity value at once; whether investors' beliefs about AI
-timelines are themselves accurate is outside the model's scope. On
-disclosure, a lab's measured training share \(\phi^{\mathrm{o}}\)
-summarizes its intertemporal trade-off between current revenue and
-future capability, so two labs with identical capital expenditure can
-carry very different solvency and value composition. Whether requiring
-standardized disclosure of training allocation would improve any
-dimension of market efficiency is a question the model cannot address,
-since it contains no information asymmetry, no belief updating by
-investors, and no price formation; the claim it supports is narrower,
-that an investor working inside this model would need
-\(\phi^{\mathrm{o}}\), and not compute spending alone, to locate a lab
-relative to its default boundary. On competition policy, capacity
-investment serves two purposes at once, generating revenue and deterring
-a rival; the model evaluates no intervention and so ranks no policies,
-and what it supplies is the strategic component of investment that such
-an evaluation would have to price.
 
 \textbf{Financing structures beyond public debt and equity.} The labs
 whose decisions the model represents finance themselves in varied ways.
@@ -8098,9 +8192,9 @@ coupon, a failed funding round, or a covenant violation. Three
 qualitative predictions plausibly carry over to other financing
 structures, though the model solves only one and does not verify the
 portability: higher training investment lowers the distress threshold
-through the continuation-value channel, leverage concentrates the tail
-risk of overinvestment, and the default boundary rises with rival
-capacity.
+through the continuation-value channel, operating costs, with leverage
+adding to them, concentrate tail risk on the far-optimistic side, and
+the default boundary rises with rival capacity.
 
 \textbf{Further limitations of the contest specification.} Beyond the
 alternative contest functions discussed above, the Tullock contest
