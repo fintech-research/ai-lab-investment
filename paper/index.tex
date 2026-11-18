@@ -937,13 +937,13 @@ below; the baseline policies and archetype outputs of
 Section~\ref{sec-calibration} and the credit exhibits and Dario's
 dilemma in Section~\ref{sec-valuation} are evaluated at the exact
 policies, with the claims of the entry game. The pure-power
-approximation of Section~\ref{sec-single-firm} remains in use only in
-the scale-gap diagnostic of Internet Appendix G. Table~\ref{tbl-domains}
-collects the model's operating assumptions, the domain over which each
-result is stated, and the approximations whose size I have measured, so
-that a reader can see which objects are exact and how large each
-departure is. The conventions are stated below; their magnitudes are in
-the table.
+approximation of Section~\ref{sec-single-firm} enters no reported object
+except where it is labelled as the approximation and set beside the
+exact one. Table~\ref{tbl-domains} collects the model's operating
+assumptions, the domain over which each result is stated, and the
+approximations whose size I have measured, so that a reader can see
+which objects are exact and how large each departure is. The conventions
+are stated below; their magnitudes are in the table.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1707}}
@@ -1002,9 +1002,10 @@ Equation~\ref{eq-default-boundary} at \(C_D = 0\); \(X_D\), equity and
 the default probability continuous at \(\ell = 0\) \\
 Domain & Proposition 3(iii), first investment \(X_L\) & Numerical: one
 firm leads at \(X_L\) and the other follows; the no-deviation conditions
-hold on a demand scan from \(0.03\) to \(10\) times \(X_P\) at each of
-ten arrival rates in \([0.03, 0.50]\), and under leverage; uniqueness,
-the symmetric mixed equilibrium and the assignment of roles are not
+hold on a demand scan from \(0.03\) times the lower of the single firm's
+triggers \(X_H^*\) and \(X^*\) to ten times the higher at each of ten
+arrival rates in \([0.03, 0.50]\), and under leverage; uniqueness, the
+symmetric mixed equilibrium and the assignment of roles are not
 established \\
 Domain & Proposition 3(iii), rent-equalization trigger \(X_P\) &
 Numerical: first up-crossing of \(L^* - F\) on a demand scan; an upper
@@ -1062,19 +1063,19 @@ proportional to \(X^{\beta_H}\), the leader's monopoly-phase value
 discounts follower entry by \((X/X_F^*)^{\beta_H}\), and the leader is
 held at the single firm's pure-power scale. That game is no longer the
 paper's benchmark. It is the nested approximation against which
-Table~\ref{tbl-domains} measures the exact equilibrium. Outside Internet
-Appendix G, where the scale-gap diagnostic is still computed at the
-pure-power policy \((X^{\text{pp}}, K^{\text{pp}})\) of
-Equation~\ref{eq-trigger-phi}, the symbols \(X^*\) and \(K^*\) denote
-the exact policy of Proposition 1(iii) with precommitted post-switch
-scale. In Section~\ref{sec-duopoly}, \(X_L\), \(X_P\), \(K_L\),
-\(\phi_L\), \(X_F^*\) and \(K_F\) denote objects of the exact game, and
-\(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) are evaluated for a leader
-that enters at \(X_L\) unless stated otherwise. The approximation is not
-a small signed error around the exact problem: its triggers and
-capacities are objects of the model it defines, while \(\phi^*\) carries
-over exactly to the single firm, because it maximizes \(A_{\text{eff}}\)
-at every scale.
+Table~\ref{tbl-domains} measures the exact equilibrium. Throughout the
+paper, the scale-gap diagnostic of Internet Appendix G included, the
+symbols \(X^*\) and \(K^*\) denote the exact policy of Proposition
+1(iii) with precommitted post-switch scale, and
+\((X^{\text{pp}}, K^{\text{pp}})\) the pure-power policy of
+Equation~\ref{eq-trigger-phi}. In Section~\ref{sec-duopoly}, \(X_L\),
+\(X_P\), \(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) denote objects of
+the exact game, and \(K_L\), \(\phi_L\), \(X_F^*\) and \(K_F\) are
+evaluated for a leader that enters at \(X_L\) unless stated otherwise.
+The approximation is not a small signed error around the exact problem:
+its triggers and capacities are objects of the model it defines, while
+\(\phi^*\) carries over exactly to the single firm, because it maximizes
+\(A_{\text{eff}}\) at every scale.
 
 \textbf{Leader's scale in the duopoly.} The leader chooses its capacity
 and training fraction at the demand at which it enters, with the
@@ -1609,11 +1610,12 @@ the trigger \(X_L\) of Equation~\ref{eq-first-investment} is finite and
 lies below the rent-equalization trigger \(X_P\), which also exists, and
 the strategies in which one firm invests first at \(X_L\) and the other
 follows satisfy the no-deviation conditions on the scanned range of
-demand, from \(0.03\) to \(10\) times \(X_P\): the leader's stopping
+demand, from \(0.03\) times the lower of the single firm's triggers
+\(X_H^*\) and \(X^*\) to ten times the higher: the leader's stopping
 problem, solved without restricting it to a trigger, has \(X_L\) as the
 lower end of its investment region; the follower's value of waiting
 exceeds the value of investing first at every demand level up to
-\(X_L\), by at least \(6.8\%\) at baseline and \(0.4\%\) at
+\(X_L\), by at least \(6.9\%\) at baseline and \(0.4\%\) at
 \(\lambda = 0.50\); and the follower's entry policy after the leader's
 is its best response. The arrival rates include those at which the
 single firm that chooses its scale freely never invests before the
@@ -1747,15 +1749,16 @@ rate \(\lambda\), in the exact problem. The solid black line is the
 trigger of a single firm that chooses its scale whenever it invests,
 which is finite only for \(\lambda < 0.073\); in the shaded region that
 firm waits for the switch. The dotted line is the trigger of a single
-firm whose post-switch scale is precommitted (Proposition 1(iii)). The
-solid line with squares is the first investment \(X_L\) of the duopoly
-equilibrium in which one firm leads and the other follows, and the
-dashed line with circles the rent-equalization trigger \(X_P\), an upper
-bound on the date of first investment; both are solved at ten arrival
-rates with the leader's capacity and training fraction chosen at the
-entry demand (Proposition 3). Both axes are logarithmic. Zero leverage,
-with the option to stop operating; all other parameters at baseline
-values.}
+firm whose post-switch scale is precommitted (Proposition 1(iii)). Both
+single-firm triggers are solved on a 30-point logarithmic grid of
+\(\lambda\) on \([0.03, 0.50]\). The solid line with squares is the
+first investment \(X_L\) of the duopoly equilibrium in which one firm
+leads and the other follows, and the dashed line with circles the
+rent-equalization trigger \(X_P\), an upper bound on the date of first
+investment; both are solved at ten arrival rates with the leader's
+capacity and training fraction chosen at the entry demand (Proposition
+3). Both axes are logarithmic. Zero leverage, with the option to stop
+operating; all other parameters at baseline values.}
 
 \end{figure}%
 
@@ -2135,7 +2138,7 @@ leverage of \(0.40\) adds about \(4\) basis points to each under par
 debt and about \(11\) under fairly priced debt. The five-year default
 probabilities are \(0.16\%\) and \(0.84\%\) without debt and \(0.25\%\)
 and \(1.04\%\) at \(\ell = 0.40\) under par debt (\(0.47\%\) and
-\(1.44\%\) under fairly priced debt). Second, the firm exposed to
+\(1.45\%\) under fairly priced debt). Second, the firm exposed to
 default is the leader, which enters at \(4.8\) times its shutdown
 boundary against \(6.5\) for the single firm; the follower enters after
 the switch at ten times its boundary, under the H-regime drift, and its
@@ -2852,17 +2855,17 @@ H-regime values & Derived (choices) \\
 \(\lambda\)) & Derived (primitives) \\
 \(B_H\) & Coefficient of the H-regime option value
 \(F_H(X) = B_H X^{\beta_H}\) & Derived (choices) \\
-\(C_D\) & Total coupon flow: \(C_D = r_c \, \ell \, I(K)\) & Derived
-(choices) \\
+\(C_D\) & Total coupon flow: \(C_D = r_c \, \ell \, I(K)\) under par
+debt; under fairly priced debt, the coupon at which debt is worth
+\(\ell \, I(K)\) at issuance & Derived (choices) \\
 \(\Omega\) & H-to-L present-value ratio setting \(\underline{\phi}\)
 (Equation~\ref{eq-phi-underbar}) & Derived (primitives) \\
 \(s_i^L, s_i^H\) & Tullock contest shares (L-regime inference, H-regime
 training) & Derived (choices) \\
 \(X_D\) & Endogenous default boundary & Derived (choices) \\
 \(X^*\) & Investment trigger: exact pre-switch trigger with precommitted
-post-switch scale (Proposition 1(iii)); the pure-power trigger in
-Internet Appendix G only (Section~\ref{sec-conventions}) & Derived
-(choices) \\
+post-switch scale (Proposition 1(iii)); the pure-power trigger is
+\(X^{\text{pp}}\) (Section~\ref{sec-conventions}) & Derived (choices) \\
 \(X_H^*\), \(K_H^*\) & Post-switch trigger and capacity (Proposition
 1(ii)) & Derived (primitives) \\
 \(X^{\text{pp}}\), \(K^{\text{pp}}\) & Trigger and capacity of the
@@ -3794,22 +3797,21 @@ three decades at each end), and refine its maximum by a bounded search.
 The scan does not refer to \(X_P\), so \(X_L\) is located also where the
 game has no rent-equalization trigger (Internet Appendix E). The
 equilibria reported in this appendix and in Section~\ref{sec-duopoly}
-were located on an earlier scan of \(26\) demand levels from \(0.03\) to
-\(10\) times \(X_P\); on the anchored scan \(X_L\) agrees with them to
-within \(2 \times 10^{-4}\) in relative terms and every check below
-holds, in each of the \(45\) cells, and the margins quoted below are
-those of the earlier scan. At each arrival rate \(h\) is negative at the
-bottom of the scan, where leading is worth less than mutual waiting,
-rises to a single peak at \(X_L\) and falls beyond it. A best trigger
-need not be a best stopping rule, so I also solve the leader's problem
-without restricting it: with \(u = V - W\) and \(\mathcal{A}\) the
-operator of Equation~\ref{eq-hjb-L}, the linear complementarity problem
+are located on this scan; no cell needed an extension. An earlier scan
+of \(26\) demand levels from \(0.03\) to \(10\) times \(X_P\) gives
+\(X_L\) within \(2 \times 10^{-4}\) in relative terms in every cell. At
+each arrival rate \(h\) is negative at the bottom of the scan, where
+leading is worth less than mutual waiting, rises to a single peak at
+\(X_L\) and falls beyond it. A best trigger need not be a best stopping
+rule, so I also solve the leader's problem without restricting it: with
+\(u = V - W\) and \(\mathcal{A}\) the operator of
+Equation~\ref{eq-hjb-L}, the linear complementarity problem
 \(\min\{-\mathcal{A}u,\; u - (L^* - W)\} = 0\) is solved by policy
 iteration on \(4{,}001\) log-spaced demand levels over the scanned
 range, with \(L^* - W\) interpolated from the scan and no assumption on
 the shape of the investment region. In every cell the leader invests at
 every scanned demand level above a boundary and at none below it, the
-boundary agrees with \(X_L\) to within \(0.14\%\), and the value below
+boundary agrees with \(X_L\) to within \(0.26\%\), and the value below
 it agrees with Equation~\ref{eq-values-before-entry} to within
 \(3 \times 10^{-4}\) in relative terms.
 
@@ -3826,7 +3828,7 @@ at every scanned demand level there. On the grid \(F/L^*\) at \(X_L\) is
 \(1.104\) at baseline and lies between \(1.004\), at \(\lambda = 0.50\),
 and \(1.140\), at \(\lambda = 0.03\) (Table~\ref{tbl-duopoly-order}).
 Evaluated directly at the scan points, the follower's value of waiting
-exceeds the value of investing first by at least \(6.8\%\) of the former
+exceeds the value of investing first by at least \(6.9\%\) of the former
 at baseline and by at least \(0.3\%\) in every cell. After the leader
 has invested, the follower's policy solves its own stopping problem,
 which is checked against a linear complementarity solve (Internet
@@ -3844,8 +3846,9 @@ rate at \(\ell = 0.20\) and the eight arrival rates from \(0.05\) to
 \(0.50\) at \(\ell = 0.40\) and \(\ell = 0.65\), each under both debt
 conventions; and the baseline with the follower's post-switch scale
 precommitted. For the two fairly priced cells at \(\lambda = 0.05\) the
-scan is narrower, seven demand levels from \(0.2\) to \(1.6\) times
-\(X_P\), and the conditions are verified on that range only. The
+scan is narrower, seven demand levels from \(0.118\) to \(0.944\) times
+\(X_H^*\) (from \(0.2\) to \(1.6\) times the \(X_P\) found without
+debt), and the conditions are verified on that range only. The
 conditions are checked at scan points and, between them, on an
 interpolant, over a bounded range of demand; they are not proved. Four
 further things are not established. First, uniqueness: I do not show
@@ -4331,7 +4334,7 @@ True (\%)
 \bottomrule\noalign{}
 \endlastfoot
 0.00 & 31.8, 1.3, 12.7 & 0.16 & 0.37 & 0.34 & 1.80 & 47.8, 1.8, 31.7 &
-0.84 & 1.56 & 1.64 & 8.67 \\
+0.84 & 1.56 & 1.65 & 8.67 \\
 0.01 & 31.8, 1.3, 12.7 & 0.16 & 0.38 & 0.36 & 1.84 & 47.8, 1.8, 31.7 &
 0.85 & 1.59 & 1.67 & 8.75 \\
 0.05 & 31.8, 1.3, 12.7 & 0.18 & 0.40 & 0.40 & 2.03 & 47.8, 1.8, 31.7 &
@@ -4339,7 +4342,7 @@ True (\%)
 0.15 & 31.8, 1.3, 12.7 & 0.24 & 0.48 & 0.54 & 2.56 & 47.8, 1.8, 31.7 &
 1.04 & 1.91 & 2.06 & 9.88 \\
 0.40 & 31.7, 1.3, 12.7 & 0.47 & 0.71 & 1.03 & 4.29 & 47.8, 1.8, 31.7 &
-1.44 & 2.62 & 2.92 & 12.11 \\
+1.45 & 2.61 & 2.92 & 12.11 \\
 \end{longtable}
 
 Three things follow. First, the expected-value losses do not move with
@@ -4827,18 +4830,22 @@ check that the gap changes sign exactly once (from negative to
 positive), and refine the root with Brent's method on the bracketing
 interval; the check is enforced on every path that produces a reported
 number (the solver raises when it fails), and it certifies a single
-crossing at the grid's resolution rather than proving uniqueness. No
-case of multiple up-crossings was found across all parameterizations
-tested, varying each parameter over its (A2)-admissible range at the
-baseline values of the others: \(\sigma \in [0.20, 0.38]\),
-\(\alpha \in [0.37, 0.53]\), \(\gamma \in [1.15, 2.00]\),
-\(\lambda \in [0.01, 0.50]\), \(\ell \in [0, 0.70]\), and
-\(r \in [0.10, 0.13]\) (outside these ranges the leader's capacity
-problem has no interior optimum and the solvers raise an error). Running
-the duopoly optimization from the same 16 deterministic starting points,
-all starts converge to the same solution. That is evidence that the
-optimizer is not stopping at distinct local optima; it is not a proof
-that the equilibrium is unique.
+crossing at the grid's resolution rather than proving uniqueness. In the
+nested game no case of multiple up-crossings was found across the
+parameterizations tested, varying each parameter over its
+(A2)-admissible range at the baseline values of the others:
+\(\sigma \in [0.20, 0.38]\), \(\alpha \in [0.37, 0.53]\),
+\(\gamma \in [1.15, 2.00]\), \(\lambda \in [0.01, 0.50]\),
+\(\ell \in [0, 0.70]\), and \(r \in [0.10, 0.13]\) (outside these ranges
+the leader's capacity problem has no interior optimum and the solvers
+raise an error). This finding is about the nested game only and does not
+carry over to the entry game in the exact primitives, where \(L^* - F\)
+changes sign twice on the scan at \(\gamma = 1.875\) and
+\(\gamma = 1.9\) (Internet Appendix E), so that \(X_P\) is the first of
+two crossings there. Running the duopoly optimization from the same 16
+deterministic starting points, all starts converge to the same solution.
+That is evidence that the optimizer is not stopping at distinct local
+optima; it is not a proof that the equilibrium is unique.
 
 \textbf{The entry game in the exact primitives.} This block states the
 game solved in Section~\ref{sec-duopoly}, how it is solved, how the
@@ -4935,10 +4942,9 @@ claim), then the leader's claims. The leader's policy at a demand level
 maximizes \(L\) by Nelder--Mead over \((\ln K, \phi)\), warm-started
 along the demand scan and started cold from four scales at its first
 point. The rent-equalization trigger is found on a 25-point logarithmic
-scan and the first investment \(X_L\) on a 26-point scan from \(0.03\)
-to \(10\) times \(X_P\), as described in the Proof of Proposition 3
-(which also describes the scan anchored at the single firm's triggers
-used in Internet Appendix E). When the follower's scale is chosen at the
+scan and the first investment \(X_L\) on the scan anchored at the single
+firm's triggers described in the Proof of Proposition 3, the same scan
+as in Internet Appendix E. When the follower's scale is chosen at the
 switch the forcing above \(X_F^*\) is tabulated on a logarithmic grid of
 150 points per decade and integrated by Simpson's rule with a power-law
 tail; elsewhere the forcing is piecewise a sum of powers and
@@ -5014,8 +5020,9 @@ are the follower's post-switch trigger and capacity against that leader;
 \(X_L/X_D\) is demand at entry over the leader's shutdown boundary;
 \(X_P\) is the rent-equalization trigger, an upper bound on the date of
 first investment. Each row is one solve of the game: a 25-point demand
-scan for \(X_P\) and a 26-point scan from \(0.03\) to \(10\) times
-\(X_P\) for \(X_L\); all other parameters at baseline
+scan for \(X_P\) and, for \(X_L\), a scan with ten points per decade
+from \(0.03\) times the lower of \(X_H^*\) and \(X^*\) to ten times the
+higher; all other parameters at baseline
 values.}\label{tbl-duopoly-beliefs}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
@@ -5071,11 +5078,11 @@ values.}\label{tbl-duopoly-beliefs}\tabularnewline
 & 0.000135 & 0.31 \\
 0.050 & 0.000841 & 0.000490 & 0.3732 & 0.4246 & 0.0139 & 0.0472 & 4.15 &
 0.00164 & 0.51 \\
-0.075 & 0.00225 & 0.00221 & 0.5572 & 0.5919 & 0.0299 & 0.108 & 4.55 &
+0.075 & 0.00225 & 0.00221 & 0.5571 & 0.5919 & 0.0299 & 0.108 & 4.55 &
 0.00578 & 0.39 \\
-0.100 & 0.00336 & 0.00416 & 0.6791 & 0.7009 & 0.0443 & 0.163 & 4.81 &
+0.100 & 0.00336 & 0.00416 & 0.6791 & 0.7009 & 0.0443 & 0.163 & 4.80 &
 0.00857 & 0.39 \\
-0.150 & 0.00383 & 0.00563 & 0.8106 & 0.8216 & 0.0567 & 0.209 & 4.88 &
+0.150 & 0.00383 & 0.00563 & 0.8107 & 0.8216 & 0.0567 & 0.209 & 4.88 &
 0.00738 & 0.52 \\
 0.200 & 0.00331 & 0.00509 & 0.8743 & 0.8815 & 0.0559 & 0.206 & 4.74 &
 0.00505 & 0.66 \\
@@ -5152,16 +5159,16 @@ Single firm, precommitted scale
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.030 & 1.110 & 1.140 & 8.5\% & 0.9998 & 1.25 & 0.000439 & 0.000439 \\
-0.050 & 1.151 & 1.085 & 6.4\% & 1.0005 & 1.29 & 0.0173 & 0.00552 \\
-0.075 & 1.113 & 1.111 & 7.4\% & 1.0002 & 1.27 & waits & 0.00826 \\
-0.100 & 1.091 & 1.104 & 6.8\% & 1.0005 & 1.22 & waits & 0.00926 \\
-0.150 & 1.073 & 1.074 & 5.1\% & 1.0008 & 1.16 & waits & 0.00940 \\
-0.200 & 1.065 & 1.051 & 3.8\% & 1.0006 & 1.12 & waits & 0.00890 \\
-0.250 & 1.060 & 1.035 & 2.7\% & 0.9988 & 1.10 & waits & 0.00835 \\
-0.300 & 1.056 & 1.024 & 2.1\% & 1.0008 & 1.08 & waits & 0.00786 \\
-0.400 & 1.050 & 1.011 & 1.1\% & 1.0000 & 1.06 & waits & 0.00710 \\
-0.500 & 1.045 & 1.004 & 0.4\% & 0.9990 & 1.05 & waits & 0.00655 \\
+0.030 & 1.110 & 1.140 & 8.5\% & 1.0010 & 1.25 & 0.000439 & 0.000439 \\
+0.050 & 1.151 & 1.085 & 6.4\% & 1.0004 & 1.29 & 0.0173 & 0.00552 \\
+0.075 & 1.113 & 1.111 & 7.5\% & 0.9997 & 1.27 & waits & 0.00826 \\
+0.100 & 1.091 & 1.104 & 6.9\% & 1.0005 & 1.22 & waits & 0.00926 \\
+0.150 & 1.073 & 1.074 & 5.1\% & 0.9996 & 1.16 & waits & 0.00940 \\
+0.200 & 1.065 & 1.051 & 3.8\% & 0.9998 & 1.12 & waits & 0.00890 \\
+0.250 & 1.060 & 1.035 & 2.8\% & 1.0005 & 1.10 & waits & 0.00835 \\
+0.300 & 1.056 & 1.024 & 2.0\% & 1.0007 & 1.08 & waits & 0.00786 \\
+0.400 & 1.050 & 1.011 & 1.0\% & 1.0005 & 1.06 & waits & 0.00710 \\
+0.500 & 1.045 & 1.004 & 0.4\% & 1.0016 & 1.05 & waits & 0.00655 \\
 \end{longtable}
 
 At baseline the first investment comes at a demand level \(64\%\) below
@@ -5170,7 +5177,7 @@ below that firm's; the rent-equalization trigger is \(7.4\%\) below the
 same trigger. With the follower's post-switch scale precommitted instead
 of chosen at the switch, \(X_L\) and the leader's capacity differ by
 less than \(0.1\%\) (\(0.003366\) and \(0.004166\) against \(0.003364\)
-and \(0.004163\)), the rent-equalization trigger is \(0.0084\), and the
+and \(0.004162\)), the rent-equalization trigger is \(0.0084\), and the
 follower would also enter before the switch, at a demand level of
 \(0.16\) against a leader that entered at \(X_L\), far above it. Without
 the option to stop operating the rent-equalization trigger is \(0.0090\)
@@ -5219,11 +5226,12 @@ fairly priced cells at \(\lambda = 0.05\): there the follower also
 enters before the switch and one evaluation of the leader's policy takes
 minutes, so \(X_P\) is solved on a five-point scan between \(0.3\) and
 \(1.5\) times \(X_H^*\) that brackets the crossing found without debt,
-and \(X_L\) on a seven-point scan between \(0.2\) and \(1.6\) times
-\(X_P\). Under fairly priced debt, at the cells where the recovery rule
-moves the leader's value at \(X_P\) by more than \(10^{-5}\), \(X_P\) is
-solved on a bracket of \(\pm 3\%\) around the crossing located on these
-scans under the rule without the option to shut the inference business
+and \(X_L\) on a seven-point scan between \(0.118\) and \(0.944\) times
+\(X_H^*\) (\(0.2\) to \(1.6\) times the \(X_P\) found without debt).
+Under fairly priced debt, at the cells where the recovery rule moves the
+leader's value at \(X_P\) by more than \(10^{-5}\), \(X_P\) is solved on
+a bracket of \(\pm 3\%\) around the crossing located on these scans
+under the rule without the option to shut the inference business
 down.}\label{tbl-spread-entry}\tabularnewline
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedleft
@@ -5273,9 +5281,9 @@ spread (bps)
 \endlastfoot
 0.05 & 4.05 & 95.8 & 3.99 & 98.8 & 3.96 & 100.5 & 3.90 & 103.1 \\
 0.10 & 4.51 & 49.4 & 4.32 & 54.2 & 4.25 & 56.2 & 4.05 & 61.8 \\
-0.15 & 4.55 & 37.5 & 4.31 & 42.3 & 4.25 & 44.0 & 4.02 & 49.8 \\
-0.20 & 4.43 & 33.9 & 4.21 & 38.2 & 4.15 & 39.6 & 3.94 & 45.0 \\
-0.25 & 4.31 & 32.7 & 4.11 & 36.6 & 4.06 & 37.9 & 3.87 & 42.8 \\
+0.15 & 4.55 & 37.5 & 4.32 & 42.3 & 4.25 & 44.0 & 4.02 & 49.8 \\
+0.20 & 4.43 & 33.9 & 4.21 & 38.2 & 4.15 & 39.7 & 3.94 & 45.0 \\
+0.25 & 4.30 & 32.7 & 4.11 & 36.6 & 4.06 & 37.9 & 3.86 & 42.8 \\
 0.30 & 4.20 & 32.4 & 4.03 & 36.0 & 3.98 & 37.2 & 3.80 & 41.7 \\
 0.40 & 4.05 & 33.0 & 3.90 & 36.2 & 3.86 & 37.2 & 3.71 & 41.1 \\
 0.50 & 3.95 & 34.0 & 3.82 & 37.0 & 3.79 & 37.9 & 3.66 & 41.4 \\
@@ -5394,7 +5402,7 @@ Coupon rate
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.00 & none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.000700 & 4.81 &
+0.00 & none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.000700 & 4.80 &
 10.3 & n.a. & n.a. & 0.00857 \\
 0.20 & par & 0.00390 & 0.00533 & 0.0513 & 0.208 & 0.000833 & 4.68 & 8.9
 & 45.9 & 5.00\% & 0.00989 \\
@@ -5419,7 +5427,7 @@ the follower's by \(1.6\%\), the leader's trigger by \(1.2\%\) and the
 follower's by \(0.5\%\): the direction is reversed and the size is at
 most two percent. What leverage does under either convention is raise
 the boundary and shorten the distance to default, for the leader from
-\(4.81\) to \(4.25\) under par debt and \(4.05\) under fairly priced
+\(4.80\) to \(4.25\) under par debt and \(4.05\) under fairly priced
 debt at \(\ell = 0.65\), and for the follower at its entry from \(10.3\)
 to \(6.0\) and \(5.0\). The fairly priced firm sits closer to default
 than the par-financed one at the same leverage, since it pays the higher
@@ -5870,9 +5878,9 @@ revenue coefficient separates exactly as in Proposition 1: \[
 A_{\text{eff},F} = g(\phi) \cdot \frac{K_F^{2\alpha}}{K_F^\alpha + K_L^\alpha},
 \] with \(g(\phi) = w_L (1-\phi)^\alpha + w_H \phi^\alpha\). The
 allocation FOC is then exactly the single-firm condition (the
-role-invariance of Proposition 3(ii)), and the capacity FOC reduces to a
-single equation with \emph{effective revenue elasticity}
-\(\alpha(2 - s_F)\), where
+nested-game counterpart of the critical-point statement of Proposition
+3(ii)), and the capacity FOC reduces to a single equation with
+\emph{effective revenue elasticity} \(\alpha(2 - s_F)\), where
 \(s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)\): \[
 \alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, \Theta_\ell(K_F) = (\beta_H - 1)\, K_F\, \Theta_\ell'(K_F),
 \] where
@@ -6938,10 +6946,9 @@ holds in eleven draws and reverses at \(\lambda = 0.075\) (ratio
 The parameters \(\delta\) and \(c\) only set the cost scale, in which
 the value functions are homogeneous (Section~\ref{sec-calibration}), so
 they move \(X^*\) and \(K^*\) and leave every ratio and share at its
-baseline value. The scale-gap index of Internet Appendix G, which is
-defined at the pure-power policy, stays between \(50\%\) and \(59\%\) at
-one tenth of that capacity and between \(25\%\) and \(30\%\) at three
-tenths.
+baseline value. The scale-gap index of Internet Appendix G, evaluated at
+the precommitted-scale policy, stays between \(50\%\) and \(59\%\) at
+\(K/K^* = 0.1\) and between \(25\%\) and \(30\%\) at \(K/K^* = 0.3\).
 
 The entry game of Section~\ref{sec-duopoly} is re-solved at zero
 leverage at each draw that is admissible for it, and compared with the
@@ -7080,8 +7087,7 @@ Pure-power trigger error (\%) & \(-60\) & \(-50\) & \(-38\) & \(-66\) &
 \(-20\) \\
 Pure-power capacity error (\%) & \(-67\) & \(-55\) & \(-43\) & \(-75\) &
 \(-27\) \\
-Scale-gap index at \(K/K^{\text{pp}} = 0.1\) (\%) & 43 & 52 & 58 & 40 &
-61 \\
+Scale-gap index at \(K/K^* = 0.1\) (\%) & 43 & 52 & 59 & 40 & 61 \\
 \end{longtable}
 
 The objects in Table~\ref{tbl-joint-sweep} separate into three groups.
@@ -7938,7 +7944,7 @@ Follower (\%)
 & 0.0 \\
 0.300 & 0.0023 & 0.0035 & 0.93 & 10.7 & 0.8 & 2.8 & 7.1 & 0.4 & 7.3 &
 0.0 \\
-0.400 & 0.0017 & 0.0026 & 0.96 & 25.0 & 3.6 & 6.6 & 14.8 & 2.9 & 10.0 &
+0.400 & 0.0017 & 0.0026 & 0.96 & 25.0 & 3.6 & 6.5 & 14.8 & 2.9 & 10.0 &
 27.6\(^\ddagger\) \\
 0.500 & 0.0017\(^\dagger\) & 0.0026 & 0.97 & 31.7 & 4.1 & 8.9 & 18.8 &
 2.7 & 9.8 & 34.1\(^\ddagger\) \\
@@ -8172,9 +8178,10 @@ investment in regime \(H\). The solid curve shows the option value
 the trigger-optimal scale \(K_H^*\), held fixed across \(X\). The shaded
 region is the ``value of waiting,'' the excess of the option value over
 the NPV. The vertical dotted line marks the optimal trigger \(X_H^*\)
-where smooth pasting holds. Parameters: baseline calibration
-(\(\sigma = 0.25\), \(\mu_H = 0.06\), \(r = 0.12\), \(\alpha = 0.40\),
-\(\gamma = 1.50\)).}
+where smooth pasting holds. Demand runs over a 300-point grid from
+\(0.001 X_H^*\) to \(3 X_H^*\); no debt. Parameters: baseline
+calibration (\(\sigma = 0.25\), \(\mu_H = 0.06\), \(r = 0.12\),
+\(\alpha = 0.40\), \(\gamma = 1.50\)).}
 
 \end{figure}%
 
@@ -8219,7 +8226,11 @@ parameter, holding the others fixed. Solid lines (left axis) show the
 optimal trigger \(X_H^*\); dashed lines (right axis) show the optimal
 capacity \(K_H^*\). (a) Volatility \(\sigma\); (b) revenue elasticity
 \(\alpha\); (c) investment cost convexity \(\gamma\); (d) operating cost
-rate \(\delta\). Parameters: baseline calibration.}
+rate \(\delta\). Each panel uses a 40-point grid,
+\(\sigma \in [0.20, 0.32]\), \(\alpha \in [0.37, 0.45]\),
+\(\gamma \in [1.20, 2.00]\) and \(\delta \in [0.01, 0.08]\), inside the
+(A2) window, and the policy is solved at every point; no debt.
+Parameters: baseline calibration.}
 
 \end{figure}%
 
@@ -8285,26 +8296,33 @@ allocation \(\phi\). The scale-gap index is then \[
 g(K_{\text{installed}}) = \frac{V_{\text{gap}}}{V_{\text{AIP}} + V_{\text{gap}}} \in [0, 1].
 \]
 
-Figure~\ref{fig-growth-decomposition} plots the index using the full
-model with regime switching: values are computed with the effective
-revenue coefficient \(A_{\text{eff}}\) at the optimal training fraction
-\(\phi^*\), evaluated at demand \(1.5 X^*\). Panel (a) stacks
-assets-in-place (blue, lower band) and the capacity gap (orange, upper
-band) against installed capacity relative to the optimal level \(K^*\).
-When the firm has little installed capacity (\(K/K^* \ll 1\)), the gap
-dominates the stack; as installed capacity rises, assets-in-place
-increase concavely (diminishing returns) while the gap shrinks. Panel
-(b) plots \(g\), which falls from about 80\% at the left edge of the
-figure (\(K/K^* = 0.01\)) to zero at \(K/K^* \approx 0.77\); the
-crossover occurs where the gross value of installed assets overtakes the
-optimal \emph{net} value, since assets-in-place are measured gross of
-the sunk investment cost while the benchmark nets it out. At the
-baseline calibration \(g\) equals 50\% at \(K/K^* = 0.1\) and 26\% at
-\(K/K^* = 0.3\), so the index runs at roughly 25--50\% over that range;
-the sweeps in Internet Appendix E report 50--59\% and 25--30\% at those
-two points when each parameter is moved by \(\pm 25\%\) one at a time,
-and 40--61\% and 16--33\% when all nine are moved jointly, so the band
-survives both. Because \(c = 1\) fixes the cost scale by normalization
+Figure~\ref{fig-growth-decomposition} plots the index at the model of
+record. The benchmark \((X^*, K^*, \phi^*)\) is the precommitted-scale
+policy of Proposition 1(iii), at which Section~\ref{sec-valuation} also
+prices the single firm's debt (with scale chosen at the switch the
+single firm waits for the switch at baseline and has no pre-switch scale
+to compare with), and values are computed with the effective revenue
+coefficient \(A_{\text{eff}}\) at \(\phi^*\), evaluated at demand
+\(1.5 X^*\). Panel (a) stacks assets-in-place (blue, lower band) and the
+capacity gap (orange, upper band) against installed capacity relative to
+the optimal level \(K^*\). When the firm has little installed capacity
+(\(K/K^* \ll 1\)), the gap dominates the stack; as installed capacity
+rises, assets-in-place increase concavely (diminishing returns) while
+the gap shrinks. Panel (b) plots \(g\), which falls from about 80\% at
+the left edge of the figure (\(K/K^* = 0.01\)) to zero at
+\(K/K^* \approx 0.73\); the crossover occurs where the gross value of
+installed assets overtakes the optimal \emph{net} value, since
+assets-in-place are measured gross of the sunk investment cost while the
+benchmark nets it out. At the baseline calibration \(g\) equals 50\% at
+\(K/K^* = 0.1\) and 26\% at \(K/K^* = 0.3\), so the index runs at
+roughly 25--50\% over that range; the sweeps in Internet Appendix E
+report 50--59\% and 25--30\% at those two points when each parameter is
+moved by \(\pm 25\%\) one at a time, and 40--61\% and 16--33\% when all
+nine are moved jointly, so the band survives both. The pure-power policy
+of the earlier draft gives the same \(50\%\) and \(26\%\) and a
+crossover at \(K/K^{\text{pp}} \approx 0.77\), so the shape does not
+depend on which of the two policies supplies the benchmark. Because
+\(c = 1\) fixes the cost scale by normalization
 (Section~\ref{sec-calibration}), \(K^*\) is not a physical quantity and
 \(K/K^*\) cannot be read off observed compute stocks; I therefore make
 no claim about which point on the axis describes a given firm, and the
@@ -8325,14 +8343,15 @@ the capacity gap (orange, upper band) as a function of installed
 capacity relative to the optimal level \(K^*\); the dotted line marks
 \(K/K^* = 1\). (b) The scale-gap index
 \(g = V_{\text{gap}}/(V_{\text{AIP}} + V_{\text{gap}})\) over the same
-range, reaching zero at \(K/K^* \approx 0.77\). The two components are
+range, reaching zero at \(K/K^* \approx 0.73\). The two components are
 measured against different benchmarks, one gross of sunk investment cost
 and one net of it, so their sum is a normalization rather than a
 valuation identity and \(g\) is not a share of firm value.
 Horizontal-axis levels are not identified, because \(c = 1\) fixes the
 cost scale by normalization. Parameters: full model with regime
-switching at the optimal training fraction \(\phi^*\), demand at
-\(1.5 X^*\), baseline calibration.}
+switching at the precommitted-scale policy \((X^*, K^*, \phi^*)\) of
+Proposition 1(iii), demand at \(1.5 X^*\), a 40-point grid of \(K/K^*\)
+on \([0.01, 1.5]\), no debt, baseline calibration.}
 
 \end{figure}%
 
@@ -8553,13 +8572,13 @@ Follower, fair (\%)
 0.10 & 0.18 & 0.21 & 0.89 & 0.97 & 0.002 & 0.003 \\
 0.15 & 0.19 & 0.24 & 0.91 & 1.04 & 0.003 & 0.006 \\
 0.20 & 0.20 & 0.28 & 0.94 & 1.11 & 0.004 & 0.009 \\
-0.40 & 0.25 & 0.47 & 1.04 & 1.44 & 0.02 & 0.04 \\
-0.70 & 0.35 & 0.90 & 1.21 & 2.07 & 0.11 & 0.23 \\
+0.40 & 0.25 & 0.47 & 1.04 & 1.45 & 0.02 & 0.04 \\
+0.70 & 0.35 & 0.90 & 1.21 & 2.08 & 0.11 & 0.23 \\
 \end{longtable}
 
 Without debt every firm already has a boundary, the shutdown boundary,
 at which it would stop operating: the single firm enters at \(6.46\)
-times it, the leader at \(4.81\) and the follower at \(10.3\), and debt
+times it, the leader at \(4.80\) and the follower at \(10.3\), and debt
 carries a spread from the first unit, \(22\), \(44\) and \(4\) basis
 points in the limit. Leverage raises the boundary through the coupon and
 widens the spread to \(30\), \(51\) and \(18\) basis points at
@@ -8567,7 +8586,7 @@ widens the spread to \(30\), \(51\) and \(18\) basis points at
 fairly priced debt, whose coupon rate on proceeds is \(r\) plus the
 spread, \(12.0\%\) to \(12.6\%\) here, about two and a half times the
 par coupon. The five-year default probability of the leader rises from
-\(0.84\%\) to \(1.21\%\) under par debt and to \(2.07\%\) under fairly
+\(0.84\%\) to \(1.21\%\) under par debt and to \(2.08\%\) under fairly
 priced debt over the same range. Recovery is between zero and \(4.8\%\)
 of the default-free claim in every cell, so the cap at that claim never
 binds. The cap at the unlevered asset value binds for the leader at low
