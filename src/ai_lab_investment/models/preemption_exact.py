@@ -158,15 +158,30 @@ SCALES: tuple[str, ...] = ("precommitted", "envelope")
 _PENALTY = 1e20
 
 
-def contest_revenue(
-    own: np.ndarray | float, rival: np.ndarray | float, alpha: float
-) -> np.ndarray:
-    """Tullock revenue per unit demand, own^{2 alpha} / (own^alpha + rival^alpha).
+CONTESTS: tuple[str, ...] = ("tullock", "arithmetic_mean")
 
-    Equals own^alpha when the rival has no capacity, and zero when own = 0.
+
+def contest_revenue(
+    own: np.ndarray | float,
+    rival: np.ndarray | float,
+    alpha: float,
+    contest: str = "tullock",
+) -> np.ndarray:
+    """Contest revenue per unit demand in one market.
+
+    ``"tullock"`` (the model of record): own^{2 alpha} / (own^alpha +
+    rival^alpha). ``"arithmetic_mean"`` (the benchmark of Internet Appendix
+    E, issue #182): shares are Tullock but the market's revenue is the
+    arithmetic mean of the standalone revenues of the firms active in it, so
+    a firm facing an active rival earns half its standalone revenue,
+    own^alpha / 2, whatever the rival's capacity. Both equal own^alpha when
+    the rival has no capacity in the market, and zero when own = 0.
     """
     own_arr = np.asarray(own, dtype=float)
     rival_arr = np.asarray(rival, dtype=float)
+    if contest == "arithmetic_mean":
+        out = own_arr**alpha * np.where(rival_arr > 0.0, 0.5, 1.0)
+        return np.where(own_arr > 0.0, out, 0.0)
     with np.errstate(divide="ignore", invalid="ignore"):
         share = 1.0 / (1.0 + (rival_arr / own_arr) ** alpha)
         out = own_arr**alpha * share
@@ -383,6 +398,9 @@ class ExactPreemptionGame:
             when the switch arrives: ``"precommitted"`` or ``"envelope"``.
         table_density: Points per decade of the quadrature table used for the
             envelope forcing.
+        contest: ``"tullock"`` (the model of record) or ``"arithmetic_mean"``
+            (the robustness benchmark of Internet Appendix E; see
+            `contest_revenue`).
     """
 
     def __init__(
@@ -390,10 +408,15 @@ class ExactPreemptionGame:
         params: ModelParameters,
         scale: str = "precommitted",
         table_density: int = 150,
+        contest: str = "tullock",
     ):
         if scale not in SCALES:
             msg = f"scale must be one of {SCALES}, got {scale!r}"
             raise ValueError(msg)
+        if contest not in CONTESTS:
+            msg = f"contest must be one of {CONTESTS}, got {contest!r}"
+            raise ValueError(msg)
+        self.contest = contest
         if params.alpha >= 0.5:
             msg = (
                 "The exact preemption diagnostic requires alpha < 1/2 "
@@ -446,9 +469,11 @@ class ExactPreemptionGame:
         phi_arr = np.asarray(phi, dtype=float)
         K_arr = np.asarray(K, dtype=float)
         inference = contest_revenue(
-            (1.0 - phi_arr) * K_arr, (1.0 - phi_rival) * K_rival, alpha
+            (1.0 - phi_arr) * K_arr, (1.0 - phi_rival) * K_rival, alpha, self.contest
         )
-        training = contest_revenue(phi_arr * K_arr, phi_rival * K_rival, alpha)
+        training = contest_revenue(
+            phi_arr * K_arr, phi_rival * K_rival, alpha, self.contest
+        )
         return self.w_L * inference + self.w_H * training
 
     # ------------------------------------------------------------------
@@ -460,7 +485,19 @@ class ExactPreemptionGame:
         K_arr = np.asarray(K, dtype=float)
         if T_L <= 0.0:
             return np.ones_like(K_arr)
+        if self.contest == "arithmetic_mean":
+            return np.full_like(K_arr, 0.5)
         return 1.0 / (1.0 + (T_L / K_arr) ** self.params.alpha)
+
+    def _revenue_elasticity(self, share: np.ndarray | float) -> np.ndarray | float:
+        """Elasticity of the follower's H revenue to its capacity, over alpha.
+
+        2 - s under the Tullock contest; 1 under the arithmetic-mean
+        benchmark, where revenue is half the standalone revenue.
+        """
+        if self.contest == "arithmetic_mean":
+            return 1.0 + 0.0 * share
+        return 2.0 - share
 
     def post_switch_entry(self, T_L: float) -> PostSwitchEntry:
         """Follower's jointly optimal absorbing-H trigger and capacity.
@@ -479,10 +516,11 @@ class ExactPreemptionGame:
             s = float(self._share(K, T_L))
             b = p.delta * K / p.r + p.c * K**p.gamma
             Kb_prime = p.delta * K / p.r + p.gamma * p.c * K**p.gamma
-            return p.alpha * beta * (2.0 - s) - (beta - 1.0) * Kb_prime / b
+            elasticity = float(self._revenue_elasticity(s))
+            return p.alpha * beta * elasticity - (beta - 1.0) * Kb_prime / b
 
         K_F = float(np.exp(optimize.brentq(bracket, -60.0, 40.0, xtol=1e-13)))
-        a = p.A_H * float(contest_revenue(K_F, T_L, p.alpha))
+        a = p.A_H * float(contest_revenue(K_F, T_L, p.alpha, self.contest))
         b = float(self.cost(K_F))
         X_F = beta / (beta - 1.0) * b / a
         B_F = (a * X_F - b) / X_F**beta
@@ -503,7 +541,8 @@ class ExactPreemptionGame:
             mid = 0.5 * (lo + hi)
             K = np.exp(mid)
             s = self._share(K, T_L)
-            revenue = p.A_H * X_arr * p.alpha * K ** (p.alpha - 1.0) * s * (2.0 - s)
+            factor = s * self._revenue_elasticity(s)
+            revenue = p.A_H * X_arr * p.alpha * K ** (p.alpha - 1.0) * factor
             marginal_cost = p.delta / p.r + p.c * p.gamma * K ** (p.gamma - 1.0)
             up = revenue > marginal_cost
             lo = np.where(up, mid, lo)
@@ -525,7 +564,7 @@ class ExactPreemptionGame:
         if hi.any():
             x = X_arr[hi]
             K = self._exercised_capacity(x, entry)
-            a = p.A_H * contest_revenue(K, entry.T_L, p.alpha)
+            a = p.A_H * contest_revenue(K, entry.T_L, p.alpha, self.contest)
             out[hi] = a * x - self.cost(K)
         return out
 
@@ -566,7 +605,9 @@ class ExactPreemptionGame:
         p = self.params
         low = ((p.lam * entry.B_F, p.beta_H),)
         if self.scale == "precommitted":
-            a = p.A_H * float(contest_revenue(entry.K_F, entry.T_L, p.alpha))
+            a = p.A_H * float(
+                contest_revenue(entry.K_F, entry.T_L, p.alpha, self.contest)
+            )
             b = float(self.cost(entry.K_F))
             return ForcedClaim(p, entry.X_F, low, ((p.lam * a, 1.0), (-p.lam * b, 0.0)))
         y = self._table_grid(entry.X_F)
@@ -611,8 +652,8 @@ class ExactPreemptionGame:
         """Revenue coefficient maximized over phi on a grid, at each capacity."""
         phis = np.linspace(0.005, 0.995, 100)
         alpha = self.params.alpha
-        inference = contest_revenue(np.outer(K, 1.0 - phis), N_L, alpha)
-        training = contest_revenue(np.outer(K, phis), T_L, alpha)
+        inference = contest_revenue(np.outer(K, 1.0 - phis), N_L, alpha, self.contest)
+        training = contest_revenue(np.outer(K, phis), T_L, alpha, self.contest)
         coeff = self.w_L * inference + self.w_H * training
         j = np.argmax(coeff, axis=1)
         return coeff[np.arange(len(K)), j], phis[j]
@@ -1095,7 +1136,11 @@ class ExactPreemptionGame:
         Brent's method. The mutual-waiting comparison uses the
         ``"reoptimized"`` convention of `mutual_waiting_claim`.
         ``max_gap_over_follower`` is the largest (L* - F) / F on the scan
-        grid, a measure of how much leading is preferred where it is.
+        grid, a measure of how much leading is preferred where it is. The
+        ``scan_peak*`` keys describe the scan point that maximizes [L*(X) -
+        W(X)] X^{-beta_L^+} (the demand, inf when leading never beats mutual
+        waiting on the scan; whether it is interior to the scan; the
+        leader's policy there; L* / W and F / L* there).
         """
         grid = np.geomspace(x_range[0] * self.X_ref, x_range[1] * self.X_ref, n_scan)
         wait = self.mutual_waiting_claim("reoptimized")
@@ -1116,6 +1161,20 @@ class ExactPreemptionGame:
             "K_F_post_switch": nan,
             "X_F_pre_switch": nan,
         }
+        # Where a leader whose rival never invests first would enter, on the
+        # scan grid only: the maximizer of [L*(X) - W(X)] X^{-beta_L^+}. It
+        # is what is left to report when there is no rent-equalization
+        # trigger on the scan (`preemption_levered.equilibrium_record`).
+        coefficient = (leads - wait(grid)) * grid ** (-self.bp)
+        j = int(np.argmax(coefficient))
+        out.update({
+            "scan_peak": float(grid[j]) if coefficient[j] > 0.0 else float("inf"),
+            "scan_peak_interior": float(0 < j < len(grid) - 1),
+            "scan_peak_K_L": float(policies[j][0]),
+            "scan_peak_phi_L": float(policies[j][1]),
+            "scan_peak_lead_over_wait": float(leads[j] / wait(grid[j])[0]),
+            "scan_peak_follower_over_leader": float(1.0 - gaps[j] / leads[j]),
+        })
         if gaps[0] >= 0.0 or not up:
             return out
         i = up[0]

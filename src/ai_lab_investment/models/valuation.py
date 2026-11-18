@@ -25,13 +25,14 @@ from .duopoly import DEFAULT_RECOVERY_RULE, DuopolyModel, cached_equilibrium
 from .parameters import ModelParameters
 
 # Interim pins (issue #176). At the model of record: the credit exhibits
-# since issue #179 (`on_policy_credit`) and Dario's dilemma since issue #180
+# since issue #179 (`on_policy_credit`), Dario's dilemma since issue #180
 # (`dario_dilemma`, `dario_dilemma_leveraged`, `dario_dilemma_duopoly`, exact
-# values in `belief_mismatch`). Still at the pure-power approximation
-# (`pure_power_*`): `two_period_dynamic_phi` and `fixed_pie_robustness`
-# (#182; the latter quotes the pure-power dilemma ratio, as does the sweep in
-# `robustness.py`), and the growth-option and capacity-gap decompositions
-# behind Internet Appendix G (named by no sub-issue; #183 or #184). The
+# values in `belief_mismatch`), and since issue #182 `two_period_dynamic_phi`
+# (capacity of the precommitted-scale policy) and the exact-primitives half
+# of `fixed_pie_robustness`. Still at the pure-power approximation
+# (`pure_power_*`): the nested-game half of `fixed_pie_robustness`, labelled
+# as such, and the growth-option and capacity-gap decompositions behind
+# Internet Appendix G (named by no sub-issue; #183 or #184). The
 # `pure_power_dilemma*` methods are kept as the nested approximation, so that
 # the earlier draft's dilemma numbers reproduce and their error can be
 # stated; they feed no main-text number.
@@ -1553,8 +1554,13 @@ class ValuationAnalysis:
         whether the regime switch has occurred: to phi_H if it has, to
         phi_L2 if it has not. After the boundary the allocation is fixed
         forever, so each branch continues with the corresponding
-        perpetuity. Capacity is held at the static optimum K_s, which
-        isolates the allocation margin.
+        perpetuity. Capacity is held at K_s, the capacity of the single
+        firm's precommitted-scale policy in the model of record
+        (`SingleFirmModel.optimal_trigger_capacity_phi`, issue #182; the
+        earlier draft held it at the pure-power capacity), which isolates
+        the allocation margin. Capacity matters only through the size of
+        the adjustment cost relative to revenue, which scales with
+        K_s^alpha: the row without adjustment costs does not depend on it.
 
         Value decomposition (per unit of X_0, capacity K_s, with
         rho = r - mu_L + lam the L-regime discount rate inclusive of the
@@ -1615,7 +1621,7 @@ class ValuationAnalysis:
         # Static benchmark
         p_lam = p.with_param(lam=lam)
         model_static = SingleFirmModel(p_lam)
-        _, K_s, phi_s = model_static.pure_power_trigger_capacity_phi()
+        _, K_s, phi_s = model_static.optimal_trigger_capacity_phi()
 
         kappa = adjustment_cost
 
@@ -1702,6 +1708,7 @@ class ValuationAnalysis:
 
         return {
             "phi_static": phi_s,
+            "K_static": K_s,
             "phi_1_dynamic": phi_1_opt,
             "phi_H_dynamic": phi_H_opt,
             "phi_L2_dynamic": phi_L2_opt,
@@ -1723,83 +1730,103 @@ class ValuationAnalysis:
     def fixed_pie_robustness(
         self,
         leverage: float = 0.0,
+        scan_points: int = 13,
     ) -> dict[str, Any]:
-        """Compare Tullock vs fixed-pie contest equilibrium objects.
+        """Tullock contest against the arithmetic-mean benchmark.
 
-        Solves the duopoly under both the standard Tullock contest and
-        the fixed-pie variant (no revenue expansion), and reports key
-        equilibrium quantities for comparison.
+        Under the benchmark a firm facing an active rival in a market earns
+        half its standalone revenue there, whatever the rival's capacity
+        (`preemption_exact.contest_revenue`). The comparison is made at two
+        layers, which the keys keep apart.
+
+        *Exact primitives* (keys ``exact_*``; issue #182). The benchmark does
+        not have an equilibrium of the entry game that the solver of the
+        model of record can locate: in the post-switch game, leading at the
+        leader's best scale is worth more than following at every demand
+        level of the scan, so there is no rent-equalization trigger after
+        the switch, the mutual-waiting value W is not defined by a race, and
+        X_L is not computed. What is computed, under each contest:
+
+        - the follower's post-switch response (trigger and capacity, on the
+          claims with the option to stop) to the leader of the benchmark
+          equilibrium of the model of record, whose policy is read from the
+          cache (``exact_*_X_F``, ``exact_*_K_F``, and the scale ratio
+          K_F / K_L);
+        - the post-switch race on ``scan_points`` log-spaced demand levels
+          between 0.01 and 100 times X_H*: the ratio of the value of
+          leading, at the leader's best capacity there, to the value of
+          following it (``exact_*_lead_over_follow_min`` and ``_max``, and
+          ``exact_*_race``, True when following is better at the bottom of
+          the scan and leading at least as good above some demand level).
+
+        *Nested pure-power game* (keys ``nested_*``): the reduced-form game
+        of the earlier draft solved under both contests, as before; its
+        trigger ratio is X_P over the pure-power single-firm trigger.
+
+        The faith threshold phi_underbar does not involve the contest.
         """
+        from .preemption_levered import LeveredPreemptionGame
+
         p = self.params
+        result: dict[str, Any] = {}
 
-        # --- Standard Tullock ---
-        duo_tullock = DuopolyModel(
-            p,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-            recovery_rule=self.recovery_rule,
-        )
-        try:
-            eq_tullock = duo_tullock.pure_power_preemption_equilibrium()
-        except (ValueError, RuntimeError):
-            return {"error": "Tullock equilibrium failed"}
-
-        # Faith-based survival threshold (A_eff-channel, eq-phi-underbar)
-        phi_underbar = duo_tullock.faith_threshold()
-
-        # Dario dilemma asymmetry ratio under Tullock
-        dd_cons = self.pure_power_dilemma(0.10, 0.02)
-        dd_aggr = self.pure_power_dilemma(0.10, 0.20)
-        loss_cons = dd_cons.get("value_loss_pct", np.nan)
-        loss_aggr = dd_aggr.get("value_loss_pct", np.nan)
-        asym_tullock = abs(loss_cons / loss_aggr) if loss_aggr != 0 else np.nan
-
-        # --- Fixed-pie contest ---
-        duo_fp = DuopolyModel(
-            p,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-            contest="fixed_pie",
-            recovery_rule=self.recovery_rule,
-        )
-
-        try:
-            eq_fp = duo_fp.pure_power_preemption_equilibrium()
-        except (ValueError, RuntimeError):
-            eq_fp = None
-
-        # Dario's dilemma under fixed-pie is computed using single-firm
-        # (contest spec doesn't affect the single-firm dilemma, so the
-        # asymmetry ratio is the same)
-
-        result = {
-            # Tullock results
-            "tullock_phi_F": eq_tullock["phi_follower"],
-            "tullock_X_F": eq_tullock["X_follower"],
-            "tullock_K_F": eq_tullock["K_follower"],
-            "tullock_X_P": eq_tullock["X_leader"],
-            "tullock_phi_underbar": phi_underbar,
-            "tullock_asym_ratio": asym_tullock,
-            "tullock_preemption_discount": (
-                eq_tullock["X_leader"] / eq_tullock["X_leader_monopolist"]
-            ),
-        }
-
-        if eq_fp is not None:
+        # --- exact primitives ---
+        benchmark = cached_equilibrium(p.lam, leverage=leverage)
+        K_L, phi_L = float(benchmark["K_L"]), float(benchmark["phi_L"])
+        result.update({"exact_K_L": K_L, "exact_phi_L": phi_L})
+        for name, contest in (("tullock", "tullock"), ("mean", "arithmetic_mean")):
+            game = LeveredPreemptionGame(
+                p,
+                "envelope",
+                leverage,
+                CREDIT_COUPON_RATE,
+                CREDIT_BANKRUPTCY_COST,
+                recovery_rule=self.recovery_rule,
+                contest=contest,
+            )
+            entry = game.follower_post_switch_entry(phi_L * K_L)
+            grid = np.geomspace(1e-2 * game.X_ref, 1e2 * game.X_ref, scan_points)
+            ratios = []
+            for x in grid:
+                _, lead, follow = game.post_switch_leader_policy(float(x))
+                ratios.append(lead / follow)
             result.update({
-                "fixedpie_phi_F": eq_fp["phi_follower"],
-                "fixedpie_X_F": eq_fp["X_follower"],
-                "fixedpie_K_F": eq_fp["K_follower"],
-                "fixedpie_X_P": eq_fp["X_leader"],
-                "fixedpie_preemption_discount": (
-                    eq_fp["X_leader"] / eq_fp["X_leader_monopolist"]
+                f"exact_{name}_X_F": entry.X_F,
+                f"exact_{name}_K_F": entry.K_F,
+                f"exact_{name}_K_F_over_K_L": entry.K_F / K_L,
+                f"exact_{name}_X_F_over_X_H": entry.X_F / game.X_ref,
+                f"exact_{name}_lead_over_follow_min": float(min(ratios)),
+                f"exact_{name}_lead_over_follow_max": float(max(ratios)),
+                f"exact_{name}_race": bool(
+                    ratios[0] < 1.0 and max(ratios) >= 1.0 - 1e-9
                 ),
             })
-        else:
-            result["fixedpie_error"] = "Fixed-pie equilibrium failed"
 
+        # --- nested pure-power game ---
+        for name, contest in (("tullock", "tullock"), ("mean", "fixed_pie")):
+            duopoly = DuopolyModel(
+                p,
+                leverage=leverage,
+                coupon_rate=CREDIT_COUPON_RATE,
+                bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+                contest=contest,
+                recovery_rule=self.recovery_rule,
+            )
+            try:
+                eq = duopoly.pure_power_preemption_equilibrium()
+            except (ValueError, RuntimeError):
+                result[f"nested_{name}_error"] = "equilibrium failed"
+                continue
+            result.update({
+                f"nested_{name}_phi_F": eq["phi_follower"],
+                f"nested_{name}_X_F": eq["X_follower"],
+                f"nested_{name}_K_F": eq["K_follower"],
+                f"nested_{name}_X_P": eq["X_leader"],
+                f"nested_{name}_trigger_ratio": (
+                    eq["X_leader"] / eq["X_leader_monopolist"]
+                ),
+            })
+            result["phi_underbar"] = duopoly.faith_threshold()
         return result
 
     # ------------------------------------------------------------------

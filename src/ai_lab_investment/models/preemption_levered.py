@@ -471,6 +471,8 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         table_density: Points per decade of the quadrature tables.
         recovery_rule: ``"net_with_shutdown"`` (default) or ``"net"``; see
             convention 2 of the module docstring.
+        contest: ``"tullock"`` (the model of record) or ``"arithmetic_mean"``
+            (`preemption_exact.contest_revenue`).
     """
 
     def __init__(
@@ -483,8 +485,9 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         debt: str = "par",
         table_density: int = 150,
         recovery_rule: str = "net_with_shutdown",
+        contest: str = "tullock",
     ):
-        super().__init__(params, scale, table_density)
+        super().__init__(params, scale, table_density, contest)
         if debt not in DEBT_CONVENTIONS:
             msg = f"debt must be one of {DEBT_CONVENTIONS}, got {debt!r}"
             raise ValueError(msg)
@@ -513,7 +516,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         if debt == "par":
             scale_c = 1.0 - self.leverage * (1.0 - self.coupon_rate / p.r)
         self.proxy = ExactPreemptionGame(
-            p.with_param(c=p.c * scale_c), scale, table_density
+            p.with_param(c=p.c * scale_c), scale, table_density, contest
         )
         self._boundary_grid = np.geomspace(1e-7 * self.X_ref, 1e5 * self.X_ref, 480)
         self._fair_rate: float | None = None
@@ -628,7 +631,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         X_F, K_F, _ = self._follower_response(K)
         if X >= X_F and self.scale != "precommitted":
             K_F = float(self._envelope_capacity(np.array([X]), K)[0])
-        a_duo = p.A_H * float(contest_revenue(K, K_F, p.alpha))
+        a_duo = p.A_H * float(contest_revenue(K, K_F, p.alpha, self.contest))
 
         def claims(coupon: float) -> tuple[float, PiecewisePowers, PiecewisePowers]:
             q = p.delta * K + coupon
@@ -911,8 +914,8 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         """
         p = self.params
         N_i, T_i = (1.0 - phi) * K, phi * K
-        flow = float(contest_revenue(N_i, N_rival, p.alpha))
-        a = p.A_H * float(contest_revenue(T_i, T_rival, p.alpha))
+        flow = float(contest_revenue(N_i, N_rival, p.alpha, self.contest))
+        a = p.A_H * float(contest_revenue(T_i, T_rival, p.alpha, self.contest))
         q = p.delta * K + coupon
         _, equity_H, debt_H = self._h_installed(a, q, coupon)
         forcing = PiecewisePowers.everywhere((flow, 1.0), (-q, 0.0)) + equity_H.scaled(
@@ -986,7 +989,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
     ) -> tuple[np.ndarray, np.ndarray]:
         """Leader's H-regime equity and debt against follower capacity K_F(y)."""
         p = self.params
-        a = p.A_H * contest_revenue(T_L, K_F, p.alpha)
+        a = p.A_H * contest_revenue(T_L, K_F, p.alpha, self.contest)
         X_D = self.m_H * (q / p.r) / a
         alive = y > X_D
         ratio = np.where(alive, y / X_D, 1.0) ** self.bn_H
@@ -1004,7 +1007,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         flow = N_L**p.alpha
         R = p.A_H * T_L**p.alpha
         q = p.delta * K_L + coupon
-        a_duo = p.A_H * float(contest_revenue(T_L, entry.K_F, p.alpha))
+        a_duo = p.A_H * float(contest_revenue(T_L, entry.K_F, p.alpha, self.contest))
         _, eq_duo, debt_duo = self._h_installed(a_duo, q, coupon)
         tables: tuple[ForcedClaim | None, ForcedClaim | None] = (None, None)
         if self.scale == "precommitted":
@@ -1140,7 +1143,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
             np.atleast_1d(np.asarray(X, dtype=float)),
             np.atleast_1d(np.asarray(K, dtype=float)),
         )
-        a = p.A_H * contest_revenue(K_arr, T_L, p.alpha)
+        a = p.A_H * contest_revenue(K_arr, T_L, p.alpha, self.contest)
         outlay = p.c * K_arr**p.gamma
         proceeds = self.leverage * outlay
         if self.leverage <= 0.0:
@@ -1232,7 +1235,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
                 p, entry.X_F, low, table=(table["y"], p.lam * table["payoff"])
             )
         # Precommitted scale, coupon independent of demand: closed form.
-        a = p.A_H * float(contest_revenue(entry.K_F, entry.T_L, p.alpha))
+        a = p.A_H * float(contest_revenue(entry.K_F, entry.T_L, p.alpha, self.contest))
         outlay = float(self.investment_cost(entry.K_F))
         coupon = self.coupon_rate * self.leverage * outlay
         q = p.delta * entry.K_F + coupon
@@ -1254,7 +1257,7 @@ class LeveredPreemptionGame(ExactPreemptionGame):
         """
         p = self.params
         X_F, K_F = entry.X_F, entry.K_F
-        a = p.A_H * float(contest_revenue(K_F, entry.T_L, p.alpha))
+        a = p.A_H * float(contest_revenue(K_F, entry.T_L, p.alpha, self.contest))
         proceeds = self.leverage * float(self.investment_cost(K_F))
         coupon = 0.0
         if proceeds > 0.0 and self.debt == "par":
@@ -1813,6 +1816,7 @@ def equilibrium_record(
     entry_scan: tuple[int, tuple[float, float], float] | None = None,
     rent_equalization: dict | None = None,
     recovery_rule: str = "net_with_shutdown",
+    contest: str = "tullock",
 ) -> dict[str, float | str]:
     """Duopoly equilibrium with a re-optimizing leader, as a flat record.
 
@@ -1843,6 +1847,8 @@ def equilibrium_record(
             is recomputed. Reuse it across recovery rules only under par
             debt, where the equilibrium does not depend on recovery.
         recovery_rule: Recovery rule of the game (`RECOVERY_RULES`).
+        contest: Contest of the game; a record of the arithmetic-mean
+            benchmark carries the key ``contest``.
 
     Missing objects are nan.
     """
@@ -1854,6 +1860,7 @@ def equilibrium_record(
         bankruptcy_cost,
         debt,
         recovery_rule=recovery_rule,
+        contest=contest,
     )
     prefix = RENT_EQUALIZATION_PREFIX
     if rent_equalization is None:
@@ -1884,7 +1891,19 @@ def equilibrium_record(
         "n_sign_changes": sol["n_sign_changes"],
         "X_P": sol["X_P"],
     }
+    if contest != "tullock":
+        out["contest"] = contest
     if not sol["exists"]:
+        # Why there is no trigger: the largest (L* - F) / F on the scan is
+        # negative when following is better at every scanned demand level.
+        out["max_gap_over_follower"] = sol.get("max_gap_over_follower", float("nan"))
+        # Coarse substitute for X_L when it cannot be located from X_P: the
+        # scan point at which a leader whose rival follows would enter, with
+        # no refinement and no deviation check (inf: leading never beats
+        # mutual waiting on the scan).
+        for key, value in sol.items():
+            if key.startswith("scan_peak") or key == "max_lead_over_wait":
+                out[key] = value
         return out
     X_P = float(sol["X_P"])
     at_X_P = game.subgame(float(sol["K_L"]), float(sol["phi_L"]))
