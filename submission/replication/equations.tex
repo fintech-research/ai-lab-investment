@@ -361,7 +361,7 @@ with $a_i = [(1-\phi_i)K_i]^\alpha s_i^L/(r - \mu_L + \lambda)$ the inference re
 
 \subsubsection*{Entry equilibrium}
 
-\textbf{First investment and rent equalization.} Both firms share the same $\lambda$ and the game is symmetric; cross-sectional variation in investment behavior (\texttt{sec-calibration}, \texttt{sec-valuation}) comes from comparative statics across archetypes, not from interaction among firms with different priors. What a firm is worth before either has invested depends on what happens if the switch arrives first. Let $W(X)$ be the value to each firm when neither invests before the switch. At the switch the two firms play the entry game of the absorbing regime, which is a preemption race, so that each is worth the follower's value in it (Internet Appendix B). A firm that leads at a trigger $\bar{X}$, its rival never investing first, is worth $W(X) + [L^*(\bar{X}) - W(\bar{X})](X/\bar{X})^{\beta_L^+}$ below it, and $X_L$ is the trigger that maximizes this value:
+\textbf{First investment and rent equalization.} Both firms share the same $\lambda$ and the game is symmetric; cross-sectional variation in investment behavior (\texttt{sec-calibration}, \texttt{tbl-archetypes}) comes from comparative statics across archetypes, not from interaction among firms with different priors. What a firm is worth before either has invested depends on what happens if the switch arrives first. Let $W(X)$ be the value to each firm when neither invests before the switch. At the switch the two firms play the entry game of the absorbing regime, which is a preemption race, so that each is worth the follower's value in it (Internet Appendix B). A firm that leads at a trigger $\bar{X}$, its rival never investing first, is worth $W(X) + [L^*(\bar{X}) - W(\bar{X})](X/\bar{X})^{\beta_L^+}$ below it, and $X_L$ is the trigger that maximizes this value:
 
 \begin{equation*}
 \tag*{[\texttt{eq-first-investment}]}
@@ -396,10 +396,10 @@ The rent-equalization trigger $X_P$ is the lowest demand level at which $L^*(X) 
 The value loss from mismatch is
 
 \begin{equation*}
-\Delta V = \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}}) - \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{invest}}),
+\Delta V = V(\lambda_{\text{true}}, \lambda_{\text{true}}) - V(\lambda_{\text{true}}, \lambda_{\text{invest}}),
 \end{equation*}
 
-where $\text{NPV}(\lambda_a, \lambda_b)$ is the expected present value, at a common initial demand level $X_0$, of the policy $(X^*, K^*, \phi^*)$ optimal for belief $\lambda_b$ when the true demand process is governed by $\lambda_a$, with the timing discount $(X_0/X^*)^{\beta_H}$ adjusting for different waiting times. Percentage losses are reported as $\Delta V / \text{NPV}(\lambda_{\text{true}}, \lambda_{\text{true}})$. The levered version keeps the same operating policy and changes only the claim being valued: $\text{NPV}$ then denotes the total claims net of the investment outlay, $E + D - I(K^*)$ with $E$ the going-concern equity of \texttt{sec-duopoly.} Because that policy is not re-optimized against the levered objective, the levered value function is maximized very nearly, but not exactly, at $\lambda_{\text{invest}} = \lambda_{\text{true}}$; the resulting shortfall is three orders of magnitude below the mismatch losses reported here (Internet Appendix A).
+where $V(\lambda_a, \lambda_b)$ is the exact value under the arrival rate $\lambda_a$, at a reference demand $X_0$ at which the firm has not invested, of the policy that is optimal under $\lambda_b$. Losses are reported as $\Delta V / V(\lambda_{\text{true}}, \lambda_{\text{true}})$. A firm whose own trigger lies below $X_0$ invests at $X_0$, at the scale its belief prescribes there. Unlike in the pure-power approximation of \texttt{sec-conventions}, the percentage is not invariant to $X_0$: the claim on the post-switch option is common to every policy, and it weighs less in firm value as $X_0$ approaches the trigger. I set $X_0 = X^*(\lambda_{\text{true}})/2$ and report $X^*/4$ and $3X^*/4$ in Internet Appendix A. Two errors can be called equal in three ways: equal differences in $\lambda$, equal ratios (equal differences in $\log \lambda$), or equal differences in the expected time to the switch $1/\lambda$. Around $\lambda_{\text{true}} = 0.10$ the pairs I use are $0.02$ and $0.18$ (an error of $0.08$ in $\lambda$), $0.02$ and $0.50$ (a factor of five) or $0.056$ and $0.18$ (a factor of $1.8$), and $0.069$ and $0.18$ ($4.4$ years on either side of ten; no optimistic belief matches the forty-year error of $\lambda_{\text{invest}} = 0.02$).
 
 
 
@@ -593,7 +593,7 @@ provided the regularity condition $(r - \mu_L) > m\lambda\Delta$ holds (it does 
 V'(\lambda) = \frac{X G}{\Delta^2}, \qquad V''(\lambda) = -\frac{2 X G}{\Delta^3}.
 \end{equation*}
 
-*(i) $V$ is strictly increasing and strictly concave in $\lambda$ on all of $\lambda \geq 0$ if and only if $\phi > \underline{\phi}$ of \texttt{eq-phi-underbar}; it is strictly decreasing and strictly convex if $\phi < \underline{\phi}$ and constant at $\phi = \underline{\phi}$. (ii) For news of size $h \in (0, \Delta)$, $[V(\lambda) - V(\lambda - h)] - [V(\lambda + h) - V(\lambda)] = 2h^2 X G/[\Delta(\Delta - h)(\Delta + h)]$, which is positive if and only if $\phi > \underline{\phi}$: bad news lowers value by more than good news of the same size raises it. (iii) At given $(\lambda, K, X)$, $V'$, $|V''|$ and the difference in (ii) increase in $\phi$, and so does the semi-elasticity of the revenue value $A_{\text{eff}} X$ in $\lambda$.*
+*(i) $V$ is strictly increasing and strictly concave in $\lambda$ on all of $\lambda \geq 0$ if and only if $\phi > \underline{\phi}$ of \texttt{eq-phi-underbar}; it is strictly decreasing and strictly convex if $\phi < \underline{\phi}$ and constant at $\phi = \underline{\phi}$. (ii) For news of size $h \in (0, \Delta)$, $[V(\lambda) - V(\lambda - h)] - [V(\lambda + h) - V(\lambda)] = 2h^2 X G/[\Delta(\Delta - h)(\Delta + h)]$, which is positive if and only if $\phi > \underline{\phi}$: bad news lowers value by more than good news of the same size raises it. (iii) At given $(\lambda, K, X)$, $V'$, $-V''$ and the difference in (ii) increase in $\phi$ (so the curvature $|V''|$ does for $\phi > \underline{\phi}$), and so does the semi-elasticity of the revenue value $A_{\text{eff}} X$ in $\lambda$.*
 
 
 
@@ -639,6 +639,16 @@ with $F(X_L)$ the follower's value against the policy the leader installs at $X_
 
 
 \subsubsection*{Numerical Finding 1 (Dario's dilemma)}
+
+\emph{Definitions.} A firm with belief $\lambda_{\text{invest}}$ follows the policy that solves the single-firm problem of Proposition 1 at that belief: with precommitted post-switch scale, the trigger, capacity and training fraction of part (iii); with scale chosen at the switch, the trigger and capacity of that problem when the waiting margin \texttt{eq-waiting-margin} is below one, and waiting for the switch otherwise. The policy is then valued under $\lambda_{\text{true}}$. Below its trigger $\bar{X}$ a policy "install $(K, \phi)$ at $\bar{X}$" is worth, by Step 7 of the proof of Proposition 1,
+
+\begin{equation*}
+V(X_0) = S(X_0) + \left[A_{\text{eff}}(\phi, K)\bar{X} - \frac{\delta K}{r} - I(K) - S(\bar{X})\right]\left(\frac{X_0}{\bar{X}}\right)^{\beta_L^+},
+\end{equation*}
+
+where $S$ is the value of never investing before the switch (with the post-switch scale precommitted to $K_H^*$ or chosen at the switch, according to the version) and $A_{\text{eff}}$, $S$ and $\beta_L^+$ are all evaluated at $\lambda_{\text{true}}$; a firm that waits for the switch is worth $S(X_0)$. Nothing is priced with the exponent $\beta_H$. A firm whose trigger lies at or below $X_0$ is in its investment region and installs at $X_0$ the capacity that is statically optimal there under its belief. The reference demand is $X_0 = X^*(\lambda_{\text{true}})/2 = 0.0046$ in both versions, with $X^* = 0.0093$ the precommitted-scale trigger of the correctly informed firm. Because the informed firm's policy maximizes the objective in which every policy is valued, the loss is zero at $\lambda_{\text{invest}} = \lambda_{\text{true}}$ and non-negative elsewhere.
+
+
 
 \subsection*{B. Numerical Verification Methods}
 
@@ -717,7 +727,7 @@ A_{\text{eff},F} = g(\phi) \cdot \frac{K_F^{2\alpha}}{K_F^\alpha + K_L^\alpha},
 
 
 
-with $g(\phi) = w_L (1-\phi)^\alpha + w_H \phi^\alpha$. The allocation FOC is then exactly the single-firm condition (the role-invariance of Proposition 3(ii)), and the capacity FOC reduces to a single equation with \emph{effective revenue elasticity} $\alpha(2 - s_F)$, where $s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)$:
+with $g(\phi) = w_L (1-\phi)^\alpha + w_H \phi^\alpha$. The allocation FOC is then exactly the single-firm condition (the nested-game counterpart of the critical-point statement of Proposition 3(ii)), and the capacity FOC reduces to a single equation with \emph{effective revenue elasticity} $\alpha(2 - s_F)$, where $s_F = K_F^\alpha/(K_F^\alpha + K_L^\alpha)$:
 
 \begin{equation*}
 \alpha \beta_H\,\bigl(2 - s_F(K_F)\bigr)\, \Theta_\ell(K_F) = (\beta_H - 1)\, K_F\, \Theta_\ell'(K_F),
@@ -732,6 +742,17 @@ where $\Theta_\ell(K) = \delta K / r + c[1 - \ell(1 - r_c/r)]K^\gamma$ is the le
 \subsection*{D. Parameter Sensitivity}
 
 \subsection*{E. Robustness}
+
+The allocation maximizes $(1-\phi)^\alpha + \lambda A_H [\kappa + (1-\kappa)\phi]^\alpha$ with $A_H = 1/(r - \mu_H)$, which gives
+
+\begin{equation*}
+\tag*{[\texttt{eq-phi-kappa}]}
+\phi^*(\kappa) = \max\left\{0,\; \frac{1 - M\kappa}{1 + M(1-\kappa)}\right\}, \qquad M = \left[\lambda A_H (1-\kappa)\right]^{-1/(1-\alpha)},
+\end{equation*}
+
+and reduces to the $\phi^*$ of Proposition 1 at $\kappa = 0$. The pre-switch training fraction is positive if and only if $\kappa^{1-\alpha} < \lambda A_H (1-\kappa)$, which at baseline is $\kappa < 0.571$. This is the answer the extension gives to the concern that $\phi^*$ exists only because compute is immobile: with compute freely redeployed at the switch, the firm still trains before the switch whenever capability built late is worth less than about $57\%$ of capability in place. \texttt{tbl-capability} reports the solution on a grid of $\kappa$.
+
+
 
 \subsection*{F. Single-Firm Illustrations in Regime $H$}
 

@@ -17,34 +17,16 @@ def plot_growth_option_decomposition(
 ) -> plt.Figure:
     """Decompose firm value as a function of installed capacity.
 
-    Uses the phi-aware model. X-axis is K_installed / K_H* (capacity
-    relative to optimal), matching the paper's fig-growth-decomposition.
+    Exploratory version of the paper's fig-growth-decomposition: delegates
+    to `ValuationAnalysis.capacity_gap_decomposition` at the
+    precommitted-scale policy of the model of record (issue #184), so the
+    x-axis is K_installed / K*.
     """
-    from ..models.base_model import SingleFirmModel
-
-    params = ModelParameters()
-    model = SingleFirmModel(params)
-    # Interim pin (issue #176): pure-power policy; regenerated in issue #184.
-    X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
-
-    # Vary installed capacity from near 0 to 1.5 * K_star
+    va = ValuationAnalysis(ModelParameters())
     K_ratios = np.linspace(0.01, 1.5, 40)
-    assets = np.full_like(K_ratios, np.nan)
-    counterfactual = np.full_like(K_ratios, np.nan)
-
-    # Evaluate at demand above trigger (1.5 * X*)
-    X_eval = 1.5 * X_star
-    # Option value at optimal (K*, phi*)
-    V_optimal = model.installed_value_with_phi(X_eval, phi_star, K_star, "L")
-    I_optimal = model.investment_cost(K_star)
-    npv_optimal = V_optimal - I_optimal
-
-    for i, kr in enumerate(K_ratios):
-        K_inst = kr * K_star
-        # Assets-in-place: value of current capacity at current phi*
-        assets[i] = model.installed_value_with_phi(X_eval, phi_star, K_inst, "L")
-        # Counterfactual: additional value from reaching K*
-        counterfactual[i] = max(npv_optimal - assets[i], 0)
+    decomp = va.capacity_gap_decomposition(K_ratios, demand_multiple=1.5)
+    assets = decomp["assets_in_place"]
+    counterfactual = decomp["capacity_gap"]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
 
@@ -52,30 +34,24 @@ def plot_growth_option_decomposition(
         K_ratios,
         assets,
         counterfactual,
-        labels=["Assets-in-place", "Counterfactual capacity value"],
+        labels=["Assets-in-place", "Capacity gap"],
         colors=["#2196F3", "#FF9800"],
         alpha=0.8,
     )
     ax1.axvline(1.0, color="gray", linestyle=":", alpha=0.6, linewidth=1)
-    ax1.set_xlabel(r"Installed capacity $K / K_H^*$")
-    ax1.set_ylabel("Firm value")
+    ax1.set_xlabel(r"Installed capacity $K / K^*$")
+    ax1.set_ylabel("Normalized value")
     ax1.set_title("(A) Value Decomposition")
     ax1.legend(loc="upper left")
 
-    # Growth fraction
-    total = assets + counterfactual
-    growth_frac = np.where(total > 0, counterfactual / total, 0)
-    ax2.plot(K_ratios, growth_frac * 100, "b-", linewidth=2)
+    ax2.plot(K_ratios, decomp["gap_fraction"], "b-", linewidth=2)
     ax2.axvline(1.0, color="gray", linestyle=":", alpha=0.6, linewidth=1)
-    ax2.set_xlabel(r"Installed capacity $K / K_H^*$")
-    ax2.set_ylabel("Growth option fraction (\\%)")
-    ax2.set_title("(B) Growth Option Share of Total Value")
+    ax2.set_xlabel(r"Installed capacity $K / K^*$")
+    ax2.set_ylabel("Scale-gap index (%)")
+    ax2.set_title("(B) Scale-Gap Index")
     ax2.set_ylim(0, 100)
 
-    fig.suptitle(
-        "Growth Option Decomposition",
-        fontsize=14,
-    )
+    fig.suptitle("Normalized Scale-Gap Diagnostic", fontsize=14)
     plt.tight_layout()
 
     if output_dir is not None:
@@ -91,38 +67,44 @@ def plot_credit_risk(
 ) -> plt.Figure:
     """Show credit spreads and default probability vs leverage.
 
-    Key figure: maps from capital structure to credit risk.
+    At the model's own policies (issue #184, the exhibit of issue #179):
+    delegates to `ValuationAnalysis.on_policy_credit`, debt issued at the
+    single firm's precommitted-scale entry, the duopoly leader's first
+    investment and the follower's post-switch entry, both debt conventions.
     """
-    params = ModelParameters()
-    va = ValuationAnalysis(params)
-
-    leverages = np.linspace(0.05, 0.7, 30)
-    result = va.credit_spread_curve(leverages)
+    va = ValuationAnalysis(ModelParameters())
+    leverages = tuple(float(x) for x in np.linspace(0.0, 0.7, 15))
+    rows = va.on_policy_credit(leverages=leverages)
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5))
-
-    valid = ~np.isnan(result["credit_spread"])
-    if valid.sum() > 0:
-        ax1.plot(
-            result["leverage"][valid],
-            result["credit_spread"][valid] * 10000,
-            "b-",
-            linewidth=2,
-        )
+    colours = {"single_firm": "k", "leader": "b", "follower": "0.5"}
+    styles = {"par": "-", "fair": "--"}
+    for role, colour in colours.items():
+        for debt, style in styles.items():
+            sel = [r for r in rows if r["role"] == role and r["debt"] == debt]
+            lev = [r["leverage"] for r in sel]
+            label = f"{role.replace('_', ' ')}, {debt}"
+            ax1.plot(
+                lev,
+                [1e4 * r["spread"] for r in sel],
+                color=colour,
+                linestyle=style,
+                linewidth=2,
+                label=label,
+            )
+            ax2.plot(
+                lev,
+                [100 * r["default_probability"] for r in sel],
+                color=colour,
+                linestyle=style,
+                linewidth=2,
+            )
     ax1.set_xlabel("Leverage (debt/investment)")
-    ax1.set_ylabel("Credit spread (bps)")
-    ax1.set_title("(A) Credit Spread Curve")
-
-    valid_dp = ~np.isnan(result["default_probability"])
-    if valid_dp.sum() > 0:
-        ax2.plot(
-            result["leverage"][valid_dp],
-            result["default_probability"][valid_dp] * 100,
-            "r-",
-            linewidth=2,
-        )
+    ax1.set_ylabel("Credit spread at entry (bps)")
+    ax1.set_title("(A) Credit Spread at the Model's Policies")
+    ax1.legend(loc="upper left", fontsize="small")
     ax2.set_xlabel("Leverage (debt/investment)")
-    ax2.set_ylabel("5-year default probability (%)")
+    ax2.set_ylabel("5-year default probability, no switch (%)")
     ax2.set_title("(B) Default Probability")
 
     fig.suptitle(
@@ -144,71 +126,49 @@ def plot_dario_dilemma(
 ) -> plt.Figure:
     """Visualize the cost of belief mismatches.
 
-    Single-panel figure showing value loss as a function of
-    lambda_invest for a fixed lambda_true, matching the paper's
-    fig-investment-dilemma description.
+    Value loss against lambda_invest at lambda_true = 0.10, for the single
+    firm of the model of record with precommitted post-switch scale
+    (issue #184, the exhibit of issue #180): unlevered claims
+    (`ValuationAnalysis.dario_dilemma`) and the levered claims at
+    ell = 0.40 under fairly priced debt (`dario_dilemma_leveraged`).
     """
-    params = ModelParameters()
-    va = ValuationAnalysis(params)
+    va = ValuationAnalysis(ModelParameters())
 
     fixed_true = 0.10
-    lam_range = np.linspace(0.02, 0.50, 30)
-
-    # Unleveraged curve
-    losses_unlev = []
-    for li in lam_range:
-        r = va.pure_power_dilemma(fixed_true, li)
-        losses_unlev.append(r.get("value_loss_pct", np.nan) * 100)
-
-    # Leveraged curve (ell = 0.40)
-    losses_lev = []
-    for li in lam_range:
-        r = va.pure_power_dilemma_leveraged(fixed_true, li, leverage=0.40)
-        losses_lev.append(r.get("value_loss_pct", np.nan) * 100)
+    lam_range = np.geomspace(0.02, 0.50, 25)
+    losses_unlev = [
+        100 * va.dario_dilemma(fixed_true, float(li))["value_loss_pct"]
+        for li in lam_range
+    ]
+    losses_lev = [
+        100
+        * va.dario_dilemma_leveraged(fixed_true, float(li), leverage=0.40)[
+            "value_loss_pct"
+        ]
+        for li in lam_range
+    ]
 
     fig, ax = plt.subplots(figsize=(7, 5))
 
     ax.plot(lam_range, losses_unlev, "b-", linewidth=2, label=r"$\ell = 0$")
-    ax.plot(lam_range, losses_lev, "r--", linewidth=2, label=r"$\ell = 0.40$")
+    ax.plot(
+        lam_range, losses_lev, "r--", linewidth=2, label=r"$\ell = 0.40$, fair debt"
+    )
 
     ax.axvline(fixed_true, color="gray", linestyle=":", alpha=0.6, linewidth=1)
     ax.axhline(0, color="gray", alpha=0.3, linewidth=0.5)
 
-    # Shade the high-loss region (>10% threshold)
-    losses_arr = np.array(losses_unlev)
-    high_loss = losses_arr > 10
-    if high_loss.any():
-        ax.fill_between(
-            lam_range,
-            0,
-            losses_arr,
-            where=high_loss.tolist(),
-            alpha=0.10,
-            color="red",
-            label=r"Loss $> 10\%$",
-        )
-
-    ax.set_xlabel(r"Investment $\tilde{\lambda}$")
-    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (\%)")
-    ax.set_title(rf"Dario's Dilemma ($\tilde{{\lambda}}_{{true}} = {fixed_true}$)")
-    ax.legend(loc="upper left")
+    ax.set_xscale("log")
+    ax.set_xticks([0.02, 0.05, 0.10, 0.20, 0.50])
+    ax.set_xticklabels(["0.02", "0.05", "0.10", "0.20", "0.50"])
+    ax.minorticks_off()
+    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$ (log scale)")
+    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
+    ax.set_title(
+        rf"Dario's Dilemma, precommitted scale ($\lambda_{{true}} = {fixed_true}$)"
+    )
+    ax.legend(loc="upper center")
     ax.set_ylim(bottom=-2)
-
-    # Annotate the asymmetry
-    ax.annotate(
-        "Underinvestment\n(conservative)",
-        xy=(0.04, 15),
-        fontsize=9,
-        ha="center",
-        color="navy",
-    )
-    ax.annotate(
-        "Overinvestment\n(aggressive)",
-        xy=(0.35, 8),
-        fontsize=9,
-        ha="center",
-        color="darkred",
-    )
 
     plt.tight_layout()
 
@@ -225,8 +185,9 @@ def plot_equity_vs_lambda(
 ) -> plt.Figure:
     """Show how equity valuation depends on AI timeline beliefs.
 
-    Uses the phi-aware model where lambda enters through A_eff,
-    producing lambda-dependent triggers, phis, and option values.
+    Uses the phi-aware model where lambda enters through A_eff, under the
+    pure-power approximation (`equity_value_vs_lambda_with_phi`); the
+    paper's exact counterpart is `figures.paper.lambda_option_value_curve`.
     """
     params = ModelParameters()
     va = ValuationAnalysis(params)

@@ -182,53 +182,53 @@ class TestCreditRisk:
 # recovery % of the claim): the on-policy credit table of issue #179.
 ON_POLICY_CREDIT = {
     ("single_firm", "par", 0.00): (0.0014323, 22.17, 0.1565, 0.000),
-    ("leader", "par", 0.00): (0.0007002, 43.61, 0.8375, 0.000),
-    ("follower", "par", 0.00): (0.0043010, 3.77, 0.0010, 0.000),
+    ("leader", "par", 0.00): (0.0007001, 43.61, 0.8378, 0.000),
+    ("follower", "par", 0.00): (0.0043009, 3.77, 0.0010, 0.000),
     ("single_firm", "par", 0.01): (0.0014353, 22.27, 0.1585, 0.000),
-    ("leader", "par", 0.01): (0.0007009, 43.69, 0.8424, 0.082),
-    ("follower", "par", 0.01): (0.0043431, 3.85, 0.0011, 0.000),
+    ("leader", "par", 0.01): (0.0007009, 43.69, 0.8426, 0.082),
+    ("follower", "par", 0.01): (0.0043430, 3.85, 0.0011, 0.000),
     ("single_firm", "par", 0.05): (0.0014473, 22.69, 0.1667, 0.000),
-    ("leader", "par", 0.05): (0.0007040, 44.02, 0.8619, 0.407),
-    ("follower", "par", 0.05): (0.0045163, 4.19, 0.0014, 0.000),
+    ("leader", "par", 0.05): (0.0007040, 44.02, 0.8622, 0.407),
+    ("follower", "par", 0.05): (0.0045162, 4.19, 0.0014, 0.000),
     ("single_firm", "par", 0.10): (0.0014623, 23.22, 0.1774, 0.000),
-    ("leader", "par", 0.10): (0.0007079, 44.43, 0.8868, 0.808),
-    ("follower", "par", 0.10): (0.0047445, 4.67, 0.0020, 0.000),
+    ("leader", "par", 0.10): (0.0007079, 44.44, 0.8870, 0.808),
+    ("follower", "par", 0.10): (0.0047444, 4.67, 0.0020, 0.000),
     ("single_firm", "par", 0.15): (0.0014773, 23.76, 0.1887, 0.000),
-    ("leader", "par", 0.15): (0.0007117, 44.87, 0.9120, 1.127),
-    ("follower", "par", 0.15): (0.0049869, 5.20, 0.0029, 0.000),
+    ("leader", "par", 0.15): (0.0007117, 44.87, 0.9123, 1.129),
+    ("follower", "par", 0.15): (0.0049867, 5.20, 0.0029, 0.000),
     ("single_firm", "par", 0.20): (0.0014923, 24.29, 0.2004, 0.051),
-    ("leader", "par", 0.20): (0.0007156, 45.39, 0.9377, 1.221),
-    ("follower", "par", 0.20): (0.0052449, 5.79, 0.0040, 0.000),
+    ("leader", "par", 0.20): (0.0007155, 45.39, 0.9380, 1.222),
+    ("follower", "par", 0.20): (0.0052448, 5.79, 0.0040, 0.000),
     ("single_firm", "par", 0.40): (0.0015523, 26.41, 0.2531, 0.679),
-    ("leader", "par", 0.40): (0.0007308, 47.43, 1.0443, 1.667),
-    ("follower", "par", 0.40): (0.0064723, 9.00, 0.0153, 0.000),
+    ("leader", "par", 0.40): (0.0007307, 47.44, 1.0446, 1.668),
+    ("follower", "par", 0.40): (0.0064721, 9.00, 0.0153, 0.000),
     ("single_firm", "par", 0.70): (0.0016423, 29.73, 0.3504, 1.763),
-    ("leader", "par", 0.70): (0.0007529, 50.50, 1.2142, 2.304),
-    ("follower", "par", 0.70): (0.0092545, 18.45, 0.1087, 0.000),
+    ("leader", "par", 0.70): (0.0007529, 50.51, 1.2145, 2.304),
+    ("follower", "par", 0.70): (0.0092543, 18.45, 0.1087, 0.000),
     ("single_firm", "fair", 0.00): (0.0014323, 22.17, 0.1565, 0.000),
-    ("leader", "fair", 0.00): (0.0007002, 43.61, 0.8375, 0.000),
-    ("follower", "fair", 0.00): (0.0043010, 3.77, 0.0010, 0.000),
+    ("leader", "fair", 0.00): (0.0007001, 43.61, 0.8378, 0.000),
+    ("follower", "fair", 0.00): (0.0043009, 3.77, 0.0010, 0.000),
     ("single_firm", "fair", 0.01): (0.0014397, 22.42, 0.1614, 0.000),
-    ("leader", "fair", 0.01): (0.0007021, 43.82, 0.8499, 0.203),
-    ("follower", "fair", 0.01): (0.0043706, 3.92, 0.0011, 0.000),
+    ("leader", "fair", 0.01): (0.0007021, 43.82, 0.8501, 0.203),
+    ("follower", "fair", 0.01): (0.0043705, 3.92, 0.0011, 0.000),
     ("single_firm", "fair", 0.05): (0.0014690, 23.46, 0.1824, 0.000),
-    ("leader", "fair", 0.05): (0.0007100, 44.67, 0.9006, 1.003),
-    ("follower", "fair", 0.05): (0.0046492, 4.57, 0.0019, 0.000),
+    ("leader", "fair", 0.05): (0.0007100, 44.67, 0.9009, 1.003),
+    ("follower", "fair", 0.05): (0.0046491, 4.57, 0.0019, 0.000),
     ("single_firm", "fair", 0.10): (0.0015058, 24.77, 0.2115, 0.159),
-    ("leader", "fair", 0.10): (0.0007199, 45.95, 0.9672, 1.381),
-    ("follower", "fair", 0.10): (0.0049978, 5.47, 0.0034, 0.000),
+    ("leader", "fair", 0.10): (0.0007199, 45.96, 0.9674, 1.382),
+    ("follower", "fair", 0.10): (0.0049977, 5.47, 0.0034, 0.000),
     ("single_firm", "fair", 0.15): (0.0015427, 26.07, 0.2440, 0.563),
-    ("leader", "fair", 0.15): (0.0007298, 47.28, 1.0373, 1.694),
-    ("follower", "fair", 0.15): (0.0053470, 6.47, 0.0057, 0.000),
+    ("leader", "fair", 0.15): (0.0007298, 47.29, 1.0376, 1.695),
+    ("follower", "fair", 0.15): (0.0053469, 6.47, 0.0057, 0.000),
     ("single_firm", "fair", 0.20): (0.0015796, 27.40, 0.2802, 1.012),
-    ("leader", "fair", 0.20): (0.0007398, 48.63, 1.1110, 2.012),
-    ("follower", "fair", 0.20): (0.0056967, 7.57, 0.0092, 0.000),
+    ("leader", "fair", 0.20): (0.0007397, 48.64, 1.1113, 2.013),
+    ("follower", "fair", 0.20): (0.0056966, 7.57, 0.0092, 0.000),
     ("single_firm", "fair", 0.40): (0.0017282, 33.10, 0.4666, 2.706),
-    ("leader", "fair", 0.40): (0.0007799, 54.30, 1.4449, 3.216),
-    ("follower", "fair", 0.40): (0.0070992, 13.06, 0.0437, 0.000),
+    ("leader", "fair", 0.40): (0.0007798, 54.31, 1.4453, 3.216),
+    ("follower", "fair", 0.40): (0.0070990, 13.06, 0.0437, 0.000),
     ("single_firm", "fair", 0.70): (0.0019543, 42.98, 0.9015, 4.700),
-    ("leader", "fair", 0.70): (0.0008410, 63.67, 2.0745, 4.774),
-    ("follower", "fair", 0.70): (0.0091914, 24.81, 0.2256, 0.000),
+    ("leader", "fair", 0.70): (0.0008410, 63.68, 2.0750, 4.774),
+    ("follower", "fair", 0.70): (0.0091910, 24.81, 0.2256, 0.000),
 }
 
 
@@ -1049,10 +1049,10 @@ class TestDuopolyDilemma:
     @pytest.mark.parametrize(
         ("leverage", "probabilities"),
         [
-            (0.0, (0.84, 1.56, 1.64, 8.67)),
+            (0.0, (0.84, 1.56, 1.65, 8.67)),
             (0.05, (0.90, 1.68, 1.78, 9.06)),
             (0.15, (1.04, 1.91, 2.06, 9.88)),
-            (0.40, (1.44, 2.62, 2.92, 12.11)),
+            (0.40, (1.45, 2.61, 2.92, 12.11)),
         ],
     )
     def test_leader_default_probabilities(self, exact_va, leverage, probabilities):
@@ -1651,6 +1651,24 @@ class TestPhiAwareValuation:
         assert 0.0 <= result["assets_fraction"] <= 1.0
         assert 0.0 <= result["growth_fraction"] <= 1.0
 
+    def test_decomposition_with_phi_is_at_the_model_of_record(self, va):
+        """Issue #184: the policy and option value are the model of record's
+        (precommitted-scale policy, exact value); pure_power=True gives the
+        approximation."""
+        X = 0.0046
+        model = SingleFirmModel(va.params)
+        exact = va.growth_option_decomposition_with_phi(X=X)
+        assert exact["K_optimal"] == pytest.approx(0.015784, rel=1e-4)
+        assert exact["X_trigger"] == pytest.approx(0.009258, rel=1e-4)
+        assert exact["expansion_option"] == pytest.approx(
+            model.option_value_with_phi(X), rel=1e-12
+        )
+        approx = va.growth_option_decomposition_with_phi(X=X, pure_power=True)
+        assert approx["K_optimal"] == pytest.approx(0.006727, rel=1e-3)
+        assert approx["expansion_option"] == pytest.approx(
+            model.pure_power_option_value(X), rel=1e-12
+        )
+
     def test_equity_vs_lambda_with_phi_shape(self, va):
         """Should return arrays with correct length."""
         lam_vals = np.array([0.05, 0.10, 0.20, 0.50])
@@ -1673,6 +1691,16 @@ class TestPhiAwareValuation:
 
 
 class TestCapacityGapDecomposition:
+    """Internet Appendix G at the precommitted-scale policy of the model of
+    record (issue #184); `TestCapacityGapPurePower` keeps the earlier
+    draft's version."""
+
+    def test_uses_the_precommitted_scale_policy(self, va):
+        d = va.capacity_gap_decomposition(np.array([0.5]))
+        assert d["K_star"] == pytest.approx(0.015784, rel=1e-4)
+        assert d["X_eval"] == pytest.approx(1.5 * 0.009258, rel=1e-4)
+        assert d["phi_star"] == pytest.approx(0.700856, abs=1e-6)
+
     def test_gap_declines_and_vanishes(self, va):
         """Gap fraction declines in installed capacity and reaches zero
         before K/K* = 1 (the benchmark nets out the full investment cost
@@ -1687,19 +1715,43 @@ class TestCapacityGapDecomposition:
         below_one = K_fracs < 1.0
         assert np.any(gf[below_one] == 0.0)
 
-    def test_paper_range_25_to_50_pct(self, va):
-        """Paper claim (_valuation.qmd): the scale-gap index runs at roughly
-        25-50% for K/K* in [0.1, 0.3], equalling ~50% at 0.1 and ~26% at 0.3."""
-        d = va.capacity_gap_decomposition(np.array([0.1, 0.3]))
-        assert d["gap_fraction"][0] == pytest.approx(50.1, abs=0.5)
-        assert d["gap_fraction"][1] == pytest.approx(26.0, abs=0.5)
-        # Band quoted in the paper brackets both endpoints.
-        assert 25.0 <= d["gap_fraction"][1] < d["gap_fraction"][0] <= 50.5
+    def test_paper_values(self, va):
+        """Internet Appendix G: about 80% at K/K* = 0.01, 50% at 0.1 and 26%
+        at 0.3, so roughly 25-50% over [0.1, 0.3]."""
+        d = va.capacity_gap_decomposition(np.array([0.01, 0.1, 0.3]))
+        assert d["gap_fraction"][0] == pytest.approx(79.7, abs=0.5)
+        assert d["gap_fraction"][1] == pytest.approx(50.4, abs=0.5)
+        assert d["gap_fraction"][2] == pytest.approx(25.8, abs=0.5)
+        assert 25.0 <= d["gap_fraction"][2] < d["gap_fraction"][1] <= 51.0
 
-    def test_zero_crossover_near_077(self, va):
-        """Paper claim: the index reaches zero at K/K* ~ 0.77."""
+    def test_zero_crossover_near_073(self, va):
+        """Internet Appendix G: the index reaches zero at K/K* ~ 0.73."""
         K_fracs = np.linspace(0.5, 1.0, 501)
         gf = va.capacity_gap_decomposition(K_fracs)["gap_fraction"]
+        crossover = K_fracs[np.argmax(gf <= 0.0)]
+        assert crossover == pytest.approx(0.73, abs=0.01)
+
+    def test_policy_argument_reproduces_the_solve(self, va):
+        model = SingleFirmModel(va.params)
+        policy = model.optimal_trigger_capacity_phi()
+        fracs = np.array([0.1, 0.3])
+        solved = va.capacity_gap_decomposition(fracs)["gap_fraction"]
+        given = va.capacity_gap_decomposition(fracs, policy=policy)["gap_fraction"]
+        np.testing.assert_allclose(given, solved, rtol=1e-12)
+
+
+class TestCapacityGapPurePower:
+    """The earlier draft's diagnostic, at the pure-power policy."""
+
+    def test_earlier_draft_values(self, va):
+        d = va.capacity_gap_decomposition(np.array([0.1, 0.3]), pure_power=True)
+        assert d["K_star"] == pytest.approx(0.006727, rel=1e-3)
+        assert d["gap_fraction"][0] == pytest.approx(50.1, abs=0.5)
+        assert d["gap_fraction"][1] == pytest.approx(26.0, abs=0.5)
+
+    def test_zero_crossover_near_077(self, va):
+        K_fracs = np.linspace(0.5, 1.0, 501)
+        gf = va.capacity_gap_decomposition(K_fracs, pure_power=True)["gap_fraction"]
         crossover = K_fracs[np.argmax(gf <= 0.0)]
         assert crossover == pytest.approx(0.77, abs=0.02)
 

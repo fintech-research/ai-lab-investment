@@ -12,9 +12,13 @@ purposes and should NOT be duplicated here.
 
 from __future__ import annotations
 
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import transforms
+
+logger = logging.getLogger(__name__)
 
 FULL_W = 6.5  # full-column width (inches)
 HALF_W = 3.25  # half-column width (inches)
@@ -171,6 +175,13 @@ def create_comparative_statics() -> plt.Figure:
         model = SingleFirmModel(p)
         result = model.comparative_statics(param_name, values, "H")
         v = result["has_trigger"]
+        if not v.all():
+            # The grids lie inside the (A2) window, so every point must solve;
+            # fail rather than drop points silently (C19j).
+            missing = result["param_values"][~v]
+            logger.error("No H-regime trigger for %s = %s", param_name, missing)
+            msg = f"comparative statics: {(~v).sum()} {param_name} points unsolved"
+            raise RuntimeError(msg)
 
         ax.plot(
             result["param_values"][v],
@@ -244,8 +255,12 @@ def lambda_option_value_curve(
             else:
                 values[i] = model.option_value_with_phi(X_ref)
             phis[i] = model.closed_form_phi_star()
-        except (ValueError, RuntimeError):
-            continue
+        except (ValueError, RuntimeError) as err:
+            # Fail rather than thin the curve (C19j): every arrival rate on
+            # the figure's grid has a solution.
+            logger.exception("No solution at lambda = %.4f", lam)
+            msg = f"lambda_option_value_curve failed at lambda = {lam:.4f}"
+            raise RuntimeError(msg) from err
     phi_underbar = float(DuopolyModel(ModelParameters()).faith_threshold())
     return values, phis, phi_underbar
 
@@ -694,9 +709,9 @@ def create_growth_decomposition() -> plt.Figure:
     decomposition: the two components use different benchmarks (gross
     vs. net of sunk cost), so their sum is not firm value.
 
-    Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
-    uses the phi-aware model (pure_power_trigger_capacity_phi,
-    installed_value_with_phi).
+    Delegates to ValuationAnalysis.capacity_gap_decomposition() at the
+    precommitted-scale policy (X*, K*, phi*) of the model of record, with
+    the installed values of eq-installed-value-L, at demand 1.5 X*.
     """
     from ..models import ModelParameters, ValuationAnalysis
 
@@ -764,10 +779,16 @@ def create_investment_dilemma() -> plt.Figure:
             for b in beliefs
         ])
 
-    pure_power = np.array([
-        100.0 * va.pure_power_dilemma(truth, float(b))["value_loss_pct"]
-        for b in beliefs
-    ])
+    def pure_power_loss(belief: float) -> float:
+        result = va.pure_power_dilemma(truth, belief)
+        if "error" in result:
+            # The solver reports failures in the result; fail loudly (C19j).
+            logger.error("Pure-power dilemma at %.4f: %s", belief, result["error"])
+            msg = f"pure_power_dilemma failed at lambda_invest = {belief:.4f}"
+            raise RuntimeError(msg)
+        return 100.0 * result["value_loss_pct"]
+
+    pure_power = np.array([pure_power_loss(float(b)) for b in beliefs])
     pairs = matched_pairs(truth)
     marks = (
         ("additive", "o", 10, r"Equal in $\lambda$: $0.02$, $0.18$"),

@@ -868,7 +868,7 @@ class TestFirstInvestment:
         assert np.isinf(r["X_F_pre_switch"])
         assert r["lead_over_wait"] == pytest.approx(1.091, abs=0.002)
         assert r["follower_over_leader"] == pytest.approx(1.104, abs=0.002)
-        assert r["coefficient_ratio"] == pytest.approx(1.83, abs=0.02)
+        assert r["coefficient_ratio"] == pytest.approx(1.87, abs=0.02)
         assert r["X_D_leader"] == pytest.approx(0.000700, rel=3e-3)
         assert r["distance_to_default"] == pytest.approx(4.805, abs=0.01)
 
@@ -906,38 +906,48 @@ class TestFirstInvestment:
         assert np.all(np.diff(advantage[3:]) < 0)
 
     def test_records_carry_the_entry_scan(self):
-        """The cache was located on the earlier scan, anchored at X_P.
+        """The cache is located on the scan anchored at the single firm's
+        triggers (issue #184 rewrote it with the search of #182).
 
-        26 points from 0.03 to 10 times X_P (seven from 0.2 to 1.6 times X_P
-        in the two cells of `ENTRY_SCAN_OVERRIDES`), with ``entry_scan_*``
-        in units of X_P. The scan of `ENTRY_SCAN`, anchored at X_H* and X*,
-        reproduces X_L in each of the 45 cells to within 2e-4 and K_L to
-        within 4e-4 (issue #182; `test_anchored_scan_reproduces_the_cache`
-        re-solves the baseline), so the cache was not rewritten.
+        Ten points per decade from 0.03 times the lower of X_H* and X* to ten
+        times the higher, with ``entry_scan_*`` in units of X_H*; no cell
+        needed an extension. The two cells of `ENTRY_SCAN_OVERRIDES` use the
+        fixed seven-point scan from 0.118 to 0.944 X_H*.
         """
+        from ai_lab_investment.models.base_model import SingleFirmModel
         from ai_lab_investment.models.preemption_levered import (
+            ENTRY_SCAN,
             ENTRY_SCAN_OVERRIDES,
             SCAN_OVERRIDES,
         )
 
         assert set(ENTRY_SCAN_OVERRIDES) == set(SCAN_OVERRIDES)
+        ratios = {
+            lam: SingleFirmModel(P.with_param(lam=lam)).optimal_trigger_capacity_phi()[
+                0
+            ]
+            for lam in {r["lam"] for r in GRID}
+        }
         for r in GRID:
             cell = (r["lam"], r["scale"], r["leverage"], r["debt"])
-            narrow = cell in ENTRY_SCAN_OVERRIDES
-            points, (low, high) = (7, (0.2, 1.6)) if narrow else (26, (0.03, 10.0))
-            assert r["entry_scan_points"] == points
-            assert r["entry_scan_low"] == pytest.approx(low)
-            # The scan may stop early where no leader policy keeps the
-            # follower out; X_L is interior to what was scanned.
-            assert r["entry_scan_high"] <= high * (1 + 1e-9)
-            assert r["entry_scan_low"] < r["X_L_over_X_P"] < r["entry_scan_high"]
-            if narrow:
-                # The fixed scan now used there covers the same demand range.
+            assert r["first_investment"] == 1.0, cell
+            assert r["waiting_equilibrium"] == 0.0, cell
+            assert r["entry_scan_extensions"] == 0.0, cell
+            if cell in ENTRY_SCAN_OVERRIDES:
                 scan = ENTRY_SCAN_OVERRIDES[cell]
-                assert scan.fixed and scan.points == points
-                assert scan.span[0] * r["X_H"] == pytest.approx(
-                    low * _rent(0.05)["X_P"], rel=0.01
-                )
+                assert scan.fixed
+                assert r["entry_scan_points"] == scan.points
+                low, high = scan.span
+            else:
+                anchor = ratios[r["lam"]] / r["X_H"]
+                low = ENTRY_SCAN.span[0] * min(1.0, anchor)
+                high = ENTRY_SCAN.span[1] * max(1.0, anchor)
+                decades = np.log10(high / low)
+                assert ENTRY_SCAN.points * decades <= r["entry_scan_points"], cell
+                assert r["entry_scan_points"] <= ENTRY_SCAN.points * decades + 2, cell
+            assert r["entry_scan_low"] == pytest.approx(low, rel=1e-6), cell
+            assert r["entry_scan_high"] == pytest.approx(high, rel=1e-6), cell
+            assert low < r["X_L"] / r["X_H"] < high, cell
 
     @pytest.mark.slow
     def test_anchored_scan_reproduces_the_cache(self):
