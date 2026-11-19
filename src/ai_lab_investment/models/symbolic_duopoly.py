@@ -38,9 +38,12 @@ References:
 - Dixit & Pindyck (1994): Chapter 6 (regime-switching extensions)
 """
 
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import sympy as sp
+
+if TYPE_CHECKING:
+    from .parameters import ModelParameters
 
 # =====================================================================
 # Symbolic parameter definitions
@@ -1350,7 +1353,9 @@ def green_function_residual(syms):
 # =====================================================================
 
 
-def verify_particular_solution_coefficient(params):
+def verify_particular_solution_coefficient(
+    params: "ModelParameters",
+) -> dict[str, Any]:
     """Verify C = -lambda * B_H / Q_L(beta_H) against base_model.py.
 
     Args:
@@ -1387,7 +1392,7 @@ def verify_particular_solution_coefficient(params):
     }
 
 
-def verify_option_value_structure(params):
+def verify_option_value_structure(params: "ModelParameters") -> dict[str, Any]:
     """Check the simple-mode L-regime code path against its own formula.
 
     `SingleFirmModel.option_value_L` is the simple mode (no training
@@ -1453,7 +1458,9 @@ def verify_option_value_structure(params):
         }
 
 
-def verify_pure_power_approximation(params=None):
+def verify_pure_power_approximation(
+    params: "ModelParameters | None" = None,
+) -> dict[str, Any]:
     """The pure-power form against the model of record, at given parameters.
 
     Reports, without certifying the single power: the L-regime
@@ -1503,7 +1510,7 @@ def verify_pure_power_approximation(params=None):
     }
 
 
-def verify_smooth_pasting_L(params):
+def verify_smooth_pasting_L(params: "ModelParameters") -> dict[str, Any]:
     """Verify smooth-pasting for the L-regime option value.
 
     When an interior trigger exists:
@@ -1527,6 +1534,8 @@ def verify_smooth_pasting_L(params):
         return {"has_L_trigger": False, "skip": True}
 
     X_L, K_L, D_L = model._solve_regime_L()
+    if X_L is None or K_L is None:
+        return {"has_L_trigger": False, "skip": True}
     C = model._particular_solution_coeff()
 
     # dF_L/dX at X*

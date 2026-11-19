@@ -32,7 +32,7 @@ abstract: |
   Operating costs create a shutdown boundary at which a firm stops operating without debt, and when it trains enough, optimism about the switch lowers it ("faith-based survival").
   A mistaken belief costs value mainly through the training allocation.
   For a single firm with precommitted post-switch scale, believing the arrival rate is 0.02 when it is 0.10 costs 32% of value, against 1.3% for an optimistic error of the same size and 13% for one of the same proportion.
-  Errors matched in expected years to the switch cost about the same, and the latter optimist is eleven times as likely as an informed firm to reach its shutdown boundary within five years.
+  Errors matched in expected years to the switch cost about the same, and the optimist at 0.50 is eleven times as likely as an informed firm to reach its shutdown boundary within five years.
   A stylized calibration maps training allocations assigned to four AI lab archetypes into implied beliefs and their consequences.
 keywords:
   - real options

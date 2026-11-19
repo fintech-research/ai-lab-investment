@@ -57,7 +57,15 @@ human-directed revision:
 5. **Verification.** References were independently verified using Claude
    Cowork and web searches. Mathematical derivations were cross-checked with
    SymPy symbolic computation. Numerical results were validated through
-   parameter sweeps and robustness checks.
+   parameter sweeps and robustness checks. Parts of the closed-form algebra
+   and calculus were later formalized in Lean 4 and Mathlib (`lean/README.md`
+   lists what is and is not covered).
+
+## Review Round of November 2026
+
+Before submission, four AI models each wrote an independent referee report on the same version of the paper (`reports/review_20261101/`): Claude Opus 5.5 and Claude Fable 5.2 (Anthropic), and GPT-6.1-Sol and GPT-6-Astra (OpenAI). An AI agent consolidated them into one report (`review_report_consolidated.md`), checking each comment against the source and numbering the comments C1 to C26. All four reports recommended a major revision before submission, and none found an error in the conditional closed-form algebra; the main objection was to the approximation the model was solved under.
+
+The revision was tracked in umbrella issue #171, with one sub-issue per task in dependency order. AI agents (Claude Opus 5.5 and Claude Fable 5.2, through Claude Code) implemented the sub-issues on branches merged into the umbrella branch, including diagnostics, the change of the model of record to the investment problem solved in its primitives, the recomputation of every exhibit, the Lean and SymPy updates, the framing rewrite, the length cut and a final prose pass. Pull requests were also reviewed by AI agents, under the author's review. The author took the decisions at the gates of the plan, among them the model of record (by accepting the recommendation the agents prepared from the diagnostics), the target length and the target journals, and the points that call for the author's own verification are listed in `TO_VERIFY.md`.
 
 ## Role of the Author
 

@@ -1,6 +1,6 @@
 # ai-lab-investment
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). See the [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6305300) for details.
+A real-options model of irreversible compute investment by AI laboratories, with regime-switching demand, a duopoly entry game, endogenous default, and a training-inference allocation. Delivers a closed-form training fraction and post-switch policy, the entry equilibrium (competition brings investment forward of the switch), faith-based survival, and Dario's dilemma (the cost of a mistaken belief about the switch). See the [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6305300) for details.
 
 - **Blog post** on the use of AI tools to write the paper: <https://vincent.codes.finance/posts/vibe-research-paper/>
 - **Github repository**: <https://github.com/fintech-research/ai-lab-investment/>
@@ -67,7 +67,7 @@ Parts of the paper's closed-form algebra are machine-checked in [Lean 4](https:/
 - **Proposition 1**: the closed-form training fraction `φ*` as the unique interior critical point, with its comparative statics; the post-switch trigger and NPV; the closed-form post-switch capacity `K_H*`, positive under (A2) and the unique global maximiser of its reduced objective; the particular solutions and first-order conditions of the pre-switch problem.
 - **Proposition 2 and credit**: smooth pasting equivalent to the closed-form default boundary, the shutdown boundary, the faith-based survival threshold `φ̲` and its comparative statics, the boundary's monotonicity in leverage and rival capacity, and identities of the recovery rule at `φ*`.
 - **Corollary 1**: installed value increasing and strictly concave in `λ` iff `φ > φ̲`, and the news identity.
-- **Proposition 3**: the contest algebra behind the allocation condition, uniqueness of the root of the follower's capacity condition, and the algebra of the values before the first investment.
+- **Proposition 3**: the contest algebra behind the critical-point statement on the allocation, the fact that the follower's capacity condition has at most one root, and the algebra of the values before the first investment.
 
 No theorem proves optimality of a stopping rule, existence or uniqueness of an equilibrium, or any number; `lean/README.md` lists what is not formalized. Each theorem holds for all admissible parameter values (not just the baseline calibration) and depends only on Lean's standard axioms. To reproduce:
 
