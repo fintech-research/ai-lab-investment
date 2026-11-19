@@ -42,8 +42,7 @@ allow rejection for excessive length, and cap *invited revisions* at 32 pages at
 was 67 pages (plus a 49-page e-companion) in the 2026-08-08 build and 47 pages
 (plus a 70-page e-companion) after the #149 consolidation and the #150 prose pass
 of 2026-09-10, then 45 pages (plus a 66-page e-companion) once Internet Appendix I
-and the references only it cited were removed on 2026-10-04; whether to cut further toward the 32-page revision cap before the
-initial submission is an open author decision (see `../TO_VERIFY.md`). Re-measure
+and the references only it cited were removed on 2026-10-04. The model-of-record revision of November 2026 (#171) and the #187 framing rewrite brought it back to 60 pages (plus a 111-page e-companion), measured on 2026-11-18. The author then set the target for the initial submission at about 40 pages (38 to 42), and the #188 cut of 2026-11-18 brought the manuscript to 42 pages (38 of text and 4 of references) with a 120-page e-companion; what moved to the Internet Appendix is listed in `../TO_VERIFY.md`. The 32-page cap applies only to an invited revision. Re-measure
 with `just render-blind` after every content change.
 
 ### Reference style decision (2026-07-25)
