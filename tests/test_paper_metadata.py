@@ -66,3 +66,23 @@ def test_keywords_tex_mirrors_front_matter() -> None:
     )
     printed = line.split("\\textbf{Keywords:}")[1].replace("\\par", "").strip()
     assert printed == "; ".join(front_matter(IDENTIFIED)["keywords"])
+
+
+COVER_LETTER = PAPER.parent / "submission" / "cover-letter.md"
+
+
+def test_abstract_within_informs_limit() -> None:
+    """Management Science caps the abstract at 250 words."""
+    words = front_matter(IDENTIFIED)["abstract"].split()
+    assert len(words) <= 250, len(words)
+
+
+def test_cover_letter_quotes_the_abstract() -> None:
+    """The cover letter quotes the abstract, as the journal asks; keep it current."""
+    quoted = [
+        line.removeprefix(">").strip()
+        for line in COVER_LETTER.read_text(encoding="utf-8").splitlines()
+        if line.startswith(">")
+    ]
+    abstract = " ".join(front_matter(IDENTIFIED)["abstract"].split())
+    assert " ".join(" ".join(quoted).split()) == abstract
