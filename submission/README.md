@@ -33,7 +33,7 @@ losslessly with `pdfjam`). Every cross-reference therefore resolves in both arti
 
 Verified against the Management Science author guidelines (fetched 2026-07-25):
 double-anonymous with no title page, ≥ 1.5 line spacing, 11pt, 1-inch-plus margins,
-3–5 keywords, abstract ≤ 250 words (249 as of 2026-11-19, guarded by `tests/test_paper_metadata.py`), alphabetical author–year
+3–5 keywords, abstract ≤ 250 words (250 as of 2026-11-19, at the cap, guarded by `tests/test_paper_metadata.py`), alphabetical author–year
 references, supplementary material as a separate e-companion.
 
 **Length.** The guidelines set no hard page limit for an initial submission but
@@ -67,7 +67,7 @@ drop `informs2014.bst` (from the INFORMS LaTeX author package) into `paper/` and
 - [ ] Three associate editor nominations
 - [ ] Submitting author's ORCID
 - [x] Abstract pasted into the cover letter (`cover-letter.md`; current as of 2026-11-19, kept in sync by `tests/test_paper_metadata.py`)
-- [ ] Paste the abstract into the portal's abstract field (same text, 249 words)
+- [ ] Paste the abstract into the portal's abstract field (same text, 250 words)
 - [ ] Attach the referee-facing proof package `replication/replication-package.zip`
       (`just build-replication-package`) as supplementary material, since the cover
       letter says the submission includes it; check the portal's accepted file types
