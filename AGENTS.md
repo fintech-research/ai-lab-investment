@@ -1,8 +1,8 @@
 # AGENTS.md — Investing in Artificial General Intelligence
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry).
+A real-options model of irreversible compute investment by AI laboratories, with regime-switching demand, a duopoly entry game, endogenous default, and a training-inference allocation. Delivers a closed-form training fraction and post-switch policy, the entry equilibrium at X_L (competition brings investment forward of the switch, with a second-mover advantage at X_L), faith-based survival, and Dario's dilemma (the cost of a mistaken belief about the arrival rate, compared in levels, logs and expected years).
 
-**Status:** manuscript and submission materials are drafted; parts of the closed-form algebra are machine-checked in Lean (scope in `lean/README.md`). The target-journal ladder (Management Science first, then JFQA, Review of Finance, …) and the remaining pre-submission checklist live in `submission/README.md` — consult it before making claims about journal fit.
+**Status (2026-11-19):** the revision after the four-report review of 2026-11-01 (umbrella #171) is implemented on the branch `171-review-2026-11-revision`: model of record, regenerated exhibits, framing rewrite, length cut (blind manuscript 42 pages, e-companion 120) and final prose pass; the submission materials (cover letter, AI disclosure, replication package) are updated to match (#190). Not yet submitted: the open items are Vincent's checks in `TO_VERIFY.md` and the portal steps of #95. Parts of the closed-form algebra are machine-checked in Lean (scope in `lean/README.md`). The target-journal ladder (Management Science, then JFQA, then Review of Finance, confirmed on 2026-11-19) and the remaining pre-submission checklist live in `submission/README.md`; consult it before making claims about journal fit.
 
 ## Commands
 

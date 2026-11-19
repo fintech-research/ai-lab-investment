@@ -1338,7 +1338,7 @@ class DuopolyModel:
     ) -> float:
         """Shutdown boundary of the inference business on its own.
 
-        X_I = [beta_neg / (beta_neg - 1)] [delta (1 - phi) K / r] / a, with
+        X_I = (beta_neg / (beta_neg - 1)) (delta (1 - phi) K / r) / a, with
         a = [(1 - phi) K]^alpha s_L / (r - mu_L + lambda) the inference
         revenue coefficient: `shutdown_boundary` with the firm's revenue
         coefficient and operating cost replaced by those of its inference
