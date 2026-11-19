@@ -529,7 +529,13 @@ def create_competition_effect() -> plt.Figure:
     fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
     top = 0.05
     shown = np.where(unrestricted <= top, unrestricted, np.nan)
-    ax.plot(lams, shown, "k-", linewidth=1.5, label="Single firm, scale chosen freely")
+    ax.plot(
+        lams,
+        shown,
+        "k-",
+        linewidth=1.5,
+        label="Single firm, scale chosen at the switch",
+    )
     ax.plot(
         lams,
         precommitted,
