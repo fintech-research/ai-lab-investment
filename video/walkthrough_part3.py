@@ -1299,7 +1299,8 @@ class P3S11PhiLemma(PaperScene):
 
         params = ModelParameters()
         model = SingleFirmModel(params)
-        _, _, phi_model = model.optimal_trigger_capacity_phi()
+        # Interim pin (issue #176): pure-power policy; videos are issue #191.
+        _, _, phi_model = model.pure_power_trigger_capacity_phi()
 
         alpha, r, mu_H = params.alpha, params.r, params.mu_H
 

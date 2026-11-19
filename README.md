@@ -1,6 +1,6 @@
 # ai-lab-investment
 
-A unified model of irreversible capacity investment with regime-switching demand, duopoly competition, endogenous default, and AI scaling laws. Delivers analytical triggers and Dario's dilemma (overinvestment asymmetry). See the [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6305300) for details.
+A real-options model of irreversible compute investment by AI laboratories, with regime-switching demand, a duopoly entry game, endogenous default, and a training-inference allocation. Delivers a closed-form training fraction and post-switch policy, the entry equilibrium (competition brings investment forward of the switch), faith-based survival, and Dario's dilemma (the cost of a mistaken belief about the switch). See the [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6305300) for details.
 
 - **Blog post** on the use of AI tools to write the paper: <https://vincent.codes.finance/posts/vibe-research-paper/>
 - **Github repository**: <https://github.com/fintech-research/ai-lab-investment/>
@@ -61,15 +61,15 @@ Some commonly used commands include:
 
 ## Proof verification
 
-The paper's closed-form results are independently machine-checked in [Lean 4](https://lean-lang.org/) against [Mathlib](https://github.com/leanprover-community/mathlib4). The Lean package lives in [`lean/`](lean/README.md) and verifies, with kernel-checked, `sorry`-free proofs:
+Parts of the paper's closed-form algebra are machine-checked in [Lean 4](https://lean-lang.org/) against [Mathlib](https://github.com/leanprover-community/mathlib4). The Lean package lives in [`lean/`](lean/README.md) and proves, with kernel-checked, `sorry`-free proofs, identities and inequalities under stated hypotheses, conditional on the value functions and boundary conditions the paper derives:
 
-- **The Euler ODE** — that the power solution `X^β` solves the homogeneous Hamilton–Jacobi–Bellman ODE **iff** `β` solves the characteristic equation `Q(β)=0` (tying the roots to the actual ODE, not just an asserted quadratic).
-- **Proposition 1** — the investment trigger `X* = β/(β-1)·b/A` and the NPV `b/(β-1)`; the capacity first-order condition and its closed-form solution `K*`, independent of `φ`; and the training fraction `φ*` reduced to its unique interior critical point in closed form, with comparative statics (increasing in `λ` and `μ_H`, independent of `μ_L`).
-- **Characteristic roots** — the quadratic roots, the positive root exceeding 1 (`β_H>1`, `β_L⁺>1`), the negative root (`β_s⁻<0`), the ordering `β_L⁺ > β_H`, and the Leland markup factor in `(0,1)`.
-- **Proposition 2** — the quotient-rule derivative `∂A_eff/∂λ`, the faith-based-survival condition and threshold `φ̲ = R/(1+R)`, and the default boundary increasing in leverage and rival capacity.
-- **Proposition 3 (duopoly)** — the Tullock contest-share scale-invariance behind role-invariance, the separable reduction of the follower coefficient, the contest-derivative factorization, and the generic intermediate-value existence and strict-concavity single-crossing lemmas underlying the preemption trigger `X_P` (conditional on the continuity, endpoint-sign, and zero-leverage concavity hypotheses the paper supplies).
+- **The Euler ODE and characteristic roots**: `X^β` solves the homogeneous HJB equation iff `Q(β) = 0`; `β_H > 1`, `β_L⁺ > β_H`, `β_L⁻ < 0`; the Leland markup in `(0,1)`.
+- **Proposition 1**: the closed-form training fraction `φ*` as the unique interior critical point, with its comparative statics; the post-switch trigger and NPV; the closed-form post-switch capacity `K_H*`, positive under (A2) and the unique global maximiser of its reduced objective; the particular solutions and first-order conditions of the pre-switch problem.
+- **Proposition 2 and credit**: smooth pasting equivalent to the closed-form default boundary, the shutdown boundary, the faith-based survival threshold `φ̲` and its comparative statics, the boundary's monotonicity in leverage and rival capacity, and identities of the recovery rule at `φ*`.
+- **Corollary 1**: installed value increasing and strictly concave in `λ` iff `φ > φ̲`, and the news identity.
+- **Proposition 3**: the contest algebra behind the critical-point statement on the allocation, the fact that the follower's capacity condition has at most one root, and the algebra of the values before the first investment.
 
-Each theorem holds for all admissible parameter values (not just the baseline calibration) and depends only on Lean's standard axioms. To reproduce:
+No theorem proves optimality of a stopping rule, existence or uniqueness of an equilibrium, or any number; `lean/README.md` lists what is not formalized. Each theorem holds for all admissible parameter values (not just the baseline calibration) and depends only on Lean's standard axioms. To reproduce:
 
 ```bash
 cd lean

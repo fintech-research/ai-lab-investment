@@ -1,3 +1,7 @@
 # Notebooks
 
 This directory contains Marimo or Jupyter notebooks used for exploration and analysis. Make sure that any steps taken in this notebooks that are relevant for the final analysis are also implemented in scripts in the `src/` directory to ensure reproducibility.
+
+## `model_derivation.ipynb`
+
+SymPy checks of the closed-form algebra of the model of record: the characteristic equations, the post-switch problem and $K_H^*$ (Proposition 1(ii)), the piecewise L-regime solution, the two-region system and the exercise premium of Proposition 1(iii), the pure-power approximation (smooth-fit coefficient against $\Gamma$), the waiting margin as a ratio of leading terms, $\phi^*$ (Proposition 1(i)), both channels of faith-based survival and the thresholds $\underline\phi$ and $\tilde\phi$ (Proposition 2), the recovery rule, the Tullock derivative and the follower's capacity condition (Proposition 3(i) and the critical-point statement of (ii)), and the Green's function of the L-regime operator. Each section says what it establishes; the completeness audit at the end lists what it does not cover (all equilibrium levels of Proposition 3, optimality and uniqueness arguments, the coupled default boundary, and the installed-value concavity pending issue #181). The symbolic functions are in `src/ai_lab_investment/models/symbolic_duopoly.py` and every residual is asserted in `tests/test_symbolic_duopoly.py`. Re-execute after any change to a closed form: `uv run jupyter nbconvert --to notebook --execute --inplace notebooks/model_derivation.ipynb`.

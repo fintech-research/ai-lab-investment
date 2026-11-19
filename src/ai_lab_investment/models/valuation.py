@@ -6,8 +6,8 @@ Decomposes firm value into:
 3. Regime switch option: additional value from potential L->H transition
 
 Computes credit risk metrics (default probability, credit spread) and
-quantifies the "Dario dilemma" — the cost of belief mismatches between
-a firm's true lambda and its investment strategy.
+quantifies Dario's dilemma, the cost of investing on a belief about lambda
+that differs from the true rate (`belief_mismatch`, issue #180).
 """
 
 from typing import Any
@@ -15,8 +15,32 @@ from typing import Any
 import numpy as np
 
 from .base_model import SingleFirmModel
-from .duopoly import DuopolyModel
+from .belief_mismatch import (
+    DuopolyMismatch,
+    SingleFirmMismatch,
+    cached_dilemma_cell,
+    matched_pairs,
+)
+from .duopoly import DEFAULT_RECOVERY_RULE, DuopolyModel, cached_equilibrium
 from .parameters import ModelParameters
+
+# Model of record and approximation (issues #176 to #184). At the model of
+# record: the credit exhibits since issue #179 (`on_policy_credit`), Dario's
+# dilemma since issue #180 (`dario_dilemma`, `dario_dilemma_leveraged`,
+# `dario_dilemma_duopoly`, exact values in `belief_mismatch`), since issue
+# #182 `two_period_dynamic_phi` (capacity of the precommitted-scale policy)
+# and the exact-primitives half of `fixed_pie_robustness`, and since issue
+# #184 the decompositions behind Internet Appendix G
+# (`capacity_gap_decomposition`, `growth_option_decomposition_with_phi`, at
+# the precommitted-scale policy; `pure_power=True` gives the earlier
+# draft's). At the pure-power approximation (`pure_power_*`), labelled as
+# such: the nested-game half of `fixed_pie_robustness`, and the
+# `pure_power_dilemma*` methods, kept so that the earlier draft's dilemma
+# numbers reproduce and their error can be stated; they feed no main-text
+# number.
+
+ON_POLICY_LEVERAGES: tuple[float, ...] = (0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.40, 0.70)
+"""Leverage grid of the on-policy credit table (issue #179)."""
 
 CREDIT_COUPON_RATE = 0.05
 """Coupon rate on debt used throughout the credit-risk analysis."""
@@ -58,8 +82,21 @@ class ValuationAnalysis:
     risk metrics, and scenario analyses.
     """
 
-    def __init__(self, params: ModelParameters):
+    def __init__(
+        self, params: ModelParameters, recovery_rule: str = DEFAULT_RECOVERY_RULE
+    ):
+        """Initialize the analysis.
+
+        Args:
+            params: Model parameters.
+            recovery_rule: Recovery rule of the credit block (see
+                `DuopolyModel.recovery_value`); "net" is the rule of issue
+                #177, without the liquidator's option to shut the inference
+                business down, and "gross" reproduces the credit numbers of
+                the draft that preceded #177.
+        """
         self.params = params
+        self.recovery_rule = recovery_rule
 
     # ------------------------------------------------------------------
     # Growth option decomposition
@@ -136,6 +173,125 @@ class ValuationAnalysis:
     # distance-to-default comparisons across leverage levels.
     CREDIT_RISK_DEMAND_LEVEL = 0.10
 
+    # Leverage at which the zero-leverage limit of a debt quantity is
+    # evaluated (the spread on an infinitesimal issue).
+    ZERO_LEVERAGE_LIMIT = 1e-6
+
+    def _credit_model(self, leverage: float) -> DuopolyModel:
+        return DuopolyModel(
+            self.params,
+            leverage=leverage,
+            coupon_rate=CREDIT_COUPON_RATE,
+            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
+        )
+
+    def _issuance_coupon(
+        self,
+        duo: DuopolyModel,
+        X: float,
+        K: float,
+        phi: float,
+        debt_convention: str,
+    ) -> float:
+        """Coupon under the chosen debt convention, for debt issued at X."""
+        if debt_convention == "par":
+            return duo.coupon_payment(K)
+        if debt_convention == "fair":
+            return duo.fair_coupon(X, phi, K)
+        msg = f"Unknown debt convention: {debt_convention!r}"
+        raise ValueError(msg)
+
+    def credit_metrics(
+        self,
+        leverage: float,
+        X: float,
+        K: float,
+        phi: float,
+        debt_convention: str = "par",
+        horizon: float = 5.0,
+    ) -> dict[str, float]:
+        """Credit primitives of a single firm with policy (K, phi) at X.
+
+        Debt is issued at X. Under "par" the coupon is CREDIT_COUPON_RATE
+        times the face value leverage * I(K) (the paper's convention);
+        under "fair" it is the coupon at which the debt is worth
+        leverage * I(K) at issuance (`DuopolyModel.fair_coupon`).
+
+        At leverage = 0 there is no debt: X_D is the shutdown boundary
+        and the default probability is the probability of reaching it;
+        the recovery rate, spread and coupon-to-proceeds ratio are the
+        limits as leverage goes to zero, evaluated at
+        ZERO_LEVERAGE_LIMIT.
+
+        Returns:
+            Dict with "coupon", "X_D", "distance" (X / X_D), "debt_value",
+            "recovery_rate" (fraction of the default-free claim c_D/r),
+            "spread" (c_D / D - r, absolute), "coupon_rate" (c_D over the
+            proceeds leverage * I(K)) and "default_probability".
+        """
+        if not 0.0 <= leverage <= 1.0:
+            msg = f"Leverage must be in [0, 1], got {leverage}"
+            raise ValueError(msg)
+        p = self.params
+        priced_lev = max(leverage, self.ZERO_LEVERAGE_LIMIT)
+        priced = self._credit_model(priced_lev)
+        priced_coupon = self._issuance_coupon(priced, X, K, phi, debt_convention)
+        D = priced.debt_value(X, phi, K, 0.0, 0.0, coupon=priced_coupon)
+        spread = max(priced_coupon / D - p.r, 0.0) if D > 0 else float("nan")
+
+        coupon = priced_coupon if leverage > 0 else 0.0
+        duo = self._credit_model(leverage)
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0, coupon=coupon)
+        return {
+            "coupon": coupon,
+            "X_D": X_D,
+            "distance": X / X_D if X_D > 0 else float("inf"),
+            "debt_value": D if leverage > 0 else 0.0,
+            "recovery_rate": priced.recovery_rate(
+                phi, K, 0.0, 0.0, coupon=priced_coupon
+            ),
+            "spread": spread,
+            "coupon_rate": priced_coupon / (priced_lev * priced.investment_cost(K)),
+            "default_probability": self._first_passage_probability(
+                X, X_D, "L", horizon
+            ),
+        }
+
+    def credit_table(
+        self,
+        X: float,
+        K: float,
+        phi: float,
+        leverages: tuple[float, ...] = (0.0, 0.01, 0.05, 0.20, 0.40, 0.70),
+    ) -> list[dict[str, float]]:
+        """`credit_metrics` under both debt conventions across leverage.
+
+        One row per leverage, with keys "leverage" and, for each
+        convention c in ("par", "fair"), "c_X_D", "c_recovery_rate",
+        "c_spread", "c_coupon_rate" and "c_default_probability". A fair
+        coupon that does not exist (proceeds above the debt capacity)
+        gives nan entries.
+        """
+        rows = []
+        for lev in leverages:
+            row: dict[str, float] = {"leverage": lev}
+            for convention in ("par", "fair"):
+                try:
+                    metrics = self.credit_metrics(lev, X, K, phi, convention)
+                except ValueError:
+                    metrics = {}
+                for key in (
+                    "X_D",
+                    "recovery_rate",
+                    "spread",
+                    "coupon_rate",
+                    "default_probability",
+                ):
+                    row[f"{convention}_{key}"] = metrics.get(key, float("nan"))
+            rows.append(row)
+        return rows
+
     def credit_spread(
         self,
         leverage: float,
@@ -143,6 +299,8 @@ class ValuationAnalysis:
         phi: float = 0.5,
         regime: str = "L",
         risk_free_rate: float | None = None,
+        X: float | None = None,
+        debt_convention: str = "par",
     ) -> float:
         """Compute credit spread for a levered firm.
 
@@ -155,84 +313,41 @@ class ValuationAnalysis:
         therefore zero when default risk is absent and measures only the
         default-risk component.
 
+        At leverage = 0 the returned value is the limit as leverage goes
+        to zero (the spread on an infinitesimal issue). It is positive
+        whenever the shutdown boundary can be reached, because the
+        unlevered firm also stops operating there.
+
         Args:
             leverage: Debt-to-investment ratio.
             K: Capacity level.
             phi: Training fraction (default 0.5).
             regime: Demand regime (unused; debt is an L-regime claim).
             risk_free_rate: Benchmark rate (defaults to the model's r).
+            X: Demand at which the debt is issued and priced (defaults
+                to CREDIT_RISK_DEMAND_LEVEL).
+            debt_convention: "par" (coupon rate CREDIT_COUPON_RATE on the
+                face value) or "fair" (debt worth its proceeds at X).
 
         Returns:
             Credit spread in absolute terms (e.g., 0.02 = 200 bps).
         """
-        if leverage <= 0:
-            return 0.0
+        if X is None:
+            X = self.CREDIT_RISK_DEMAND_LEVEL
+        metrics = self.credit_metrics(leverage, X, K, phi, debt_convention)
+        spread = metrics["spread"]
+        if risk_free_rate is not None:
+            spread += self.params.r - risk_free_rate
+        return max(spread, 0.0) if np.isfinite(spread) else 0.0
 
-        if risk_free_rate is None:
-            risk_free_rate = self.params.r
-
-        duo = DuopolyModel(
-            self.params,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-        )
-
-        X = self.CREDIT_RISK_DEMAND_LEVEL
-
-        coupon = duo.coupon_payment(K)
-        D = duo.debt_value(X, phi, K, 0.0, 0.0)
-
-        if D <= 0 or coupon <= 0:
-            return 0.0
-
-        yield_risky = coupon / D
-        spread = yield_risky - risk_free_rate
-        return max(spread, 0.0)
-
-    def default_probability(
-        self,
-        X_current: float,
-        K: float,
-        leverage: float,
-        phi: float = 0.5,
-        regime: str = "L",
-        horizon: float = 5.0,
+    def _first_passage_probability(
+        self, X_current: float, X_D: float, regime: str, horizon: float
     ) -> float:
-        """Approximate probability of default within horizon.
-
-        Uses the first-passage probability that GBM hits the default
-        boundary within the given time horizon. The default boundary
-        X_D is an L-regime object (the firm defaults pre-switch), so the
-        L-regime drift mu_L is the consistent choice and the default.
-        The calculation abstracts from the regime switch itself: a
-        switch to H before hitting X_D would effectively remove default
-        risk, so the figure is an upper bound on the pre-switch hazard.
-
-        Args:
-            X_current: Current demand level.
-            K: Capacity.
-            leverage: Debt-to-investment ratio.
-            phi: Training fraction (default 0.5).
-            regime: Demand regime governing the drift (default "L").
-            horizon: Time horizon in years.
-
-        Returns:
-            Probability of default [0, 1].
-        """
-        if leverage <= 0:
+        """Probability that GBM started at X_current reaches X_D by horizon."""
+        if X_D <= 0:
             return 0.0
-
-        duo = DuopolyModel(
-            self.params,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-        )
-        X_D = duo.default_boundary(phi, K, 0.0, 0.0)
-        if X_D <= 0 or X_current <= X_D:
-            return 1.0 if X_D > 0 else 0.0
-
+        if X_current <= X_D:
+            return 1.0
         if horizon <= 0:
             return 0.0
 
@@ -258,6 +373,53 @@ class ValuationAnalysis:
             prob += (X_D / X_current) ** (2 * nu / sigma**2) * norm.cdf(-d2)
 
         return float(np.clip(prob, 0.0, 1.0))
+
+    def default_probability(
+        self,
+        X_current: float,
+        K: float,
+        leverage: float,
+        phi: float = 0.5,
+        regime: str = "L",
+        horizon: float = 5.0,
+        debt_convention: str = "par",
+    ) -> float:
+        """Approximate probability of default within horizon.
+
+        Uses the first-passage probability that GBM hits the default
+        boundary within the given time horizon. The default boundary
+        X_D is an L-regime object (the firm defaults pre-switch), so the
+        L-regime drift mu_L is the consistent choice and the default.
+        The calculation abstracts from the regime switch itself: a
+        switch to H before hitting X_D would effectively remove default
+        risk, so the figure is an upper bound on the pre-switch hazard.
+
+        Without debt the boundary is the shutdown boundary of the
+        unlevered firm (the zero-coupon case of the same formula), so
+        the probability is continuous as leverage goes to zero and is
+        the probability that the firm stops operating.
+
+        Args:
+            X_current: Current demand level.
+            K: Capacity.
+            leverage: Debt-to-investment ratio.
+            phi: Training fraction (default 0.5).
+            regime: Demand regime governing the drift (default "L").
+            horizon: Time horizon in years.
+            debt_convention: "par" or "fair" (debt issued at X_current
+                and worth its proceeds there).
+
+        Returns:
+            Probability of default [0, 1].
+        """
+        duo = self._credit_model(leverage)
+        coupon = (
+            self._issuance_coupon(duo, X_current, K, phi, debt_convention)
+            if leverage > 0
+            else 0.0
+        )
+        X_D = duo.default_boundary(phi, K, 0.0, 0.0, coupon=coupon)
+        return self._first_passage_probability(X_current, X_D, regime, horizon)
 
     def credit_spread_curve(
         self,
@@ -293,22 +455,427 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
-    # Dario dilemma
+    # Credit at the model's own policies (issue #179)
     # ------------------------------------------------------------------
+
+    def single_firm_policy(self) -> tuple[float, float, float]:
+        """(X*, K*, phi*) of the single firm, precommitted post-switch scale.
+
+        The model of record (`SingleFirmModel.optimal_trigger_capacity_phi`).
+        With scale chosen at the switch the single firm waits at baseline,
+        so this is the only pre-switch policy of the single firm at which
+        debt can be issued there.
+        """
+        return SingleFirmModel(self.params).optimal_trigger_capacity_phi()
+
+    def on_policy_credit(
+        self,
+        leverages: tuple[float, ...] = ON_POLICY_LEVERAGES,
+        horizon: float = 5.0,
+        conventions: tuple[str, ...] = ("par", "fair"),
+        roles: tuple[str, ...] = ("single_firm", "leader", "follower"),
+    ) -> list[dict[str, Any]]:
+        """Credit objects at the model's own policies, across leverage.
+
+        One row per (role, debt convention, leverage), with debt issued at
+        the role's entry demand and priced with the exact claims of the
+        model of record (`LeveredPreemptionGame`: coupled regime-switching
+        boundary, default possible after the switch, the recovery rule of
+        this analysis):
+
+        - ``"single_firm"``: the precommitted-scale policy (X*, K*, phi*)
+          of `single_firm_policy`, an installed monopolist
+          (`LeveredPreemptionGame.installed_credit`).
+        - ``"leader"``: the duopoly's first investment, the leader's
+          (X_L, K_L, phi_L) of the cached unlevered equilibrium
+          (`duopoly.cached_equilibrium`) held fixed across leverage; the
+          follower best-responds at each leverage.
+        - ``"follower"``: the follower's post-switch entry (X_F, K_F, all
+          capacity in training) against that leader, re-optimized at each
+          leverage, with the absorbing-regime claims (zero recovery after
+          the switch).
+        - ``"single_firm_closed_form"`` (not in the default roles): the
+          single firm priced with the single-boundary closed forms of
+          `DuopolyModel` (`credit_metrics`), the objects of Proposition 2.
+
+        At zero leverage the boundary is the shutdown boundary and the
+        spread, recovery rate and coupon rate are the limits as leverage
+        goes to zero (evaluated at ZERO_LEVERAGE_LIMIT). The default
+        probability is the first passage to the boundary within ``horizon``
+        years under the drift of the regime in which the firm enters (mu_L
+        for the single firm and the leader, mu_H for the follower), with
+        the regime switch omitted: an upper bound on the pre-switch
+        probability for the first two.
+
+        Returns:
+            Rows with keys ``role``, ``debt``, ``leverage``, ``X`` (entry
+            demand), ``K``, ``phi``, ``X_D``, ``distance`` (X / X_D),
+            ``recovery_rate`` (recovery over the default-free claim
+            c_D / r), ``spread`` (c_D / D - r), ``coupon_rate`` (c_D over the
+            proceeds) and ``default_probability``.
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        p = self.params
+        rows: list[dict[str, Any]] = []
+        X_s, K_s, phi_s = self.single_firm_policy()
+        if any(role in roles for role in ("leader", "follower")):
+            record = cached_equilibrium(lam=p.lam)
+            X_L, K_L, phi_L = record["X_L"], record["K_L"], record["phi_L"]
+
+        def row(role, debt, lev, X, K, phi, X_D, recovery_rate, spread, rate, regime):
+            return {
+                "role": role,
+                "debt": debt,
+                "leverage": lev,
+                "X": X,
+                "K": K,
+                "phi": phi,
+                "X_D": X_D,
+                "distance": X / X_D,
+                "recovery_rate": recovery_rate,
+                "spread": spread,
+                "coupon_rate": rate,
+                "default_probability": self._first_passage_probability(
+                    X, X_D, regime, horizon
+                ),
+            }
+
+        for debt in conventions:
+            for lev in leverages:
+                if "single_firm_closed_form" in roles:
+                    m = self.credit_metrics(lev, X_s, K_s, phi_s, debt, horizon)
+                    rows.append(
+                        row(
+                            "single_firm_closed_form",
+                            debt,
+                            lev,
+                            X_s,
+                            K_s,
+                            phi_s,
+                            m["X_D"],
+                            m["recovery_rate"],
+                            m["spread"],
+                            m["coupon_rate"],
+                            "L",
+                        )
+                    )
+                priced = max(lev, self.ZERO_LEVERAGE_LIMIT)
+                game = LeveredPreemptionGame(
+                    p,
+                    "envelope",
+                    priced,
+                    CREDIT_COUPON_RATE,
+                    CREDIT_BANKRUPTCY_COST,
+                    debt,
+                    recovery_rule=self.recovery_rule,
+                )
+                # At zero leverage the boundary is the shutdown boundary of
+                # the unlevered claims.
+                bare = (
+                    game
+                    if lev > 0
+                    else LeveredPreemptionGame(
+                        p,
+                        "envelope",
+                        0.0,
+                        CREDIT_COUPON_RATE,
+                        CREDIT_BANKRUPTCY_COST,
+                        debt,
+                        recovery_rule=self.recovery_rule,
+                    )
+                )
+                if "single_firm" in roles:
+                    c = game.installed_credit(K_s, phi_s, X_s)
+                    rows.append(
+                        row(
+                            "single_firm",
+                            debt,
+                            lev,
+                            X_s,
+                            K_s,
+                            phi_s,
+                            bare.installed_credit(K_s, phi_s, X_s)["X_default"],
+                            c["recovery"] / (c["coupon"] / p.r),
+                            c["spread"],
+                            c["coupon_rate"],
+                            "L",
+                        )
+                    )
+                if "leader" not in roles and "follower" not in roles:
+                    continue
+                sub, bare_sub = game.subgame(K_L, phi_L), bare.subgame(K_L, phi_L)
+                if "leader" in roles:
+                    c = sub.leader_credit(X_L)
+                    rows.append(
+                        row(
+                            "leader",
+                            debt,
+                            lev,
+                            X_L,
+                            K_L,
+                            phi_L,
+                            bare_sub.leader_credit(X_L)["X_default"],
+                            c["recovery"] / (c["coupon"] / p.r),
+                            c["spread"],
+                            c["coupon_rate"],
+                            "L",
+                        )
+                    )
+                if "follower" in roles:
+                    entry = bare_sub.post_switch
+                    f = game.follower_entry_credit(sub.post_switch)
+                    spread = f["follower_spread"]
+                    rows.append(
+                        row(
+                            "follower",
+                            debt,
+                            lev,
+                            entry.X_F,
+                            entry.K_F,
+                            1.0,
+                            bare.follower_entry_credit(entry)["X_D_follower"],
+                            0.0,
+                            spread,
+                            CREDIT_COUPON_RATE if debt == "par" else p.r + spread,
+                            "H",
+                        )
+                    )
+        return rows
+
+    def credit_phi_profile(
+        self,
+        phis: np.ndarray,
+        leverage: float = 0.40,
+        debt: str = "par",
+        roles: tuple[str, ...] = ("single_firm", "leader"),
+    ) -> dict[str, dict[str, np.ndarray]]:
+        """Recovery rate, spread and boundary against the training fraction.
+
+        Each role keeps its entry demand and capacity from `on_policy_credit`
+        (the single firm's (X*, K*), the leader's (X_L, K_L)) and only phi
+        varies, so the profile is a comparative static at a fixed scale and
+        not a sequence of optimal policies. Exact claims, debt issued at the
+        entry demand.
+
+        Returns:
+            For each role, arrays ``phi``, ``recovery_rate`` (fraction of the
+            default-free claim), ``spread`` and ``X_D``, plus the scalar
+            ``phi_policy`` (phi* or phi_L) under that key.
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        p = self.params
+        game = LeveredPreemptionGame(
+            p,
+            "envelope",
+            leverage,
+            CREDIT_COUPON_RATE,
+            CREDIT_BANKRUPTCY_COST,
+            debt,
+            recovery_rule=self.recovery_rule,
+        )
+        X_s, K_s, phi_s = self.single_firm_policy()
+        record = cached_equilibrium(lam=p.lam)
+        policies = {
+            "single_firm": (X_s, K_s, phi_s),
+            "leader": (record["X_L"], record["K_L"], record["phi_L"]),
+        }
+        out: dict[str, dict[str, np.ndarray]] = {}
+        for role in roles:
+            X, K, phi_policy = policies[role]
+            rec, spread, X_D = (np.full(len(phis), np.nan) for _ in range(3))
+            for i, phi in enumerate(phis):
+                if role == "single_firm":
+                    c = game.installed_credit(K, float(phi), X)
+                else:
+                    c = game.subgame(K, float(phi)).leader_credit(X)
+                rec[i] = c["recovery"] / (c["coupon"] / p.r)
+                spread[i] = c["spread"]
+                X_D[i] = c["X_default"]
+            out[role] = {
+                "phi": np.asarray(phis, dtype=float),
+                "recovery_rate": rec,
+                "spread": spread,
+                "X_D": X_D,
+                "phi_policy": np.asarray(phi_policy),
+            }
+        return out
+
+    # ------------------------------------------------------------------
+    # Dario's dilemma in the model of record (issue #180)
+    # ------------------------------------------------------------------
+
+    def _single_firm_mismatch(
+        self, lambda_true: float, version: str, X_0: float | None
+    ) -> SingleFirmMismatch:
+        cache = self.__dict__.setdefault("_mismatch", {})
+        key = (float(lambda_true), version, X_0)
+        if key not in cache:
+            cache[key] = SingleFirmMismatch(
+                self.params,
+                lambda_true,
+                version,
+                X_0=X_0,
+                recovery_rule=self.recovery_rule,
+            )
+        return cache[key]
 
     def dario_dilemma(
         self,
         lambda_true: float,
         lambda_invest: float,
+        version: str = "precommitted",
+        X_0: float | None = None,
     ) -> dict[str, Any]:
-        """Quantify the cost of belief mismatches.
+        """Cost of investing on the belief ``lambda_invest``, single firm.
+
+        The mistaken firm follows the policy that is optimal under its
+        belief in the exact problem (trigger, capacity, training fraction,
+        or waiting for the switch) and that policy is valued exactly under
+        ``lambda_true``, at the reference demand ``X_0`` (default: half the
+        precommitted-scale trigger at the true rate). See
+        `belief_mismatch.SingleFirmMismatch.loss` for the keys, which
+        include the timing, capacity and allocation components.
+
+        Args:
+            version: ``"precommitted"`` (post-switch scale precommitted, the
+                problem of Proposition 1(iii) and the main-text version) or
+                ``"unrestricted"`` (scale chosen at the switch, in which a
+                firm may wait for the switch).
+        """
+        return self._single_firm_mismatch(lambda_true, version, X_0).loss(lambda_invest)
+
+    def dario_dilemma_matched(
+        self,
+        lambda_true: float = 0.10,
+        additive: float = 0.08,
+        version: str = "precommitted",
+        X_0: float | None = None,
+    ) -> dict[str, dict[str, float]]:
+        """Losses at the matched pairs of `belief_mismatch.matched_pairs`.
+
+        One entry per error metric (additive, the two proportional pairs,
+        horizon), each with the two beliefs, their losses and the ratio of
+        the pessimistic to the optimistic loss.
+        """
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return {
+            name: model.matched(low, high)
+            for name, (low, high) in matched_pairs(lambda_true, additive).items()
+        }
+
+    def dario_dilemma_leveraged(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        leverage: float = 0.40,
+        version: str = "precommitted",
+        debt: str = "fair",
+        X_0: float | None = None,
+    ) -> dict[str, Any]:
+        """The single firm's dilemma on the levered claims.
+
+        The policies are the unlevered ones at each belief; the claims are
+        the exact claims of the credit block (option to stop operating,
+        coupled boundary, debt under the recovery rule), and the value is
+        the shareholders' entry value, which under fairly priced debt is
+        firm value less the outlay. Also returns, for each policy, the
+        distance to the boundary at entry and the five-year first-passage
+        probability (`belief_mismatch.SingleFirmMismatch.levered`). At
+        zero leverage the boundary is the shutdown boundary, so the loss
+        differs slightly from `dario_dilemma`, whose claims carry no option
+        to stop.
+        """
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return model.levered(lambda_invest, leverage, debt)
+
+    def dario_dilemma_surface(
+        self,
+        lambda_true_range: np.ndarray,
+        lambda_invest_range: np.ndarray,
+        version: str = "precommitted",
+    ) -> dict[str, np.ndarray]:
+        """Value loss on a grid of (true, invest) arrival rates."""
+        value_loss = np.full((len(lambda_true_range), len(lambda_invest_range)), np.nan)
+        for i, lt in enumerate(lambda_true_range):
+            for j, li in enumerate(lambda_invest_range):
+                value_loss[i, j] = self.dario_dilemma(lt, li, version)["value_loss_pct"]
+        return {
+            "lambda_true": lambda_true_range,
+            "lambda_invest": lambda_invest_range,
+            "value_loss_pct": value_loss,
+        }
+
+    def dilemma_third_derivative(
+        self,
+        lambda_true: float,
+        step: float,
+        version: str = "precommitted",
+        X_0: float | None = None,
+    ) -> float:
+        """Third derivative in the belief of the exact value of the belief's
+        policy, at ``lambda_true`` and a fixed reference demand, in units of
+        the optimal value. Positive when small equal additive errors cost
+        more on the pessimistic side."""
+        model = self._single_firm_mismatch(lambda_true, version, X_0)
+        return model.third_derivative(step)
+
+    def dario_dilemma_duopoly(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+        role: str = "leader",
+        leverage: float = 0.0,
+        debt: str = "fair",
+        solve: bool = False,
+    ) -> dict[str, Any]:
+        """The dilemma inside the entry equilibrium of the model of record.
+
+        The benchmark is the equilibrium in which one firm leads at X_L and
+        the other follows; the mistaken firm is the leader or the follower
+        (``role``) and its rival, at the true rate, best-responds
+        (`belief_mismatch.DuopolyMismatch`). Read from the cache
+        `duopoly_dilemma.json` at the baseline calibration; with ``solve``
+        the cell is computed (a few minutes).
+        """
+        if not solve:
+            if self.params != ModelParameters().with_param(lam=self.params.lam):
+                msg = "The cached duopoly dilemma is at the baseline calibration"
+                raise KeyError(msg)
+            if abs(lambda_true - 0.10) > 1e-12:
+                msg = "The cached duopoly dilemma has lambda_true = 0.10"
+                raise KeyError(msg)
+            return cached_dilemma_cell(lambda_invest, role, leverage, debt)
+        model = DuopolyMismatch(
+            self.params, lambda_true, recovery_rule=self.recovery_rule
+        )
+        return model.cell(lambda_invest, role, leverage, debt)
+
+    # ------------------------------------------------------------------
+    # Dario's dilemma under the pure-power approximation (earlier draft)
+    # ------------------------------------------------------------------
+
+    def pure_power_dilemma(
+        self,
+        lambda_true: float,
+        lambda_invest: float,
+    ) -> dict[str, Any]:
+        """Belief-mismatch cost under the pure-power approximation.
+
+        The nested approximation of the earlier draft, kept so that its
+        numbers reproduce and their error against `dario_dilemma` can be
+        stated. Both policies are the pure-power ones and both are priced
+        with the timing factor (X_0 / X*)^beta_H, which makes the
+        percentage loss independent of X_0.
 
         Uses the phi-aware model where lambda enters through A_eff, so
-        the optimal trigger X* and allocation phi* depend on lambda. The
-        optimal capacity K* does *not*: by Proposition 1 it is
-        independent of both lambda and phi, so belief mismatches distort
-        timing and allocation only, never scale (and hence never the
-        coupon, which is proportional to I(K*)).
+        the trigger X* and allocation phi* depend on lambda. The pure-power
+        capacity does *not*: it is independent of both lambda and phi, so
+        in this approximation belief mismatches distort timing and
+        allocation only, never scale (and hence never the coupon, which is
+        proportional to I(K*)). In the exact problem capacity responds to
+        the belief.
 
         If a firm's true lambda (private belief) differs from the lambda
         it uses for investment decisions, what is the cost?
@@ -330,7 +897,7 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
             V_optimal = model_true.installed_value_with_phi(
                 X_true, phi_true, K_true, "L"
             )
@@ -343,7 +910,9 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
+            X_invest, K_invest, phi_invest = (
+                model_invest.pure_power_trigger_capacity_phi()
+            )
             # Evaluate this investment under the TRUE demand process
             # (true A_eff) but with the mismatched (K, phi) policy.
             V_mismatch = model_true.installed_value_with_phi(
@@ -386,7 +955,7 @@ class ValuationAnalysis:
             "is_conservative": lambda_invest < lambda_true,
         }
 
-    def dilemma_policy_value(
+    def pure_power_dilemma_policy_value(
         self,
         lambda_true: float,
         lambda_invest: float,
@@ -397,7 +966,7 @@ class ValuationAnalysis:
         The unlevered value, at demand X_0, of following the policy optimal
         under lambda_invest when the true arrival rate is lambda_true:
         NPV(X*) (X_0 / X*)^beta_H with the reduced-form timing factor. X_0
-        must lie below the policy's trigger. Unlike `dario_dilemma`, which
+        must lie below the policy's trigger. Unlike `pure_power_dilemma`, which
         picks X_0 per pair (harmless for percentage losses because the
         common power cancels), this evaluator holds X_0 fixed so that W
         can be differentiated in lambda_invest.
@@ -405,7 +974,7 @@ class ValuationAnalysis:
         p_true = self.params.with_param(lam=lambda_true)
         model_true = SingleFirmModel(p_true)
         model_invest = SingleFirmModel(self.params.with_param(lam=lambda_invest))
-        X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+        X_inv, K_inv, phi_inv = model_invest.pure_power_trigger_capacity_phi()
         if X_inv <= X_0:
             msg = f"X_0 = {X_0:.4g} must lie below the policy trigger {X_inv:.4g}"
             raise ValueError(msg)
@@ -414,7 +983,7 @@ class ValuationAnalysis:
         ) - model_true.investment_cost(K_inv)
         return float(npv * (X_0 / X_inv) ** p_true.beta_H)
 
-    def dilemma_third_derivative(
+    def pure_power_dilemma_third_derivative(
         self,
         lambda_true: float,
         step: float,
@@ -431,21 +1000,26 @@ class ValuationAnalysis:
         if X_0 is None:
             X_true, _, _ = SingleFirmModel(
                 self.params.with_param(lam=lambda_true)
-            ).optimal_trigger_capacity_phi()
+            ).pure_power_trigger_capacity_phi()
             X_0 = 0.5 * X_true
         W = [
-            self.dilemma_policy_value(lambda_true, lambda_true + k * step, X_0)
+            self.pure_power_dilemma_policy_value(
+                lambda_true, lambda_true + k * step, X_0
+            )
             for k in (-2, -1, 1, 2)
         ]
         return float((W[3] - 2.0 * W[2] + 2.0 * W[1] - W[0]) / (2.0 * step**3))
 
-    def dario_dilemma_leveraged(
+    def pure_power_dilemma_leveraged(
         self,
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.40,
     ) -> dict[str, Any]:
-        """Quantify belief-mismatch cost with leverage (default risk).
+        """Belief-mismatch cost with leverage, pure-power approximation.
+
+        Nested approximation of the earlier draft (see `pure_power_dilemma`);
+        the model of record is `dario_dilemma_leveraged`.
 
         Uses total firm value (E + D) from the Leland structural model,
         so deadweight bankruptcy costs (b * V(X_D)) are captured. In the
@@ -466,7 +1040,7 @@ class ValuationAnalysis:
         resulting policy.
 
         Consequence for the appendix argument: unlike the unleveraged
-        dario_dilemma(), the objective returned here is NOT maximized at
+        pure_power_dilemma(), the objective returned here is NOT maximized at
         lambda_invest == lambda_true by construction, because the policy
         is not re-optimized against the levered objective. Numerically
         the gap is negligible -- at baseline with leverage 0.40 the
@@ -483,9 +1057,10 @@ class ValuationAnalysis:
             leverage=leverage,
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
         )
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
             eq_opt = duo_true.equity_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
             debt_opt = duo_true.debt_value(X_true, phi_true, K_true, 0.0, 0.0, leverage)
             I_opt = duo_true.investment_cost(K_true)
@@ -498,7 +1073,9 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_invest, K_invest, phi_invest = model_invest.optimal_trigger_capacity_phi()
+            X_invest, K_invest, phi_invest = (
+                model_invest.pure_power_trigger_capacity_phi()
+            )
             eq_mis = duo_true.equity_value(
                 X_invest, phi_invest, K_invest, 0.0, 0.0, leverage
             )
@@ -523,7 +1100,7 @@ class ValuationAnalysis:
 
         # Conditional default probabilities under true dynamics
         # Use the full first-passage formula (consistent with default_probability())
-        va_true = ValuationAnalysis(p_true)
+        va_true = ValuationAnalysis(p_true, self.recovery_rule)
         dp_optimal = va_true.default_probability(
             X_current=X_true,
             K=K_true,
@@ -554,19 +1131,19 @@ class ValuationAnalysis:
             "is_conservative": lambda_invest < lambda_true,
         }
 
-    def dario_dilemma_surface(
+    def pure_power_dilemma_surface(
         self,
         lambda_true_range: np.ndarray,
         lambda_invest_range: np.ndarray,
     ) -> dict[str, np.ndarray]:
-        """Compute value loss for a grid of (true, invest) lambda pairs."""
+        """`pure_power_dilemma` on a grid of (true, invest) lambda pairs."""
         n_t = len(lambda_true_range)
         n_i = len(lambda_invest_range)
         value_loss = np.full((n_t, n_i), np.nan)
 
         for i, lt in enumerate(lambda_true_range):
             for j, li in enumerate(lambda_invest_range):
-                result = self.dario_dilemma(lt, li)
+                result = self.pure_power_dilemma(lt, li)
                 if "value_loss_pct" in result:
                     value_loss[i, j] = result["value_loss_pct"]
 
@@ -622,16 +1199,22 @@ class ValuationAnalysis:
         X: float,
         K_installed: float = 0.0,
         phi: float = 0.5,
+        pure_power: bool = False,
     ) -> dict[str, Any]:
         """Decompose firm value using the phi-aware model.
 
         Uses the combined L+H revenue structure where phi determines
-        the split between inference revenue and training value.
+        the split between inference revenue and training value. The option
+        value is the exact value of the model of record
+        (`SingleFirmModel.option_value_with_phi`) and the reported policy
+        the precommitted-scale (X*, K*, phi*); ``pure_power=True`` uses the
+        pure-power approximation for both.
 
         Args:
             X: Current demand level.
             K_installed: Currently installed capacity (0 if pre-investment).
             phi: Training fraction.
+            pure_power: Use the pure-power approximation (earlier draft).
 
         Returns:
             Dict with value components.
@@ -644,11 +1227,12 @@ class ValuationAnalysis:
         else:
             assets = 0.0
 
-        # Option value with phi optimization
-        option_val = model.option_value_with_phi(X)
-
-        # Decompose: option includes optimal (K*, phi*)
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        if pure_power:
+            option_val = model.pure_power_option_value(X)
+            X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        else:
+            option_val = model.option_value_with_phi(X)
+            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
 
         expansion_option = option_val - assets if option_val > assets else 0.0
         total = assets + expansion_option
@@ -669,6 +1253,8 @@ class ValuationAnalysis:
         self,
         K_fracs: np.ndarray,
         demand_multiple: float = 1.5,
+        pure_power: bool = False,
+        policy: tuple[float, float, float] | None = None,
     ) -> dict[str, Any]:
         """Capacity-gap decomposition across installed-capacity levels.
 
@@ -687,10 +1273,19 @@ class ValuationAnalysis:
         'gap_fraction' is a unit-free index in [0, 100], not a share of
         firm value.
 
+        The policy (X*, K*, phi*) is the precommitted-scale policy of the
+        model of record (Proposition 1(iii), `optimal_trigger_capacity_phi`);
+        ``pure_power=True`` uses the pure-power approximation instead, the
+        earlier draft's version of the diagnostic. The installed values are
+        the same closed form (eq-installed-value-L) in both.
+
         Args:
             K_fracs: Installed capacity as fractions of optimal K*.
             demand_multiple: Demand evaluation point as a multiple of the
                 optimal trigger X*.
+            pure_power: Use the pure-power policy (earlier draft).
+            policy: (X*, K*, phi*) already solved by the caller, used
+                instead of solving again (ignores ``pure_power``).
 
         Returns:
             Dict with 'K_fracs', 'assets_in_place', 'capacity_gap',
@@ -698,7 +1293,12 @@ class ValuationAnalysis:
             'phi_star', 'npv_optimal'.
         """
         model = SingleFirmModel(self.params)
-        X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+        if policy is not None:
+            X_star, K_star, phi_star = policy
+        elif pure_power:
+            X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
+        else:
+            X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
         X_eval = demand_multiple * X_star
 
         npv_optimal = model.installed_value_with_phi(
@@ -727,15 +1327,96 @@ class ValuationAnalysis:
             "npv_optimal": npv_optimal,
         }
 
+    # ------------------------------------------------------------------
+    # Installed value vs lambda (Prediction 3, issue #181)
+    # ------------------------------------------------------------------
+
+    def installed_value_vs_lambda(
+        self,
+        lambda_values: np.ndarray,
+        X: float,
+        K: float,
+        phi: float,
+        coupon: float = 0.0,
+        role: str = "single_firm",
+    ) -> dict[str, Any]:
+        """Value of an installed firm across lambda at fixed (X, K, phi, coupon).
+
+        The firm has invested and cannot change (K, phi) or its coupon when
+        beliefs change; only lambda moves. Two objects:
+
+        - ``going_concern``: A_eff(lambda) X - (delta K + coupon)/r, the
+          installed value of eq-installed-value-L net of the default-free
+          coupon claim, with no option to stop. With a = [(1-phi)K]^alpha,
+          b = (phi K)^alpha / (r - mu_H), d = r - mu_L and G = b d - a, its
+          derivatives are X G/(d+lambda)^2 and -2 X G/(d+lambda)^3
+          (``d_going_concern``, ``d2_going_concern``): increasing and
+          strictly concave in lambda on all of lambda >= 0 iff G > 0, i.e.
+          iff phi > phi_underbar (eq-phi-underbar, Internet Appendix A).
+        - ``equity``: the exact claim of the model of record with the option
+          to stop (the shutdown option at zero coupon, the default option
+          otherwise), from `LeveredPreemptionGame`. ``role="single_firm"``
+          is the installed monopolist (`installed_claims` without a rival,
+          coupled regime-switching boundary); ``role="leader"`` is the
+          duopoly leader before the follower enters (`leader_claims` of the
+          subgame at (K, phi)), whose value also carries the follower's
+          dilution after the switch. Its shape in lambda is numerical; nan
+          where X is at or below the boundary or, for the leader, at or above
+          the follower's pre-switch trigger.
+
+        Returns:
+            Dict with ``lambda_values``, ``A_eff``, ``going_concern``,
+            ``d_going_concern``, ``d2_going_concern``, ``equity`` and
+            ``X_default`` (arrays), and ``phi_underbar`` (float).
+        """
+        from .preemption_levered import LeveredPreemptionGame
+
+        if role not in ("single_firm", "leader"):
+            msg = f"role must be 'single_firm' or 'leader', got {role!r}"
+            raise ValueError(msg)
+        p = self.params
+        lams = np.asarray(lambda_values, dtype=float)
+        d = p.r - p.mu_L
+        a = ((1.0 - phi) * K) ** p.alpha
+        b = (phi * K) ** p.alpha / (p.r - p.mu_H)
+        G = b * d - a
+        A_eff = (a + lams * b) / (d + lams)
+        going_concern = A_eff * X - (p.delta * K + coupon) / p.r
+        equity = np.full(lams.shape, np.nan)
+        X_default = np.full(lams.shape, np.nan)
+        for i, lam in enumerate(lams):
+            game = LeveredPreemptionGame(p.with_param(lam=float(lam)))
+            if role == "single_firm":
+                claims = game.installed_claims(K, phi, 0.0, 0.0, coupon)
+            else:
+                sub = game.subgame(K, phi)
+                if sub.pre_switch.X_entry <= X:
+                    continue
+                claims = sub.leader_claims(coupon)
+            X_default[i] = claims.X_D
+            if X > claims.X_D:
+                equity[i] = float(claims.equity(X)[0])
+        return {
+            "lambda_values": lams,
+            "A_eff": A_eff,
+            "going_concern": going_concern,
+            "d_going_concern": X * G / (d + lams) ** 2,
+            "d2_going_concern": -2.0 * X * G / (d + lams) ** 3,
+            "equity": equity,
+            "X_default": X_default,
+            "phi_underbar": DuopolyModel(p).faith_threshold(),
+        }
+
     def equity_value_vs_lambda_with_phi(
         self,
         lambda_values: np.ndarray,
         X: float = 1.0,
     ) -> dict[str, np.ndarray]:
-        """Equity value and optimal phi across lambda values.
+        """Option value of a firm that has not invested, and phi*, across lambda.
 
-        Shows how both valuation and training allocation respond to
-        different beliefs about AI timelines.
+        Re-optimizes (X, K, phi) at each lambda under the pure-power
+        approximation, so this is the value of the unexercised option, not
+        of an installed firm (for which see `installed_value_vs_lambda`).
         """
         n = len(lambda_values)
         option_values = np.full(n, np.nan)
@@ -747,8 +1428,8 @@ class ValuationAnalysis:
             try:
                 p = self.params.with_param(lam=lam)
                 model = SingleFirmModel(p)
-                option_values[i] = model.option_value_with_phi(X)
-                X_star, K_star, phi_star = model.optimal_trigger_capacity_phi()
+                option_values[i] = model.pure_power_option_value(X)
+                X_star, K_star, phi_star = model.pure_power_trigger_capacity_phi()
                 triggers[i] = X_star
                 capacities[i] = K_star
                 phis[i] = phi_star
@@ -764,16 +1445,22 @@ class ValuationAnalysis:
         }
 
     # ------------------------------------------------------------------
-    # Duopoly Dario dilemma (OF-6)
+    # Non-equilibrium duopoly comparison of the earlier draft (OF-6)
     # ------------------------------------------------------------------
 
-    def dario_dilemma_duopoly(
+    def pure_power_dilemma_duopoly(
         self,
         lambda_true: float,
         lambda_invest: float,
         leverage: float = 0.0,
     ) -> dict[str, Any]:
-        """Dario's dilemma in a duopoly: one-sided belief mismatch.
+        """Non-equilibrium duopoly comparison of the earlier draft.
+
+        Not the model of record (`dario_dilemma_duopoly` computes the
+        mismatch inside the entry equilibrium). Kept as the labelled
+        comparison of Internet Appendix E: pure-power policies, a rival
+        that does not best-respond, and a benchmark of symmetric
+        simultaneous entry that is not an equilibrium of the game.
 
         A well-calibrated rival follows its *single-firm* optimal policy
         (trigger, capacity, training fraction) under lambda_true; it does
@@ -796,10 +1483,11 @@ class ValuationAnalysis:
             leverage=leverage,
             coupon_rate=CREDIT_COUPON_RATE,
             bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+            recovery_rule=self.recovery_rule,
         )
 
         try:
-            X_true, K_true, phi_true = model_true.optimal_trigger_capacity_phi()
+            X_true, K_true, phi_true = model_true.pure_power_trigger_capacity_phi()
         except (ValueError, RuntimeError):
             return {"error": "No solution at true lambda"}
 
@@ -807,12 +1495,12 @@ class ValuationAnalysis:
         p_invest = self.params.with_param(lam=lambda_invest)
         model_invest = SingleFirmModel(p_invest)
         try:
-            X_inv, K_inv, phi_inv = model_invest.optimal_trigger_capacity_phi()
+            X_inv, K_inv, phi_inv = model_invest.pure_power_trigger_capacity_phi()
         except (ValueError, RuntimeError):
             return {"error": "No solution at invest lambda"}
 
         # --- single-firm benchmark (reuse existing method) ---
-        sf = self.dario_dilemma(lambda_true, lambda_invest)
+        sf = self.pure_power_dilemma(lambda_true, lambda_invest)
 
         # --- duopoly evaluation ---
         # Determine who leads. The firm with the lower trigger enters first.
@@ -891,8 +1579,13 @@ class ValuationAnalysis:
         whether the regime switch has occurred: to phi_H if it has, to
         phi_L2 if it has not. After the boundary the allocation is fixed
         forever, so each branch continues with the corresponding
-        perpetuity. Capacity is held at the static optimum K_s, which
-        isolates the allocation margin.
+        perpetuity. Capacity is held at K_s, the capacity of the single
+        firm's precommitted-scale policy in the model of record
+        (`SingleFirmModel.optimal_trigger_capacity_phi`, issue #182; the
+        earlier draft held it at the pure-power capacity), which isolates
+        the allocation margin. Capacity matters only through the size of
+        the adjustment cost relative to revenue, which scales with
+        K_s^alpha: the row without adjustment costs does not depend on it.
 
         Value decomposition (per unit of X_0, capacity K_s, with
         rho = r - mu_L + lam the L-regime discount rate inclusive of the
@@ -1040,6 +1733,7 @@ class ValuationAnalysis:
 
         return {
             "phi_static": phi_s,
+            "K_static": K_s,
             "phi_1_dynamic": phi_1_opt,
             "phi_H_dynamic": phi_H_opt,
             "phi_L2_dynamic": phi_L2_opt,
@@ -1061,81 +1755,103 @@ class ValuationAnalysis:
     def fixed_pie_robustness(
         self,
         leverage: float = 0.0,
+        scan_points: int = 13,
     ) -> dict[str, Any]:
-        """Compare Tullock vs fixed-pie contest equilibrium objects.
+        """Tullock contest against the arithmetic-mean benchmark.
 
-        Solves the duopoly under both the standard Tullock contest and
-        the fixed-pie variant (no revenue expansion), and reports key
-        equilibrium quantities for comparison.
+        Under the benchmark a firm facing an active rival in a market earns
+        half its standalone revenue there, whatever the rival's capacity
+        (`preemption_exact.contest_revenue`). The comparison is made at two
+        layers, which the keys keep apart.
+
+        *Exact primitives* (keys ``exact_*``; issue #182). The benchmark does
+        not have an equilibrium of the entry game that the solver of the
+        model of record can locate: in the post-switch game, leading at the
+        leader's best scale is worth more than following at every demand
+        level of the scan, so there is no rent-equalization trigger after
+        the switch, the mutual-waiting value W is not defined by a race, and
+        X_L is not computed. What is computed, under each contest:
+
+        - the follower's post-switch response (trigger and capacity, on the
+          claims with the option to stop) to the leader of the benchmark
+          equilibrium of the model of record, whose policy is read from the
+          cache (``exact_*_X_F``, ``exact_*_K_F``, and the scale ratio
+          K_F / K_L);
+        - the post-switch race on ``scan_points`` log-spaced demand levels
+          between 0.01 and 100 times X_H*: the ratio of the value of
+          leading, at the leader's best capacity there, to the value of
+          following it (``exact_*_lead_over_follow_min`` and ``_max``, and
+          ``exact_*_race``, True when following is better at the bottom of
+          the scan and leading at least as good above some demand level).
+
+        *Nested pure-power game* (keys ``nested_*``): the reduced-form game
+        of the earlier draft solved under both contests, as before; its
+        trigger ratio is X_P over the pure-power single-firm trigger.
+
+        The faith threshold phi_underbar does not involve the contest.
         """
+        from .preemption_levered import LeveredPreemptionGame
+
         p = self.params
+        result: dict[str, Any] = {}
 
-        # --- Standard Tullock ---
-        duo_tullock = DuopolyModel(
-            p,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-        )
-        try:
-            eq_tullock = duo_tullock.solve_preemption_equilibrium()
-        except (ValueError, RuntimeError):
-            return {"error": "Tullock equilibrium failed"}
-
-        # Faith-based survival threshold (A_eff-channel, eq-phi-underbar)
-        phi_underbar = duo_tullock.faith_threshold()
-
-        # Dario dilemma asymmetry ratio under Tullock
-        dd_cons = self.dario_dilemma(0.10, 0.02)
-        dd_aggr = self.dario_dilemma(0.10, 0.20)
-        loss_cons = dd_cons.get("value_loss_pct", np.nan)
-        loss_aggr = dd_aggr.get("value_loss_pct", np.nan)
-        asym_tullock = abs(loss_cons / loss_aggr) if loss_aggr != 0 else np.nan
-
-        # --- Fixed-pie contest ---
-        duo_fp = DuopolyModel(
-            p,
-            leverage=leverage,
-            coupon_rate=CREDIT_COUPON_RATE,
-            bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
-            contest="fixed_pie",
-        )
-
-        try:
-            eq_fp = duo_fp.solve_preemption_equilibrium()
-        except (ValueError, RuntimeError):
-            eq_fp = None
-
-        # Dario's dilemma under fixed-pie is computed using single-firm
-        # (contest spec doesn't affect the single-firm dilemma, so the
-        # asymmetry ratio is the same)
-
-        result = {
-            # Tullock results
-            "tullock_phi_F": eq_tullock["phi_follower"],
-            "tullock_X_F": eq_tullock["X_follower"],
-            "tullock_K_F": eq_tullock["K_follower"],
-            "tullock_X_P": eq_tullock["X_leader"],
-            "tullock_phi_underbar": phi_underbar,
-            "tullock_asym_ratio": asym_tullock,
-            "tullock_preemption_discount": (
-                eq_tullock["X_leader"] / eq_tullock["X_leader_monopolist"]
-            ),
-        }
-
-        if eq_fp is not None:
+        # --- exact primitives ---
+        benchmark = cached_equilibrium(p.lam, leverage=leverage)
+        K_L, phi_L = float(benchmark["K_L"]), float(benchmark["phi_L"])
+        result.update({"exact_K_L": K_L, "exact_phi_L": phi_L})
+        for name, contest in (("tullock", "tullock"), ("mean", "arithmetic_mean")):
+            game = LeveredPreemptionGame(
+                p,
+                "envelope",
+                leverage,
+                CREDIT_COUPON_RATE,
+                CREDIT_BANKRUPTCY_COST,
+                recovery_rule=self.recovery_rule,
+                contest=contest,
+            )
+            entry = game.follower_post_switch_entry(phi_L * K_L)
+            grid = np.geomspace(1e-2 * game.X_ref, 1e2 * game.X_ref, scan_points)
+            ratios = []
+            for x in grid:
+                _, lead, follow = game.post_switch_leader_policy(float(x))
+                ratios.append(lead / follow)
             result.update({
-                "fixedpie_phi_F": eq_fp["phi_follower"],
-                "fixedpie_X_F": eq_fp["X_follower"],
-                "fixedpie_K_F": eq_fp["K_follower"],
-                "fixedpie_X_P": eq_fp["X_leader"],
-                "fixedpie_preemption_discount": (
-                    eq_fp["X_leader"] / eq_fp["X_leader_monopolist"]
+                f"exact_{name}_X_F": entry.X_F,
+                f"exact_{name}_K_F": entry.K_F,
+                f"exact_{name}_K_F_over_K_L": entry.K_F / K_L,
+                f"exact_{name}_X_F_over_X_H": entry.X_F / game.X_ref,
+                f"exact_{name}_lead_over_follow_min": float(min(ratios)),
+                f"exact_{name}_lead_over_follow_max": float(max(ratios)),
+                f"exact_{name}_race": bool(
+                    ratios[0] < 1.0 and max(ratios) >= 1.0 - 1e-9
                 ),
             })
-        else:
-            result["fixedpie_error"] = "Fixed-pie equilibrium failed"
 
+        # --- nested pure-power game ---
+        for name, contest in (("tullock", "tullock"), ("mean", "fixed_pie")):
+            duopoly = DuopolyModel(
+                p,
+                leverage=leverage,
+                coupon_rate=CREDIT_COUPON_RATE,
+                bankruptcy_cost=CREDIT_BANKRUPTCY_COST,
+                contest=contest,
+                recovery_rule=self.recovery_rule,
+            )
+            try:
+                eq = duopoly.pure_power_preemption_equilibrium()
+            except (ValueError, RuntimeError):
+                result[f"nested_{name}_error"] = "equilibrium failed"
+                continue
+            result.update({
+                f"nested_{name}_phi_F": eq["phi_follower"],
+                f"nested_{name}_X_F": eq["X_follower"],
+                f"nested_{name}_K_F": eq["K_follower"],
+                f"nested_{name}_X_P": eq["X_leader"],
+                f"nested_{name}_trigger_ratio": (
+                    eq["X_leader"] / eq["X_leader_monopolist"]
+                ),
+            })
+            result["phi_underbar"] = duopoly.faith_threshold()
         return result
 
     # ------------------------------------------------------------------

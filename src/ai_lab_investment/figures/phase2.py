@@ -113,7 +113,7 @@ def plot_leverage_effect(
             m = DuopolyModel(
                 params, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30
             )
-            eq = m.solve_preemption_equilibrium("H")
+            eq = m.pure_power_preemption_equilibrium("H")
             X_leader[i] = eq["X_leader"]
             X_follower[i] = eq["X_follower"]
             K_leader[i] = eq["K_leader"]
@@ -221,7 +221,7 @@ def plot_competition_vs_monopoly(
             X_mono[i] = X_m
 
             dm = DuopolyModel(p, leverage=0.0)
-            eq = dm.solve_preemption_equilibrium("H")
+            eq = dm.pure_power_preemption_equilibrium("H")
             X_leader[i] = eq["X_leader"]
             X_follower[i] = eq["X_follower"]
             valid[i] = True
@@ -290,7 +290,7 @@ def plot_default_and_investment(
             m = DuopolyModel(
                 params, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30
             )
-            eq = m.solve_preemption_equilibrium("H")
+            eq = m.pure_power_preemption_equilibrium("H")
             X_leader[i] = eq["X_leader"]
             X_follower[i] = eq["X_follower"]
             X_def_F[i] = eq["X_default_follower"]
@@ -372,7 +372,7 @@ def plot_lambda_duopoly(
         try:
             p = params.with_param(lam=lam)
             m = DuopolyModel(p, leverage=0.0)
-            eq = m.solve_preemption_equilibrium("H")
+            eq = m.pure_power_preemption_equilibrium("H")
             X_leader[i] = eq["X_leader"]
             X_follower[i] = eq["X_follower"]
             K_leader[i] = eq["K_leader"]

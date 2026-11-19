@@ -88,17 +88,17 @@ def _run_phase5():
     logging.info("Phase 5 figures saved")
 
 
-def _run_robustness_sweep():
-    from .robustness import format_sweep_report, run_sweep, write_sweep_csv
+def _run_robustness_sweep(recompute_joint: bool = False):
+    from .robustness import run_all, write_all_csv
 
-    logging.info("Running robustness sweep: +/-25% parameter perturbations")
-    rows = run_sweep()
-    for line in format_sweep_report(rows).splitlines():
+    logging.info("Running robustness sweeps: one at a time and joint")
+    results = run_all(recompute_joint=recompute_joint)
+    for line in results["report"].splitlines():
         logging.info(line)
 
     results_dirs = get_results_directories()
-    path = write_sweep_csv(rows, results_dirs.tables)
-    logging.info(f"Sweep written to {path}")
+    for path in write_all_csv(results, results_dirs.tables):
+        logging.info(f"Sweep written to {path}")
 
 
 _TASK_RUNNERS = {
@@ -116,7 +116,11 @@ def pipeline(cfg: DictConfig):
     logging.getLogger().setLevel(cfg.logging_level)
 
     for task_name, runner in _TASK_RUNNERS.items():
-        if getattr(cfg.tasks, task_name, False):
+        if not getattr(cfg.tasks, task_name, False):
+            continue
+        if task_name == "robustness_sweep":
+            _run_robustness_sweep(bool(cfg.robustness.recompute_joint))
+        else:
             runner()
 
     logging.info(f"Complete. Total runtime: {time.time() - start_time:.2f} seconds")

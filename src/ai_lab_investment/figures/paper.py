@@ -12,9 +12,13 @@ purposes and should NOT be duplicated here.
 
 from __future__ import annotations
 
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import transforms
+
+logger = logging.getLogger(__name__)
 
 FULL_W = 6.5  # full-column width (inches)
 HALF_W = 3.25  # half-column width (inches)
@@ -171,6 +175,13 @@ def create_comparative_statics() -> plt.Figure:
         model = SingleFirmModel(p)
         result = model.comparative_statics(param_name, values, "H")
         v = result["has_trigger"]
+        if not v.all():
+            # The grids lie inside the (A2) window, so every point must solve;
+            # fail rather than drop points silently (C19j).
+            missing = result["param_values"][~v]
+            logger.error("No H-regime trigger for %s = %s", param_name, missing)
+            msg = f"comparative statics: {(~v).sum()} {param_name} points unsolved"
+            raise RuntimeError(msg)
 
         ax.plot(
             result["param_values"][v],
@@ -211,15 +222,22 @@ def create_comparative_statics() -> plt.Figure:
 
 
 def lambda_option_value_curve(
-    lam_vals: np.ndarray, X_ref: float = 0.002
+    lam_vals: np.ndarray, X_ref: float = 0.002, pure_power: bool = False
 ) -> tuple[np.ndarray, np.ndarray, float]:
-    """Full-model option value and allocation across arrival rates.
+    """Full-model value of the uninvested firm and allocation across lambda.
 
-    For each lambda the firm re-optimizes (X*, K*, phi*) and the option
-    value is read at the common demand level X_ref (below every trigger
-    on the grid). Also returns the faith-based survival threshold
-    phi_underbar, which is lambda-independent: by the envelope theorem
-    dF/dlambda has the sign of dA_eff/dlambda at (K*, phi*), positive iff
+    For each lambda the single firm's problem is re-solved and its value is
+    read at the common demand level X_ref. By default this is the exact
+    value of the model of record (`SingleFirmModel.option_value_with_phi`):
+    at low arrival rates X_ref lies above the pre-switch trigger and the
+    value is that of investing at once, and above the rate at which the
+    trigger ceases to exist it is the value of waiting for the switch.
+    ``pure_power=True`` returns the pure-power approximation instead, for
+    which X_ref lies below every trigger on the grid.
+
+    Also returns the faith-based survival threshold phi_underbar, which is
+    lambda-independent: for a firm that invests, the envelope theorem gives
+    dF/dlambda the sign of dA_eff/dlambda at phi*, positive iff
     phi* > phi_underbar, so the value falls in lambda where the optimal
     allocation is too inference-heavy and rises beyond.
     """
@@ -232,36 +250,52 @@ def lambda_option_value_curve(
     for i, lam in enumerate(lam_vals):
         try:
             model = SingleFirmModel(ModelParameters(lam=lam))
-            _, _, phi_star = model.optimal_trigger_capacity_phi()
-            values[i] = model.option_value_with_phi(X_ref)
-            phis[i] = phi_star
-        except (ValueError, RuntimeError):
-            continue
+            if pure_power:
+                values[i] = model.pure_power_option_value(X_ref)
+            else:
+                values[i] = model.option_value_with_phi(X_ref)
+            phis[i] = model.closed_form_phi_star()
+        except (ValueError, RuntimeError) as err:
+            # Fail rather than thin the curve (C19j): every arrival rate on
+            # the figure's grid has a solution.
+            logger.exception("No solution at lambda = %.4f", lam)
+            msg = f"lambda_option_value_curve failed at lambda = {lam:.4f}"
+            raise RuntimeError(msg) from err
     phi_underbar = float(DuopolyModel(ModelParameters()).faith_threshold())
     return values, phis, phi_underbar
 
 
 def create_lambda_option_value() -> plt.Figure:
-    """Two-panel: full-model option value and phi* against lambda.
+    """Two-panel: full-model value of the uninvested firm and phi* against lambda.
 
-    Unlike the H-regime illustrations, this figure uses the full model
-    with the joint (K, phi) optimization: it is the object whose
-    curvature the text discusses. The vertical line marks the arrival
+    Unlike the H-regime illustrations, this figure uses the full model: the
+    solid curve is the exact value of the model of record and the dashed
+    curve the pure-power approximation. The vertical line marks the arrival
     rate at which phi*(lambda) crosses phi_underbar, the minimum of the
     value in lambda.
     """
     lam_vals = np.linspace(0.005, 0.80, 80)
     X_ref = 0.002
     values, phis, phi_underbar = lambda_option_value_curve(lam_vals, X_ref)
+    approx, _, _ = lambda_option_value_curve(lam_vals, X_ref, pure_power=True)
     valid = ~np.isnan(values)
     lam_turn = float(np.interp(phi_underbar, phis[valid], lam_vals[valid]))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
 
-    ax1.plot(lam_vals[valid], values[valid], "k-", linewidth=1.5)
+    ax1.plot(lam_vals[valid], values[valid], "k-", linewidth=1.5, label="Exact")
+    ax1.plot(
+        lam_vals[valid],
+        approx[valid],
+        color="0.4",
+        linestyle="--",
+        linewidth=1.0,
+        label="Pure-power approximation",
+    )
     ax1.axvline(lam_turn, color="0.5", linestyle=":", linewidth=1.0)
     ax1.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
-    ax1.set_ylabel(f"Option value $F(X)$ at $X={X_ref}$")
+    ax1.set_ylabel(f"Value $F(X)$ at $X={X_ref}$")
+    ax1.legend(loc="lower right", fontsize="x-small", frameon=False)
     ax1.set_title("(a)", loc="left", fontweight="bold")
 
     ax2.plot(
@@ -288,77 +322,100 @@ def create_lambda_option_value() -> plt.Figure:
 # ── Figure 5: Investment and default boundaries ──────────────────
 
 
+ROLE_STYLE = {
+    "single_firm": ("Single firm", "k"),
+    "leader": ("Duopoly leader", "steelblue"),
+    "follower": ("Duopoly follower", "0.55"),
+}
+"""Label and colour of each role in the credit figures."""
+
+DEBT_STYLE = {"par": "-", "fair": "--"}
+"""Line style of each debt convention in the credit figures."""
+
+
 def create_default_boundaries() -> plt.Figure:
-    """Follower trigger, leader trigger, and default boundary vs leverage."""
-    from ..models.duopoly import DuopolyModel
-    from ..models.parameters import ModelParameters
+    """Entry triggers and boundaries of both duopoly roles against leverage.
 
-    p = ModelParameters()
-    leverages = np.linspace(0.05, 0.65, 40)
-    X_F = np.full_like(leverages, np.nan)
-    X_L = np.full_like(leverages, np.nan)
-    X_D = np.full_like(leverages, np.nan)
-    X_DL = np.full_like(leverages, np.nan)
+    Model of record: the cached equilibria of the exact game at baseline
+    (`duopoly.load_equilibrium_grid`), at the leverage levels the cache
+    holds, one panel per debt convention. The leader's entry is the first
+    investment X_L; its boundary and the follower's are the coupled
+    boundaries of the exact claims, at each firm's entry.
+    """
+    from ..models.duopoly import load_equilibrium_grid
 
-    for i, lev in enumerate(leverages):
-        try:
-            duo = DuopolyModel(p, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30)
-            eq = duo.solve_preemption_equilibrium("H")
-            X_F[i] = eq["X_follower"]
-            X_L[i] = eq["X_leader"]
-            X_D[i] = eq["X_default_follower"]
-            X_DL[i] = eq["X_default_leader"]
-        except (ValueError, RuntimeError):
-            continue
+    cells = [
+        r
+        for r in load_equilibrium_grid()
+        if r["scale"] == "envelope" and abs(r["lam"] - 0.10) < 1e-12
+    ]
+    unlevered = [r for r in cells if r["leverage"] == 0.0]
+    if len(unlevered) != 1:
+        msg = "Expected one unlevered baseline cell in the equilibrium cache"
+        raise RuntimeError(msg)
 
-    fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
-    valid = ~np.isnan(X_F)
-
-    ax.fill_between(
-        leverages[valid],
-        X_D[valid],
-        X_F[valid],
-        alpha=0.15,
-        color="steelblue",
-        label=r"Follower's post-entry band ($X_{D,F}$ to $X_F^*$)",
+    fig, axes = plt.subplots(1, 2, figsize=(FULL_W, 3.6), sharey=True)
+    for ax, debt, title in zip(
+        axes, ("par", "fair"), ("(a) Par debt", "(b) Fairly priced debt"), strict=True
+    ):
+        rows = sorted(
+            unlevered + [r for r in cells if r["leverage"] > 0 and r["debt"] == debt],
+            key=lambda r: r["leverage"],
+        )
+        lev = np.array([r["leverage"] for r in rows])
+        X_F = np.array([r["X_F"] for r in rows])
+        X_DF = np.array([r["X_D_follower"] for r in rows])
+        X_L = np.array([r["X_L"] for r in rows])
+        X_DL = np.array([r["X_D_leader"] for r in rows])
+        ax.fill_between(lev, X_DF, X_F, alpha=0.12, color="0.5", linewidth=0)
+        ax.fill_between(lev, X_DL, X_L, alpha=0.15, color="steelblue", linewidth=0)
+        ax.plot(
+            lev,
+            X_F,
+            "k-o",
+            linewidth=1.4,
+            markersize=3,
+            label=r"Follower's trigger $X_F^*$",
+        )
+        ax.plot(
+            lev,
+            X_DF,
+            "k--o",
+            linewidth=1.1,
+            markersize=3,
+            label=r"Follower's boundary $X_{D,F}$",
+        )
+        ax.plot(
+            lev,
+            X_L,
+            "-s",
+            color="steelblue",
+            linewidth=1.4,
+            markersize=3,
+            label=r"First investment $X_L$",
+        )
+        ax.plot(
+            lev,
+            X_DL,
+            "-.s",
+            color="steelblue",
+            linewidth=1.1,
+            markersize=3,
+            label=r"Leader's boundary $X_{D,L}$",
+        )
+        ax.set_yscale("log")
+        ax.set_xlim(-0.02, 0.67)
+        ax.set_xticks(lev)
+        ax.set_xticklabels([f"{x:.2f}" for x in lev])
+        ax.set_xlabel(r"Leverage $\ell$ (D/I)")
+        ax.set_title(title, loc="left", fontweight="bold", fontsize="medium")
+    axes[0].set_ylim(4e-4, 0.15)
+    axes[0].set_ylabel(r"Demand level $X$ (log scale)")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc="lower center", ncol=4, fontsize="small", frameon=False
     )
-    ax.plot(
-        leverages[valid],
-        X_F[valid],
-        "k-",
-        linewidth=1.5,
-        label=r"Follower trigger $X_F^*$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_D[valid],
-        "k--",
-        linewidth=1.3,
-        label=r"Follower default boundary $X_{D,F}$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_L[valid],
-        "-",
-        color="0.5",
-        linewidth=1.0,
-        label=r"Leader trigger $X_P$",
-    )
-    ax.plot(
-        leverages[valid],
-        X_DL[valid],
-        "-.",
-        color="0.5",
-        linewidth=1.0,
-        label=r"Leader default boundary $X_{D,L}$",
-    )
-
-    ax.set_yscale("log")
-    ax.set_ylim(1.5e-4, 0.4)
-    ax.set_xlabel("Leverage (D/I)")
-    ax.set_ylabel(r"Demand level $X$ (log scale)")
-    ax.legend(loc="lower right", framealpha=0.9, fontsize="small", ncol=2)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0.0, 0.05, 1.0, 1.0))
     return fig
 
 
@@ -366,44 +423,67 @@ def create_default_boundaries() -> plt.Figure:
 
 
 def create_credit_risk() -> plt.Figure:
-    """Two-panel: credit spread and default probability vs leverage.
+    """Credit spread, default probability and recovery at the model's policies.
 
-    Delegates to ValuationAnalysis.credit_spread_curve().
+    Delegates to `ValuationAnalysis.on_policy_credit` (panels a and b: the
+    single firm's precommitted-scale policy, the duopoly's first investment
+    and the follower's post-switch entry, across leverage, under both debt
+    conventions) and `ValuationAnalysis.credit_phi_profile` (panels c and
+    d: the training fraction varied at the single firm's and the leader's
+    scale and entry demand, at leverage 0.40).
     """
     from ..models import ModelParameters, ValuationAnalysis
 
-    p = ModelParameters()
-    va = ValuationAnalysis(p)
+    va = ValuationAnalysis(ModelParameters())
+    leverages = tuple(float(x) for x in np.linspace(0.0, 0.70, 29))
+    rows = va.on_policy_credit(leverages=leverages)
+    phis = np.linspace(0.30, 0.95, 66)
+    profiles = {
+        debt: va.credit_phi_profile(phis, 0.40, debt) for debt in ("par", "fair")
+    }
 
-    leverages = np.linspace(0.05, 0.70, 30)
-    result = va.credit_spread_curve(leverages)
+    fig, axes = plt.subplots(2, 2, figsize=(FULL_W, 5.6))
+    (ax_s, ax_p), (ax_r, ax_q) = axes
+    for role, (label, colour) in ROLE_STYLE.items():
+        for debt, style in DEBT_STYLE.items():
+            sel = [r for r in rows if r["role"] == role and r["debt"] == debt]
+            lev = np.array([r["leverage"] for r in sel])
+            kwargs = {"color": colour, "linestyle": style, "linewidth": 1.4}
+            name = label if debt == "par" else None
+            ax_s.plot(lev, [1e4 * r["spread"] for r in sel], **kwargs)
+            ax_p.plot(
+                lev, [100 * r["default_probability"] for r in sel], label=name, **kwargs
+            )
+    for role in ("single_firm", "leader"):
+        label, colour = ROLE_STYLE[role]
+        for debt, style in DEBT_STYLE.items():
+            prof = profiles[debt][role]
+            kwargs = {"color": colour, "linestyle": style, "linewidth": 1.4}
+            ax_r.plot(prof["phi"], 100 * prof["recovery_rate"], **kwargs)
+            ax_q.plot(prof["phi"], 1e4 * prof["spread"], **kwargs)
+        policy = float(profiles["par"][role]["phi_policy"])
+        for ax in (ax_r, ax_q):
+            ax.axvline(policy, color=colour, linestyle=":", linewidth=0.9)
+    ax_p.legend(loc="upper left", fontsize="x-small", framealpha=0.95)
+    ax_s.plot([], [], color="0.45", linestyle="-", linewidth=1.4, label="Par debt")
+    ax_s.plot(
+        [], [], color="0.45", linestyle="--", linewidth=1.4, label="Fairly priced debt"
+    )
+    ax_s.legend(loc="upper left", fontsize="x-small", framealpha=0.95)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.2))
-
-    valid_s = ~np.isnan(result["credit_spread"])
-    if valid_s.sum() > 0:
-        ax1.plot(
-            result["leverage"][valid_s],
-            result["credit_spread"][valid_s] * 10_000,
-            "k-",
-            linewidth=1.5,
-        )
-    ax1.set_xlabel("Leverage (D/I)")
-    ax1.set_ylabel("Credit spread over $r$ (bps)")
-    ax1.set_title("(a)", loc="left", fontweight="bold")
-
-    valid_d = ~np.isnan(result["default_probability"])
-    if valid_d.sum() > 0:
-        ax2.plot(
-            result["leverage"][valid_d],
-            result["default_probability"][valid_d] * 100,
-            "k-",
-            linewidth=1.5,
-        )
-    ax2.set_xlabel("Leverage (D/I)")
-    ax2.set_ylabel("5-yr default prob., no-switch upper bound (%)")
-    ax2.set_title("(b)", loc="left", fontweight="bold")
-
+    ax_s.set_xlabel(r"Leverage $\ell$ (D/I)")
+    ax_s.set_ylabel("Spread at entry over $r$ (bps)")
+    ax_s.set_ylim(bottom=0)
+    ax_p.set_xlabel(r"Leverage $\ell$ (D/I)")
+    ax_p.set_ylabel("5-yr default prob., no switch (%)")
+    ax_p.set_ylim(bottom=0)
+    ax_r.set_xlabel(r"Training fraction $\phi$ (scale fixed)")
+    ax_r.set_ylabel(r"Recovery at $\ell = 0.40$ (% of claim)")
+    ax_r.set_ylim(bottom=0)
+    ax_q.set_xlabel(r"Training fraction $\phi$ (scale fixed)")
+    ax_q.set_ylabel(r"Spread at $\ell = 0.40$ (bps)")
+    for ax, tag in zip(axes.flat, ("(a)", "(b)", "(c)", "(d)"), strict=True):
+        ax.set_title(tag, loc="left", fontweight="bold")
     fig.tight_layout()
     return fig
 
@@ -412,69 +492,97 @@ def create_credit_risk() -> plt.Figure:
 
 
 def create_competition_effect() -> plt.Figure:
-    """Single-panel: monopolist vs duopoly leader triggers over sigma."""
-    from ..models.duopoly import DuopolyModel
+    """Single firm's and duopoly leader's pre-switch triggers over lambda.
+
+    Model of record. The single firm's triggers are solved on the grid; the
+    duopoly's first investment X_L (the equilibrium with assigned roles)
+    and the rent-equalization trigger X_P above it are read from the cached
+    equilibria of the exact game (`duopoly.load_equilibrium_grid`), which
+    take a few minutes each to solve.
+    """
+    from ..models.base_model import SingleFirmModel
+    from ..models.duopoly import load_equilibrium_grid
     from ..models.parameters import ModelParameters
 
     p = ModelParameters()
-    # The interior-capacity condition (A2) requires beta_H < 1/(1-alpha),
-    # i.e. sigma > ~0.19 at the baseline WACC; start the grid at 0.20.
-    sigmas = np.linspace(0.20, 0.30, 30)
+    lams = np.geomspace(0.03, 0.50, 30)
+    unrestricted = np.full_like(lams, np.nan)
+    precommitted = np.full_like(lams, np.nan)
+    for i, lam in enumerate(lams):
+        sol = SingleFirmModel(p.with_param(lam=float(lam))).solve()
+        precommitted[i] = sol.precommitted.X_star
+        if sol.invests_before_switch:
+            unrestricted[i] = sol.X_star
 
-    mono_trig = np.full_like(sigmas, np.nan)
-    leader_trig = np.full_like(sigmas, np.nan)
-
-    for i, s in enumerate(sigmas):
-        try:
-            ps = p.with_param(sigma=s)
-            duo = DuopolyModel(ps, leverage=0.0)
-            eq = duo.solve_preemption_equilibrium("H")
-            mono_trig[i] = eq["X_leader_monopolist"]
-            leader_trig[i] = eq["X_leader"]
-        except (ValueError, RuntimeError):
-            pass
+    records = sorted(
+        (
+            r
+            for r in load_equilibrium_grid()
+            if r["scale"] == "envelope" and r["leverage"] == 0.0 and r["exists"]
+        ),
+        key=lambda r: r["lam"],
+    )
+    lam_duo = np.array([r["lam"] for r in records])
+    X_P = np.array([r["X_P"] for r in records])
+    X_L = np.array([r["X_L"] for r in records])
 
     fig, ax = plt.subplots(1, 1, figsize=(1.5 * HALF_W, 3.2))
-
-    v_m = ~np.isnan(mono_trig)
-    v_l = ~np.isnan(leader_trig)
-    ax.plot(sigmas[v_m], mono_trig[v_m], "k-", linewidth=1.5, label="Monopolist")
+    top = 0.05
+    shown = np.where(unrestricted <= top, unrestricted, np.nan)
     ax.plot(
-        sigmas[v_l],
-        leader_trig[v_l],
-        "--",
-        color="0.35",
-        linewidth=1.3,
-        label="Duopoly leader",
+        lams,
+        shown,
+        "k-",
+        linewidth=1.5,
+        label="Single firm, scale chosen at the switch",
     )
-    ax.set_xlabel(r"Volatility $\sigma$")
-    ax.set_ylabel(r"Investment trigger $X^*$")
-
-    # Trigger ratio on the right axis, so the ratio claims in the
-    # text are directly readable from the figure.
-    v_r = v_m & v_l
-    ax2 = ax.twinx()
-    ax2.plot(
-        sigmas[v_r],
-        leader_trig[v_r] / mono_trig[v_r],
+    ax.plot(
+        lams,
+        precommitted,
         ":",
-        color="0.55",
-        linewidth=1.2,
-        label=r"$X_P / X_L^{\mathrm{mono}}$ (right axis)",
+        color="0.45",
+        linewidth=1.3,
+        label="Single firm, precommitted scale",
     )
-    ax2.set_ylabel(r"Trigger ratio $X_P / X_L^{\mathrm{mono}}$")
-    ax2.set_ylim(0.0, 1.0)
-    ax2.spines["right"].set_visible(True)
-
-    lines1, labels1 = ax.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax.legend(
-        lines1 + lines2,
-        labels1 + labels2,
-        loc="upper left",
+    ax.fill_between(lam_duo, X_L, X_P, color="steelblue", alpha=0.12, linewidth=0)
+    ax.plot(
+        lam_duo,
+        X_L,
+        "-s",
+        color="steelblue",
+        linewidth=1.5,
+        markersize=3.5,
+        label=r"Duopoly, first investment $X_L$",
+    )
+    ax.plot(
+        lam_duo,
+        X_P,
+        "--o",
+        color="0.35",
+        linewidth=1.0,
+        markersize=2.5,
+        label=r"Duopoly, rent equalization $X_P$ (upper bound)",
+    )
+    ax.axvspan(0.0729, lams[-1], color="0.92", zorder=0)
+    ax.text(
+        0.2,
+        0.03,
+        "single firm waits\nfor the switch",
         fontsize="small",
-        framealpha=0.95,
+        ha="center",
+        va="center",
+        color="0.3",
     )
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(lams[0], lams[-1])
+    ax.set_ylim(2e-5, top)
+    ax.set_xticks([0.03, 0.05, 0.10, 0.20, 0.50])
+    ax.set_xticklabels(["0.03", "0.05", "0.10", "0.20", "0.50"])
+    ax.minorticks_off()
+    ax.set_xlabel(r"Arrival rate $\lambda$ (yr$^{-1}$)")
+    ax.set_ylabel("Pre-switch investment trigger")
+    ax.legend(loc="lower center", fontsize="small", framealpha=0.95)
 
     fig.tight_layout()
     return fig
@@ -511,8 +619,9 @@ def create_firm_comparison() -> plt.Figure:
         ax.set_xticks(x)
 
     # Upper axis: show the outlier region
-    ax_top.set_ylim(18, 22)
-    ax_top.set_yticks([18, 20, 22])
+    top_lo = int(max(capex_int)) - 2
+    ax_top.set_ylim(top_lo, top_lo + 4)
+    ax_top.set_yticks([top_lo, top_lo + 2, top_lo + 4])
     ax_top.set_xticklabels([])
     ax_top.tick_params(bottom=False)
     ax_top.set_title("(a)", loc="left", fontweight="bold")
@@ -562,7 +671,7 @@ def create_firm_comparison() -> plt.Figure:
             fontsize="small",
         )
     ax2.set_xlabel("Revenue multiple (2025/2024)")
-    ax2.set_ylabel("Leverage ratio")
+    ax2.set_ylabel(r"Leverage $\ell$ (D/I)")
     ax2.set_title("(b)", loc="left", fontweight="bold")
 
     return fig
@@ -606,9 +715,9 @@ def create_growth_decomposition() -> plt.Figure:
     decomposition: the two components use different benchmarks (gross
     vs. net of sunk cost), so their sum is not firm value.
 
-    Delegates to ValuationAnalysis.capacity_gap_decomposition(), which
-    uses the phi-aware model (optimal_trigger_capacity_phi,
-    installed_value_with_phi).
+    Delegates to ValuationAnalysis.capacity_gap_decomposition() at the
+    precommitted-scale policy (X*, K*, phi*) of the model of record, with
+    the installed values of eq-installed-value-L, at demand 1.5 X*.
     """
     from ..models import ModelParameters, ValuationAnalysis
 
@@ -652,91 +761,138 @@ def create_growth_decomposition() -> plt.Figure:
 
 
 def create_investment_dilemma() -> plt.Figure:
-    """Value loss from belief mismatch (unleveraged and leveraged).
+    """Value loss from a belief mismatch in the model of record.
 
-    Delegates to ValuationAnalysis.dario_dilemma() and
-    dario_dilemma_leveraged(), matching Phase 1 corrections.
+    Panel (a): the single firm, with precommitted post-switch scale (solid)
+    and with scale chosen at the switch (dashed), and the pure-power
+    approximation of the earlier draft (dotted). Panel (b): the duopoly,
+    with the mistaken firm as the leader and as the follower of the
+    equilibrium in which one firm leads and the other follows. The belief
+    axis is logarithmic, so equal proportional errors are equidistant from
+    the truth. Delegates to ValuationAnalysis.dario_dilemma() and to the
+    cached duopoly dilemma (`belief_mismatch.load_dilemma_grid`).
     """
     from ..models import ModelParameters, ValuationAnalysis
+    from ..models.belief_mismatch import load_dilemma_grid, matched_pairs
 
-    p = ModelParameters()
-    va = ValuationAnalysis(p)
+    va = ValuationAnalysis(ModelParameters())
+    truth = 0.10
+    beliefs = np.geomspace(0.015, 0.50, 121)
 
-    fixed_true = 0.10
-    lam_range = np.linspace(0.005, 0.50, 40)
+    def losses(version: str) -> np.ndarray:
+        return np.array([
+            100.0 * va.dario_dilemma(truth, float(b), version)["value_loss_pct"]
+            for b in beliefs
+        ])
 
-    losses_unlev = []
-    for li in lam_range:
-        r = va.dario_dilemma(fixed_true, li)
-        losses_unlev.append(r.get("value_loss_pct", np.nan) * 100)
+    def pure_power_loss(belief: float) -> float:
+        result = va.pure_power_dilemma(truth, belief)
+        if "error" in result:
+            # The solver reports failures in the result; fail loudly (C19j).
+            logger.error("Pure-power dilemma at %.4f: %s", belief, result["error"])
+            msg = f"pure_power_dilemma failed at lambda_invest = {belief:.4f}"
+            raise RuntimeError(msg)
+        return 100.0 * result["value_loss_pct"]
 
-    losses_lev = []
-    for li in lam_range:
-        r = va.dario_dilemma_leveraged(fixed_true, li, leverage=0.40)
-        losses_lev.append(r.get("value_loss_pct", np.nan) * 100)
-
-    fig, ax = plt.subplots(figsize=(FULL_W, 3.8))
-
-    losses_unlev_arr = np.array(losses_unlev)
-    losses_lev_arr = np.array(losses_lev)
-
-    ax.plot(lam_range, losses_unlev_arr, "k-", linewidth=1.5, label=r"$\ell = 0$")
-    ax.plot(lam_range, losses_lev_arr, "k--", linewidth=1.5, label=r"$\ell = 0.40$")
-
-    ax.axvline(fixed_true, color="0.6", linestyle=":", linewidth=0.8)
-
-    # Equal additive belief errors (-0.08 / +0.08 around lambda_true)
-    matched = [fixed_true - 0.08, fixed_true + 0.08]
-    matched_losses = [
-        va.dario_dilemma(fixed_true, li)["value_loss_pct"] * 100 for li in matched
-    ]
-    ax.plot(
-        matched,
-        matched_losses,
-        linestyle="none",
-        marker="o",
-        markerfacecolor="white",
-        markeredgecolor="k",
-        markeredgewidth=1.3,
-        markersize=7,
-        zorder=5,
-        label=r"Equal errors $\pm 0.08$ ($\ell = 0$)",
+    pure_power = np.array([pure_power_loss(float(b)) for b in beliefs])
+    pairs = matched_pairs(truth)
+    marks = (
+        ("additive", "o", 10, r"Equal in $\lambda$: $0.02$, $0.18$"),
+        ("proportional_low", "s", 5, r"Equal in $\log\lambda$: $0.02$, $0.50$"),
+        ("horizon", "^", 5, r"Equal in $1/\lambda$: $0.069$, $0.18$"),
     )
 
-    high_loss = losses_unlev_arr > 10
-    if high_loss.any():
-        ax.fill_between(
-            lam_range,
-            0,
-            losses_unlev_arr,
-            where=high_loss.tolist(),
-            alpha=0.10,
-            color="red",
-            label=r"Loss > 10% ($\ell = 0$ curve)",
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(FULL_W, 3.6), sharey=True)
+
+    ax1.plot(beliefs, losses("precommitted"), "k-", lw=1.5, label="Precommitted scale")
+    ax1.plot(
+        beliefs,
+        losses("unrestricted"),
+        color="#1f77b4",
+        ls="--",
+        lw=1.5,
+        label="Scale chosen at the switch",
+    )
+    ax1.plot(beliefs, pure_power, color="0.55", ls=":", lw=1.2, label="Pure power")
+
+    def mark(ax, loss_at) -> None:
+        for name, marker, size, label in marks:
+            pair = pairs[name]
+            ax.plot(
+                pair,
+                [loss_at(b) for b in pair],
+                linestyle="none",
+                marker=marker,
+                markerfacecolor="white",
+                markeredgecolor="k",
+                markeredgewidth=1.1,
+                markersize=size,
+                zorder=5,
+                label=label,
+            )
+
+    mark(
+        ax1,
+        lambda b: 100.0 * va.dario_dilemma(truth, b, "precommitted")["value_loss_pct"],
+    )
+
+    cells = [c for c in load_dilemma_grid()["cells"] if c["leverage"] == 0.0]
+
+    def curve(role: str) -> tuple[np.ndarray, np.ndarray]:
+        rows = sorted(
+            [
+                (c["lambda_invest"], 100.0 * c["value_loss_pct"])
+                for c in cells
+                if c["role"] == role
+            ]
+            + [(truth, 0.0)]
         )
+        return np.array([r[0] for r in rows]), np.array([r[1] for r in rows])
 
-    ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$")
-    ax.set_ylabel(r"Value loss $\Delta V / V^*$ (%)")
-    ax.legend(loc="upper center", framealpha=0.9)
-    ax.set_xlim(0, 0.5)
-    # Dynamic upper limit so the steep underinvestment branch is not clipped
-    y_max = np.nanmax([np.nanmax(losses_unlev_arr), np.nanmax(losses_lev_arr)])
-    ax.set_ylim(0, 1.1 * y_max)
-
-    ax.annotate(
-        "Underinvestment (conservative):\nlater entry, less training",
-        xy=(0.045, 16),
-        fontsize="small",
-        ha="left",
-        color="navy",
+    lam_lead, loss_lead = curve("leader")
+    lam_follow, loss_follow = curve("follower")
+    ax2.plot(
+        lam_lead, loss_lead, "k-", lw=1.5, marker=".", ms=4, label="Mistaken leader"
     )
-    ax.annotate(
-        "Overinvestment (aggressive):\nearlier entry, more training",
-        xy=(0.35, 8),
-        fontsize="small",
-        ha="center",
-        color="darkred",
+    ax2.plot(
+        lam_follow,
+        loss_follow,
+        color="#d62728",
+        ls="--",
+        lw=1.3,
+        marker="x",
+        ms=4,
+        label="Mistaken follower",
     )
+    mark(ax2, lambda b: float(np.interp(b, lam_lead, loss_lead)))
 
-    fig.tight_layout()
+    for ax, title in ((ax1, "(a) Single firm"), (ax2, "(b) Duopoly")):
+        ax.set_xscale("log")
+        ax.set_xticks([0.02, 0.05, 0.10, 0.20, 0.50])
+        ax.set_xticklabels(["0.02", "0.05", "0.10", "0.20", "0.50"])
+        ax.minorticks_off()
+        ax.set_xlim(0.015, 0.55)
+        ax.axvline(truth, color="0.6", linestyle=":", linewidth=0.8)
+        ax.set_xlabel(r"Investment belief $\lambda_{\mathrm{invest}}$ (log scale)")
+        ax.set_title(title, loc="left", fontweight="bold")
+    ax1.set_ylabel("Value loss (%)")
+    ax1.set_ylim(0, 54)
+
+    handles, labels = ax1.get_legend_handles_labels()
+    ax1.legend(handles[:3], labels[:3], loc="upper center", fontsize="x-small")
+    lead_handles, lead_labels = ax2.get_legend_handles_labels()
+    ax2.legend(
+        lead_handles[:2], lead_labels[:2], loc="upper center", fontsize="x-small"
+    )
+    fig.legend(
+        handles[3:],
+        labels[3:],
+        loc="lower center",
+        ncol=3,
+        fontsize="x-small",
+        frameon=False,
+        title="Matched pairs of beliefs around the truth, 0.10",
+        title_fontsize="x-small",
+    )
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
     return fig

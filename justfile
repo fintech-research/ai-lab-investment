@@ -55,6 +55,23 @@ test:
     @echo "🚀 Testing code: Running pytest"
     uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
+# Run the slow tests too (re-solves equilibria of the exact preemption game)
+test-slow:
+    @echo "🚀 Testing code: Running pytest, slow tests included"
+    uv run python -m pytest -m "slow or not slow"
+
+# Recompute the cached duopoly equilibria behind the paper, reusing the cached X_P solves (about an hour)
+duopoly-grid:
+    uv run python -m ai_lab_investment.models.preemption_levered
+
+# Same, re-solving the rent-equalization triggers too (several hours)
+duopoly-grid-fresh:
+    uv run python -m ai_lab_investment.models.preemption_levered fresh
+
+# Recompute the cached duopoly Dario's dilemma (about ten minutes on 8 workers)
+dilemma-grid:
+    uv run python -m ai_lab_investment.models.belief_mismatch
+
 # Test if documentation can be built without warnings or errors
 docs-test:
     @echo "🚀 Testing docs build"
@@ -100,10 +117,18 @@ run-pipeline:
     @echo "🚀 Running analysis pipeline"
     uv run python -m ai_lab_investment
 
-# Run the +/-25% parameter-perturbation robustness sweep (Internet Appendix E)
+# Run the robustness sweeps of Internet Appendix E: one at a time and joint (a few minutes; duopoly objects from the cache)
 run-sweep:
-    @echo "🚀 Running robustness sweep"
+    @echo "🚀 Running robustness sweeps"
     uv run python -m ai_lab_investment.robustness
+
+# Recompute the cached joint single-firm sweep (`models/robustness_joint.csv`, a few minutes on 8 workers)
+sweep-joint-grid:
+    uv run python -m ai_lab_investment.robustness joint-grid
+
+# Solve the duopoly cells of the sweeps missing from `models/robustness_duopoly.json` (resumable; about two hours on 8 workers from scratch)
+sweep-duopoly-grid *ARGS:
+    uv run python -m ai_lab_investment.robustness duopoly-grid {{ARGS}}
 
 # Install video dependencies (manim + kokoro-onnx) and download TTS model files
 video-setup:
@@ -128,7 +153,7 @@ render-walkthrough quality="h":
     @echo "🚀 Rendering walkthrough series"
     uv run python video/render.py walkthrough_part1 walkthrough_part2 walkthrough_part3 walkthrough_part4 walkthrough_part5 walkthrough_part6 --quality {{quality}}
 
-# Build the referee-facing replication package (Lean proofs + equations listing)
+# Build the referee-facing replication package (Lean proofs, equations listing, cached numerical solutions)
 build-replication-package:
     @echo "🚀 Building replication package"
     uv run python submission/replication/extract_equations.py
@@ -138,6 +163,9 @@ build-replication-package:
     cp submission/replication/README.md submission/replication/equations.tex submission/replication/equations.pdf submission/replication/_stage/
     cp submission/replication/Dockerfile submission/replication/verify.sh submission/replication/.dockerignore submission/replication/_stage/
     rsync -a --exclude '.lake' lean submission/replication/_stage/
-    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf Dockerfile verify.sh .dockerignore lean
+    mkdir -p submission/replication/_stage/numerics
+    cp src/ai_lab_investment/models/duopoly_equilibria.json src/ai_lab_investment/models/duopoly_dilemma.json src/ai_lab_investment/models/robustness_duopoly.json src/ai_lab_investment/models/robustness_joint.csv submission/replication/_stage/numerics/
+    rm -f submission/replication/replication-package.zip
+    cd submission/replication/_stage && zip -qr ../replication-package.zip README.md equations.tex equations.pdf Dockerfile verify.sh .dockerignore lean numerics
     rm -rf submission/replication/_stage
     @echo "✅ wrote submission/replication/replication-package.zip"

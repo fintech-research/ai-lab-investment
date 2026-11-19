@@ -66,6 +66,10 @@ python-version = "3.13"
 exclude = ["video/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Re-solving a preemption equilibrium of the model of record takes one to
+# two minutes; those tests run with `just test-slow`.
+addopts = "-m 'not slow'"
+markers = ["slow: re-solves equilibria of the exact preemption game (minutes)"]
 
 [tool.ruff]
 target-version = "py313"

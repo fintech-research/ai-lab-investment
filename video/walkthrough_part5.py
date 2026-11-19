@@ -1021,8 +1021,8 @@ class P5S08RentEqualization(PaperScene):
             self.play(Indicate(eqn, color=C_OPTION), run_time=1.4)
 
         _params, duo = _baseline_duopoly()
-        X_mono, K_L, phi_L, lev_L = duo.solve_leader_monopolist("H")
-        eq = duo.solve_preemption_equilibrium("H")
+        X_mono, K_L, phi_L, lev_L = duo.pure_power_leader_monopolist("H")
+        eq = duo.pure_power_preemption_equilibrium("H")
         X_P = eq["X_leader"]
 
         xs = np.linspace(1e-4, 0.008, 90)
@@ -1329,8 +1329,8 @@ class P5S10Uniqueness(PaperScene):
         params, duo = _baseline_duopoly()
         p = params
         beta = p.beta_H
-        _X_mono, K_L, phi_L, _lev_L = duo.solve_leader_monopolist("H")
-        X_F, K_F, phi_F, _lev_F = duo.solve_follower(K_L, phi_L)
+        _X_mono, K_L, phi_L, _lev_L = duo.pure_power_leader_monopolist("H")
+        X_F, K_F, phi_F, _lev_F = duo.pure_power_follower(K_L, phi_L)
         A = duo._effective_revenue_coeff(phi_L, K_L, 0.0, 0.0, monopolist=True)
         N = p.delta * K_L / p.r + duo.investment_cost(K_L)
         B_F = duo._follower_value(X_F, K_F, phi_F, K_L, phi_L, 0.0) / X_F**beta
@@ -1775,7 +1775,7 @@ class P5S13CompetitionEffect(PaperScene):
         lead = np.zeros_like(sigmas)
         for i, s in enumerate(sigmas):
             duo = DuopolyModel(base.with_param(sigma=s), leverage=0.0)
-            eq = duo.solve_preemption_equilibrium("H")
+            eq = duo.pure_power_preemption_equilibrium("H")
             mono[i] = eq["X_leader_monopolist"]
             lead[i] = eq["X_leader"]
         ratio = lead / mono

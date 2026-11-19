@@ -3,21 +3,28 @@ import AILabProofs.Basic
 set_option linter.style.header false
 
 /-!
-# Proposition 1 — optimal investment trigger (closed form)
+# Proposition 1(ii) — trigger and capacity for a payoff linear in demand
 
-This file verifies the algebraic heart of Proposition 1 (`paper/_appendix.qmd`,
-"Proof of Proposition 1", Steps 1–2, and `paper/_model.qmd` eq-trigger-phi):
+This file verifies Steps 1--4 of the Proof of Proposition 1 (`paper/_appendix.qmd`),
+the stopping problem with exercise payoff `a K^α X - Θ(K)` and continuation value
+`B X^β`:
 
-* `trigger_from_boundary_conditions` : the value-matching and smooth-pasting
-  conditions at the investment trigger imply the closed form
-  `X* = β/(β-1) · b / A`, where `A = A_eff` is the effective revenue coefficient
-  and `b` is total cost.
-* `npv_at_trigger` : at that trigger the net present value equals `b/(β-1)`
-  (Step 2: "the NPV at the trigger is `V - I = b(K)/(β_H - 1)`").
+* `trigger_from_boundary_conditions` : value matching and smooth pasting at the
+  trigger imply `X = β/(β-1) · b/A` (Step 1; eq-trigger-H with `A = A_H K^α`).
+* `npv_at_trigger` : at that trigger the NPV is `b/(β-1)` (Step 2).
+* `hasDerivAt_A_eff_K` : the coefficient `a` drops out of the capacity condition,
+  because `a K^α` has elasticity `α` in `K` whatever `a` is (Step 4).
+* `K_foc_reduced`, `K_foc` : the capacity first-order condition eq-foc-K is
+  equivalent to the closed form for `K^{γ-1}` (eq-K-H).  Positivity of the right-hand
+  side under (A2) and global optimality are in `Capacity.lean`.
 
-Here `A` plays the role of `A_eff`, `b` the role of total cost `δK/r + cK^γ`,
-and `β` the role of the positive characteristic root `β_H > 1`.  The result is a
-pure-algebra identity, so it is stated for abstract reals with the relevant signs.
+With `a = A_H` (all capacity in training) this is the post-switch policy of
+Proposition 1(ii): `X_H*` and `K_H*`.  With `a = g(φ*)` it is the pure-power
+approximation (eq-trigger-phi), whose capacity is therefore `K_H*`.  It is *not* the
+pre-switch policy `(X*, K*)` of Proposition 1(iii), whose continuation value is not a
+single power and whose capacity depends on `λ` (see `PreSwitch.lean`).  Here `A`
+plays the role of the revenue coefficient, `b` of total cost `δK/r + cK^γ`, and `β`
+of `β_H > 1`; the results are identities for abstract reals with the stated signs.
 -/
 
 namespace AILab
@@ -64,16 +71,18 @@ theorem npv_at_trigger
   field_simp
   ring
 
-/-! ## Optimal capacity `K*` (Proposition 1, Step 4)
+/-! ## Capacity `K_H*` (Proposition 1(ii), Step 4)
 
-With `A_eff = g(φ)·K^α`, the capacity first-order condition `∂ln h/∂K = 0` is
-`β_H·(∂ln A_eff/∂K) = (β_H-1)·(∂ln b/∂K)`.  Because the `A_eff`-side log-derivative
-is `α/K` regardless of `g(φ)`, the optimal `K*` is independent of the training
-fraction `φ` — the key claim of Step 4. -/
+With revenue coefficient `a·K^α`, the capacity first-order condition `∂ln h/∂K = 0`
+is `β·(∂ln(aK^α)/∂K) = (β-1)·(∂ln Θ/∂K)`.  Because the revenue-side log-derivative
+is `α/K` whatever `a` is, the solution does not depend on `a`: the post-switch
+capacity `K_H*` and the capacity of the pure-power approximation coincide and do not
+depend on the training fraction.  (The pre-switch capacity `K*` of Proposition 1(iii)
+solves a different condition, eq-scale-foc, and does depend on beliefs.) -/
 
-/-- **The `A_eff`-side log-derivative is `α/K`, independent of `g(φ)`.**
-`d/dK [g·K^α] = (α/K)·(g·K^α)`, so the elasticity of `A_eff` in `K` is `α` whatever
-`g(φ)` is — which is why `K*` does not depend on `φ`. -/
+/-- **The revenue-side log-derivative is `α/K`, independent of the coefficient.**
+`d/dK [g·K^α] = (α/K)·(g·K^α)`, so the elasticity in `K` is `α` whatever `g` is,
+which is why `K_H*` (and the pure-power capacity) does not depend on `φ`. -/
 theorem hasDerivAt_A_eff_K {g α K : ℝ} (hK : 0 < K) :
     HasDerivAt (fun x => g * x ^ α) (α / K * (g * K ^ α)) K := by
   have h : HasDerivAt (fun x => g * x ^ α) (g * (1 * α * K ^ (α - 1))) K :=
@@ -95,9 +104,11 @@ theorem K_foc_reduced {c δ r γ β α u : ℝ}
   rw [eq_div_iff (mul_ne_zero (ne_of_gt hc) hden)]
   constructor <;> intro h <;> linear_combination h
 
-/-- **Capacity FOC in closed form.**  The full first-order condition
+/-- **Capacity FOC in closed form** (eq-foc-K, eq-K-H).  The first-order condition
 `α β (cK^γ + δK/r) = (β-1) K (cγK^{γ-1} + δ/r)` is equivalent to the closed form
-for `K^{γ-1}` — hence `K* = (·)^{1/(γ-1)}`, with no dependence on `φ`. -/
+for `K^{γ-1}`, hence `K_H* = (·)^{1/(γ-1)}`, with no dependence on `φ`.  The
+equivalence does not by itself say that the right-hand side is positive or that
+the root is a maximum; see `capRoot_pos` and `capObj_lt_capObj_KHstar`. -/
 theorem K_foc {c δ r γ β α K : ℝ}
     (hK : 0 < K) (hr : 0 < r) (hc : 0 < c) (hden : α * β - (β - 1) * γ ≠ 0) :
     α * β * (c * K ^ γ + δ * K / r) = (β - 1) * K * (c * γ * K ^ (γ - 1) + δ / r) ↔

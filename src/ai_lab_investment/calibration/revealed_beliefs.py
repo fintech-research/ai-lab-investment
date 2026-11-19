@@ -16,9 +16,12 @@ Extended methodology with training-inference allocation:
 
 Scope notes:
   - The closed-form phi inversion (infer_lambda_from_phi) is the only
-    moment the paper relies on; the capex-intensity inversion is
-    illustrative (sensitive to the X_ref normalization and not globally
-    monotone at very low lambda).
+    moment the paper relies on; `archetypes.archetype_outputs` builds the
+    archetype exhibit on it. The capex-intensity inversions are
+    exploratory (pipeline phase 4 only): sensitive to the X_ref
+    normalization and not monotone in lambda. The phi-aware one
+    (`infer_lambda_with_phi`) is at the model of record; the H-regime one
+    (`infer_lambda_from_capex`) uses the simple mode.
   - Leverage is carried through as descriptive metadata only; it does
     not enter any inversion (the allocation FOC is leverage-free, and
     the model treats leverage as exogenous).
@@ -80,6 +83,7 @@ class RevealedBeliefs:
 
     def __init__(self, calibration: CalibrationData):
         self.calibration = calibration
+        self._phi_intensity: dict[tuple[float, float], tuple[float, float]] = {}
 
     def _model_capacity_at_lambda(self, lam: float, regime: str = "H") -> float:
         """Compute the model's predicted capacity at a given lambda."""
@@ -243,12 +247,23 @@ class RevealedBeliefs:
     ) -> tuple[float, float]:
         """Model-predicted (intensity, phi*) at a given lambda.
 
-        Uses the phi-aware single-firm model to jointly predict
-        investment intensity and optimal training fraction.
+        Uses the single-firm model of record (issue #183): K* is the
+        capacity of the precommitted-scale policy and F(X_ref) the exact
+        value of a firm that has not invested (scale chosen whenever it
+        invests). The ratio is U-shaped in lambda at baseline, with a
+        minimum of about 7.5 near lambda = 0.13, so an observed intensity
+        below that minimum has no solution and one above it has two; the
+        inversion reports the smaller (`_first_bracket`).
 
         Returns:
             (intensity, phi*) tuple. intensity = F(X_ref) / I(K*).
         """
+        key = (float(lam), float(X_ref))
+        if key not in self._phi_intensity:
+            self._phi_intensity[key] = self._solve_phi_intensity(lam, X_ref)
+        return self._phi_intensity[key]
+
+    def _solve_phi_intensity(self, lam: float, X_ref: float) -> tuple[float, float]:
         try:
             params = self.calibration.to_model_params(lam=lam)
             model = SingleFirmModel(params)

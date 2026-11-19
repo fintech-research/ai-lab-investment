@@ -1,4 +1,11 @@
-"""Tests for the duopoly model with endogenous lambda and training."""
+"""Tests for the duopoly primitives and the nested pure-power game.
+
+Contest functions, installed values, the credit closed forms of issue #177
+and the reduced-form preemption game of the earlier draft
+(`DuopolyModel.pure_power_*`), which is kept as the nested approximation.
+The duopoly model of record, the preemption game in the exact primitives,
+is tested in `tests/test_duopoly_exact.py`.
+"""
 
 import numpy as np
 import pytest
@@ -6,6 +13,7 @@ import pytest
 from ai_lab_investment.models.base_model import SingleFirmModel
 from ai_lab_investment.models.duopoly import DuopolyModel
 from ai_lab_investment.models.parameters import ModelParameters
+from ai_lab_investment.models.valuation import ValuationAnalysis
 
 
 @pytest.fixture
@@ -208,7 +216,7 @@ class TestInstalledValues:
 class TestFollower:
     def test_follower_trigger_positive(self, model):
         """Follower's trigger should be positive."""
-        X_F, K_F, phi_F, lev_F = model.solve_follower(K_L=1.0, phi_L=0.3)
+        X_F, K_F, phi_F, lev_F = model.pure_power_follower(K_L=1.0, phi_L=0.3)
         assert X_F > 0
         assert K_F > 0
         assert 0 < phi_F < 1
@@ -216,21 +224,21 @@ class TestFollower:
 
     def test_follower_capacity_responds_to_leader(self, model):
         """Follower's capacity changes in response to leader's capacity."""
-        _, K_F1, _, _ = model.solve_follower(K_L=0.5, phi_L=0.3)
-        _, K_F2, _, _ = model.solve_follower(K_L=2.0, phi_L=0.3)
+        _, K_F1, _, _ = model.pure_power_follower(K_L=0.5, phi_L=0.3)
+        _, K_F2, _, _ = model.pure_power_follower(K_L=2.0, phi_L=0.3)
         assert K_F1 > 0 and K_F2 > 0
         assert abs(K_F1 - K_F2) > 1e-10
 
     def test_follower_option_value_positive(self, model):
         """Follower's option value should be positive below trigger."""
-        X_F, _K_F, _phi_F, _lev_F = model.solve_follower(K_L=1.0, phi_L=0.3)
+        X_F, _K_F, _phi_F, _lev_F = model.pure_power_follower(K_L=1.0, phi_L=0.3)
         fov = model.follower_option_value(X_F * 0.5, K_L=1.0, phi_L=0.3, regime="H")
         assert fov > 0
 
     def test_follower_option_value_increasing(self, model):
         """Follower's option value increases with X."""
         K_L, phi_L = 1.0, 0.3
-        X_F, _, _, _ = model.solve_follower(K_L, phi_L)
+        X_F, _, _, _ = model.pure_power_follower(K_L, phi_L)
         v1 = model.follower_option_value(X_F * 0.3, K_L, phi_L, "H")
         v2 = model.follower_option_value(X_F * 0.6, K_L, phi_L, "H")
         assert v2 > v1
@@ -251,8 +259,8 @@ class TestCrossModelConsistency:
         K by a factor of ~5.
         """
         sf = SingleFirmModel(model.params)
-        X_s, K_s, phi_s = sf.optimal_trigger_capacity_phi()
-        X_L, K_L, phi_L, lev_L = model.solve_leader_monopolist("H")
+        X_s, K_s, phi_s = sf.pure_power_trigger_capacity_phi()
+        X_L, K_L, phi_L, lev_L = model.pure_power_leader_monopolist("H")
         assert lev_L == 0.0
         assert abs(X_L - X_s) / X_s < 1e-4
         assert abs(K_L - K_s) / K_s < 1e-4
@@ -280,8 +288,8 @@ class TestCrossModelConsistency:
         half-revenue problem has the same scale-invariant FOC for K)."""
         duo_fp = DuopolyModel(default_params, contest="fixed_pie")
         sf = SingleFirmModel(default_params)
-        _, K_s, _ = sf.optimal_trigger_capacity_phi()
-        _, K_F, _, _ = duo_fp.solve_follower(K_L=K_s, phi_L=0.70)
+        _, K_s, _ = sf.pure_power_trigger_capacity_phi()
+        _, K_F, _, _ = duo_fp.pure_power_follower(K_L=K_s, phi_L=0.70)
         assert abs(K_F - K_s) / K_s < 1e-3
 
 
@@ -293,19 +301,19 @@ class TestCrossModelConsistency:
 class TestLeader:
     def test_leader_monopolist_trigger_positive(self, model):
         """Leader's monopolist trigger should be positive."""
-        X_L, K_L, phi_L, _lev_L = model.solve_leader_monopolist(regime="H")
+        X_L, K_L, phi_L, _lev_L = model.pure_power_leader_monopolist(regime="H")
         assert X_L > 0
         assert K_L > 0
         assert 0 < phi_L < 1
 
     def test_leader_trigger_below_follower(self, model):
         """Leader invests before follower: X_L < X_F."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert eq["X_leader"] < eq["X_follower"]
 
     def test_leader_value_positive_at_trigger(self, model):
         """Leader's value should be positive at the equilibrium trigger."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         leader_val = model._leader_value_at(
             eq["X_leader"], eq["K_leader"], eq["phi_leader"], eq["lev_leader"]
         )
@@ -320,7 +328,7 @@ class TestLeader:
 class TestPreemptionEquilibrium:
     def test_equilibrium_has_required_keys(self, model):
         """Equilibrium result has all required keys."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         required = [
             "X_leader",
             "K_leader",
@@ -339,35 +347,29 @@ class TestPreemptionEquilibrium:
 
     def test_leader_before_follower(self, model):
         """Leader's trigger < follower's trigger."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert eq["X_leader"] < eq["X_follower"]
-
-    def test_all_equity_no_default(self, model):
-        """With no leverage, default boundaries are zero."""
-        eq = model.solve_preemption_equilibrium("H")
-        assert eq["X_default_leader"] == 0.0
-        assert eq["X_default_follower"] == 0.0
 
     def test_preemption_lowers_trigger(self, model):
         """Preemption trigger < monopolist trigger."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert eq["X_leader"] <= eq["X_leader_monopolist"]
 
     def test_training_fractions_in_range(self, model):
         """Training fractions should be interior: 0 < phi < 1."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert 0 < eq["phi_leader"] < 1
 
     def test_single_crossing_verified(self, model):
         """L(X) - F(X) should have exactly one sign change (single crossing)."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert eq["single_crossing"]
         assert 0 < eq["phi_follower"] < 1
 
     def test_reports_solver_diagnostics(self, model):
         """The equilibrium dict carries the bracket and multistart
         diagnostics needed to tell a solved root from a fallback."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         assert eq["bracket_failed"] is False
         assert eq["n_sign_changes"] == 1
         diag = eq["solver_diagnostics"]
@@ -393,17 +395,17 @@ class TestPreemptionFailurePaths:
         """L - F already non-negative at X_low: no first up-crossing."""
         self._force_gap(model, lambda X, regime: 1.0)
         with pytest.raises(RuntimeError, match="No preemption equilibrium"):
-            model.solve_preemption_equilibrium("H")
+            model.pure_power_preemption_equilibrium("H")
 
     def test_no_sign_change_raises(self, model):
         """L - F never turns positive on (X_D, X_L^mono)."""
         self._force_gap(model, lambda X, regime: -1.0)
         with pytest.raises(RuntimeError, match="no sign change"):
-            model.solve_preemption_equilibrium("H")
+            model.pure_power_preemption_equilibrium("H")
 
     def test_brent_failure_raises(self, model):
         """A grid sign change that Brent cannot reproduce still raises."""
-        X_mid = model.solve_leader_monopolist("H")[0] * 0.5
+        X_mid = model.pure_power_leader_monopolist("H")[0] * 0.5
         calls = {"n": 0}
 
         def flaky_gap(X, regime):
@@ -414,18 +416,18 @@ class TestPreemptionFailurePaths:
 
         self._force_gap(model, flaky_gap)
         with pytest.raises(RuntimeError, match="Brent"):
-            model.solve_preemption_equilibrium("H")
+            model.pure_power_preemption_equilibrium("H")
 
     def test_non_strict_returns_flagged_fallback(self, model):
         """strict=False keeps the old endpoint fallback, but flags it."""
         self._force_gap(model, lambda X, regime: -1.0)
-        eq = model.solve_preemption_equilibrium("H", strict=False)
+        eq = model.pure_power_preemption_equilibrium("H", strict=False)
         assert eq["bracket_failed"] is True
         assert eq["X_leader"] == eq["X_leader_monopolist"]
 
     def test_non_strict_lower_endpoint_fallback(self, model):
         self._force_gap(model, lambda X, regime: 1.0)
-        eq = model.solve_preemption_equilibrium("H", strict=False)
+        eq = model.pure_power_preemption_equilibrium("H", strict=False)
         assert eq["bracket_failed"] is True
         assert eq["X_leader"] < eq["X_leader_monopolist"]
 
@@ -433,12 +435,12 @@ class TestPreemptionFailurePaths:
         """Callers that do not opt out get the raising behaviour."""
         self._force_gap(model, lambda X, regime: -1.0)
         with pytest.raises(RuntimeError):
-            model.solve_preemption_equilibrium()
+            model.pure_power_preemption_equilibrium()
 
     def test_strict_and_non_strict_cached_separately(self, model):
         """The escape hatch must not poison the strict cache entry."""
-        eq_strict = model.solve_preemption_equilibrium("H")
-        eq_loose = model.solve_preemption_equilibrium("H", strict=False)
+        eq_strict = model.pure_power_preemption_equilibrium("H")
+        eq_loose = model.pure_power_preemption_equilibrium("H", strict=False)
         assert eq_loose["X_leader"] == eq_strict["X_leader"]
         assert eq_loose["bracket_failed"] is False
 
@@ -520,11 +522,6 @@ class TestDefaultRisk:
             phi_i=0.3, K_i=1.0, phi_j=0.3, K_j=1.0, leverage=0.5
         )
         assert X_D > 0
-
-    def test_no_default_boundary_without_leverage(self, model):
-        """Default boundary is zero with no leverage."""
-        X_D = model.default_boundary(phi_i=0.3, K_i=1.0, phi_j=0.3, K_j=1.0)
-        assert X_D == 0.0
 
     def test_higher_leverage_higher_default_boundary(self, default_params):
         """Higher leverage raises the default boundary."""
@@ -633,8 +630,8 @@ class TestDefaultRisk:
 
         X_D = m.default_boundary(phi_i, K_i, phi_j, K_j, lev)
         c_D = m.coupon_payment(K_i, lev)
-        liq = m.liquidation_value(X_D, phi_i, K_i, phi_j, K_j)
-        recovery = min((1.0 - m.bankruptcy_cost) * liq, c_D / p.r)
+        recovery = m.recovery_value(phi_i, K_i, phi_j, K_j, lev)
+        assert 0.0 <= recovery <= c_D / p.r
 
         D_at_boundary = m.debt_value(X_D * (1.0 + 1e-9), phi_i, K_i, phi_j, K_j, lev)
         assert abs(D_at_boundary - recovery) < 1e-6
@@ -653,7 +650,7 @@ class TestDefaultRisk:
 
     def test_default_boundary_below_trigger(self, levered_model):
         """Default boundary is positive under leverage and below the trigger."""
-        eq = levered_model.solve_preemption_equilibrium("H")
+        eq = levered_model.pure_power_preemption_equilibrium("H")
         assert eq["X_default_follower"] > 0
         assert eq["X_default_follower"] < eq["X_follower"]
 
@@ -663,7 +660,7 @@ class TestDefaultRisk:
         from ai_lab_investment.models.base_model import SingleFirmModel
 
         p = ModelParameters()
-        _, K_star, phi_star = SingleFirmModel(p).optimal_trigger_capacity_phi()
+        _, K_star, phi_star = SingleFirmModel(p).pure_power_trigger_capacity_phi()
         h = 1e-4
 
         def x_d(lam):
@@ -722,7 +719,7 @@ class TestDefaultRisk:
         # dXD_sign > 0 (boundary rising in lambda) iff phi* < phi_tilde
         for lam, dXD_sign in [(0.02, 1), (0.05, -1)]:
             pl = p0.with_param(lam=lam)
-            _, K, phi = SingleFirmModel(pl).optimal_trigger_capacity_phi()
+            _, K, phi = SingleFirmModel(pl).pure_power_trigger_capacity_phi()
             d = DuopolyModel(pl, leverage=0.40)
             phi_tilde = d.faith_threshold_exact()
             assert np.sign(phi - phi_tilde) == -dXD_sign
@@ -774,17 +771,9 @@ class TestEquityDebt:
         E2 = levered_model.equity_value(3.0, 0.3, 1.0, 0.3, 1.0, 0.5)
         assert E2 > E1
 
-    def test_all_equity_matches_value_minus_cost(self, model):
-        """With no leverage, equity = V - I."""
-        X, phi, K = 5.0, 0.3, 1.0
-        E = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
-        V = model.monopolist_value_L(X, phi, K)
-        cost = model.investment_cost(K)
-        assert abs(E - max(V - cost, 0.0)) < 1e-10
-
     def test_levered_equilibrium_exists(self, levered_model):
         """Levered model should produce a valid equilibrium."""
-        eq = levered_model.solve_preemption_equilibrium("H")
+        eq = levered_model.pure_power_preemption_equilibrium("H")
         assert eq["X_leader"] > 0
         assert eq["X_follower"] > eq["X_leader"]
 
@@ -899,9 +888,6 @@ class TestCoupledDefaultBoundary:
         assert X_D_c <= X_D
         assert (X_D - X_D_c) / X_D_c < 0.05
 
-    def test_no_debt_returns_zero(self, model):
-        assert model.default_boundary_coupled(0.7, 1.0, 0.7, 1.0) == 0.0
-
     def test_scalar_reduction_satisfies_both_boundary_conditions(self, default_params):
         """The Brent root of the scalar equation must satisfy value matching
         AND smooth pasting of the coupled system (the elimination of the
@@ -951,9 +937,9 @@ class TestFollowerScalarReduction:
             m = DuopolyModel(
                 default_params, leverage=lev, coupon_rate=0.05, bankruptcy_cost=0.30
             )
-            _, K_L, phi_L, _ = m.solve_leader_monopolist()
-            X_nm, K_nm, phi_nm, _ = m.solve_follower(K_L, phi_L)
-            X_sc, K_sc, phi_sc, _ = m.solve_follower_scalar(K_L, phi_L)
+            _, K_L, phi_L, _ = m.pure_power_leader_monopolist()
+            X_nm, K_nm, phi_nm, _ = m.pure_power_follower(K_L, phi_L)
+            X_sc, K_sc, phi_sc, _ = m.pure_power_follower_scalar(K_L, phi_L)
             assert abs(K_sc / K_nm - 1.0) < 1e-6
             assert abs(X_sc / X_nm - 1.0) < 1e-6
             assert abs(phi_sc - phi_nm) < 1e-4
@@ -966,7 +952,7 @@ class TestFollowerScalarReduction:
 
         _, K_L, phi_star = SingleFirmModel(
             default_params
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         m = DuopolyModel(default_params, leverage=0.0)
         K_F = 40.0 * K_L  # strongly asymmetric capacities
         h = 1e-7
@@ -980,7 +966,7 @@ class TestFollowerScalarReduction:
     def test_requires_tullock(self, default_params):
         m = DuopolyModel(default_params, leverage=0.0, contest="fixed_pie")
         with pytest.raises(RuntimeError, match="Tullock"):
-            m.solve_follower_scalar(0.01, 0.70)
+            m.pure_power_follower_scalar(0.01, 0.70)
 
     def test_single_crossing_at_zero_leverage(self, default_params):
         """Supporting check for the analytical uniqueness result: the
@@ -988,7 +974,7 @@ class TestFollowerScalarReduction:
         lambda values (gap is strictly concave there)."""
         for lam in [0.05, 0.10, 0.20]:
             m = DuopolyModel(default_params.with_param(lam=lam), leverage=0.0)
-            eq = m.solve_preemption_equilibrium("H")
+            eq = m.pure_power_preemption_equilibrium("H")
             assert eq["single_crossing"] is True
 
 
@@ -1003,17 +989,6 @@ class TestEquityConvention:
     entry decision uses is E(X) - (1 - ell) I(K), which is negative near
     the origin. That negativity is the L(0) < 0 = F(0) endpoint of the
     Proposition 3(i) existence argument."""
-
-    def test_unlevered_entry_npv_negative_near_origin(self, model):
-        """At ell = 0, entry NPV -> -[delta K / r + I(K)] as X -> 0."""
-        p = model.params
-        phi, K = 0.70, 0.0067
-        limit = -(p.delta * K / p.r + model.investment_cost(K))
-        a_eff = model._effective_revenue_coeff(phi, K, 0.0, 0.0, monopolist=True)
-        for X in [0.0, 1e-12, 1e-9, 1e-6]:
-            npv = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
-            assert npv < 0
-            assert abs(npv - limit) <= a_eff * X + 1e-15
 
     def test_levered_entry_npv_below_default_boundary(self, levered_model):
         """Below X_D the going concern is worthless and the sunk equity
@@ -1040,7 +1015,7 @@ class TestEquityConvention:
 
     def test_leader_value_negative_at_low_demand(self, model):
         """L(X) < 0 = F(0) at low demand -- no clamp on the leader's NPV."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         K_L, phi_L = eq["K_leader"], eq["phi_leader"]
         for frac in [1e-4, 1e-2, 0.1]:
             X = eq["X_leader_monopolist"] * frac
@@ -1049,7 +1024,7 @@ class TestEquityConvention:
     def test_preemption_trigger_unaffected_by_convention(self, model):
         """The floor never binds in the reported region: the equilibrium
         trigger still sits where L and F are both strictly positive."""
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         X_P = eq["X_leader"]
         L = model._leader_value_at(X_P, eq["K_leader"], eq["phi_leader"], 0.0)
         F = model.follower_option_value(X_P, eq["K_leader"], eq["phi_leader"], "H")
@@ -1070,31 +1045,34 @@ class TestLeaderScaleConvention:
         """Re-optimizing (K_L, phi_L) for entry roughly doubles the
         preemption discount: 86% against the convention's 43%."""
         m = DuopolyModel(default_params, leverage=0.0)
-        res = m.solve_preemption_reoptimized_leader(n_grid=24, x_low_factor=1e-2)
+        res = m.pure_power_preemption_reoptimized_leader(n_grid=24, x_low_factor=1e-2)
 
         assert res["single_crossing"]
-        assert abs(res["preemption_discount_convention"] - 0.427) < 0.005
-        assert abs(res["preemption_discount"] - 0.861) < 0.005
-        assert abs(res["X_leader"] - 0.000657) < 5e-6
-        # Leader shrinks to about 6% of the monopoly-phase capacity.
-        assert abs(res["K_leader"] / res["K_leader_convention"] - 0.056) < 0.003
+        # Re-pinned in issue #177: the unlevered claims now carry the
+        # shutdown option (0.427, 0.861, 0.000657 and 0.056 before).
+        assert abs(res["preemption_discount_convention"] - 0.445) < 0.005
+        assert abs(res["preemption_discount"] - 0.871) < 0.005
+        assert abs(res["X_leader"] - 0.000611) < 5e-6
+        # Leader shrinks to about 5% of the monopoly-phase capacity.
+        assert abs(res["K_leader"] / res["K_leader_convention"] - 0.053) < 0.003
         # Role invariance survives re-optimization.
         assert abs(res["phi_leader"] - res["phi_leader_convention"]) < 1e-3
         # The convention understates, never overstates, the discount.
         assert res["preemption_discount"] > res["preemption_discount_convention"]
 
     def test_scale_asymmetry_ratios(self, model):
-        """Paper numbers: K_F/K_L ~ 38, X_F/X_P ~ 44 at baseline."""
-        eq = model.solve_preemption_equilibrium("H")
+        """K_F/K_L ~ 38, X_F/X_P ~ 45 at baseline (X_F/X_P was 43.95
+        before the unlevered leader had a shutdown option, issue #177)."""
+        eq = model.pure_power_preemption_equilibrium("H")
         assert abs(eq["K_follower"] / eq["K_leader"] - 38.48) < 0.05
-        assert abs(eq["X_follower"] / eq["X_leader"] - 43.95) < 0.05
+        assert abs(eq["X_follower"] / eq["X_leader"] - 45.33) < 0.05
 
     def test_elasticity_wedge_reproduces_follower_capacity(self, model):
         """The asymmetry is the elasticity wedge: substituting
         alpha*(2 - s_F) for alpha in the Proposition 1 closed form for K*
         reproduces K_F."""
         p = model.params
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         K_L, K_F, beta = eq["K_leader"], eq["K_follower"], p.beta_H
         s_F = K_F**p.alpha / (K_F**p.alpha + K_L**p.alpha)
         alpha_eff = p.alpha * (2.0 - s_F)
@@ -1127,7 +1105,7 @@ class TestLeaderDefaultBoundary:
             coupon_rate=0.05,
             bankruptcy_cost=0.30,
         )
-        eq = model.solve_preemption_equilibrium("H")
+        eq = model.pure_power_preemption_equilibrium("H")
         return model, eq
 
     @staticmethod
@@ -1192,22 +1170,55 @@ class TestLeaderDefaultBoundary:
         )
         assert abs(right - left) < 1e-4 * abs(right)
 
-    def test_distance_to_default_pinned(self):
-        """Proposition 3(v) numbers at ell = 0.40: X_P / X_D falls in lambda."""
-        ratios = {}
-        for lam in (0.05, 0.10, 0.20):
-            m = DuopolyModel(
-                ModelParameters(lam=lam),
-                leverage=0.40,
-                coupon_rate=0.05,
-                bankruptcy_cost=0.30,
-            )
-            eq = m.solve_preemption_equilibrium("H")
-            ratios[lam] = eq["X_leader"] / eq["X_default_leader"]
-        assert ratios[0.05] == pytest.approx(2.63, abs=0.02)
-        assert ratios[0.10] == pytest.approx(2.55, abs=0.02)
-        assert ratios[0.20] == pytest.approx(2.44, abs=0.02)
-        assert ratios[0.05] > ratios[0.10] > ratios[0.20]
+    @pytest.mark.parametrize("leverage", [0.40, 0.65])
+    def test_distance_to_default_and_spread_at_entry(self, leverage):
+        """Nested pure-power game: X_P / X_D and the spread at entry in lambda.
+
+        Review comment C23. The earlier draft said that the distance to
+        default at entry falls with lambda and that the spread at entry is
+        "correspondingly weakly increasing". The first half holds in the
+        nested game; the second does not, under either recovery rule. With
+        the earlier (gross) rule the debt is default-free at low lambda and
+        the spread is then hump-shaped, which is the shape the reviewer
+        reported; with recovery net of operating costs it falls
+        monotonically, because beta_L^- and the boundary both move with
+        lambda. The spread is the leader's monopoly-phase debt of the D(X)
+        formula evaluated at X_P. The model of record is pinned in
+        tests/test_duopoly_exact.py::TestSpreadAtEntry (U-shaped there).
+        """
+        lams = (0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50)
+        ratios, spreads = [], {"net": [], "gross": []}
+        for lam in lams:
+            for rule in ("net", "gross"):
+                m = DuopolyModel(
+                    ModelParameters(lam=lam),
+                    leverage=leverage,
+                    coupon_rate=0.05,
+                    bankruptcy_cost=0.30,
+                    recovery_rule=rule,
+                )
+                eq = m.pure_power_preemption_equilibrium("H")
+                K, phi, X_P = eq["K_leader"], eq["phi_leader"], eq["X_leader"]
+                debt = m.debt_value(X_P, phi, K, 0.0, 0.0)
+                spreads[rule].append(1e4 * (m.coupon_payment(K) / debt - m.params.r))
+                if rule == "net":
+                    ratios.append(X_P / eq["X_default_leader"])
+        assert np.all(np.diff(ratios) < 0)
+        net, gross = np.array(spreads["net"]), np.array(spreads["gross"])
+        assert np.all(np.diff(net) < 0)
+        assert gross[0] == pytest.approx(0.0, abs=1e-6)
+        peak = int(np.argmax(gross))
+        assert 0 < peak < len(lams) - 1
+        assert gross[-1] < gross[peak]
+        if leverage == 0.40:
+            assert ratios[0] == pytest.approx(2.63, abs=0.02)
+            assert ratios[1] == pytest.approx(2.55, abs=0.02)
+            assert ratios[3] == pytest.approx(2.44, abs=0.02)
+            assert net[[1, 3, 7]] == pytest.approx([126.5, 79.6, 30.1], abs=0.3)
+            # Zero up to lambda = 0.15, then a hump peaking near 0.40.
+            assert gross[:3] == pytest.approx(0.0, abs=1e-6)
+            assert lams[peak] == 0.40
+            assert gross[peak] == pytest.approx(26.1, abs=0.3)
 
 
 # ------------------------------------------------------------------
@@ -1226,7 +1237,7 @@ class TestDefaultBoundaryInPhi:
         )
         _, _, phi_star = SingleFirmModel(
             ModelParameters()
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         grid = np.linspace(0.05, 0.95, 181)
         X_D = np.array([
             model.default_boundary(phi, 1.0, 0.0, 0.0, 0.40) for phi in grid
@@ -1251,7 +1262,7 @@ class TestDefaultBoundaryInPhi:
         assert argmax(0.95) == pytest.approx(0.605, abs=0.005)
         _, _, phi_star = SingleFirmModel(
             ModelParameters()
-        ).optimal_trigger_capacity_phi()
+        ).pure_power_trigger_capacity_phi()
         assert argmax(phi_star) == pytest.approx(phi_star, abs=0.002)
 
 
@@ -1277,31 +1288,494 @@ class TestDebtBelowDefault:
         model = DuopolyModel(
             ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
         )
-        phi, K = 0.5, 1.0
-        X_D = model.default_boundary(phi, K, 0.0, 0.0, 0.40)
-        at = model.debt_value(X_D, phi, K, 0.0, 0.0, 0.40)
-        below = model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0, 0.40)
+        # At leverage 0.90 the coupon is large enough for the inference
+        # business to be worth something net of its operating cost.
+        phi, K, lev = 0.5, 1.0, 0.90
+        X_D = model.default_boundary(phi, K, 0.0, 0.0, lev)
+        at = model.debt_value(X_D, phi, K, 0.0, 0.0, lev)
+        below = model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0, lev)
         assert at > 0.0
+        assert at == pytest.approx(model.recovery_value(phi, K, 0.0, 0.0, lev))
         assert below == pytest.approx(at, rel=1e-12)
-        above = model.debt_value(1.5 * X_D, phi, K, 0.0, 0.0, 0.40)
+        above = model.debt_value(1.5 * X_D, phi, K, 0.0, 0.0, lev)
         assert above > at
+
+    def test_zero_recovery_debt_is_worthless_at_the_boundary(self):
+        """At leverage 0.40 the netted inference business is under water
+        at X_D under the #177 rule ("net"), so creditors recover nothing
+        and debt is worth zero at and below the boundary."""
+        model = DuopolyModel(
+            ModelParameters(),
+            leverage=0.40,
+            coupon_rate=0.05,
+            bankruptcy_cost=0.30,
+            recovery_rule="net",
+        )
+        phi, K = 0.5, 1.0
+        X_D = model.default_boundary(phi, K, 0.0, 0.0)
+        assert model.recovery_value(phi, K, 0.0, 0.0) == 0.0
+        assert model.debt_value(X_D, phi, K, 0.0, 0.0) == 0.0
+        assert model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0) == 0.0
+        assert model.debt_value(1.5 * X_D, phi, K, 0.0, 0.0) > 0.0
+
+    def test_debt_equals_recovery_at_the_boundary(self):
+        """Under the default rule the liquidator's option to shut the
+        inference business down gives creditors a positive recovery at the
+        same point, and debt is worth exactly that at and below X_D."""
+        model = DuopolyModel(
+            ModelParameters(), leverage=0.40, coupon_rate=0.05, bankruptcy_cost=0.30
+        )
+        phi, K = 0.5, 1.0
+        X_D = model.default_boundary(phi, K, 0.0, 0.0)
+        recovery = model.recovery_value(phi, K, 0.0, 0.0)
+        assert recovery > 0.0
+        assert model.debt_value(X_D, phi, K, 0.0, 0.0) == recovery
+        assert model.debt_value(0.5 * X_D, phi, K, 0.0, 0.0) == recovery
 
 
 class TestSingleCrossingEnforced:
     def test_strict_mode_raises_on_multiple_sign_changes(self, model, monkeypatch):
         """A gap with two sign changes on the grid is not reported as an
         equilibrium in strict mode."""
-        X_mono, _, _, _ = model.solve_leader_monopolist("H")
+        X_mono, _, _, _ = model.pure_power_leader_monopolist("H")
+        # The search interval starts at the leader's shutdown boundary.
+        X_low = model.pure_power_preemption_equilibrium("H")["X_default_leader"]
 
         def wiggly_gap(X, regime="H"):
             # negative, then positive, then negative, then positive
-            return np.sin(3.0 * np.pi * X / X_mono) - 0.2
+            return np.sin(3.0 * np.pi * (X - X_low) / (X_mono - X_low)) - 0.2
 
         monkeypatch.setattr(model, "_preemption_gap", wiggly_gap)
         model._cache = {
             k: v for k, v in model._cache.items() if k[0] != "preemption_3d"
         }
         with pytest.raises(RuntimeError, match="changes sign"):
-            model.solve_preemption_equilibrium("H", strict=True)
-        eq = model.solve_preemption_equilibrium("H", strict=False)
+            model.pure_power_preemption_equilibrium("H", strict=True)
+        eq = model.pure_power_preemption_equilibrium("H", strict=False)
         assert eq["single_crossing"] is False
+
+
+# ------------------------------------------------------------------
+# Credit primitives (issue #177): shutdown, recovery, fair coupon
+# ------------------------------------------------------------------
+
+# Single-firm policies (X, K, phi) the credit primitives are reported at:
+# the precommitted-scale policy of the model of record and the pure-power
+# approximation the duopoly and credit blocks are still pinned to.
+RECORD_POLICY = (0.009258307, 0.015783642, 0.700855718)
+PURE_POWER_POLICY = (0.004721756, 0.006726639, 0.700855709)
+
+
+def credit_model(leverage=0.0, recovery_rule="net"):
+    return DuopolyModel(
+        ModelParameters(),
+        leverage=leverage,
+        coupon_rate=0.05,
+        bankruptcy_cost=0.30,
+        recovery_rule=recovery_rule,
+    )
+
+
+class TestUnleveredFirm:
+    """Every zero-leverage special case in one place (issue #177, C21).
+
+    The unlevered firm is the zero-coupon case of the levered formulas:
+    it has a shutdown boundary, its claims carry the shutdown option, and
+    X_D, equity and the default probability are continuous as leverage
+    goes to zero. Before #177 these were early returns (X_D = 0, no
+    option, zero probability) tested in five different classes.
+    """
+
+    def test_shutdown_boundary_is_zero_coupon_default_boundary(self, model):
+        p = model.params
+        phi, K = 0.3, 1.0
+        X_A = model.default_boundary(phi, K, phi, K)
+        a_eff = model._effective_revenue_coeff(phi, K, phi, K)
+        beta_neg = model._negative_root("L", p.lam)
+        expected = beta_neg / (beta_neg - 1.0) * (p.delta * K / p.r) / a_eff
+        assert pytest.approx(expected, rel=1e-12) == X_A
+        assert model.shutdown_boundary(phi, K, phi, K) == X_A
+        # An explicit zero coupon gives the same boundary at any leverage.
+        assert model.default_boundary(phi, K, phi, K, 0.5, coupon=0.0) == X_A
+
+    def test_equity_is_value_minus_cost_plus_shutdown_option(self, model):
+        p = model.params
+        X, phi, K = 5.0, 0.3, 1.0
+        E = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
+        V = model.monopolist_value_L(X, phi, K)
+        cost = model.investment_cost(K)
+        X_A = model.shutdown_boundary(phi, K)
+        beta_neg = model._negative_root("L", p.lam)
+        option = -model.monopolist_value_L(X_A, phi, K) * (X / X_A) ** beta_neg
+        assert option > 0
+        assert pytest.approx(V - cost + option, rel=1e-12) == E
+        assert model.unlevered_asset_value(X, phi, K) == pytest.approx(E + cost)
+        # Far above the boundary the option is a small part of the value.
+        assert option / V < 1e-6
+
+    def test_entry_npv_is_minus_cost_at_and_below_shutdown(self, model):
+        """The L(0) < 0 endpoint of the Proposition 3 existence argument:
+        the firm that has stopped operating has lost I(K), not
+        delta K / r + I(K) as before the shutdown option."""
+        phi, K = 0.70, 0.0067
+        X_A = model.shutdown_boundary(phi, K)
+        for X in [0.0, 1e-12, 0.5 * X_A, X_A]:
+            npv = model.equity_value(X, phi, K, 0.0, 0.0, leverage=0.0)
+            assert npv == pytest.approx(-model.investment_cost(K), rel=1e-12)
+        assert model.unlevered_asset_value(X_A, phi, K) == 0.0
+
+    def test_smooth_pasting_at_shutdown(self, model):
+        phi, K = 0.70, 0.0067
+        X_A = model.shutdown_boundary(phi, K)
+        h = 1e-5
+        U = [model.unlevered_asset_value(X_A * (1 + k * h), phi, K) for k in (1, 2)]
+        # U(X_A) = U'(X_A) = 0, so U is second order in the distance.
+        assert U[1] / U[0] == pytest.approx(4.0, rel=1e-3)
+
+    def test_coupled_boundary_positive_and_below_single(self, model):
+        X_D = model.default_boundary(0.7, 1.0, 0.7, 1.0)
+        X_D_c = model.default_boundary_coupled(0.7, 1.0, 0.7, 1.0)
+        assert 0.0 < X_D_c <= X_D
+        assert (X_D - X_D_c) / X_D_c < 0.05
+
+    def test_equilibrium_reports_shutdown_boundaries(self, model):
+        eq = model.pure_power_preemption_equilibrium("H")
+        assert 0.0 < eq["X_default_leader"] < eq["X_leader"]
+        assert 0.0 < eq["X_default_follower"] < eq["X_follower"]
+        assert eq["X_default_leader"] == pytest.approx(0.0009483, rel=1e-3)
+        assert eq["X_leader"] / eq["X_default_leader"] == pytest.approx(2.764, abs=5e-3)
+        # The anticipating leader's boundary lies above the monopoly one.
+        X_A = model.shutdown_boundary(eq["phi_leader"], eq["K_leader"])
+        assert eq["X_default_leader"] > X_A
+
+    def test_unlevered_preemption_trigger_pinned(self, model):
+        """X_P = 0.002621 (0.002703 before the shutdown option): a
+        discount of 44.5% from the pure-power monopoly trigger."""
+        eq = model.pure_power_preemption_equilibrium("H")
+        assert eq["X_leader"] == pytest.approx(0.002621, rel=1e-3)
+        discount = 1.0 - eq["X_leader"] / eq["X_leader_monopolist"]
+        assert discount == pytest.approx(0.4449, abs=5e-4)
+
+    @pytest.mark.parametrize("policy", [RECORD_POLICY, PURE_POWER_POLICY])
+    def test_continuity_as_leverage_goes_to_zero(self, policy):
+        """X_D, the going-concern equity claim and the default
+        probability at leverage 1e-6 agree with their zero-leverage
+        values to first order in leverage."""
+        from ai_lab_investment.models.valuation import ValuationAnalysis
+
+        X, K, phi = policy
+        va = ValuationAnalysis(ModelParameters())
+        base, I_K = credit_model(0.0), credit_model().investment_cost(K)
+        X_D0 = base.default_boundary(phi, K, 0.0, 0.0)
+        E0 = base.equity_value(X, phi, K, 0.0, 0.0) + I_K
+        pd0 = va.default_probability(X, K, 0.0, phi)
+        assert X_D0 > 0 and pd0 > 0
+        gaps = []
+        for lev in (1e-3, 1e-6):
+            m = credit_model(lev)
+            X_D = m.default_boundary(phi, K, 0.0, 0.0)
+            # Total claim of the equity holders, contribution added back.
+            E = m.equity_value(X, phi, K, 0.0, 0.0) + (1.0 - lev) * I_K
+            pd = va.default_probability(X, K, lev, phi)
+            assert X_D > X_D0 and pd > pd0
+            gaps.append((X_D / X_D0 - 1.0, 1.0 - E / E0, pd / pd0 - 1.0))
+        for small, tiny in zip(*gaps, strict=True):
+            assert 0.0 < tiny < 1e-5
+            assert small / tiny == pytest.approx(1e3, rel=0.02)
+
+    def test_no_debt_claims_without_leverage(self, model):
+        phi, K = 0.3, 1.0
+        assert model.coupon_payment(K) == 0.0
+        assert model.debt_value(2.0, phi, K, 0.0, 0.0) == 0.0
+        assert model.recovery_value(phi, K, 0.0, 0.0) == 0.0
+        assert np.isnan(model.recovery_rate(phi, K, 0.0, 0.0))
+        assert model.fair_coupon(2.0, phi, K) == 0.0
+
+    def test_spread_and_default_probability_at_zero_leverage(self):
+        """The spread at zero leverage is the limit on an infinitesimal
+        issue; it is positive because the unlevered firm also stops
+        operating. Pinned at the figure's evaluation point."""
+        from ai_lab_investment.models.valuation import ValuationAnalysis
+
+        va = ValuationAnalysis(ModelParameters())
+        assert va.credit_spread(leverage=0.0) * 1e4 == pytest.approx(22.86, abs=0.05)
+        assert va.credit_spread(leverage=1e-4) * 1e4 == pytest.approx(22.86, abs=0.05)
+        pd = va.default_probability(X_current=0.10, K=1.0, leverage=0.0)
+        assert pd * 100 == pytest.approx(0.404, abs=0.005)
+        # Far from the boundary the probability is negligible, not zero.
+        assert 0.0 < va.default_probability(1.0, 1.0, 0.0) < 1e-9
+        # Under the pre-#177 gross rule the limit is default-free debt.
+        gross = ValuationAnalysis(ModelParameters(), recovery_rule="gross")
+        assert gross.credit_spread(leverage=0.0) == 0.0
+
+
+class TestRecoveryWithShutdown:
+    """The default rule since issue #179: the inference business with its
+    owner's option to shut it down ("net_with_shutdown")."""
+
+    def test_is_the_default(self):
+        from ai_lab_investment.models.duopoly import DEFAULT_RECOVERY_RULE
+
+        assert DEFAULT_RECOVERY_RULE == "net_with_shutdown"
+        assert DuopolyModel(ModelParameters()).recovery_rule == "net_with_shutdown"
+        assert ValuationAnalysis(ModelParameters()).recovery_rule == "net_with_shutdown"
+
+    @pytest.mark.parametrize("phi", [0.3, 0.6, 0.7009, 0.85])
+    def test_dominates_the_net_rule(self, phi):
+        """The option is worth something: the value is at least the larger
+        of the net value and zero, and equals the net value far above X_I."""
+        with_option = credit_model(recovery_rule="net_with_shutdown")
+        net = credit_model()
+        K = 0.0158
+        X_I = with_option.inference_shutdown_boundary(phi, K)
+        for X in X_I * np.array([0.5, 1.0, 1.01, 1.5, 3.0]):
+            v = with_option.liquidation_value(X, phi, K, 0.0, 0.0)
+            assert v >= max(net.liquidation_value(X, phi, K, 0.0, 0.0), 0.0) - 1e-15
+        far = 1e4 * X_I
+        assert with_option.liquidation_value(far, phi, K, 0, 0) == pytest.approx(
+            net.liquidation_value(far, phi, K, 0, 0), rel=1e-6
+        )
+        assert with_option.liquidation_value(X_I, phi, K, 0, 0) == 0.0
+
+    def test_value_matching_and_smooth_pasting_at_its_boundary(self):
+        m = credit_model(recovery_rule="net_with_shutdown")
+        phi, K = 0.6, 0.0158
+        X_I = m.inference_shutdown_boundary(phi, K)
+        h = 1e-6 * X_I
+        v = m.liquidation_value(X_I + h, phi, K, 0, 0)
+        assert v / h < 1e-5 * m.liquidation_value(2 * X_I, phi, K, 0, 0) / X_I
+
+    def test_boundary_equals_the_firms_at_the_optimal_allocation(self):
+        """At phi* the two businesses earn the same revenue per unit of
+        capacity, so X_I is the firm's shutdown boundary and the inference
+        business is the fraction 1 - phi* of the unlevered asset value."""
+        m = credit_model(recovery_rule="net_with_shutdown")
+        K = RECORD_POLICY[1]
+        phi = float(SingleFirmModel(ModelParameters()).solve().phi_star)
+        assert m.inference_shutdown_boundary(phi, K) == pytest.approx(
+            m.shutdown_boundary(phi, K), rel=1e-9
+        )
+        X = 3.0 * m.shutdown_boundary(phi, K)
+        assert m.liquidation_value(X, phi, K, 0, 0) == pytest.approx(
+            (1.0 - phi) * m.unlevered_asset_value(X, phi, K), rel=1e-9
+        )
+        # Less training puts X_I above the firm's boundary, more below it.
+        assert m.inference_shutdown_boundary(0.5, K) > m.shutdown_boundary(0.5, K)
+        assert m.inference_shutdown_boundary(0.85, K) < m.shutdown_boundary(0.85, K)
+
+    def test_recovery_at_the_precommitted_scale_policy(self):
+        """The scope note on issue #179: 1.0%, 1.8%, 3.0% and 3.8% of the
+        coupon claim at leverage 0.20, 0.40, 0.70 and 0.95 (closed forms,
+        par debt), tending to zero with leverage."""
+        _, K, phi = RECORD_POLICY
+        rates = {}
+        for lev in (0.01, 0.20, 0.40, 0.70, 0.95):
+            m = credit_model(lev, "net_with_shutdown")
+            rates[lev] = m.recovery_rate(phi, K, 0.0, 0.0)
+        assert 100 * rates[0.01] == pytest.approx(0.05, abs=0.01)
+        assert 100 * rates[0.20] == pytest.approx(0.97, abs=0.01)
+        assert 100 * rates[0.40] == pytest.approx(1.82, abs=0.01)
+        assert 100 * rates[0.70] == pytest.approx(2.95, abs=0.01)
+        assert 100 * rates[0.95] == pytest.approx(3.76, abs=0.01)
+        # Under the #177 rule the same recoveries are zero.
+        assert credit_model(0.40).recovery_rate(phi, K, 0.0, 0.0) == 0.0
+
+    def test_recovery_weakly_increasing_in_training_near_the_optimum(self):
+        """Opposite of "training raises the loss given default": at the
+        precommitted-scale capacity, leverage 0.40, recovery is zero below
+        phi = 0.65 and rises through phi* to the cap at the unlevered asset
+        value."""
+        _, K, _ = RECORD_POLICY
+        m = credit_model(0.40, "net_with_shutdown")
+        phis = np.linspace(0.30, 0.90, 25)
+        rates = np.array([m.recovery_rate(f, K, 0.0, 0.0) for f in phis])
+        assert np.all(np.diff(rates) >= -1e-12)
+        assert np.all(rates[phis <= 0.65] == 0.0)
+        assert rates[-1] > 0.05
+
+
+class TestRecoveryRule:
+    """Recovery net of operating costs (issue #177, C22)."""
+
+    def test_unknown_rule_raises(self):
+        with pytest.raises(ValueError, match="recovery rule"):
+            DuopolyModel(ModelParameters(), recovery_rule="book")
+
+    def test_installed_value_is_inference_plus_training_business(self):
+        """Under "net" the inference business bears the same perpetual
+        operating cost as the firm, so V = Lambda_net + training
+        business exactly."""
+        m = credit_model()
+        p = m.params
+        X, phi, K = 0.02, 0.6, 0.5
+        training = (
+            p.lam / (p.r - p.mu_L + p.lam) * p.A_H * (phi * K) ** p.alpha * X
+            - p.delta * phi * K / p.r
+        )
+        assert m.liquidation_value(X, phi, K, 0.0, 0.0) + training == pytest.approx(
+            m.monopolist_value_L(X, phi, K), rel=1e-12
+        )
+
+    def test_rules_differ_by_the_operating_cost(self):
+        p = ModelParameters()
+        X, phi, K = 0.02, 0.6, 0.5
+        gross = credit_model(recovery_rule="gross").liquidation_value(X, phi, K, 0, 0)
+        net = credit_model().liquidation_value(X, phi, K, 0, 0)
+        until = credit_model(recovery_rule="net_until_switch").liquidation_value(
+            X, phi, K, 0, 0
+        )
+        cost = p.delta * (1.0 - phi) * K
+        assert gross - net == pytest.approx(cost / p.r, rel=1e-12)
+        assert gross - until == pytest.approx(cost / (p.r + p.lam), rel=1e-12)
+
+    @pytest.mark.parametrize("rule", ["net", "net_until_switch"])
+    def test_recovery_never_exceeds_unlevered_asset_value(self, rule):
+        """Creditors cannot recover more than the assets they seize are
+        worth to an unlevered owner, nor more than the default-free
+        claim, at any allocation, leverage or rival."""
+        binding = 0
+        for lev in (0.01, 0.05, 0.20, 0.40, 0.70, 0.95):
+            m = credit_model(lev, rule)
+            for phi in (0.02, 0.2, 0.5, 0.7, 0.9, 0.98):
+                for K, K_j in ((0.0067, 0.0), (1.0, 0.0), (1.0, 1.0), (0.2, 3.0)):
+                    X_D = m.default_boundary(phi, K, 0.5, K_j)
+                    U = m.unlevered_asset_value(X_D, phi, K, 0.5, K_j)
+                    rec = m.recovery_value(phi, K, 0.5, K_j)
+                    assert 0.0 <= rec <= (1.0 - m.bankruptcy_cost) * U + 1e-15
+                    assert rec <= m.coupon_payment(K) / m.params.r + 1e-15
+                    liq = m.liquidation_value(X_D, phi, K, 0.5, K_j)
+                    binding += liq > U
+        # The cap at the unlevered asset value is not vacuous.
+        assert binding > 0
+
+    def test_gross_rule_reproduces_the_binding_cap(self):
+        """C22 as stated by the reviewer: under the pre-#177 gross rule
+        (1 - b) Lambda(X_D) is 2.8 times the coupon claim at ell = 0.40
+        and still above it at 0.95, at the pure-power (X*, K*, phi*), so
+        debt is default-free at every leverage."""
+        X, K, phi = PURE_POWER_POLICY
+        for lev, multiple in ((0.40, 2.83), (0.95, 1.28)):
+            m = credit_model(lev, "gross")
+            X_D = m.default_boundary(phi, K, 0.0, 0.0)
+            claim = m.coupon_payment(K) / m.params.r
+            liq = m.liquidation_value(X_D, phi, K, 0.0, 0.0)
+            assert 0.7 * liq / claim == pytest.approx(multiple, abs=0.01)
+            assert m.recovery_rate(phi, K, 0.0, 0.0) == 1.0
+            assert m.debt_value(X, phi, K, 0.0, 0.0) == pytest.approx(claim, rel=1e-12)
+
+    def test_gross_cap_stops_binding_at_the_model_of_record(self):
+        """At the model-of-record policy the gross cap binds up to
+        ell = 0.70 but not at 0.95 (the reviewer's 'every leverage up to
+        0.95' is a statement about the pure-power policy)."""
+        _, K, phi = RECORD_POLICY
+        assert credit_model(0.70, "gross").recovery_rate(phi, K, 0.0, 0.0) == 1.0
+        rate = credit_model(0.95, "gross").recovery_rate(phi, K, 0.0, 0.0)
+        assert rate == pytest.approx(0.884, abs=2e-3)
+
+    @pytest.mark.parametrize("policy", [RECORD_POLICY, PURE_POWER_POLICY])
+    def test_netted_recovery_is_zero_at_the_firms_own_policy(self, policy):
+        """At phi* the inference business is under water at X_D at every
+        leverage: creditors recover nothing and debt is risky."""
+        X, K, phi = policy
+        for lev in (0.01, 0.05, 0.20, 0.40, 0.70):
+            m = credit_model(lev)
+            assert m.recovery_value(phi, K, 0.0, 0.0) == 0.0
+            claim = m.coupon_payment(K) / m.params.r
+            assert m.debt_value(X, phi, K, 0.0, 0.0) < claim
+
+    def test_until_switch_rule_is_capped_by_unlevered_asset_value(self):
+        """Netting the cost only until the switch leaves the inference
+        business worth more than the whole firm at X_D, so the cap at
+        the unlevered asset value binds and recovery is second order in
+        leverage (6.1% of the claim at ell = 0.40, model of record)."""
+        _, K, phi = RECORD_POLICY
+        m = credit_model(0.40, "net_until_switch")
+        X_D = m.default_boundary(phi, K, 0.0, 0.0)
+        U = m.unlevered_asset_value(X_D, phi, K)
+        assert m.liquidation_value(X_D, phi, K, 0.0, 0.0) > U
+        assert m.recovery_value(phi, K, 0.0, 0.0) == pytest.approx(0.7 * U)
+        assert m.recovery_rate(phi, K, 0.0, 0.0) == pytest.approx(0.0610, abs=5e-4)
+
+
+class TestFairCoupon:
+    """Fairly priced debt: D = ell I(K) at issuance (issue #177, C15)."""
+
+    @pytest.mark.parametrize("rule", ["net", "net_until_switch", "gross"])
+    @pytest.mark.parametrize("policy", [RECORD_POLICY, PURE_POWER_POLICY])
+    def test_fair_coupon_debt_prices_at_par(self, policy, rule):
+        X, K, phi = policy
+        for lev in (0.01, 0.05, 0.20, 0.40, 0.70):
+            m = credit_model(lev, rule)
+            coupon = m.fair_coupon(X, phi, K)
+            proceeds = lev * m.investment_cost(K)
+            D = m.debt_value(X, phi, K, 0.0, 0.0, coupon=coupon)
+            assert pytest.approx(proceeds, rel=1e-9) == D
+            # A fair coupon is at least the default-free coupon r ell I.
+            assert coupon >= m.params.r * proceeds * (1.0 - 1e-12)
+
+    def test_par_convention_debt_is_worth_less_than_proceeds(self):
+        """The financing subsidy of the par convention at r_c = 5%:
+        debt is worth 40.7% of its proceeds at ell = 0.40 (41.7%, the
+        ratio r_c / r, if it were default-free), a transfer of 23.7% of
+        I(K)."""
+        X, K, phi = PURE_POWER_POLICY
+        m = credit_model(0.40)
+        proceeds = 0.40 * m.investment_cost(K)
+        D = m.debt_value(X, phi, K, 0.0, 0.0)
+        assert D / proceeds == pytest.approx(0.4072, abs=5e-4)
+        assert (proceeds - D) / m.investment_cost(K) == pytest.approx(0.237, abs=1e-3)
+        assert m.fair_coupon(X, phi, K) / m.coupon_payment(K) == pytest.approx(
+            2.467, abs=5e-3
+        )
+
+    def test_fair_coupon_raises_the_default_boundary(self):
+        X, K, phi = RECORD_POLICY
+        m = credit_model(0.40)
+        par = m.default_boundary(phi, K, 0.0, 0.0)
+        fair = m.default_boundary(phi, K, 0.0, 0.0, coupon=m.fair_coupon(X, phi, K))
+        assert par == pytest.approx(0.001602, rel=1e-3)
+        assert fair == pytest.approx(0.001782, rel=1e-3)
+
+    def test_fair_coupon_increasing_in_leverage(self):
+        X, K, phi = RECORD_POLICY
+        rates = []
+        for lev in np.linspace(0.05, 0.95, 10):
+            m = credit_model(lev)
+            rates.append(m.fair_coupon(X, phi, K) / (lev * m.investment_cost(K)))
+        assert np.all(np.diff(rates) > 0)
+        assert rates[0] > m.params.r
+
+    def test_duopoly_fair_coupon(self):
+        m = credit_model(0.40)
+        X, phi, K = 0.5, 0.6, 1.0
+        coupon = m.fair_coupon(X, phi, K, 0.6, 1.0)
+        D = m.debt_value(X, phi, K, 0.6, 1.0, coupon=coupon)
+        assert pytest.approx(0.40 * m.investment_cost(K), rel=1e-9) == D
+
+    def test_proceeds_above_debt_capacity_raise(self):
+        """At the off-policy evaluation point of fig-credit-risk no
+        coupon raises 70% of I(K): debt capacity is exhausted."""
+        m = credit_model(0.70)
+        with pytest.raises(ValueError, match="debt capacity"):
+            m.fair_coupon(0.10, 0.5, 1.0)
+
+    def test_explicit_coupon_enters_every_claim(self):
+        m = credit_model(0.40)
+        X, phi, K = 0.5, 0.6, 1.0
+        par = m.coupon_payment(K)
+        assert m.equity_value(X, phi, K, 0.0, 0.0, coupon=par) == m.equity_value(
+            X, phi, K, 0.0, 0.0
+        )
+        high = 2.0 * par
+        assert m.default_boundary(phi, K, 0.0, 0.0, coupon=high) > m.default_boundary(
+            phi, K, 0.0, 0.0
+        )
+        assert m.equity_value(X, phi, K, 0.0, 0.0, coupon=high) < m.equity_value(
+            X, phi, K, 0.0, 0.0
+        )
+        assert m.firm_value(X, phi, K, 0.0, 0.0, coupon=high) == pytest.approx(
+            m.equity_value(X, phi, K, 0.0, 0.0, coupon=high)
+            + m.debt_value(X, phi, K, 0.0, 0.0, coupon=high)
+        )
+        with pytest.raises(ValueError, match="non-negative"):
+            m.debt_value(X, phi, K, 0.0, 0.0, coupon=-1.0)
