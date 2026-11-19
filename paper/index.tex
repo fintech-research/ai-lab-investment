@@ -4911,21 +4911,20 @@ market spreads.
 Table~\ref{tbl-duopoly-leverage} reports the baseline equilibrium at
 four leverage levels.
 
-\begingroup\setlength{\tabcolsep}{1.2pt}
+\begingroup\setlength{\tabcolsep}{3pt}
 
 \begin{longtable}[]{@{}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0600}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0900}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0900}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0800}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0600}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.1000}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.1000}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.1100}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0800}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0900}}
-  >{\raggedleft\arraybackslash}p{(\linewidth - 22\tabcolsep) * \real{0.0900}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.1300}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0700}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0800}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 20\tabcolsep) * \real{0.0900}}@{}}
 \caption{Baseline equilibrium of the exact game by leverage and debt
 convention, for a leader that enters at \(X_L\). \(X_{D}\) is the
 leader's boundary and \(X_L/X_D\) its distance to default at entry;
@@ -4933,10 +4932,8 @@ leader's boundary and \(X_L/X_D\) its distance to default at entry;
 post-switch entry; \(X_P\) is the rent-equalization
 trigger.}\label{tbl-duopoly-leverage}\tabularnewline
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedleft
-\(\ell\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Debt
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\ell\), debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4946,7 +4943,7 @@ Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_F\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_D\)
+\(X_D\) (\(10^{-3}\))
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4961,10 +4958,8 @@ Coupon rate (\%)
 \midrule\noalign{}
 \endfirsthead
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedleft
-\(\ell\)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Debt
+\begin{minipage}[b]{\linewidth}\raggedright
+\(\ell\), debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_L\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4974,7 +4969,7 @@ Debt
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(K_F\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-\(X_D\)
+\(X_D\) (\(10^{-3}\))
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
 \(X_L/X_D\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
@@ -4990,20 +4985,20 @@ Coupon rate (\%)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-0.00 & none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.000700 & 4.80 &
-10.3 & n.a. & n.a. & 0.00857 \\
-0.20 & par & 0.00390 & 0.00533 & 0.0513 & 0.208 & 0.000833 & 4.68 & 8.9
-& 45.9 & 5.00 & 0.00989 \\
-0.20 & fair & 0.00336 & 0.00416 & 0.0443 & 0.162 & 0.000739 & 4.55 & 7.8
-& 48.6 & 12.49 & 0.00855 \\
-0.40 & par & 0.00461 & 0.00708 & 0.0607 & 0.276 & 0.001020 & 4.51 & 7.6
-& 49.4 & 5.00 & 0.01164 \\
-0.40 & fair & 0.00335 & 0.00414 & 0.0443 & 0.162 & 0.000777 & 4.32 & 6.2
-& 54.2 & 12.54 & 0.00851 \\
-0.65 & par & 0.00592 & 0.01084 & 0.0780 & 0.421 & 0.001392 & 4.25 & 6.0
-& 56.2 & 5.00 & 0.01483 \\
-0.65 & fair & 0.00332 & 0.00408 & 0.0441 & 0.160 & 0.000819 & 4.05 & 5.0
-& 61.8 & 12.62 & 0.00838 \\
+0.00 none & 0.00336 & 0.00416 & 0.0443 & 0.163 & 0.700 & 4.80 & 10.3 &
+n.a. & n.a. & 0.00857 \\
+0.20 par & 0.00390 & 0.00533 & 0.0513 & 0.208 & 0.833 & 4.68 & 8.9 &
+45.9 & 5.00 & 0.00989 \\
+0.20 fair & 0.00336 & 0.00416 & 0.0443 & 0.162 & 0.739 & 4.55 & 7.8 &
+48.6 & 12.49 & 0.00855 \\
+0.40 par & 0.00461 & 0.00708 & 0.0607 & 0.276 & 1.020 & 4.51 & 7.6 &
+49.4 & 5.00 & 0.01164 \\
+0.40 fair & 0.00335 & 0.00414 & 0.0443 & 0.162 & 0.777 & 4.32 & 6.2 &
+54.2 & 12.54 & 0.00851 \\
+0.65 par & 0.00592 & 0.01084 & 0.0780 & 0.421 & 1.392 & 4.25 & 6.0 &
+56.2 & 5.00 & 0.01483 \\
+0.65 fair & 0.00332 & 0.00408 & 0.0441 & 0.160 & 0.819 & 4.05 & 5.0 &
+61.8 & 12.62 & 0.00838 \\
 \end{longtable}
 
 \endgroup
