@@ -55,7 +55,7 @@ CURVE_POINTS = {
 # Curves that are partial by construction: the single firm that chooses its
 # scale at the switch has a pre-switch trigger only below lambda = 0.0729,
 # which is 7 of the 30 grid points of the competition figure.
-PARTIAL_CURVES = {"Single firm, scale chosen freely": 7}
+PARTIAL_CURVES = {"Single firm, scale chosen at the switch": 7}
 
 
 def assert_curves_complete(name: str, fig: plt.Figure) -> None:

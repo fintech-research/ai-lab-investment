@@ -1757,12 +1757,12 @@ class TestCapacityGapPurePower:
 
 
 # ------------------------------------------------------------------
-# Appendix E robustness tables (regression pins)
+# Internet Appendix E robustness tables (regression pins)
 # ------------------------------------------------------------------
 
 
 class TestAppendixERobustness:
-    """Regression pins for the Appendix E robustness tables.
+    """Regression pins for the Internet Appendix E robustness tables.
 
     These functions generate tbl-fixedpie, tbl-duopoly-dilemma, and
     tbl-dynamic-phi in the paper; the pins keep the published numbers
