@@ -592,7 +592,7 @@ Four features of @tbl-spread-entry bear on how the spread at entry varies with $
 *Leverage under the two debt conventions.* @tbl-duopoly-leverage reports the baseline equilibrium at four leverage levels.
 
 ```{=latex}
-\begingroup\setlength{\tabcolsep}{3pt}
+\begingroup\setlength{\tabcolsep}{2pt}
 ```
 
 | $\ell$, debt | $X_L$ | $K_L$ | $X_F^*$ | $K_F$ | $X_D$ ($10^{-3}$) | $X_L/X_D$ | $\frac{X_F^*}{X_{D,F}}$ | Spread (bps) | Coupon rate (\%) | $X_P$ |
@@ -605,7 +605,7 @@ Four features of @tbl-spread-entry bear on how the spread at entry varies with $
 | 0.65 par | 0.00592 | 0.01084 | 0.0780 | 0.421 | 1.392 | 4.25 | 6.0 | 56.2 | 5.00 | 0.01483 |
 | 0.65 fair | 0.00332 | 0.00408 | 0.0441 | 0.160 | 0.819 | 4.05 | 5.0 | 61.8 | 12.62 | 0.00838 |
 
-: Baseline equilibrium of the exact game by leverage and debt convention, for a leader that enters at $X_L$. $X_{D}$ is the leader's boundary and $X_L/X_D$ its distance to default at entry; $X_F^*/X_{D,F}$ is the follower's distance to default at its post-switch entry; $X_P$ is the rent-equalization trigger. {#tbl-duopoly-leverage tbl-colwidths="[13,9,9,8,7,9,8,8,8,9,9]"}
+: Baseline equilibrium of the exact game by leverage and debt convention, for a leader that enters at $X_L$. $X_{D}$ is the leader's boundary and $X_L/X_D$ its distance to default at entry; $X_F^*/X_{D,F}$ is the follower's distance to default at its post-switch entry; $X_P$ is the rent-equalization trigger. {#tbl-duopoly-leverage tbl-colwidths="[12,9,9,8,7,9,10,9,8,10,9]"}
 
 ```{=latex}
 \endgroup
